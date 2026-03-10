@@ -1,0 +1,33 @@
+{
+    "name": "SuryaMitra",
+    "short_name": "SuryaMitra",
+    "description": "PM Surya Ghar Muft Bijli Yojana Registration Help — J&K and Ladakh",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#04111F",
+    "theme_color": "#F97316",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/favicon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/favicon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "categories": [
+        "utilities",
+        "government"
+    ],
+    "lang": "en-IN"
+}

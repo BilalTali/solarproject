@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SuryaMitra ID Card — {{ $user->name }}</title>
+  <style>
+    /* 
+       RIGID ABSOLUTE LAYOUT FOR DOMPDF
+       Every element is positioned with fixed PX coordinates.
+    */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @font-face {
+      font-family: 'Cinzel';
+      font-style: normal;
+      font-weight: 700;
+      src: url(https://fonts.gstatic.com/s/cinzel/v19/8vL6777Cy9G97vR7AV-Y.ttf) format('truetype');
+    }
+    @font-face {
+      font-family: 'DM Sans';
+      font-style: normal;
+      font-weight: 400;
+      src: url(https://fonts.gstatic.com/s/dmsans/v11/rP2Fp2ywfy8_RzX0Tn_qNA.ttf) format('truetype');
+    }
+
+    body {
+      background: #c8cfd9;
+      font-family: 'DM Sans', Helvetica, Arial, sans-serif;
+      margin: 0; padding: 0;
+    }
+    
+    @media print {
+      body { background: #fff; }
+    }
+
+    /* Force each card to be exactly one printed page */
+    .pdf-page {
+      width: 100%;
+      height: 100vh; /* Viewport height for PDF context */
+      page-break-after: always;
+      position: relative;
+    }
+    .pdf-page:last-child {
+      page-break-after: auto;
+    }
+
+    /* Center the card on the PDF page */
+    .card {
+      width: 332px;
+      height: 524px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-top: -262px;
+      margin-left: -166px;
+      background: #fff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    }
+
+    /* ══════════ COMMON ELEMENTS ══════════ */
+    .header-bg {
+      position: absolute; top: 0; left: 0; width: 332px; height: 185px;
+      background: #0B3D92;
+      z-index: 10;
+    }
+    .sun-arc {
+      position: absolute; top: -38px; right: -38px;
+      width: 130px; height: 130px; border-radius: 50%;
+      border: 1px solid rgba(255,210,60,0.2);
+      z-index: 11;
+    }
+    .lanyard {
+      position: absolute; top: 9px; left: 140px; width: 52px; height: 13px;
+      background: #333; border: 1.5px solid rgba(255,255,255,0.2);
+      border-radius: 7px; z-index: 30;
+    }
+    .corn { position: absolute; width: 12px; height: 12px; border: 2px solid rgba(255,195,35,0.7); z-index: 100; }
+    .tl { top: 9px; left: 9px; border-right: 0; border-bottom: 0; }
+    .tr { top: 9px; right: 9px; border-left: 0; border-bottom: 0; }
+    .bl { bottom: 9px; left: 9px; border-right: 0; border-top: 0; }
+    .br { bottom: 9px; right: 9px; border-left: 0; border-top: 0; }
+
+    .gold-band {
+      position: absolute; top: 185px; left: 0; width: 332px; height: 4px;
+      background: #EDA000; z-index: 20;
+    }
+
+    .footer-bg {
+      position: absolute; bottom: 0; left: 0; width: 332px; height: 13px;
+      background: #050f2e; z-index: 20;
+    }
+
+    /* ══════════ FRONT SIDE CONTENT ══════════ */
+    .logo-ring-left {
+      position: absolute; top: 25px; left: 20px; width: 48px; height: 48px;
+      background: #fff; border-radius: 50%; border: 2px solid #FFB020;
+      z-index: 25; text-align: center; overflow: hidden;
+    }
+    .logo-ring-right {
+      position: absolute; top: 25px; right: 20px; width: 48px; height: 48px;
+      background: #fff; border-radius: 50%; border: 2px solid #FFB020;
+      z-index: 25; text-align: center; overflow: hidden;
+    }
+    .logo-ring {
+      position: absolute; top: 25px; left: 142px; width: 48px; height: 48px;
+      background: #fff; border-radius: 50%; border: 2px solid #FFB020;
+      z-index: 25; text-align: center; overflow: hidden;
+    }
+    .logo-ring img, .logo-ring-left img, .logo-ring-right img { width: 100%; height: 100%; object-fit: contain; }
+
+    .org-name {
+      position: absolute; top: 82px; left: 0; width: 332px;
+      font-family: 'Cinzel', serif; font-size: 8px; font-weight: 700;
+      color: #fff; text-align: center; letter-spacing: 1.5px; text-transform: uppercase;
+      z-index: 15;
+    }
+
+    .org-badge {
+      position: absolute; top: 100px; left: 136px; width: 60px;
+      background: rgba(255,176,32,0.2); border: 1px solid #FFB020;
+      border-radius: 10px; padding: 1.5px 0; font-size: 6px; color: #FFD070;
+      text-align: center; letter-spacing: 3px; text-transform: uppercase;
+      z-index: 15;
+    }
+
+    .photo-box {
+      position: absolute; top: 125px; left: 119px; width: 94px; height: 94px;
+      border-radius: 15px; border: 3.5px solid #fff; z-index: 35;
+      background: #eee; overflow: hidden;
+    }
+    .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .initials-avatar {
+      width: 100%; height: 100%; background: #072564;
+      text-align: center; line-height: 87px;
+      font-family: 'Cinzel', serif; font-size: 30px; font-weight: 700; color: #FFD070;
+    }
+
+    .member-name {
+      position: absolute; top: 235px; left: 0; width: 332px;
+      font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700;
+      color: #0A2456; text-align: center; text-transform: uppercase;
+      z-index: 10;
+    }
+
+    .designation-wrap {
+      position: absolute; top: 258px; left: 0; width: 332px; text-align: center; z-index: 10;
+    }
+    .desig-line { display: inline-block; width: 25px; height: 1px; background: #FFB020; margin: 0 10px; vertical-align: middle; }
+    .designation { display: inline-block; font-size: 8px; font-weight: 700; color: #B86A00; text-transform: uppercase; letter-spacing: 3px; vertical-align: middle; }
+
+    .stars-line {
+      position: absolute; top: 273px; left: 0; width: 332px; text-align: center;
+      color: #FFB020; font-size: 12px; z-index: 10;
+    }
+
+    .name-rule {
+      position: absolute; top: 290px; left: 141px; width: 50px; height: 1.5px;
+      background: #FFB020; z-index: 10;
+    }
+
+    /* Data block */
+    .data-container {
+      position: absolute; top: 300px; left: 20px; width: 292px; z-index: 50;
+    }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table td { padding: 3px 8px; vertical-align: middle; border-bottom: 1px solid #f2f4f8; }
+    .data-table tr.odd td { background: #f9fbff; }
+    .data-table tr:last-child td { border-bottom: none; }
+    
+    .data-label { font-size: 7px; color: #777; font-weight: 700; text-transform: uppercase; width: 80px; }
+    .data-value { font-size: 8px; color: #111; font-weight: 700; text-align: left; }
+
+    .signature-container {
+      position: absolute; bottom: 18px; right: 20px; width: 110px; text-align: center; z-index: 40;
+    }
+    .sig-img { width: 80px; height: 35px; object-fit: contain; margin-bottom: -5px; }
+    .seal-img { 
+      position: absolute; bottom: 20px; left: 20px; width: 60px; height: 60px; 
+      object-fit: contain; opacity: 0.9; z-index: 35;
+    }
+    .sig-rule { width: 90px; height: 1px; background: #ccc; margin-left: auto; }
+    .sig-text { font-size: 6px; color: #666; text-transform: uppercase; margin-top: 3px; background: transparent !important; }
+
+    /* ══════════ BACK SIDE CONTENT ══════════ */
+    .accent-bar {
+      position: absolute; top: 189px; left: 0; bottom: 13px; width: 5px;
+      background: #07266A; z-index: 30;
+    }
+
+    .warning-box {
+      position: absolute; top: 210px; left: 40px; width: 252px;
+      border: 1px solid #eee; border-radius: 10px; background: #fcfcfc;
+      padding: 12px; text-align: center; font-size: 8.5px; color: #666; line-height: 1.5;
+    }
+
+    .contact-container {
+      position: absolute; top: 295px; left: 0; width: 332px; text-align: center;
+    }
+    .address { font-size: 9px; font-weight: 700; color: #0A2456; margin-bottom: 3px; }
+    .email { font-size: 7.5px; color: #B06000; }
+
+    .back-sig-container {
+      position: absolute; top: 350px; left: 111px; width: 110px; text-align: center;
+    }
+    .back-sig-img { width: 80px; height: 30px; object-fit: contain; }
+    .back-sig-line {
+      width: 100px; height: 1px; background: #ccc; margin: 2px auto;
+    }
+    .back-sig-label {
+      text-align: center; font-size: 7px; color: #aaa; text-transform: uppercase;
+    }
+
+    .barcode-container {
+      position: absolute; bottom: 13px; left: 30px; width: 272px; height: 74px;
+      background: #fff; border-top: 1px solid #f3f3f3; text-align: center; padding-top: 8px;
+    }
+    .barcode-img { width: 180px; height: 38px; }
+    .barcode-num { font-size: 7.5px; color: #bbb; letter-spacing: 4px; margin-top: 3px; }
+
+    /* Background Watermark */
+    .watermark {
+      position: absolute; top: 280px; left: 50px; font-family: 'Cinzel', serif;
+      font-size: 38px; font-weight: 900; color: rgba(10,40,110,0.03);
+      transform: rotate(-15deg); text-transform: uppercase; letter-spacing: 6px;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════ FRONT SIDE ══════════════ -->
+  <div class="pdf-page">
+    <div class="card">
+      <div class="header-bg"></div>
+      <div class="sun-arc"></div>
+      <div class="lanyard"></div>
+      <div class="corn tl"></div><div class="corn tr"></div>
+      <div class="corn bl"></div><div class="corn br"></div>
+      
+      @php
+          $logoBase64 = null;
+          if($logoPath) {
+              $logoFile = storage_path('app/public/' . $logoPath);
+              if(file_exists($logoFile)) {
+                 $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($logoFile));
+              }
+          }
+          if(!$logoBase64) {
+             $logoFilePublic = public_path('images/suryamitra-logo.png');
+             if(file_exists($logoFilePublic)) {
+                $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($logoFilePublic));
+             }
+          }
+
+          $logo2Base64 = null;
+          if($logoPath2) {
+              $logo2File = storage_path('app/public/' . $logoPath2);
+              if(file_exists($logo2File)) {
+                 $logo2Base64 = 'data:image/png;base64,' . base64_encode(file_get_contents($logo2File));
+              }
+          }
+
+          $sigBase64 = null;
+          if($signaturePath) {
+              $sigFile = storage_path('app/public/' . $signaturePath);
+              if(file_exists($sigFile)) {
+                  $sigBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($sigFile));
+              }
+          }
+
+          $sealBase64 = null;
+          if($sealPath) {
+              $sealFile = storage_path('app/public/' . $sealPath);
+              if(file_exists($sealFile)) {
+                  $sealBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($sealFile));
+              }
+          }
+      @endphp
+
+      @if($logo2Base64)
+        <div class="logo-ring-left">
+           <img src="{{ $logoBase64 }}" alt="Main Logo">
+        </div>
+        <div class="logo-ring-right">
+           <img src="{{ $logo2Base64 }}" alt="Affiliation Logo">
+        </div>
+      @else
+        <div class="logo-ring">
+          @if($logoBase64)
+            <img src="{{ $logoBase64 }}" alt="Logo">
+          @else
+            <svg width="34" height="34" viewBox="0 0 40 40" style="margin-top:4px;">
+              <circle cx="20" cy="18" r="12" fill="#FFB020"/>
+              <text x="20" y="32" font-size="10" fill="#0A2456" text-anchor="middle" font-weight="900">SMS</text>
+            </svg>
+          @endif
+        </div>
+      @endif
+
+      <div class="org-name">{{ strtoupper($companyName) }}</div>
+      <div class="org-badge">SMS</div>
+
+      <div class="gold-band"></div>
+
+      <div class="photo-box">
+        @php
+            $photoBase64 = null;
+            $photoFile = $user->profile_photo ? storage_path('app/public/' . $user->profile_photo) : null;
+            if($photoFile && file_exists($photoFile)) {
+                $photoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($photoFile));
+            }
+        @endphp
+        @if($photoBase64)
+          <img src="{{ $photoBase64 }}" alt="User">
+        @else
+          <div class="initials-avatar">{{ $initials }}</div>
+        @endif
+      </div>
+
+      <div class="watermark">SuryaMitra</div>
+      <div class="accent-bar"></div>
+
+      <div class="member-name">{{ strtoupper($user->name) }}</div>
+      
+      <div class="designation-wrap">
+        <span class="desig-line"></span>
+        <span class="designation">{{ $designation }}</span>
+        <span class="desig-line"></span>
+      </div>
+
+      <div class="stars-line">{!! $starsHtml !!}</div>
+      <div class="name-rule"></div>
+
+      <div class="data-container">
+        <table class="data-table">
+          <tr class="odd">
+            <td class="data-label">Card No</td>
+            <td class="data-value">: {{ $cardNumber }}</td>
+          </tr>
+          <tr>
+            <td class="data-label">S/o, D/o</td>
+            <td class="data-value">: {{ $user->father_name ?? 'N/A' }}</td>
+          </tr>
+          <tr class="odd">
+            <td class="data-label">Birth Date</td>
+            <td class="data-value">: {{ $user->dob ? $user->dob->format('d-m-Y') : 'N/A' }}</td>
+          </tr>
+          <tr>
+            <td class="data-label">Blood Group</td>
+            <td class="data-value">: {{ $user->blood_group ?? 'N/A' }}</td>
+          </tr>
+          <tr class="odd">
+            <td class="data-label">District</td>
+            <td class="data-value">: {{ $user->district ?? 'N/A' }}</td>
+          </tr>
+          <tr>
+            <td class="data-label">Joined On</td>
+            <td class="data-value">: {{ $user->created_at->format('d-m-Y') }}</td>
+          </tr>
+        </table>
+      </div>
+
+      @if($sealBase64)
+        <img src="{{ $sealBase64 }}" class="seal-img" alt="Seal">
+      @endif
+
+      <div class="signature-container">
+        @if($sigBase64)
+          <img src="{{ $sigBase64 }}" class="sig-img" alt="Signature">
+        @else
+          <div style="height:35px;"></div>
+        @endif
+        
+        <div class="sig-rule"></div>
+        <div class="sig-text">{{ $authorizedSignatory }}</div>
+      </div>
+
+      <div class="footer-bg"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ BACK SIDE ══════════════ -->
+  <div class="pdf-page">
+    <div class="card">
+      <div class="header-bg"></div>
+      <div class="sun-arc"></div>
+      <div class="lanyard"></div>
+      <div class="corn tl"></div><div class="corn tr"></div>
+      <div class="corn bl"></div><div class="corn br"></div>
+
+      @if($logo2Base64)
+        <div class="logo-ring-left">
+           <img src="{{ $logoBase64 }}" alt="Main Logo">
+        </div>
+        <div class="logo-ring-right">
+           <img src="{{ $logo2Base64 }}" alt="Affiliation Logo">
+        </div>
+      @else
+        <div class="logo-ring">
+          @if($logoBase64)
+            <img src="{{ $logoBase64 }}" alt="Logo">
+          @else
+            <svg width="34" height="34" viewBox="0 0 40 40" style="margin-top:4px;">
+              <circle cx="20" cy="20" r="10" fill="#FFB020"/>
+            </svg>
+          @endif
+        </div>
+      @endif
+
+      <div class="org-name">{{ strtoupper($companyName) }}</div>
+      <div class="org-badge">SMS</div>
+
+      <div class="gold-band"></div>
+      <div class="accent-bar"></div>
+      <div class="watermark">SuryaMitra</div>
+
+      <div class="warning-box">
+        This card is issued under<br>
+        <strong>PM Surya Ghar Muft Bijli Yojana</strong><br>
+        Valid for official facilitation purposes only.<br>
+        <strong>Non-transferable. If found, please return.</strong>
+      </div>
+
+      <div class="contact-container">
+        <div class="address">{{ $companyAddress }}</div>
+        <div class="email">{{ $companyEmail }}</div>
+      </div>
+
+      <div class="back-sig-container">
+        @if($sigBase64)
+          <img src="{{ $sigBase64 }}" class="back-sig-img" alt="Signature">
+        @endif
+        <div class="back-sig-line"></div>
+        <div class="back-sig-label">{{ $authorizedSignatory }}</div>
+      </div>
+
+      <div class="barcode-container">
+        @php
+            $barcodeBase64 = null;
+            if($barcodePath && file_exists($barcodePath)) {
+                $barcodeBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($barcodePath));
+            }
+        @endphp
+        @if($barcodeBase64)
+          <img class="barcode-img" src="{{ $barcodeBase64 }}" alt="Barcode">
+        @else
+          <div style="height:35px; width:180px; background:#f5f5f5; border:1px dashed #ddd; line-height:35px; color:#ccc; font-size:8px;">BARCODE</div>
+        @endif
+        <div class="barcode-num">{{ $cardNumber }}</div>
+      </div>
+
+      <div class="footer-bg"></div>
+    </div>
+  </div>
+
+</body>
+</html>
