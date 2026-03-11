@@ -36,6 +36,35 @@ export interface PublicSettingsData {
     footer_about_text: string | null;
     footer_copyright: string | null;
     footer_disclaimer: string | null;
+
+    // Navigation Labels
+    nav_home: string | null;
+    nav_rewards: string | null;
+    nav_portal_login: string | null;
+    nav_cta_electricity: string | null;
+
+    // Footer Links & Sections
+    footer_section_quick_links: string | null;
+    footer_section_legal: string | null;
+    footer_link_about: string | null;
+    footer_link_scheme: string | null;
+    footer_link_contact: string | null;
+    footer_link_faq: string | null;
+    footer_link_privacy: string | null;
+    footer_link_terms: string | null;
+    footer_link_refund: string | null;
+
+    // General Labels
+    label_how_it_works: string | null;
+    label_eligibility_checker: string | null;
+    label_subsidy_calculator: string | null;
+    label_become_executive: string | null;
+    label_executive_login: string | null;
+    label_apply_title: string | null;
+    label_apply_desc: string | null;
+    label_whatsapp_text: string | null;
+    external_pmsuryaghar_label: string | null;
+    external_pmsuryaghar_url: string | null;
 }
 
 export interface PublicAchievement {

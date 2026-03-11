@@ -9,4 +9,4 @@ Disallow: /agent/offers
 Disallow: /super-agent/
 Disallow: /api/
 
-Sitemap: https://suryamitra.in/sitemap.xml
+Sitemap: https://andleebsurya.in/sitemap.xml

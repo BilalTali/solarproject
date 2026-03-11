@@ -3,7 +3,7 @@ import { publicApi, type PublicSettingsData } from '@/api/public.api';
 import { ArrowRight, Play, Sun, CheckCircle2 } from 'lucide-react';
 
 const DEFAULT: PublicSettingsData = {
-    company_name: 'SuryaMitra',
+    company_name: 'AndleebSurya',
     company_email: null, company_mobile: null, company_whatsapp: null,
     company_address: null, company_slogan: null, company_logo: null,
     company_favicon: null, company_signature: null,

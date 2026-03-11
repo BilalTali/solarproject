@@ -176,7 +176,7 @@ export default function HomePage() {
             <section id="how-it-works" className="py-20 bg-neutral-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
-                        <h2 className="font-display font-bold text-3xl text-dark mb-3">How It Works</h2>
+                        <h2 className="font-display font-bold text-3xl text-dark mb-3">{getSetting(settings, 'label_how_it_works', 'How It Works')}</h2>
                         <p className="text-neutral-600 max-w-xl mx-auto">Five simple steps from application to free electricity</p>
                     </div>
                     <div className="flex flex-col md:flex-row items-center gap-4">
@@ -289,8 +289,8 @@ export default function HomePage() {
             <section id="lead-form" className="py-20 bg-neutral-50">
                 <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-10">
-                        <h2 className="font-display font-bold text-3xl text-dark mb-3">Apply for Free Solar Electricity</h2>
-                        <p className="text-neutral-600">Fill the form below and our team will call you within 24 hours</p>
+                        <h2 className="font-display font-bold text-3xl text-dark mb-3">{getSetting(settings, 'label_apply_title', 'Apply for Free Solar Electricity')}</h2>
+                        <p className="text-neutral-600">{getSetting(settings, 'label_apply_desc', 'Fill the form below and our team will call you within 24 hours')}</p>
                     </div>
                     {submittedRef ? (
                         <div className="card text-center py-10">
@@ -365,7 +365,7 @@ export default function HomePage() {
                                 to="/agent/register"
                                 className="inline-flex items-center gap-3 bg-white text-slate-900 hover:bg-accent hover:text-white px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95 group shadow-2xl shadow-white/5"
                             >
-                                Apply as Executive <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                {getSetting(settings, 'label_become_executive', 'Apply as Executive')} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </Link>
                         </div>
                         <div className="w-full md:w-1/3 aspect-square bg-gradient-to-br from-white/10 to-transparent rounded-[2.5rem] border border-white/10 flex items-center justify-center relative group">

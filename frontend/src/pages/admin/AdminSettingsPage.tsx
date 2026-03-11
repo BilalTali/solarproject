@@ -638,18 +638,26 @@ const AdminSettingsPage: React.FC = () => {
                             </div>
 
                             <div className="border-t border-slate-100 pt-6">
-                                <h3 className="font-bold text-slate-800 mb-4">Footer Details</h3>
-                                <div className="space-y-6">
-                                    {F('footer_about_text', 'About Text (Short description)', 'textarea')}
-                                    {F('footer_copyright', 'Copyright Text')}
-                                    {F('footer_disclaimer', 'Bottom Disclaimer/Warning Text', 'textarea')}
+                                <h3 className="font-bold text-slate-800 mb-4">Footer Section Titles & Links</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {F('footer_section_quick_links', 'Quick Links Section Title', 'text', 'Quick Links')}
+                                    {F('footer_section_legal', 'Legal & Support Section Title', 'text', 'Legal & Support')}
+                                    {F('footer_link_about', 'About Us Link Label', 'text', 'About Us')}
+                                    {F('footer_link_scheme', 'PM Surya Ghar Scheme Link Label', 'text', 'PM Surya Ghar Scheme')}
+                                    {F('footer_link_contact', 'Contact Link Label', 'text', 'Contact')}
+                                    {F('footer_link_faq', 'FAQ Link Label', 'text', 'FAQ')}
+                                    {F('footer_link_privacy', 'Privacy Policy Link Label', 'text', 'Privacy Policy')}
+                                    {F('footer_link_terms', 'Terms & Conditions Link Label', 'text', 'Terms & Conditions')}
+                                    {F('footer_link_refund', 'Refund Policy Link Label', 'text', 'Refund Policy')}
                                 </div>
                             </div>
 
                             <SectionSave label="Save Company Info" keys={[
                                 'company_name', 'company_registration_no', 'company_affiliated_with',
                                 'company_email', 'company_mobile', 'company_whatsapp', 'company_website', 'company_address',
-                                'footer_about_text', 'footer_copyright', 'footer_disclaimer'
+                                'footer_about_text', 'footer_copyright', 'footer_disclaimer',
+                                'footer_section_quick_links', 'footer_section_legal', 'footer_link_about', 'footer_link_scheme',
+                                'footer_link_contact', 'footer_link_faq', 'footer_link_privacy', 'footer_link_terms', 'footer_link_refund'
                             ]} />
                         </div>
                     )}
@@ -935,6 +943,24 @@ const AdminSettingsPage: React.FC = () => {
                                 />
                             </div>
 
+                            {/* Section Labels */}
+                            <div className="space-y-6 border-t border-slate-100 pt-8">
+                                <h3 className="font-bold text-slate-800">General Section Labels</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {F('label_how_it_works', 'How It Works Title', 'text', 'How It Works')}
+                                    {F('label_apply_title', 'Lead Form Title', 'text', 'Apply for Free Solar Electricity')}
+                                    {F('label_apply_desc', 'Lead Form Description', 'text', 'Fill the form below and our team will call you within 24 hours')}
+                                    {F('label_whatsapp_text', 'WhatsApp Button Text', 'text', 'WhatsApp Us')}
+                                    {F('external_pmsuryaghar_label', 'Gov Portal Link Label', 'text', 'pmsuryaghar.gov.in')}
+                                    {F('external_pmsuryaghar_url', 'Gov Portal Link URL', 'text', 'https://pmsuryaghar.gov.in')}
+                                    {F('label_eligibility_checker', 'Eligibility Link Label', 'text', 'Eligibility Checker')}
+                                    {F('label_subsidy_calculator', 'Calculator Link Label', 'text', 'Subsidy Calculator')}
+                                    {F('label_become_executive', 'Become Executive Link Label', 'text', 'Become a Biz Dev Executive')}
+                                    {F('label_executive_login', 'Executive Login Link Label', 'text', 'Biz Dev Executive Login')}
+                                </div>
+                                <SectionSave label="Save Section Labels" keys={['label_how_it_works', 'label_apply_title', 'label_apply_desc', 'label_whatsapp_text', 'external_pmsuryaghar_label', 'external_pmsuryaghar_url', 'label_eligibility_checker', 'label_subsidy_calculator', 'label_become_executive', 'label_executive_login']} />
+                            </div>
+
                         </div>
                     )}
 
@@ -1039,17 +1065,16 @@ const AdminSettingsPage: React.FC = () => {
                         </div>
                     )}
 
-                    {/* ══ PORTAL ══ */}
-                    {activeTab === 'portal' && (
-                        <div className="space-y-6 animate-in fade-in duration-300">
-                            <h3 className="font-bold text-slate-800">Portal Configuration</h3>
-                            <div className="space-y-6 max-w-2xl">
-                                {F('welcome_message', 'Portal Welcome Message')}
-                                {F('terms_conditions', 'Terms & Conditions Preview', 'textarea')}
-                            </div>
-                            <SectionSave label="Save Portal Settings" keys={['welcome_message', 'terms_conditions']} />
+                    <div className="border-t border-slate-100 pt-6">
+                        <h3 className="font-bold text-slate-800">Navigation Labels</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {F('nav_home', 'Home Link Label', 'text', 'Home')}
+                            {F('nav_rewards', 'Rewards Link Label', 'text', 'Rewards')}
+                            {F('nav_portal_login', 'Portal Login Button Label', 'text', 'Portal Login')}
+                            {F('nav_cta_electricity', 'Main CTA Button Label', 'text', 'Get Free Electricity')}
                         </div>
-                    )}
+                    </div>
+                    <SectionSave label="Save Portal Settings" keys={['welcome_message', 'terms_conditions', 'nav_home', 'nav_rewards', 'nav_portal_login', 'nav_cta_electricity']} />
 
                     {/* ══ ID CARD ══ */}
                     {activeTab === 'icard' && (

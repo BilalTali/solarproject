@@ -20,7 +20,7 @@ interface SEOHeadProps {
 }
 
 const SEOHead: React.FC<SEOHeadProps> = ({
-    title = 'SuryaMitra - PM Surya Ghar Muft Bijli Yojana Facilitation',
+    title = 'AndleebSurya - PM Surya Ghar Muft Bijli Yojana Facilitation',
     description = 'Facilitating PM Surya Ghar Muft Bijli Yojana subsidy, registration, and installation for a greener future.',
     keywords = 'PM Surya Ghar, Solar Subsidy, Rooftop Solar India, Muft Bijli Yojana, Solar Installation',
     image = '/og-image.jpg',
@@ -33,10 +33,10 @@ const SEOHead: React.FC<SEOHeadProps> = ({
     });
 
     const faviconUrl = getFileUrl(settings?.company_favicon, '/favicon.svg');
-    const siteTitle = settings?.company_name ? `${settings.company_name} - ${title}` : (title.includes('SuryaMitra') ? title : `${title} | SuryaMitra`);
+    const siteTitle = settings?.company_name ? `${settings.company_name} - ${title}` : (title.includes('AndleebSurya') ? title : `${title} | AndleebSurya`);
 
     const canonicalUrl = url + window.location.pathname;
-    const organizationName = settings?.company_name || 'SuryaMitra';
+    const organizationName = settings?.company_name || 'AndleebSurya';
     const organizationUrl = settings?.company_website || 'https://suryamitra.in';
     const logoUrl = getFileUrl(settings?.company_logo, '/logo.png');
 
