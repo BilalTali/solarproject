@@ -16,9 +16,6 @@ export const ReferralShareWidget: React.FC<ReferralShareWidgetProps> = ({ referr
     const referralUrl = `${baseUrl}/?ref=${referralCode}`;
 
     const roleName = role === 'agent' ? 'BDE (Field Agent)' : 'BDM (Team Manager)';
-    const shareSubject = role === 'agent' 
-        ? 'Register for PM Surya Ghar' 
-        : 'Join our SuryaMitra Network';
 
     const copyToClipboard = async () => {
         try {
