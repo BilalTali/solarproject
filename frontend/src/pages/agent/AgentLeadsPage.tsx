@@ -79,7 +79,14 @@ export default function AgentLeadsPage() {
                                             }`}
                                     >
                                         <td className="px-4 py-3 font-mono text-xs text-slate-600 whitespace-nowrap">{lead.ulid?.slice(-8)}</td>
-                                        <td className="px-4 py-3 font-medium text-slate-800 whitespace-nowrap">{lead.beneficiary_name}</td>
+                                        <td className="px-4 py-3 font-medium text-slate-800 whitespace-nowrap">
+                                            <div className="flex flex-col">
+                                                <span>{lead.beneficiary_name}</span>
+                                                {lead.referral_agent_id && (
+                                                    <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-tighter">Referral Lead</span>
+                                                )}
+                                            </div>
+                                        </td>
                                         <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.beneficiary_mobile}</td>
                                         <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.beneficiary_state}</td>
                                         <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.beneficiary_district}</td>
@@ -181,7 +188,12 @@ export default function AgentLeadsPage() {
                                         <Link to={`/agent/leads/${lead.ulid}`} className="font-bold text-slate-800 hover:text-orange-600 transition-colors block">
                                             {lead.beneficiary_name}
                                         </Link>
-                                        <p className="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">Ref: {lead.ulid?.slice(-8)}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">Ref: {lead.ulid?.slice(-8)}</p>
+                                            {lead.referral_agent_id && (
+                                                <span className="bg-indigo-50 text-indigo-600 text-[8px] font-black px-1 rounded border border-indigo-100 uppercase">Referral</span>
+                                            )}
+                                        </div>
                                     </div>
                                     <LeadStatusBadge status={lead.status} />
                                 </div>

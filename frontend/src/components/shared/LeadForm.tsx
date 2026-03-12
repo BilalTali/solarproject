@@ -5,12 +5,15 @@ import toast from 'react-hot-toast';
 import {
     User, MapPin, Hash, Zap, IndianRupee,
     FileText, Upload, X, CheckCircle2, AlertCircle, ChevronDown,
-    ArrowLeft, ArrowRight
+    ArrowLeft, ArrowRight,
+    Link as LinkIcon
 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { leadsApi } from '@/api/leads.api';
 import { superAgentApi } from '@/api/superAgent.api';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
 import MobileInput from '@/components/shared/MobileInput';
+import { compressImage } from '@/utils/imageUtils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -41,10 +44,25 @@ function FileUploadBox({
     value: FileUploadState; onChange: (v: FileUploadState) => void;
 }) {
     const ref = useRef<HTMLInputElement>(null);
+    const [isCompressing, setIsCompressing] = useState(false);
 
-    const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0] ?? null;
+    const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        let file = e.target.files?.[0] ?? null;
         if (!file) return;
+
+        // Compression for images
+        if (file.type.startsWith('image/') && file.type !== 'image/gif') {
+            setIsCompressing(true);
+            try {
+                file = await compressImage(file);
+            } catch (err) {
+                console.error('Compression failed', err);
+                toast.error('Image processing failed. Using original.');
+            } finally {
+                setIsCompressing(false);
+            }
+        }
+
         const preview = file.type.startsWith('image/')
             ? URL.createObjectURL(file)
             : null;
@@ -74,14 +92,21 @@ function FileUploadBox({
                 tabIndex={0}
                 onKeyDown={onKeyDown}
                 aria-label={`Upload ${label}`}
-                onClick={() => !value.file && ref.current?.click()}
+                onClick={() => !value.file && !isCompressing && ref.current?.click()}
                 className={`relative border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer min-h-[100px] flex flex-col items-center justify-center gap-2
                     ${value.file
                         ? 'border-green-400 bg-green-50'
-                        : 'border-slate-200 bg-slate-50 hover:border-orange-400 hover:bg-orange-50'}`}
+                        : isCompressing
+                            ? 'border-blue-300 bg-blue-50 cursor-wait'
+                            : 'border-slate-200 bg-slate-50 hover:border-orange-400 hover:bg-orange-50'}`}
             >
                 <input ref={ref} type="file" accept={accept} className="hidden" onChange={handleFile} aria-hidden="true" />
-                {value.file ? (
+                {isCompressing ? (
+                    <>
+                        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                        <p className="text-xs font-semibold text-blue-600">Optimizing Image...</p>
+                    </>
+                ) : value.file ? (
                     <>
                         {value.preview
                             ? <img src={value.preview} alt="preview" className="max-h-16 rounded-lg object-contain" />
@@ -176,6 +201,7 @@ function Select({ label, name, value, onChange, options, required = false, autoC
 
 export default function LeadForm({ role, onSuccess }: LeadFormProps) {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const backPath = role === 'super_agent' ? '/super-agent/leads' : role === 'agent' ? '/agent/leads' : '/';
 
     const [currentStep, setCurrentStep] = useState(1);
@@ -193,6 +219,7 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
         roof_size: '',
         system_capacity: '',
         query_message: '',
+        referral_agent_id: '',
     });
 
     const [aadhaar, setAadhaar] = useState<FileUploadState>({ file: null, preview: null, name: '' });
@@ -203,6 +230,14 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
     const [bankPassbook, setBankPassbook] = useState<FileUploadState>({ file: null, preview: null, name: '' });
 
     const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+    // URL Pre-fill for referral ID
+    React.useEffect(() => {
+        const ref = searchParams.get('ref');
+        if (ref && role === 'public') {
+            set('referral_agent_id', ref.toUpperCase().trim());
+        }
+    }, [searchParams, role]);
 
     const mutation = useMutation({
         mutationFn: async () => {
@@ -367,6 +402,32 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
                             <div className="md:col-span-2">
                                 <Field label="Email Address" name="beneficiary_email" value={form.beneficiary_email} onChange={set} type="email" placeholder="citizen@gmail.com" autoComplete="email" />
                             </div>
+
+                            {role === 'public' && (
+                                <div className="md:col-span-2 pt-4 border-t border-slate-50 mt-2">
+                                    <div className="flex flex-col gap-1.5">
+                                        <label htmlFor="referral_agent_id" className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center justify-between">
+                                            <span>Agent Referral ID</span>
+                                            <span className="text-[10px] font-normal text-slate-400 normal-case">(Optional)</span>
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                id="referral_agent_id"
+                                                type="text"
+                                                value={form.referral_agent_id}
+                                                onChange={e => set('referral_agent_id', e.target.value.replace(/\s+/g, '').toUpperCase())}
+                                                placeholder="e.g. SM-2026-1042"
+                                                maxLength={20}
+                                                className="w-full border border-slate-200 rounded-xl px-10 py-2.5 text-sm text-slate-700 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
+                                            />
+                                            <LinkIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 mt-1">
+                                            If an Andleeb Surya agent gave you their ID, enter it here. Leave blank if you found us directly.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

@@ -92,6 +92,7 @@ class JoiningLetterService
             '{bank_account}' => $maskedBank,
             '{bank_ifsc}' => $user->bank_ifsc ?? 'N/A',
             '{website}' => $companyWebsite,
+            '{company_name}' => $companyName,
         ];
 
         $body = str_replace(array_keys($placeholders), array_values($placeholders), $bodyTemplate);

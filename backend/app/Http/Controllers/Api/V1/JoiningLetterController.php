@@ -33,7 +33,7 @@ class JoiningLetterController extends Controller
         }
 
         $url = URL::temporarySignedRoute(
-            'joining-letter.download',
+            'api.v1.joining-letter.download',
             now()->addMinutes(15),
             ['userId' => $user->id]
         );

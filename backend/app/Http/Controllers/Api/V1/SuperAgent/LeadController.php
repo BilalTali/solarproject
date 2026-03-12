@@ -13,6 +13,7 @@ use App\Services\LeadService;
 use App\Services\SuperAgentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class LeadController extends Controller
@@ -133,14 +134,18 @@ class LeadController extends Controller
         }
         unset($data['agent_id']);
 
-        $lead = $this->leadService->createFromSuperAgent($data, $superAgent);
+        $lead = DB::transaction(function () use ($data, $superAgent, $request) {
+            $lead = $this->leadService->createFromSuperAgent($data, $superAgent);
 
-        // Upload documents
-        foreach (['aadhaar', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook'] as $docKey) {
-            if ($request->hasFile($docKey)) {
-                $this->leadService->uploadDocument($lead, $request->file($docKey), $docKey, $superAgent->id);
+            // Upload documents
+            foreach (['aadhaar', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook'] as $docKey) {
+                if ($request->hasFile($docKey)) {
+                    $this->leadService->uploadDocument($lead, $request->file($docKey), $docKey, $superAgent->id);
+                }
             }
-        }
+
+            return $lead;
+        });
 
         return response()->json([
             'success' => true,

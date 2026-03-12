@@ -334,7 +334,7 @@ export default function HomePage() {
             </section>
 
             {/* JOIN OUR TEAM */}
-            <section className="py-20 bg-slate-900 text-white relative overflow-hidden">
+            <section className="py-20 bg-gradient-to-b from-slate-900 to-[#020617] text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 blur-[120px] rounded-full -mr-48 -mt-48" />
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 blur-[120px] rounded-full -ml-48 -mb-48" />
 

@@ -40,6 +40,15 @@ class AuthController extends Controller
 
         $user = User::where($field, $identifier)->where('role', $expectedRole)->first();
 
+        \Log::info('Login Attempt', [
+            'identifier' => $identifier,
+            'field' => $field,
+            'expectedRole' => $expectedRole,
+            'user_found' => (bool)$user,
+            'role_match' => $user ? ($user->role === $expectedRole) : 'n/a',
+            'password_match' => $user ? Hash::check($request->password, $user->password) : 'n/a',
+        ]);
+
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,

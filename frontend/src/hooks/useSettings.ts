@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { publicApi, type PublicSettingsData } from '@/api/public.api';
 
-const DEFAULT_SETTINGS: PublicSettingsData = {
+export const DEFAULT_SETTINGS: PublicSettingsData = {
     company_name: 'SuryaMitra',
     company_email: null,
     company_mobile: null,

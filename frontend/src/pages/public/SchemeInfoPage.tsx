@@ -2,6 +2,10 @@ import { Helmet } from 'react-helmet-async';
 import { Sun, CheckCircle, FileText, ExternalLink, AlertTriangle, Zap, IndianRupee } from 'lucide-react';
 import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
+import { useQuery } from '@tanstack/react-query';
+import { publicApi } from '@/api/public.api';
+
+const getSetting = (s: any, k: string, fb: string) => s?.[k] || fb;
 
 const subsidyData = [
     { capacity: 'Up to 2 kW', subsidy: '₹30,000', monthly: 'Up to 150 units free', tag: 'Most Popular' },
@@ -18,25 +22,32 @@ const documents = [
     'PAN Card (for subsidy amounts above ₹50,000)',
 ];
 
-const steps = [
-    { step: '01', title: 'Submit Your Query', desc: 'Fill the form on our website with your name, mobile, and district. Zero cost, takes 2 minutes.' },
-    { step: '02', title: 'Agent Calls You', desc: 'A verified SuryaMitra agent (SM-XXXX) contacts you within 24 hours to understand your requirement.' },
-    { step: '03', title: 'Document Collection', desc: 'Agent helps you compile required documents and checks your eligibility for the scheme.' },
-    { step: '04', title: 'Government Portal Registration', desc: 'Your application is submitted on the official pmsuryaghar.gov.in portal.' },
-    { step: '05', title: 'Site Survey', desc: 'An empanelled installation vendor surveys your rooftop and provides capacity recommendation.' },
-    { step: '06', title: 'Solar Installation', desc: 'Solar panels are installed by the government-empanelled vendor at no cost to you.' },
-    { step: '07', title: 'Net Meter & Subsidy', desc: 'Net meter is installed. Government subsidy of up to ₹78,000 is credited directly to your bank account.' },
-];
-
 export default function SchemeInfoPage() {
+    const { data: settings = {} } = useQuery({
+        queryKey: ['public-settings'],
+        queryFn: publicApi.getSettings,
+    });
+
+    const companyName = getSetting(settings, 'company_name', 'SuryaMitra');
+
+    const steps = [
+        { step: '01', title: 'Submit Your Query', desc: 'Fill the form on our website with your name, mobile, and district. Zero cost, takes 2 minutes.' },
+        { step: '02', title: 'Agent Calls You', desc: `A verified ${companyName} agent (SM-XXXX) contacts you within 24 hours to understand your requirement.` },
+        { step: '03', title: 'Document Collection', desc: 'Agent helps you compile required documents and checks your eligibility for the scheme.' },
+        { step: '04', title: 'Government Portal Registration', desc: 'Your application is submitted on the official pmsuryaghar.gov.in portal.' },
+        { step: '05', title: 'Site Survey', desc: 'An empanelled installation vendor surveys your rooftop and provides capacity recommendation.' },
+        { step: '06', title: 'Solar Installation', desc: 'Solar panels are installed by the government-empanelled vendor at no cost to you.' },
+        { step: '07', title: 'Net Meter & Subsidy', desc: 'Net meter is installed. Government subsidy of up to ₹78,000 is credited directly to your bank account.' },
+    ];
+
     return (
         <div className="min-h-screen bg-neutral-50 flex flex-col">
             <Helmet>
-                <title>PM Surya Ghar Muft Bijli Yojana — Free Solar Scheme Info | SuryaMitra J&K</title>
-                <meta name="description" content="Everything about PM Surya Ghar Muft Bijli Yojana — free solar panels, ₹78,000 government subsidy, eligibility for J&K and Ladakh residents. Documents, process, benefits explained." />
+                <title>PM Surya Ghar Muft Bijli Yojana — Free Solar Scheme Info | {companyName} J&K</title>
+                <meta name="description" content={`Everything about PM Surya Ghar Muft Bijli Yojana — free solar panels, ₹78,000 government subsidy, eligibility for J&K and Ladakh residents. Documents, process, benefits explained via ${companyName}.`} />
                 <meta name="keywords" content="PM Surya Ghar, Muft Bijli Yojana, free solar panels J&K, solar subsidy Jammu Kashmir, MNRE scheme, rooftop solar Ladakh" />
-                <meta property="og:title" content="PM Surya Ghar Muft Bijli Yojana — Free Solar Scheme for J&K & Ladakh" />
-                <meta property="og:description" content="Get free solar panels with up to ₹78,000 government subsidy under PM Surya Ghar Muft Bijli Yojana. SuryaMitra helps J&K and Ladakh residents register. Zero cost to you." />
+                <meta property="og:title" content={`PM Surya Ghar Muft Bijli Yojana — Free Solar Scheme for J&K & Ladakh via ${companyName}`} />
+                <meta property="og:description" content={`Get free solar panels with up to ₹78,000 government subsidy under PM Surya Ghar Muft Bijli Yojana. ${companyName} helps J&K and Ladakh residents register. Zero cost to you.`} />
             </Helmet>
             <Navbar />
 
@@ -55,7 +66,7 @@ export default function SchemeInfoPage() {
                             Free rooftop solar installation with up to <strong className="text-accent">₹78,000 subsidy</strong> for eligible households in Jammu &amp; Kashmir and Ladakh.
                         </p>
                         <p className="text-sm text-white/60">
-                            SuryaMitra facilitates registration — we are not a government body
+                            {companyName} facilitates registration — we are not a government body
                         </p>
                     </div>
                 </div>
@@ -66,7 +77,7 @@ export default function SchemeInfoPage() {
                     <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3">
                         <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                         <div className="text-sm text-amber-800">
-                            <strong>SuryaMitra is a private facilitation company, not a government portal.</strong> We help residents of J&amp;K and Ladakh navigate the official PM Surya Ghar registration process. The actual scheme and subsidies are provided by the Government of India. Official portal: {' '}
+                            <strong>{companyName} is a private facilitation company, not a government portal.</strong> We help residents of J&amp;K and Ladakh navigate the official PM Surya Ghar registration process. The actual scheme and subsidies are provided by the Government of India. Official portal: {' '}
                             <a href="https://pmsuryaghar.gov.in" target="_blank" rel="noopener noreferrer" className="underline font-medium">pmsuryaghar.gov.in</a>
                         </div>
                     </div>
@@ -168,7 +179,7 @@ export default function SchemeInfoPage() {
                     <section className="bg-gradient-to-br from-primary to-primary-dark rounded-3xl p-8 text-white text-center">
                         <h2 className="text-2xl font-display font-bold mb-3">Ready to Apply?</h2>
                         <p className="text-white/80 mb-6 max-w-md mx-auto text-sm">
-                            SuryaMitra helps you complete the process — at zero cost. Our agent will call you within 24 hours of submitting your query.
+                            {companyName} helps you complete the process — at zero cost. Our agent will call you within 24 hours of submitting your query.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-3 justify-center">
                             <a href="/#apply" className="bg-accent hover:bg-accent-dark text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm">

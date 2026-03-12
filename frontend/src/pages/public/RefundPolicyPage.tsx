@@ -13,11 +13,15 @@ export default function RefundPolicyPage() {
         queryFn: publicApi.getSettings,
     });
 
+    const companyName = getSetting(settings, 'company_name', 'SuryaMitra');
+    const companyEmail = getSetting(settings, 'company_email', 'admin@suryamitra.in');
+    const companyMobile = getSetting(settings, 'company_mobile', '+91-98765 43210');
+
     return (
         <div className="min-h-screen bg-neutral-50 flex flex-col">
             <Helmet>
-                <title>Refund Policy — SuryaMitra | No-Fee Facilitation Service</title>
-                <meta name="description" content="SuryaMitra does not charge beneficiaries any fee for PM Surya Ghar facilitation. Read our refund policy and learn how to report fraud." />
+                <title>Refund Policy — {companyName} | No-Fee Facilitation Service</title>
+                <meta name="description" content={`${companyName} does not charge beneficiaries any fee for PM Surya Ghar facilitation. Read our refund policy and learn how to report fraud.`} />
                 <meta name="robots" content="noindex, follow" />
             </Helmet>
             <Navbar />
@@ -34,9 +38,9 @@ export default function RefundPolicyPage() {
                         <div className="bg-green-50 border border-green-200 rounded-2xl p-6 flex gap-4">
                             <ShieldCheck className="w-8 h-8 text-green-600 flex-shrink-0 mt-0.5" />
                             <div>
-                                <h2 className="font-bold text-green-800 text-lg mb-2">SuryaMitra is a FREE Facilitation Service</h2>
+                                <h2 className="font-bold text-green-800 text-lg mb-2">{companyName} is a FREE Facilitation Service</h2>
                                 <p className="text-green-700 text-sm leading-relaxed">
-                                    SuryaMitra <strong>does not charge any fee</strong> to beneficiaries (citizens) for facilitating PM Surya Ghar Muft Bijli Yojana applications. Therefore, <strong>no payment is accepted from beneficiaries and no refund policy applies</strong> to them.
+                                    {companyName} <strong>does not charge any fee</strong> to beneficiaries (citizens) for facilitating PM Surya Ghar Muft Bijli Yojana applications. Therefore, <strong>no payment is accepted from beneficiaries and no refund policy applies</strong> to them.
                                 </p>
                                 <p className="text-green-700 text-sm mt-2">
                                     The PM Surya Ghar scheme provides free solar installation backed by Government of India subsidies — you will never be asked to pay for facilitation.
@@ -50,7 +54,7 @@ export default function RefundPolicyPage() {
                             <div>
                                 <h2 className="font-bold text-red-800 text-lg mb-2">Report Fraud Immediately</h2>
                                 <p className="text-red-700 text-sm leading-relaxed">
-                                    If anyone claiming to represent SuryaMitra has asked you to pay any amount for:
+                                    If anyone claiming to represent {companyName} has asked you to pay any amount for:
                                 </p>
                                 <ul className="list-disc pl-5 text-red-700 text-sm mt-2 space-y-1">
                                     <li>Application processing or registration fees</li>
@@ -69,22 +73,22 @@ export default function RefundPolicyPage() {
                             <h2 className="font-bold text-dark text-lg mb-4">Contact Us to Report Fraud</h2>
                             <div className="space-y-3">
                                 <a
-                                    href={`tel:${getSetting(settings, 'company_mobile', '+919876543210')}`}
+                                    href={`tel:${companyMobile}`}
                                     className="flex items-center gap-3 text-sm text-neutral-700 hover:text-primary transition-colors"
                                 >
                                     <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
                                         <Phone className="w-4 h-4 text-primary" />
                                     </div>
-                                    {getSetting(settings, 'company_mobile', '+91-98765 43210')}
+                                    {companyMobile}
                                 </a>
                                 <a
-                                    href={`mailto:${getSetting(settings, 'company_email', 'admin@suryamitra.in')}`}
+                                    href={`mailto:${companyEmail}`}
                                     className="flex items-center gap-3 text-sm text-neutral-700 hover:text-primary transition-colors"
                                 >
                                     <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
                                         <Mail className="w-4 h-4 text-primary" />
                                     </div>
-                                    {getSetting(settings, 'company_email', 'admin@suryamitra.in')}
+                                    {companyEmail}
                                 </a>
                             </div>
                         </div>
@@ -94,8 +98,8 @@ export default function RefundPolicyPage() {
                             <h2 className="text-xl font-bold text-dark mb-3">Commission Disputes (For Agents)</h2>
                             <p className="text-neutral-700 text-sm leading-relaxed">
                                 If you are a registered Business Development Executive (SM-XXXX) or Business Development Manager (SSM-XXXX) and have a dispute regarding commission calculations or payments, please contact our admin team at{' '}
-                                <a href={`mailto:${getSetting(settings, 'company_email', 'admin@suryamitra.in')}`} className="text-primary underline">
-                                    {getSetting(settings, 'company_email', 'admin@suryamitra.in')}
+                                <a href={`mailto:${companyEmail}`} className="text-primary underline">
+                                    {companyEmail}
                                 </a>{' '}
                                 with your agent code and relevant lead details. Commission disputes are reviewed within 5 business working days.
                             </p>

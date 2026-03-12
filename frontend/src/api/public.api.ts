@@ -113,4 +113,8 @@ export const publicApi = {
         const res = await api.post<ApiResponse<{ id: number }>>('/public/feedback', data);
         return res.data;
     },
+    trackApplication: async (id: string) => {
+        const res = await api.get<ApiResponse<any>>(`/public/leads/track?id=${id}`);
+        return res.data;
+    },
 };

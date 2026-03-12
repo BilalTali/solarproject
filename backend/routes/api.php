@@ -71,6 +71,7 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
     // PUBLIC ROUTES
     // ==============================
     Route::post('/public/leads', [PublicLeadController::class, 'store']);
+    Route::get('/public/leads/track', [PublicLeadController::class, 'track']);
     Route::post('/public/agent-register', [PublicLeadController::class, 'registerAgent']);
     Route::get('/public/eligibility', [EligibilityController::class, 'index']);
     Route::get('/public/commission-slabs', [AdminCommissionSlabController::class, 'index']);
@@ -98,6 +99,15 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
     Route::post('/auth/admin/login', [AuthController::class, 'adminLogin'])->middleware('throttle:6,1');
     Route::post('/auth/agent/login', [AuthController::class, 'agentLogin'])->middleware('throttle:6,1');
     Route::post('/super-agent/auth/login', [AuthController::class, 'superAgentLogin'])->middleware('throttle:6,1');
+
+    // ── Signed Download Routes (No sanctum needed, signature is the key) ────
+    Route::get('/icard/download/{userId?}', [ICardController::class, 'download'])
+         ->middleware('signed')
+         ->name('icard.download');
+
+    Route::get('/joining-letter/download/{userId}', [JoiningLetterController::class, 'download'])
+         ->middleware('signed')
+         ->name('joining-letter.download');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Suryamitra Elite — {{ $user->name ?? 'User' }}</title>
+  <title>{{ $companyName ?? 'Suryamitra' }} — {{ $user->name ?? 'User' }}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -595,7 +595,7 @@
         </div>
 
         <div class="card-footer">
-            <span class="footer-website">🌐 {{ $companyWebsite ?? 'suryamitra.in' }}</span>
+            <span class="footer-website">Website: {{ $companyWebsite ?? 'suryamitra.in' }}</span>
         </div>
       </div>
 
@@ -687,7 +687,7 @@
             </div>
             <div style="width: 200px; height: 1px; background: #E2E8F0; margin: 3px auto;"></div>
             <div class="contact-line" style="margin-top: 2px;">
-                📞 {{ $companyPhone ?? '+91 99067 66655' }} &nbsp; | &nbsp; ✉ {{ $companyEmail ?? 'info@suryamitra.in' }}
+                Phone: {{ $companyPhone ?? '+91 99067 66655' }} &nbsp; | &nbsp; Email: {{ $companyEmail ?? 'info@suryamitra.in' }}
             </div>
         </div>
     </div>

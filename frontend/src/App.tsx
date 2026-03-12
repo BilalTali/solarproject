@@ -22,6 +22,8 @@ import ContactPage from '@/pages/public/ContactPage';
 import FaqPage from '@/pages/public/FaqPage';
 import SchemeInfoPage from '@/pages/public/SchemeInfoPage';
 import RefundPolicyPage from '@/pages/public/RefundPolicyPage';
+import TrackStatusPage from '@/pages/public/TrackStatusPage';
+import UserManualPage from '@/pages/public/UserManualPage';
 
 // Auth Pages
 import AgentLoginPage from '@/pages/agent/AgentLoginPage';
@@ -110,6 +112,8 @@ export default function App() {
           <Route path="/scheme" element={<SchemeInfoPage />} />
           <Route path="/pm-surya-ghar" element={<SchemeInfoPage />} />
           <Route path="/refund-policy" element={<RefundPolicyPage />} />
+          <Route path="/track-status" element={<TrackStatusPage />} />
+          <Route path="/user-manual" element={<UserManualPage />} />
 
           {/* Business Development Executive Auth */}
           <Route path="/agent/login" element={<AgentLoginPage />} />

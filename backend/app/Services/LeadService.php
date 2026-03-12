@@ -26,18 +26,50 @@ class LeadService
     public function createFromPublicForm(array $data): Lead
     {
         return DB::transaction(function () use ($data) {
-            $leadData = collect($data)->except(['aadhaar', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook'])->toArray();
+            $referralCode = isset($data['referral_agent_id']) ? strtoupper(trim($data['referral_agent_id'])) : null;
+            $referringAgent = null;
 
-            $lead = Lead::forceCreate([
+            if ($referralCode) {
+                $referringAgent = User::where('agent_id', $referralCode)
+                    ->where('status', 'active')
+                    ->whereIn('role', ['agent', 'super_agent'])
+                    ->first();
+            }
+
+            $leadData = collect($data)->except(['aadhaar', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook', 'referral_agent_id'])->toArray();
+
+            $createData = [
                 ...$leadData,
                 'source'              => 'public_form',
-                'owner_type'          => 'admin_pool',
-                'verification_status' => 'not_required',
+                'referral_agent_id'   => $referralCode,
                 'status'              => 'new',
-            ]);
+            ];
 
-            $this->logStatusChange($lead, null, null, 'new', 'Lead received from public form');
-            $this->notifyAdminNewPublicLead($lead);
+            if ($referringAgent) {
+                $createData['assigned_agent_id'] = $referringAgent->id;
+                $createData['assigned_super_agent_id'] = $referringAgent->super_agent_id;
+                $createData['owner_type'] = 'agent_pool';
+                $createData['verification_status'] = 'not_required';
+            } else {
+                $createData['owner_type'] = 'admin_pool';
+                $createData['verification_status'] = 'not_required';
+            }
+
+            $lead = Lead::forceCreate($createData);
+
+            $this->logStatusChange($lead, null, null, 'new', 'Lead received from public form' . ($referralCode ? " (Ref: {$referralCode})" : ""));
+
+            if ($referringAgent) {
+                $this->notifyAgentNewReferralLead($lead, $referringAgent);
+                if ($referringAgent->super_agent_id) {
+                    $sa = User::find($referringAgent->super_agent_id);
+                    if ($sa) {
+                        $this->notifySuperAgentNewReferralLead($lead, $sa, $referringAgent);
+                    }
+                }
+            } else {
+                $this->notifyAdminNewPublicLead($lead);
+            }
 
             return $lead;
         });
@@ -545,6 +577,26 @@ class LeadService
             'Lead Escalated to Admin',
             "Lead {$lead->ulid} has been escalated to Admin after 3 reverts.",
             ['lead_ulid' => $lead->ulid, 'reason' => $reason]
+        );
+    }
+
+    private function notifyAgentNewReferralLead(Lead $lead, User $agent): void
+    {
+        $this->notificationService->send(
+            $agent->id, 'new_referral_lead',
+            'New Referral Lead',
+            "A new lead ({$lead->beneficiary_name}) was submitted using your referral ID.",
+            ['lead_ulid' => $lead->ulid]
+        );
+    }
+
+    private function notifySuperAgentNewReferralLead(Lead $lead, User $sa, User $agent): void
+    {
+        $this->notificationService->send(
+            $sa->id, 'new_team_referral_lead',
+            'New Referral Lead in Team',
+            "A new lead ({$lead->beneficiary_name}) was submitted via Agent {$agent->agent_id}'s referral ID.",
+            ['lead_ulid' => $lead->ulid, 'agent_id' => $agent->id]
         );
     }
 

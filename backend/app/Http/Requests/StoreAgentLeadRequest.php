@@ -34,7 +34,7 @@ class StoreAgentLeadRequest extends FormRequest
             'discom_name' => 'required|string|max:100',
             'monthly_bill_amount' => 'required|numeric|min:0',
             'roof_size' => 'required|in:less_100,100_200,200_300,300_plus',
-            'system_capacity' => 'required|in:1kw,2kw,3kw,above_3kw',
+            'system_capacity' => 'required|in:1kw,2kw,3kw,3.3kw,4kw,5kw,5.5kw,6kw,7kw,8kw,9kw,10kw,above_10kw,above_3kw',
             
             // Notes
             'admin_notes' => 'nullable|string', // Reusing this field to hold initial agent notes to admin

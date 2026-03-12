@@ -1,10 +1,21 @@
-
 import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
 import SEOHead from '@/components/shared/SEOHead';
 import { Mail, Phone } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { publicApi } from '@/api/public.api';
+
+const getSetting = (s: any, k: string, fb: string) => s?.[k] || fb;
 
 export default function ContactPage() {
+    const { data: settings = {} } = useQuery({
+        queryKey: ['public-settings'],
+        queryFn: publicApi.getSettings,
+    });
+
+    const companyEmail = getSetting(settings, 'company_email', 'admin@suryamitra.in');
+    const companyMobile = getSetting(settings, 'company_mobile', '+91-98765 43210');
+
     return (
         <div className="min-h-screen bg-neutral-50 flex flex-col">
             <SEOHead />
@@ -21,13 +32,13 @@ export default function ContactPage() {
                             <Mail className="w-8 h-8 text-primary mb-3" />
                             <h3 className="font-bold text-dark mb-1">Email Support</h3>
                             <p className="text-sm text-neutral-600 mb-2">General setup & technical queries</p>
-                            <a href="mailto:support@example.com" className="text-accent font-medium mt-auto">support@example.com</a>
+                            <a href={`mailto:${companyEmail}`} className="text-accent font-medium mt-auto">{companyEmail}</a>
                         </div>
                         <div className="bg-neutral-50 p-6 rounded-2xl border border-gray-100 flex flex-col items-center text-center">
                             <Phone className="w-8 h-8 text-primary mb-3" />
                             <h3 className="font-bold text-dark mb-1">Helpline</h3>
                             <p className="text-sm text-neutral-600 mb-2">Available Mon-Sat (9 AM - 6 PM)</p>
-                            <a href="tel:+919876543210" className="text-accent font-medium mt-auto">+91-98765 43210</a>
+                            <a href={`tel:${companyMobile}`} className="text-accent font-medium mt-auto">{companyMobile}</a>
                         </div>
                     </div>
 

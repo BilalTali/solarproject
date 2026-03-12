@@ -13,11 +13,17 @@ class Lead extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'ulid', 'source',
+        'referral_agent_id',
         'beneficiary_name', 'beneficiary_mobile', 'beneficiary_email',
         'beneficiary_state', 'beneficiary_district', 'beneficiary_address', 'beneficiary_pincode',
         'consumer_number', 'discom_name', 'monthly_bill_amount',
-        'roof_size', 'system_capacity', 'query_message', 'notes', 'follow_up_date',
-        'revert_reason'
+        'roof_size', 'system_capacity', 'query_message', 'admin_notes',
+        'follow_up_date', 'govt_application_number',
+        'assigned_agent_id', 'assigned_super_agent_id', 'submitted_by_agent_id',
+        'created_by_super_agent_id', 'owner_type', 'verification_status',
+        'revert_count', 'revert_reason', 'verified_by_super_agent_id',
+        'verified_at', 'reverted_at', 'reverted_by'
     ];
 
     protected function casts(): array

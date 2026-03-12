@@ -17,6 +17,7 @@ import { QrCode } from 'lucide-react';
 import { OffersDashboardSection } from '@/components/offers/OffersDashboardSection';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { ReferralShareWidget } from '@/components/shared/ReferralShareWidget';
 
 export default function AgentDashboardPage() {
     const { user } = useAuthStore();
@@ -57,7 +58,7 @@ export default function AgentDashboardPage() {
     ];
 
     return (
-        <div>
+        <div className="pb-24 md:pb-0">
             {/* Reverted Leads Banner */}
             {revertedCount > 0 && (
                 <div className="mb-5">
@@ -195,6 +196,9 @@ export default function AgentDashboardPage() {
                         </div>
                     </div>
 
+                    {/* Referral Share Widget */}
+                    <ReferralShareWidget referralCode={user?.agent_id || ''} role="agent" />
+
                     {/* QR Verification Widget */}
                     <div className="card space-y-4">
                         <h2 className="font-display font-bold text-lg text-dark flex items-center gap-2">
@@ -207,6 +211,27 @@ export default function AgentDashboardPage() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Mobile Sticky Action Bar */}
+            <div
+                className="fixed bottom-0 left-0 right-0 z-50 flex gap-3 px-4 md:hidden"
+                style={{
+                    background: '#04111F',
+                    borderTop: '2px solid #FF9500',
+                    paddingTop: '12px',
+                    paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+                }}
+            >
+                <DownloadIdCardButton
+                    variant="button"
+                    className="flex-1 h-[52px] !bg-[#FF9500] !text-[#04111F] !rounded-xl !shadow-none border-none font-bold text-sm"
+                />
+                <DownloadJoiningLetterButton
+                    user={user!}
+                    variant="outline"
+                    className="flex-1 h-[52px] !border-[#FF9500] !text-white !bg-transparent !rounded-xl font-bold text-sm"
+                />
             </div>
         </div>
     );

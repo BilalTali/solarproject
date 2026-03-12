@@ -193,6 +193,7 @@ export interface Lead {
     roof_size: 'less_100' | '100_200' | '200_300' | '300_plus' | null;
     system_capacity: '3kw' | '3.3kw' | '4kw' | '5kw' | '5.5kw' | '6kw' | '7kw' | '8kw' | '9kw' | '10kw' | 'above_10kw' | null;
     monthly_bill_amount: number | null;
+    referral_agent_id: string | null;
 
     status: LeadStatus;
     query_message: string | null;

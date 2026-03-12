@@ -31,6 +31,16 @@ Route::get('/favicon.ico', function () {
     abort(404);
 });
 
+Route::get('/icons/icon-{size}.png', function ($size) {
+    $faviconPath = \App\Models\Setting::getValue('company_favicon');
+    if ($faviconPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($faviconPath)) {
+        return response()->file(storage_path('app/public/' . $faviconPath));
+    }
+    // Fallback to a default if not found
+    $fallback = public_path('vite.svg');
+    return response()->file($fallback);
+})->where('size', '192|512');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -43,15 +53,7 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-// ── iCard & Joining Letter Routes (Accessible via signed URLs) ────────────
-Route::get('/icard/download/{userId?}', [ICardController::class, 'download'])
-     ->middleware('signed')
-     ->name('icard.download');
-
-Route::get('/joining-letter/download/{userId}', [JoiningLetterController::class, 'download'])
-     ->middleware('signed')
-     ->name('joining-letter.download');
-
+// ── Admin Preview Routes (Keep in web for easier preview) ────────────
 Route::middleware(['web', 'auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/icard/{userId}/preview', [ICardController::class, 'preview'])
          ->name('icard.preview');

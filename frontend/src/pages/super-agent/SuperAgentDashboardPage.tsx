@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import {
     Users, UserCheck, FileText, Zap, Clock, IndianRupee,
-    TrendingUp, TrendingDown, ArrowRight, AlertCircle,
+    TrendingUp, TrendingDown, ArrowRight, AlertCircle, QrCode
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { superAgentApi } from '@/api/superAgent.api';
@@ -14,11 +14,11 @@ import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import DownloadJoiningLetterButton from '@/components/shared/DownloadJoiningLetterButton';
 import QrCodePreview from '@/components/shared/QrCodePreview';
 import QrScanHistory from '@/components/shared/QrScanHistory';
-import { QrCode } from 'lucide-react';
-import { OffersDashboardSection } from '@/components/offers/OffersDashboardSection';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '@/api/axios';
+import { OffersDashboardSection } from '@/components/offers/OffersDashboardSection';
+import { ReferralShareWidget } from '@/components/shared/ReferralShareWidget';
 
 function StatCard({
     label, value, icon: Icon, color, sub,
@@ -127,6 +127,9 @@ export default function SuperAgentDashboardPage() {
                     </span>
                 </div>
             </div>
+
+            {/* Referral Share Widget */}
+            <ReferralShareWidget referralCode={user?.super_agent_code || ''} role="super_agent" />
 
             {/* NEEDS ACTION BANNER — Verification Pending */}
             {pendingVerifCount > 0 && (

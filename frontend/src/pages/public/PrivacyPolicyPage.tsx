@@ -1,13 +1,27 @@
 import { Helmet } from 'react-helmet-async';
 import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
+import { useQuery } from '@tanstack/react-query';
+import { publicApi } from '@/api/public.api';
+
+const getSetting = (settingsObj: any, key: string, fallback: string) => {
+    return settingsObj?.[key] || fallback;
+};
 
 export default function PrivacyPolicyPage() {
+    const { data: settings = {} } = useQuery({
+        queryKey: ['public-settings'],
+        queryFn: publicApi.getSettings,
+    });
+
+    const companyName = getSetting(settings, 'company_name', 'SuryaMitra');
+    const companyEmail = getSetting(settings, 'company_email', 'admin@suryamitra.in');
+
     return (
         <div className="min-h-screen bg-neutral-50 flex flex-col">
             <Helmet>
-                <title>Privacy Policy — SuryaMitra | PM Surya Ghar Facilitation</title>
-                <meta name="description" content="Read SuryaMitra's Privacy Policy to understand how we collect, use, and protect personal data for PM Surya Ghar Muft Bijli Yojana applications in J&K and Ladakh." />
+                <title>Privacy Policy — {companyName} | PM Surya Ghar Facilitation</title>
+                <meta name="description" content={`Read ${companyName}'s Privacy Policy to understand how we collect, use, and protect personal data for PM Surya Ghar Muft Bijli Yojana applications in J&K and Ladakh.`} />
                 <meta name="robots" content="noindex, follow" />
             </Helmet>
             <Navbar />
@@ -21,12 +35,12 @@ export default function PrivacyPolicyPage() {
                     <div className="prose prose-blue max-w-none text-neutral-700 space-y-8">
 
                         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
-                            <strong>Important Disclaimer:</strong> SuryaMitra is a <strong>PRIVATE FACILITATION COMPANY</strong>, not a government body. We assist citizens of Jammu &amp; Kashmir and Ladakh in registering for the PM Surya Ghar Muft Bijli Yojana scheme. We are not affiliated with or endorsed by the Government of India, MNRE, or any government authority.
+                            <strong>Important Disclaimer:</strong> {companyName} is a <strong>PRIVATE FACILITATION COMPANY</strong>, not a government body. We assist citizens of Jammu &amp; Kashmir and Ladakh in registering for the PM Surya Ghar Muft Bijli Yojana scheme. We are not affiliated with or endorsed by the Government of India, MNRE, or any government authority.
                         </div>
 
                         <section>
                             <h2 className="text-xl font-bold text-dark mb-3">1. Who We Are</h2>
-                            <p>SuryaMitra is a private company that facilitates citizen registration for the PM Surya Ghar Muft Bijli Yojana — a Government of India scheme for free solar electricity. We operate exclusively in <strong>Jammu &amp; Kashmir and Ladakh</strong>. Our registered agents (SM-XXXX) and Business Development Managers (SSM-XXXX) guide beneficiaries through the application process on the official government portal (<a href="https://pmsuryaghar.gov.in" target="_blank" rel="noopener noreferrer" className="text-primary underline">pmsuryaghar.gov.in</a>).</p>
+                            <p>{companyName} is a private company that facilitates citizen registration for the PM Surya Ghar Muft Bijli Yojana — a Government of India scheme for free solar electricity. We operate exclusively in <strong>Jammu &amp; Kashmir and Ladakh</strong>. Our registered agents (SM-XXXX) and Business Development Managers (SSM-XXXX) guide beneficiaries through the application process on the official government portal (<a href="https://pmsuryaghar.gov.in" target="_blank" rel="noopener noreferrer" className="text-primary underline">pmsuryaghar.gov.in</a>).</p>
                         </section>
 
                         <section>
@@ -116,8 +130,8 @@ export default function PrivacyPolicyPage() {
                             <h2 className="text-xl font-bold text-dark mb-3">9. Contact Us</h2>
                             <p className="mb-2">For any privacy-related questions, concerns, or data requests, please contact us:</p>
                             <div className="bg-neutral-50 rounded-xl p-4 text-sm space-y-1">
-                                <p><strong>SuryaMitra — Privacy Officer</strong></p>
-                                <p>Email: <a href="mailto:admin@suryamitra.in" className="text-primary underline">admin@suryamitra.in</a></p>
+                                <p><strong>{companyName} — Privacy Officer</strong></p>
+                                <p>Email: <a href={`mailto:${companyEmail}`} className="text-primary underline">{companyEmail}</a></p>
                                 <p>Operating Region: Jammu &amp; Kashmir and Ladakh, India</p>
                                 <p>Response time: Within 7 business days</p>
                             </div>

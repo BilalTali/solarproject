@@ -197,7 +197,7 @@
     </style>
 </head>
 <body>
-    <div class="watermark">SURYAMITRA</div>
+    <div class="watermark">{{ $companyName }}</div>
 
     <table class="header-table" cellspacing="0" cellpadding="0">
         <tr>
@@ -214,9 +214,9 @@
                     @if($companyAffiliatedWith)
                       <div>Affiliated with: {{ $companyAffiliatedWith }}</div>
                     @endif
-                    <div>📞 {{ $companyPhone }}</div>
-                    <div>✉ {{ $companyEmail }}</div>
-                    <div style="color: #FF9500; font-weight: 700;">🌐 {{ $companyWebsite }}</div>
+                    <div>Phone: {{ $companyPhone }}</div>
+                    <div>Email: {{ $companyEmail }}</div>
+                    <div style="color: #FF9500; font-weight: 700;">Website: {{ $companyWebsite }}</div>
                 </div>
             </td>
         </tr>
@@ -275,7 +275,7 @@
     </div>
 
     <div class="content">
-        We welcome you to the <strong>SuryaMitra</strong> family and are confident that your contribution will be instrumental in our mission. We look forward to a mutually beneficial association.
+        We welcome you to the <strong>{{ $companyName }}</strong> family and are confident that your contribution will be instrumental in our mission. We look forward to a mutually beneficial association.
     </div>
 
     <p class="body-para" style="font-size: 10.5px; color: #555; margin-top: 12px; margin-left: 45px; margin-right: 45px;">
@@ -305,7 +305,7 @@
             letter-spacing: 1.5px;
             margin-top: 4px;
             text-transform: lowercase;
-        ">🌐 {{ $companyWebsite ?? 'suryamitra.in' }}</div>
+        ">Website: {{ $companyWebsite ?? 'suryamitra.in' }}</div>
     </div>
 </body>
 </html>

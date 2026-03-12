@@ -227,7 +227,7 @@ export default function AdminLeadsPage() {
                         <thead className="bg-slate-50 border-b border-slate-200">
                             <tr>
                                 {[
-                                    'Ref', 'Beneficiary', 'Mobile', 'State', 'District', 'Address',
+                                    'Ref', 'Beneficiary', 'Mobile', 'Referral ID', 'State', 'District', 'Address',
                                     'DISCOM', 'Consumer No.', 'Capacity', 'Roof Size', 'Monthly Bill',
                                     'Aadhaar', 'Electricity Bill', 'PAN', 'Photo', 'Solar Roof', 'Passbook',
                                     'Source', 'Business Development Manager', 'Business Development Executive', 'Status', 'Date', 'Action'
@@ -263,6 +263,13 @@ export default function AdminLeadsPage() {
                                         {/* Beneficiary */}
                                         <td className="px-4 py-3 font-medium text-slate-800 whitespace-nowrap">{lead.beneficiary_name}</td>
                                         <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.beneficiary_mobile}</td>
+                                        <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+                                            {lead.referral_agent_id ? (
+                                                <span className="inline-flex items-center gap-1 font-mono text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-100">
+                                                    {lead.referral_agent_id}
+                                                </span>
+                                            ) : '—'}
+                                        </td>
                                         <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.beneficiary_state}</td>
                                         <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.beneficiary_district}</td>
                                         <td className="px-4 py-3 text-slate-600 max-w-[200px] truncate" title={lead.beneficiary_address ?? ''}>{lead.beneficiary_address ?? '—'}</td>
@@ -389,6 +396,10 @@ export default function AdminLeadsPage() {
                                     <p className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">Mobile</p>
                                     <p className="text-xs text-slate-700">{lead.beneficiary_mobile}</p>
                                 </div>
+                                <div className="space-y-0.5">
+                                    <p className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">Referral</p>
+                                    <p className="text-xs text-indigo-600 font-mono">{lead.referral_agent_id || '—'}</p>
+                                </div>
                                 <div className="space-y-0.5 text-right">
                                     <p className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">District</p>
                                     <p className="text-xs text-slate-700 truncate">{lead.beneficiary_district}</p>
@@ -487,6 +498,9 @@ export default function AdminLeadsPage() {
                                                 {([
                                                     [<User size={13} />, 'Name', fullLead?.beneficiary_name],
                                                     [<Phone size={13} />, 'Mobile', fullLead?.beneficiary_mobile],
+                                                    [<Hash size={13} />, 'Referral ID', fullLead?.referral_agent_id ? (
+                                                        <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-mono">{fullLead.referral_agent_id}</span>
+                                                    ) : '—'],
                                                     [<MapPin size={13} />, 'State', fullLead?.beneficiary_state],
                                                     [<MapPin size={13} />, 'District', fullLead?.beneficiary_district],
                                                     [<MapPin size={13} />, 'Address', fullLead?.beneficiary_address ?? '—'],

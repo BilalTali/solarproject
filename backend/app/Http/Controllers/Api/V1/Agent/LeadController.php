@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAgentLeadRequest;
 use App\Models\Lead;
 use App\Services\LeadService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class LeadController extends Controller
@@ -68,14 +69,18 @@ class LeadController extends Controller
         $data         = $request->validated();
         $data['ulid'] = Str::ulid()->toBase32();
 
-        $lead = $this->leadService->createFromAgent($data, $request->user());
+        $lead = DB::transaction(function () use ($data, $request) {
+            $lead = $this->leadService->createFromAgent($data, $request->user());
 
-        // Upload documents
-        foreach (['aadhaar', 'electricity_bill', 'photo', 'solar_roof_photo', 'bank_passbook'] as $docKey) {
-            if ($request->hasFile($docKey)) {
-                $this->leadService->uploadDocument($lead, $request->file($docKey), $docKey, $request->user()->id);
+            // Upload documents
+            foreach (['aadhaar', 'electricity_bill', 'photo', 'solar_roof_photo', 'bank_passbook'] as $docKey) {
+                if ($request->hasFile($docKey)) {
+                    $this->leadService->uploadDocument($lead, $request->file($docKey), $docKey, $request->user()->id);
+                }
             }
-        }
+
+            return $lead;
+        });
 
         return response()->json([
             'success' => true,

@@ -1,30 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { publicApi, type PublicSettingsData } from '@/api/public.api';
-import { ArrowRight, Play, Sun, CheckCircle2 } from 'lucide-react';
-
-const DEFAULT: PublicSettingsData = {
-    company_name: 'AndleebSurya',
-    company_email: null, company_mobile: null, company_whatsapp: null,
-    company_address: null, company_slogan: null, company_logo: null,
-    company_favicon: null, company_signature: null,
-    company_website: 'https://suryamitra.in',
-    social_facebook: null, social_twitter: null, social_instagram: null, social_youtube: null,
-    hero_headline: 'Get 300 Units FREE Electricity Every Month',
-    hero_subheadline: 'Government of India scheme — up to ₹78,000 subsidy for rooftop solar installation. We guide you end-to-end, completely free.',
-
-    hero_video: null,
-    hero_stats_json: null,
-    how_it_works_json: null,
-    why_choose_us_json: null,
-    calculator_headline: null, calculator_subheadline: null, calculator_values_json: null,
-    eligibility_headline: null, eligibility_subheadline: null, eligibility_questions_json: null,
-    eligibility_success_title: null, eligibility_success_desc: null,
-    eligibility_error_title: null, eligibility_error_desc: null,
-    footer_about_text: null, footer_copyright: null, footer_disclaimer: null,
-};
+import { publicApi } from '@/api/public.api';
+import { DEFAULT_SETTINGS } from '@/hooks/useSettings';
+import { ArrowRight, Play } from 'lucide-react';
 
 export default function HeroSection() {
-    const { data: settings = DEFAULT } = useQuery({
+    const { data: settings = DEFAULT_SETTINGS } = useQuery({
         queryKey: ['public-settings'],
         queryFn: publicApi.getSettings,
     });
@@ -64,7 +44,7 @@ export default function HeroSection() {
                         </div>
 
                         <h1 className="font-display font-black text-4xl sm:text-5xl md:text-7xl text-white leading-[1.1] mb-8">
-                            {((settings?.hero_headline ?? DEFAULT.hero_headline) || '').split(' ').map((word, i) => (
+                            {((settings?.hero_headline ?? DEFAULT_SETTINGS.hero_headline) || '').split(' ').map((word: string, i: number) => (
                                 <span key={i} className={word.toLowerCase() === 'free' || word.toLowerCase() === 'units' ? 'text-accent text-glow' : ''}>
                                     {word}{' '}
                                 </span>
@@ -87,45 +67,6 @@ export default function HeroSection() {
                         </div>
                     </div>
 
-                    {/* Visual Element / Glass Card Widget */}
-                    <div className="hidden lg:block animate-float" style={{ animationDuration: '8s' }}>
-                        <div className="glass-card p-1 items-center justify-center overflow-hidden">
-                            <div className="bg-dark/20 rounded-[22px] p-8 backdrop-blur-3xl border border-white/5 relative overflow-hidden">
-                                {/* Inner decorative light */}
-                                <div className="absolute -top-24 -right-24 w-48 h-48 bg-accent/20 blur-[60px] rounded-full" />
-
-                                <div className="relative z-10 space-y-8">
-                                    <div className="flex items-center justify-between border-b border-white/10 pb-6">
-                                        <div>
-                                            <div className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-1">Max Subsidy</div>
-                                            <div className="text-4xl font-display font-black text-white">₹78,000</div>
-                                        </div>
-                                        <div className="h-14 w-14 rounded-2xl grad-accent flex items-center justify-center shadow-glow">
-                                            <Sun className="text-white w-8 h-8" />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-8">
-                                        <div>
-                                            <div className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-1">System Life</div>
-                                            <div className="text-2xl font-display font-bold text-white">25 Years</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-1">Payback</div>
-                                            <div className="text-2xl font-display font-bold text-white">48 Months</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                                        <div className="flex items-center gap-3 text-sm text-white/60">
-                                            <CheckCircle2 className="text-success w-5 h-5" />
-                                            <span>Fully Government Funded</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 

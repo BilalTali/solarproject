@@ -14,7 +14,7 @@ export default function Footer() {
     });
 
     return (
-        <footer className="bg-dark text-white pt-12 pb-6">
+        <footer className="bg-gradient-to-b from-slate-900 to-[#020617] text-white pt-12 pb-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-white/10">
                     {/* Brand */}
@@ -69,6 +69,7 @@ export default function Footer() {
                             <Link to="/privacy-policy" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'footer_link_privacy', 'Privacy Policy')}</Link>
                             <Link to="/terms-conditions" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'footer_link_terms', 'Terms & Conditions')}</Link>
                             <Link to="/refund-policy" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'footer_link_refund', 'Refund Policy')}</Link>
+                            <Link to="/user-manual" className="text-sm text-neutral-600 hover:text-accent transition-colors">User Manual Guide</Link>
                         </div>
                     </div>
                 </div>

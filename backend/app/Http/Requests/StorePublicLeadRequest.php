@@ -30,7 +30,7 @@ class StorePublicLeadRequest extends FormRequest
             'consumer_number' => 'nullable|string|max:100',
             'discom_name' => 'required|string|max:255',
             'roof_size' => 'nullable|in:less_100,100_200,200_300,300_plus',
-            'system_capacity' => 'required|in:1kw,2kw,3kw,above_3kw',
+            'system_capacity' => 'required|in:1kw,2kw,3kw,3.3kw,4kw,5kw,5.5kw,6kw,7kw,8kw,9kw,10kw,above_10kw,above_3kw',
             'monthly_bill_amount' => 'nullable|numeric|min:0',
             'query_message' => 'nullable|string',
             'aadhaar'          => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
@@ -39,6 +39,7 @@ class StorePublicLeadRequest extends FormRequest
             'other'            => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'solar_roof_photo' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'bank_passbook'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'referral_agent_id' => 'nullable|string|max:20',
         ];
     }
 
