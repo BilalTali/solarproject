@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
+    baseURL: isProduction 
+        ? 'https://andleebsurya.in/api/v1' 
+        : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'),
     headers: {
         Accept: 'application/json',
     },
