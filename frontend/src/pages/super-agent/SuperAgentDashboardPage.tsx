@@ -176,7 +176,7 @@ export default function SuperAgentDashboardPage() {
             )}
 
             {/* ID Card & Letters section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DownloadIdCardButton variant="card" />
                 <DownloadJoiningLetterButton user={user!} variant="card" />
             </div>
@@ -319,6 +319,27 @@ export default function SuperAgentDashboardPage() {
                         <QrScanHistory userId={user!.id} role="super_agent" isSelfView={true} />
                     </div>
                 </div>
+            </div>
+
+            {/* Mobile Sticky Action Bar */}
+            <div
+                className="fixed bottom-0 left-0 right-0 z-50 flex gap-3 px-4 md:hidden"
+                style={{
+                    background: '#04111F',
+                    borderTop: '2px solid #FF9500',
+                    paddingTop: '12px',
+                    paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+                }}
+            >
+                <DownloadIdCardButton
+                    variant="button"
+                    className="flex-1 h-[52px] !bg-[#FF9500] !text-[#04111F] !rounded-xl !shadow-none border-none font-bold text-sm"
+                />
+                <DownloadJoiningLetterButton
+                    user={user!}
+                    variant="outline"
+                    className="flex-1 h-[52px] !border-[#FF9500] !text-white !bg-transparent !rounded-xl font-bold text-sm"
+                />
             </div>
         </div>
     );

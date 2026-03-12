@@ -73,7 +73,7 @@ export default function AgentDashboardPage() {
             </div>
 
             {/* ID Card & Letters section */}
-            <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DownloadIdCardButton variant="card" />
                 <DownloadJoiningLetterButton user={user!} variant="card" />
             </div>

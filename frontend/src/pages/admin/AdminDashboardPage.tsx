@@ -58,11 +58,32 @@ export default function AdminDashboardPage() {
                     <h1 className="font-display font-bold text-2xl text-dark">Admin Dashboard</h1>
                     <p className="text-neutral-600 text-sm mt-1">Overview of all portal activity</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="hidden md:flex gap-3">
                     <DownloadIdCardButton />
                     <DownloadJoiningLetterButton user={user!} variant="button" />
                     <Link to="/admin/leads" className="btn-primary text-sm py-2 px-4">View All Leads</Link>
                 </div>
+            </div>
+
+            {/* Mobile Sticky Action Bar */}
+            <div
+                className="fixed bottom-0 left-0 right-0 z-50 flex gap-3 px-4 md:hidden"
+                style={{
+                    background: '#04111F',
+                    borderTop: '2px solid #FF9500',
+                    paddingTop: '12px',
+                    paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+                }}
+            >
+                <DownloadIdCardButton
+                    variant="button"
+                    className="flex-1 h-[52px] !bg-[#FF9500] !text-[#04111F] !rounded-xl !shadow-none border-none font-bold text-sm"
+                />
+                <DownloadJoiningLetterButton
+                    user={user!}
+                    variant="outline"
+                    className="flex-1 h-[52px] !border-[#FF9500] !text-white !bg-transparent !rounded-xl font-bold text-sm"
+                />
             </div>
 
             {/* Stats Grid */}
