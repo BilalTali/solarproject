@@ -35,7 +35,6 @@ interface Props {
 export default function ForgotPasswordForm({ role, onBack }: Props) {
     const [step, setStep] = useState<FPStep>('email');
     const [identifier, setIdentifier] = useState('');
-    const [debugOtp, setDebugOtp] = useState<string | null>(null);
     const [showPw, setShowPw] = useState(false);
     const [showConfPw, setShowConfPw] = useState(false);
 
@@ -45,12 +44,8 @@ export default function ForgotPasswordForm({ role, onBack }: Props) {
 
     const sendMut = useMutation({
         mutationFn: (d: EmailData) => authApi.forgotPassword({ identifier: d.identifier, role }),
-        onSuccess: (res, vars) => {
+        onSuccess: (_res, vars) => {
             setIdentifier(vars.identifier);
-            if (res.debug_otp) {
-                setDebugOtp(res.debug_otp);
-                otpForm.setValue('otp', res.debug_otp);
-            }
             setStep('otp');
             toast.success('OTP sent! Check your registered email.');
         },
@@ -145,7 +140,6 @@ export default function ForgotPasswordForm({ role, onBack }: Props) {
                 <div className="text-center bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-2">
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">OTP sent to</p>
                     <p className="font-bold text-slate-900 text-sm">{identifier}</p>
-                    {debugOtp && <p className="text-xs text-amber-600 mt-1 font-mono">[DEV] OTP: {debugOtp}</p>}
                 </div>
 
                 <div>

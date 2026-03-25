@@ -59,9 +59,6 @@ export default function UnifiedLoginForm() {
                 setCredentials(variables);
                 setStep(2);
                 toast.success('Credentials verified. OTP sent to your email.');
-                if (res.debug_otp) {
-                    step2Form.setValue('otp', res.debug_otp);
-                }
             } else {
                 toast.error(res.message || 'Failed to verify credentials');
             }

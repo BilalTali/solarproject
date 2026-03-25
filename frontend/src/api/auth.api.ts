@@ -7,7 +7,6 @@ export const authApi = {
         return {
             success: res.data.success,
             message: res.data.message,
-            debug_otp: (res.data as any).debug_otp
         };
     },
 
