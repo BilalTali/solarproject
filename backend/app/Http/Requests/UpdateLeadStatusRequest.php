@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -14,7 +15,7 @@ class UpdateLeadStatusRequest extends FormRequest
     {
         return [
             'status' => 'required|in:new,registered,installed,rejected,on_hold,completed',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string',
         ];
     }
 }

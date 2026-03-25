@@ -34,7 +34,7 @@ return new class extends Migration
                 'education_level',
                 'education_cert',
                 'resume',
-                'mou_signed'
+                'mou_signed',
             ]);
         });
     }

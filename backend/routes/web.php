@@ -1,11 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\V1\ICardController;
+use App\Http\Controllers\Api\V1\JoiningLetterController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\Api\V1\ICardController;
-use App\Http\Controllers\Api\V1\JoiningLetterController;
 
 // Public QR Verification Page
 Route::get('/verify/{token}', [\App\Http\Controllers\QrVerificationController::class, 'verify'])
@@ -26,7 +26,7 @@ Route::get('/', function () {
 Route::get('/favicon.ico', function () {
     $faviconPath = \App\Models\Setting::getValue('company_favicon', 'branding/favicon.ico');
     if ($faviconPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($faviconPath)) {
-        return response()->file(storage_path('app/public/' . $faviconPath));
+        return response()->file(storage_path('app/public/'.$faviconPath));
     }
     abort(404);
 });
@@ -34,10 +34,11 @@ Route::get('/favicon.ico', function () {
 Route::get('/icons/icon-{size}.png', function ($size) {
     $faviconPath = \App\Models\Setting::getValue('company_favicon');
     if ($faviconPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($faviconPath)) {
-        return response()->file(storage_path('app/public/' . $faviconPath));
+        return response()->file(storage_path('app/public/'.$faviconPath));
     }
     // Fallback to a default if not found
     $fallback = public_path('vite.svg');
+
     return response()->file($fallback);
 })->where('size', '192|512');
 
@@ -56,7 +57,7 @@ require __DIR__.'/auth.php';
 // ── Admin Preview Routes (Keep in web for easier preview) ────────────
 Route::middleware(['web', 'auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/icard/{userId}/preview', [ICardController::class, 'preview'])
-         ->name('icard.preview');
+        ->name('icard.preview');
     Route::get('/admin/joining-letter/{user}/preview', [JoiningLetterController::class, 'preview'])
-         ->name('joining-letter.preview');
+        ->name('joining-letter.preview');
 });

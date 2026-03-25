@@ -2,162 +2,67 @@
 
 namespace App\Services;
 
+use App\Exceptions\CommissionAccessDeniedException;
+use App\Exceptions\CommissionAlreadyExistsException;
+use App\Exceptions\CommissionLockedException;
+use App\Exceptions\LeadNotCompletedException;
 use App\Models\Commission;
 use App\Models\Lead;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use App\Exceptions\CommissionAlreadyExistsException;
-use App\Exceptions\CommissionLockedException;
-use App\Exceptions\CommissionAccessDeniedException;
-use App\Exceptions\LeadNotCompletedException;
 
 class CommissionService
 {
     /**
-     * ENTER SUPER AGENT COMMISSION
-     * Called by Admin after marking lead as completed.
-     * Creates commission record where payee = super agent of that lead's agent.
+     * UNIFIED COMMISSION ENTRY
+     * Handles all roles (Super Agent, Agent, Enumerator) based on the hierarchy chain.
      */
-    public function enterSuperAgentCommission(
+    public function enterCommission(
         Lead $lead,
+        User $payee,
         float $amount,
-        User $admin
+        User $payer
     ): Commission {
-        if ($lead->status !== 'completed') {
-            throw new LeadNotCompletedException('Commission can only be entered for completed leads.');
+        if (! in_array($lead->status, ['completed', 'installed'])) {
+            throw new LeadNotCompletedException('Commission can only be entered for installed or completed leads.');
         }
 
-        $existing = Commission::withTrashed()->where('lead_id', $lead->id)
-                               ->where('payee_role', 'super_agent')
-                               ->first();
+        // Authorization logic based on parentage
+        if (! $payer->isAdmin() && (int) $payee->parent_id !== (int) $payer->id) {
+            throw new CommissionAccessDeniedException('You can only enter commissions for your direct subordinates.');
+        }
+
+        $existing = Commission::query()->withTrashed()->where(fn($q) => $q->where('lead_id', $lead->id))
+            ->where(fn($q) => $q->where('payee_id', $payee->id))
+            ->first();
+
         if ($existing) {
             if ($existing->isPaid()) {
-                throw new CommissionAlreadyExistsException('Super agent commission already paid for this lead.');
+                throw new CommissionAlreadyExistsException('Commission already paid for this lead.');
             }
-            // If it exists but is unpaid (even if soft-deleted), we force delete it to allow fresh entry
             $existing->forceDelete();
         }
 
-        $agent = $lead->assignedAgent;
-        $superAgent = null;
-
-        if ($agent) {
-            $superAgent = $agent->superAgent;
-        } else {
-            // Fallback for leads created by Super Agent directly (no agent assigned)
-            $superAgentId = $lead->assigned_super_agent_id ?? $lead->created_by_super_agent_id;
-            if ($superAgentId) {
-                $superAgent = User::find($superAgentId);
-            }
-        }
-
-        if (!$superAgent) {
-            if ($agent) {
-                // If there's an agent but no super agent, it's a direct agent
-                return $this->enterDirectAgentCommission($lead, $amount, $admin);
-            }
-            throw new \InvalidArgumentException('Lead has no assigned agent or super agent. Cannot enter commission.');
-        }
-
-        return DB::transaction(function () use ($lead, $amount, $admin, $superAgent) {
+        return DB::transaction(function () use ($lead, $payee, $amount, $payer) {
             $commission = Commission::create([
-                'lead_id'    => $lead->id,
-                'payee_id'   => $superAgent->id,
-                'payee_role' => 'super_agent',
-                'amount'     => $amount,
-                'entered_by' => $admin->id,
-                'locked_at'  => now()->addHours(24),
+                'lead_id' => $lead->id,
+                'payee_id' => $payee->id,
+                'payee_role' => $payee->role,
+                'amount' => $amount,
+                'entered_by' => $payer->id,
+                'locked_at' => now()->addHours(24),
             ]);
 
             $this->refreshLeadCommissionStatus($lead);
-            $this->notifySuperAgentCommissionEntered($commission, $superAgent, $lead, $amount, $admin);
-
-            return $commission;
-        });
-    }
-
-    /**
-     * ENTER AGENT COMMISSION (by Super Agent)
-     */
-    public function enterAgentCommission(
-        Lead $lead,
-        float $amount,
-        User $superAgent
-    ): Commission {
-        if ($lead->status !== 'completed') {
-            throw new LeadNotCompletedException('Commission can only be entered for completed leads.');
-        }
-
-        $agent = $lead->assignedAgent;
-        if (!$agent) {
-            throw new \InvalidArgumentException('Lead has no assigned agent.');
-        }
-
-        if ((int)$agent->super_agent_id !== (int)$superAgent->id) {
-            throw new CommissionAccessDeniedException(
-                'You can only enter commissions for agents in your team.'
+            
+            // Notify Payee
+            app(NotificationService::class)->send(
+                $payee->id,
+                'commission_entered',
+                '💰 Commission Entered',
+                "{$payer->name} has entered ₹{$amount} commission for lead {$lead->ulid}.",
+                ['lead_ulid' => $lead->ulid, 'commission_id' => $commission->id, 'amount' => $amount]
             );
-        }
-
-        $existing = Commission::withTrashed()->where('lead_id', $lead->id)
-                               ->where('payee_role', 'agent')
-                               ->first();
-        if ($existing) {
-            if ($existing->isPaid()) {
-                throw new CommissionAlreadyExistsException('Agent commission already paid for this lead.');
-            }
-            $existing->forceDelete();
-        }
-
-        return DB::transaction(function () use ($lead, $amount, $superAgent, $agent) {
-            $commission = Commission::create([
-                'lead_id'    => $lead->id,
-                'payee_id'   => $agent->id,
-                'payee_role' => 'agent',
-                'amount'     => $amount,
-                'entered_by' => $superAgent->id,
-                'locked_at'  => now()->addHours(24),
-            ]);
-
-            $this->refreshLeadCommissionStatus($lead);
-            $this->notifyAgentCommissionEntered($commission, $agent, $lead, $amount, $superAgent);
-
-            return $commission;
-        });
-    }
-
-    /**
-     * ENTER DIRECT AGENT COMMISSION (by Admin when agent has no super agent)
-     */
-    public function enterDirectAgentCommission(
-        Lead $lead,
-        float $amount,
-        User $admin
-    ): Commission {
-        $agent = $lead->assignedAgent;
-
-        $existing = Commission::withTrashed()->where('lead_id', $lead->id)
-                               ->where('payee_role', 'agent')
-                               ->first();
-        if ($existing) {
-            if ($existing->isPaid()) {
-                throw new CommissionAlreadyExistsException('Agent commission already paid for this lead.');
-            }
-            $existing->forceDelete();
-        }
-
-        return DB::transaction(function () use ($lead, $amount, $admin, $agent) {
-            $commission = Commission::create([
-                'lead_id'    => $lead->id,
-                'payee_id'   => $agent->id,
-                'payee_role' => 'agent',
-                'amount'     => $amount,
-                'entered_by' => $admin->id,
-                'locked_at'  => now()->addHours(24),
-            ]);
-
-            $this->refreshLeadCommissionStatus($lead);
-            $this->notifyAgentDirectCommissionEntered($commission, $agent, $lead, $amount, $admin);
 
             return $commission;
         });
@@ -171,7 +76,7 @@ class CommissionService
         float $newAmount,
         User $editor
     ): Commission {
-        if ($commission->isLocked() && !$editor->isAdmin()) {
+        if ($commission->isLocked() && ! $editor->isAdmin()) {
             throw new CommissionLockedException('This commission cannot be edited. It was locked 24 hours after creation.');
         }
 
@@ -179,12 +84,15 @@ class CommissionService
             throw new CommissionLockedException('Paid commissions cannot be edited.');
         }
 
-        if ($editor->id !== $commission->entered_by && !$editor->isAdmin()) {
+        $isParent = (int) $commission->payee?->parent_id === (int) $editor->id;
+        $isEnterer = (int) $commission->entered_by === (int) $editor->id;
+
+        if (!$isParent && !$isEnterer && !$editor->isAdmin()) {
             throw new CommissionAccessDeniedException('You are not authorized to edit this commission.');
         }
 
         $commission->update([
-            'amount'     => $newAmount,
+            'amount' => $newAmount,
             'entered_by' => $editor->id,
         ]);
 
@@ -193,26 +101,34 @@ class CommissionService
         return $commission;
     }
 
+    // Removed role-specific enterEnumeratorCommission (unified into enterCommission)
+
     /**
      * MARK COMMISSION AS PAID
+     * Hierarchy-aware: Parent can pay their direct children. Admin can pay anyone.
      */
     public function markAsPaid(
         Commission $commission,
         array $paymentData,
         User $payer
     ): Commission {
-        if ($commission->isForSuperAgent() && !$payer->isAdmin()) {
-            throw new CommissionAccessDeniedException('Only admin can mark super agent commission as paid.');
-        }
+        $payee = $commission->payee;
 
-        if ($commission->isForAgent() && !$payer->isSuperAgent() && !$payer->isAdmin()) {
-            throw new CommissionAccessDeniedException('Only a super agent (or admin for direct) can mark agent commission as paid.');
-        }
+        if (! $payer->isAdmin() && (int) $payee->parent_id !== (int) $payer->id) {
+            // Legacy fallbacks for safety if parent_id is somehow missing
+            $isAuthorized = false;
+            
+            if ($commission->isForSuperAgent()) {
+                $isAuthorized = false; // Admin only
+            } elseif ($commission->isForAgent()) {
+                $isAuthorized = (int) $payee->super_agent_id === (int) $payer->id;
+            } elseif ($payee->role === 'enumerator') {
+                $isAuthorized = ((int)$payee->created_by_agent_id === (int)$payer->id) || 
+                                ((int)$payee->created_by_super_agent_id === (int)$payer->id);
+            }
 
-        if ($commission->isForAgent() && $payer->isSuperAgent()) {
-            $agent = $commission->payee;
-            if ((int)$agent->super_agent_id !== (int)$payer->id) {
-                throw new CommissionAccessDeniedException('You can only mark payments for agents in your team.');
+            if (! $isAuthorized) {
+                throw new CommissionAccessDeniedException('You can only mark payments for your direct subordinates.');
             }
         }
 
@@ -221,12 +137,12 @@ class CommissionService
         }
 
         $commission->update([
-            'payment_status'    => 'paid',
-            'paid_at'           => now(),
-            'paid_by'           => $payer->id,
-            'payment_method'    => $paymentData['payment_method'],
+            'payment_status' => 'paid',
+            'paid_at' => now(),
+            'paid_by' => $payer->id,
+            'payment_method' => $paymentData['payment_method'],
             'payment_reference' => $paymentData['payment_reference'],
-            'payment_notes'     => $paymentData['payment_notes'] ?? null,
+            'payment_notes' => $paymentData['payment_notes'] ?? null,
         ]);
 
         $this->notifyPaymentMade($commission);
@@ -240,7 +156,7 @@ class CommissionService
      */
     public function revokeUnpaidCommissions(Lead $lead, ?User $revokedBy = null): void
     {
-        $commissions = Commission::where('lead_id', $lead->id)->unpaid()->get();
+        $commissions = Commission::query()->where(fn ($q) => $q->where('lead_id', $lead->id))->unpaid()->get();
 
         foreach ($commissions as $commission) {
             $this->notifyCommissionRevoked($commission, $revokedBy);
@@ -253,55 +169,125 @@ class CommissionService
     }
 
     /**
-     * Re-calculate and update lead.commission_entry_status
+     * DYNAMIC COMMISSION STATUS REFRESH
+     * Analyzes the hierarchy chain to see if all required commissions are entered.
      */
     private function refreshLeadCommissionStatus(Lead $lead): void
     {
         $lead->refresh();
-        $hasSA    = Commission::where('lead_id', $lead->id)->where('payee_role', 'super_agent')->exists();
-        $hasAgent = Commission::where('lead_id', $lead->id)->where('payee_role', 'agent')->exists();
+        $submitter = $lead->submittedByEnumerator ?? $lead->submittedByAgent ?? $lead->createdBySuperAgent;
+        
+        if (! $submitter) {
+            $lead->update(['commission_entry_status' => 'none']);
+            return;
+        }
 
+        $hierarchyService = app(HierarchyService::class);
+        $chain = $hierarchyService->getCommissionChain($submitter);
+        
+        // Subject (Submitter) often gets commission too (if Enum)
+        $requiredPayees = [];
+        if ($submitter->role === 'enumerator') {
+            $requiredPayees[] = $submitter->id;
+        }
+        foreach ($chain as $user) {
+            $requiredPayees[] = $user->id;
+        }
+
+        $enteredCount = Commission::query()->where(fn($q) => $q->where('lead_id', $lead->id))->whereIn('payee_id', $requiredPayees)->count();
+        
         $status = match (true) {
-            $hasSA && $hasAgent => 'both_entered',
-            $hasSA              => 'super_agent_entered',
-            $hasAgent           => 'agent_entered',
-            default             => 'none',
+            $enteredCount === 0 => 'none',
+            $enteredCount === count($requiredPayees) => 'all_entered',
+            default => 'partially_entered',
         };
 
         $lead->update(['commission_entry_status' => $status]);
     }
 
     /**
+     * DYNAMIC COMMISSION PROMPTS
+     * Returns a list of required commissions for the given lead.
+     */
+    public function getCommissionStatus(Lead $lead): array
+    {
+        if (! in_array($lead->status, ['completed', 'installed'])) {
+            return [];
+        }
+
+        $submitter = $lead->submittedByEnumerator ?? $lead->submittedByAgent ?? $lead->createdBySuperAgent;
+        if (! $submitter) return [];
+
+        $hierarchyService = app(HierarchyService::class);
+        $chain = $hierarchyService->getCommissionChain($submitter);
+        
+        $prompts = [];
+        
+        // 1. Submitter Commission (Enumerator or Agent acting as submitter)
+        if ($submitter->isEnumerator() || $submitter->isAgent()) {
+            $prompts[] = $this->buildPrompt($lead, $submitter, $submitter->role);
+        }
+
+        // 2. Upstream Hierarchy (Agent, Super Agent)
+        foreach ($chain as $user) {
+            $prompts[] = $this->buildPrompt($lead, $user, $user->role);
+        }
+
+        return $prompts;
+    }
+
+    private function buildPrompt(Lead $lead, User $payee, string $role): array
+    {
+        $comm = Commission::query()->where(fn($q) => $q->where('lead_id', $lead->id))->where(fn($q) => $q->where('payee_id', $payee->id))->first();
+        
+        return [
+            'payee_id' => $payee->id,
+            'payee_name' => $payee->name,
+            'payee_role' => $role,
+            'payee_code' => $payee->role === 'super_agent' ? $payee->super_agent_code : ($payee->role === 'agent' ? $payee->agent_id : $payee->enumerator_id),
+            'payer_id' => $payee->parent_id,
+            'payer_name' => $payee->parent?->name ?? 'Admin',
+            'status' => $comm ? 'entered' : 'pending',
+            'amount' => $comm ? (float)$comm->amount : null,
+            'payment_status' => $comm ? $comm->payment_status : null,
+            'commission_id' => $comm ? $comm->id : null,
+            'is_editable' => $comm ? (! $comm->isLocked() && ! $comm->isPaid()) : true,
+        ];
+    }
+
+    /**
      * GET COMMISSION DATA FOR A LEAD
+     * Returns a predictable list of all commissions associated with the lead.
      */
     public function getLeadCommissions(Lead $lead): array
     {
-        $saCommission    = Commission::where('lead_id', $lead->id)->where('payee_role', 'super_agent')->with('payee', 'enteredBy')->first();
-        $agentCommission = Commission::where('lead_id', $lead->id)->where('payee_role', 'agent')->with('payee', 'enteredBy')->first();
+        $commissions = Commission::query()
+            ->where(fn ($q) => $q->where('lead_id', $lead->id))
+            ->with(['payee', 'enteredBy'])
+            ->get();
 
+        return $commissions->map(fn($c) => $this->formatCommissionForResponse($c))->toArray();
+    }
+
+    private function formatCommissionForResponse(Commission $c): array
+    {
         return [
-            'super_agent_commission' => $saCommission ? [
-                'id'             => $saCommission->id,
-                'amount'         => (float) $saCommission->amount,
-                'payee_name'     => $saCommission->payee->name,
-                'payee_code'     => $saCommission->payee->super_agent_code ?? null,
-                'entered_by'     => $saCommission->enteredBy->name,
-                'entered_at'     => $saCommission->created_at->toIso8601String(),
-                'payment_status' => $saCommission->payment_status,
-                'is_locked'      => $saCommission->isLocked(),
-                'is_editable'    => !$saCommission->isLocked(),
-            ] : null,
-            'agent_commission' => $agentCommission ? [
-                'id'             => $agentCommission->id,
-                'amount'         => (float) $agentCommission->amount,
-                'payee_name'     => $agentCommission->payee->name,
-                'payee_code'     => $agentCommission->payee->agent_id ?? null,
-                'entered_by'     => $agentCommission->enteredBy->name,
-                'entered_at'     => $agentCommission->created_at->toIso8601String(),
-                'payment_status' => $agentCommission->payment_status,
-                'is_locked'      => $agentCommission->isLocked(),
-                'is_editable'    => !$agentCommission->isLocked(),
-            ] : null,
+            'id' => $c->id,
+            'amount' => (float) $c->amount,
+            'payee_id' => $c->payee_id,
+            'payee_role' => $c->payee_role,
+            'payee_name' => $c->payee->name,
+            'payee_code' => match($c->payee_role) {
+                'super_agent' => $c->payee?->super_agent_code ?? '',
+                'agent' => $c->payee?->agent_id ?? '',
+                'enumerator' => $c->payee?->enumerator_id ?? '',
+                default => '',
+            },
+            'entered_by' => $c->enteredBy->name,
+            'entered_at' => $c->created_at->toIso8601String(),
+            'payment_status' => $c->payment_status,
+            'is_locked' => $c->isLocked(),
+            'is_editable' => ! $c->isLocked(),
         ];
     }
 

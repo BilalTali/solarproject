@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1\SuperAgent;
 
 use App\Http\Controllers\Controller;
@@ -17,25 +18,25 @@ class AgentController extends Controller
     {
         $superAgent = $request->user();
 
-        $query = User::agents()
-            ->where('super_agent_id', $superAgent->id)
+        $query = User::query()->agents()
+            ->where(fn ($q) => $q->where('super_agent_id', $superAgent->id))
             ->with(['commissions', 'assignedLeads']);
 
         if ($request->search) {
             $search = str_replace(['%', '_'], ['\%', '\_'], $request->search);
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('mobile', 'like', "%{$search}%")
-                  ->orWhere('agent_id', 'like', "%{$search}%");
+                $q->where(fn ($q2) => $q2->where('name', 'like', "%{$search}%"))
+                    ->orWhere(fn ($q2) => $q2->where('mobile', 'like', "%{$search}%"))
+                    ->orWhere(fn ($q2) => $q2->where('agent_id', 'like', "%{$search}%"));
             });
         }
 
         if ($request->status) {
-            $query->where('status', $request->status);
+            $query->where(fn ($q) => $q->where('status', $request->status));
         }
 
         if ($request->district) {
-            $query->where('district', $request->district);
+            $query->where(fn ($q) => $q->where('district', $request->district));
         }
 
         $agents = $query->withCount(['assignedLeads as total_leads'])
@@ -60,7 +61,7 @@ class AgentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Agent added to your team. Awaiting Admin approval before they can log in.',
-            'data'    => $agent->fresh(),
+            'data' => $agent->fresh(),
         ], 201);
     }
 
@@ -69,24 +70,24 @@ class AgentController extends Controller
     {
         $superAgent = $request->user();
 
-        $agent = User::agents()
-            ->where('id', $agentId)
-            ->where('super_agent_id', $superAgent->id)
+        $agent = User::query()->agents()
+            ->where(fn ($q) => $q->where('id', $agentId))
+            ->where(fn ($q) => $q->where('super_agent_id', $superAgent->id))
             ->with(['commissions.lead', 'assignedLeads'])
             ->withCount(['assignedLeads as total_leads'])
             ->firstOrFail();
 
         $stats = [
-            'total_leads'       => $agent->assignedLeads()->count(),
-            'installed'         => $agent->assignedLeads()->where('status', 'installed')->count(),
-            'completed'         => $agent->assignedLeads()->where('status', 'completed')->count(),
-            'commission_earned' => $agent->commissions()->where('payment_status', 'paid')->sum('amount'),
-            'commission_pending'=> $agent->commissions()->where('payment_status', 'unpaid')->sum('amount'),
+            'total_leads' => $agent->assignedLeads()->count(),
+            'installed' => $agent->assignedLeads()->where(fn ($q) => $q->where('status', 'installed'))->count(),
+            'completed' => $agent->assignedLeads()->where(fn ($q) => $q->where('status', 'completed'))->count(),
+            'commission_earned' => $agent->commissions()->where(fn ($q) => $q->where('payment_status', 'paid'))->sum('amount'),
+            'commission_pending' => $agent->commissions()->where(fn ($q) => $q->where('payment_status', 'unpaid'))->sum('amount'),
         ];
 
         return response()->json([
             'success' => true,
-            'data'    => array_merge($agent->toArray(), ['stats' => $stats]),
+            'data' => array_merge($agent->toArray(), ['stats' => $stats]),
         ]);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -11,24 +12,24 @@ class EnsureIsAgent
     {
         $user = $request->user();
 
-        if (!$user || $user->role !== 'agent') {
+        if (! $user || $user->role !== 'agent') {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized. Agent access required.'
+                'message' => 'Unauthorized. Agent access required.',
             ], 403);
         }
 
         if ($user->status === 'pending') {
             return response()->json([
                 'success' => false,
-                'message' => 'Account pending approval.'
+                'message' => 'Account pending approval.',
             ], 403);
         }
 
         if ($user->status === 'inactive') {
             return response()->json([
                 'success' => false,
-                'message' => 'Account suspended.'
+                'message' => 'Account suspended.',
             ], 403);
         }
 

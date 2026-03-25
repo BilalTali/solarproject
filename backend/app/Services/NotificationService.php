@@ -1,7 +1,12 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Notification;
+use App\Models\User;
+use App\Models\Offer;
+use App\Models\OfferRedemption;
+use App\Models\SuperAgentAbsorbedPoints;
 
 class NotificationService
 {
@@ -9,10 +14,10 @@ class NotificationService
     {
         return Notification::create([
             'user_id' => $userId,
-            'type'    => $type,
-            'title'   => $title,
+            'type' => $type,
+            'title' => $title,
             'message' => $message,
-            'data'    => $data,
+            'data' => $data,
         ]);
     }
 
@@ -23,7 +28,7 @@ class NotificationService
 
     public function notifyAdmins(string $type, string $title, string $message, array $data = []): void
     {
-        $admins = \App\Models\User::admins()->get();
+        $admins = User::query()->admins()->get();
         foreach ($admins as $admin) {
             $this->create($admin->id, $type, $title, $message, $data);
         }
@@ -31,16 +36,16 @@ class NotificationService
 
     // --- Offer specific ---
 
-    public function notifyOfferRedeemable(\App\Models\Offer $offer, \App\Models\User $user, int $pendingCount): void
+    public function notifyOfferRedeemable(Offer $offer, User $user, int $pendingCount): void
     {
-        $times = $pendingCount > 1 ? "{$pendingCount} times" : "once";
+        $times = $pendingCount > 1 ? "{$pendingCount} times" : 'once';
         $this->create($user->id, 'offer_redeemable',
             "🎁 You can redeem: {$offer->title}",
             "You've earned enough installations to claim your prize ({$offer->prize_label}) — {$times}! Go to Offers to redeem."
         );
     }
 
-    public function notifyOfferMilestone(\App\Models\Offer $offer, \App\Models\User $user, int $toNext, int $pendingCount): void
+    public function notifyOfferMilestone(Offer $offer, User $user, int $toNext, int $pendingCount): void
     {
         $extra = $pendingCount > 0 ? " (+{$pendingCount} ready to redeem!)" : '';
         $this->create($user->id, 'offer_milestone',
@@ -49,7 +54,7 @@ class NotificationService
         );
     }
 
-    public function notifyAdminOfferRedemptionClaimed(\App\Models\Offer $offer, \App\Models\User $agent, \App\Models\OfferRedemption $r): void
+    public function notifyAdminOfferRedemptionClaimed(Offer $offer, User $agent, OfferRedemption $r): void
     {
         $this->notifyAdmins('offer_redemption_claimed',
             "🎁 Redemption #{$r->redemption_number} — {$offer->title}",
@@ -57,7 +62,7 @@ class NotificationService
         );
     }
 
-    public function notifyAgentRedemptionApproved(\App\Models\Offer $offer, \App\Models\User $agent, \App\Models\OfferRedemption $r): void
+    public function notifyAgentRedemptionApproved(Offer $offer, User $agent, OfferRedemption $r): void
     {
         $this->create($agent->id, 'redemption_approved',
             "✅ Prize approved — {$offer->prize_label}",
@@ -65,23 +70,23 @@ class NotificationService
         );
     }
 
-    public function notifyAgentPrizeDelivered(\App\Models\Offer $offer, \App\Models\User $agent): void
+    public function notifyAgentPrizeDelivered(Offer $offer, User $agent): void
     {
         $this->create($agent->id, 'prize_delivered',
             "📦 Prize delivered — {$offer->prize_label}",
-            "Your prize has been marked as delivered. Congratulations and keep going!"
+            'Your prize has been marked as delivered. Congratulations and keep going!'
         );
     }
 
-    public function notifyCollectiveOfferCompleted(\App\Models\Offer $offer): void
+    public function notifyCollectiveOfferCompleted(Offer $offer): void
     {
         $this->notifyAdmins('collective_offer_completed',
             "🎯 Collective Offer Completed: {$offer->title}",
-            "The team has hit the target of {$offer->target_installations} installations. Prize: {$offer->prize_label}"
+            "The team has hit the target of {$offer->target_points} points. Prize: {$offer->prize_label}"
         );
     }
 
-    public function notifyAgentGracePeriodExpired(\App\Models\User $agent, \App\Models\Offer $offer): void
+    public function notifyAgentGracePeriodExpired(User $agent, Offer $offer): void
     {
         $this->create($agent->id, 'offer_grace_expired',
             "⏰ Offer Ended: {$offer->title}",
@@ -89,35 +94,40 @@ class NotificationService
         );
     }
 
-    public function notifySuperAgentNewAbsorption(int $saId, \App\Models\Offer $offer): void
+    public function notifySuperAgentNewAbsorption(int $saId, Offer $offer): void
     {
-        $sa = \App\Models\User::find($saId);
-        if (!$sa) return;
+        $sa = User::find($saId);
+        if (! $sa) {
+            return;
+        }
 
-        $absorbedRecords = \App\Models\SuperAgentAbsorbedPoints::where('super_agent_id', $saId)
-            ->where('offer_id', $offer->id)
-            ->where('status', 'unclaimed')
+        $absorbedRecords = SuperAgentAbsorbedPoints::query()
+            ->where(fn($q) => $q->where('super_agent_id', $saId))
+            ->where(fn($q) => $q->where('offer_id', $offer->id))
+            ->where(fn($q) => $q->where('status', 'unclaimed'))
             ->with('sourceAgent:id,name,agent_id')
             ->get();
 
-        if ($absorbedRecords->isEmpty()) return;
+        if ($absorbedRecords->isEmpty()) {
+            return;
+        }
 
-        $agentNames = $absorbedRecords->map(fn($r) => $r->sourceAgent->name)->join(', ');
+        $agentNames = $absorbedRecords->map(fn ($r) => $r->sourceAgent->name)->join(', ');
         $totalPoints = $absorbedRecords->sum('absorbed_installations');
 
-        $visibilityNote = match($offer->visible_to) {
-            'agents'       => 'This was an Agents-only offer — your agents worked toward it and their unclaimed points are now yours to claim.',
+        $visibilityNote = match ($offer->visible_to) {
+            'agents' => 'This was an Agents-only offer — your agents worked toward it and their unclaimed points are now yours to claim.',
             'super_agents' => 'This offer was for Super Agents.',
-            default        => 'This offer was open to all participants.',
+            default => 'This offer was open to all participants.',
         };
 
         $this->create($sa->id, 'absorbed_points_available',
             "📥 Points Absorbed: \"{$offer->title}\"",
-            "The offer \"{$offer->title}\" has ended. {$totalPoints} installation points from your agent(s) ({$agentNames}) have been transferred to you. {$visibilityNote} Visit Offers → Absorbed Points to claim your reward."
+            "The offer \"{$offer->title}\" has ended. " . (string)$totalPoints . " installation points from your agent(s) (" . (string)$agentNames . ") have been transferred to you. {$visibilityNote} Visit Offers → Absorbed Points to claim your reward."
         );
     }
 
-    public function notifyAdminSAAbsorbedClaim(\App\Models\SuperAgentAbsorbedPoints $ap, \App\Models\User $sa): void
+    public function notifyAdminSAAbsorbedClaim(SuperAgentAbsorbedPoints $ap, User $sa): void
     {
         $this->notifyAdmins('absorbed_claim_request',
             "📥 Absorbed Points Claim: {$sa->name}",

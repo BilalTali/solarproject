@@ -19,6 +19,9 @@ export const adminCommissionsApi = {
     enterDirectAgentCommission: (leadUlid: string, payload: EnterCommissionPayload) =>
         axiosInstance.post(`/admin/leads/${leadUlid}/commission/agent-direct`, payload),
 
+    enterEnumeratorCommission: (leadUlid: string, payload: EnterCommissionPayload) =>
+        axiosInstance.post(`/admin/leads/${leadUlid}/commission/enumerator`, payload),
+
     updateCommission: (id: number, payload: EnterCommissionPayload) =>
         axiosInstance.put(`/admin/commissions/${id}`, payload),
 
@@ -40,6 +43,9 @@ export const superAgentCommissionsApi = {
     enterAgentCommission: (leadUlid: string, payload: EnterCommissionPayload) =>
         axiosInstance.post(`/super-agent/leads/${leadUlid}/commission/agent`, payload),
 
+    enterEnumeratorCommission: (leadUlid: string, payload: EnterCommissionPayload) =>
+        axiosInstance.post(`/super-agent/leads/${leadUlid}/commission/enumerator`, payload),
+
     updateCommission: (id: number, payload: EnterCommissionPayload) =>
         axiosInstance.put(`/super-agent/commissions/${id}`, payload),
 
@@ -57,4 +63,13 @@ export const agentCommissionsApi = {
 
     getSummary: () =>
         axiosInstance.get<{ data: AgentCommissionSummary }>('/agent/commissions/summary'),
+
+    enterEnumeratorCommission: (leadUlid: string, payload: EnterCommissionPayload) =>
+        axiosInstance.post(`/agent/leads/${leadUlid}/commission/enumerator`, payload),
+
+    updateCommission: (id: number, payload: EnterCommissionPayload) =>
+        axiosInstance.put(`/agent/commissions/${id}`, payload),
+
+    markPaid: (id: number, payload: MarkCommissionPaidPayload) =>
+        axiosInstance.put(`/agent/commissions/${id}/mark-paid`, payload),
 };

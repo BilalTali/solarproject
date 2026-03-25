@@ -33,10 +33,6 @@ export const superAgentApi = {
         const res = await api.get<{ success: boolean; data: Lead }>(`/super-agent/leads/${ulid}`);
         return res.data;
     },
-    updateLeadStatus: async (ulid: string, data: { status: string; notes?: string }) => {
-        const res = await api.put<{ success: boolean; data: Lead }>(`/super-agent/leads/${ulid}/status`, data);
-        return res.data;
-    },
     updateLeadNotes: async (ulid: string, data: { notes?: string; follow_up_date?: string }) => {
         const res = await api.put<{ success: boolean; data: Lead }>(`/super-agent/leads/${ulid}/notes`, data);
         return res.data;

@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\IncentiveOffer;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class IncentiveOfferController extends Controller
 {
@@ -13,7 +14,7 @@ class IncentiveOfferController extends Controller
         $query = IncentiveOffer::query();
 
         if ($request->has('active')) {
-            $query->where('is_active', filter_var($request->active, FILTER_VALIDATE_BOOLEAN));
+            $query->where(fn ($q) => $q->where('is_active', (bool) filter_var($request->active, FILTER_VALIDATE_BOOLEAN)));
         }
 
         $offers = $query->orderBy('target_installs')->get();
@@ -24,15 +25,15 @@ class IncentiveOfferController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'title'           => 'required|string|max:255',
-            'description'     => 'nullable|string',
-            'offer_type'      => 'required|in:physical,cash,trip',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'offer_type' => 'required|in:physical,cash,trip',
             'target_installs' => 'required|integer|min:1',
-            'reward_value'    => 'nullable|numeric|min:0',
-            'valid_from'      => 'nullable|date',
-            'valid_until'     => 'nullable|date|after_or_equal:valid_from',
-            'is_active'       => 'sometimes|boolean',
-            'image_url'       => 'nullable|string|max:500',
+            'reward_value' => 'nullable|numeric|min:0',
+            'valid_from' => 'nullable|date',
+            'valid_until' => 'nullable|date|after_or_equal:valid_from',
+            'is_active' => 'sometimes|boolean',
+            'image_url' => 'nullable|string|max:500',
         ]);
 
         $offer = IncentiveOffer::create($data);
@@ -45,15 +46,15 @@ class IncentiveOfferController extends Controller
         $offer = IncentiveOffer::findOrFail($id);
 
         $data = $request->validate([
-            'title'           => 'sometimes|string|max:255',
-            'description'     => 'nullable|string',
-            'offer_type'      => 'sometimes|in:physical,cash,trip',
+            'title' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'offer_type' => 'sometimes|in:physical,cash,trip',
             'target_installs' => 'sometimes|integer|min:1',
-            'reward_value'    => 'nullable|numeric|min:0',
-            'valid_from'      => 'nullable|date',
-            'valid_until'     => 'nullable|date',
-            'is_active'       => 'sometimes|boolean',
-            'image_url'       => 'nullable|string|max:500',
+            'reward_value' => 'nullable|numeric|min:0',
+            'valid_from' => 'nullable|date',
+            'valid_until' => 'nullable|date',
+            'is_active' => 'sometimes|boolean',
+            'image_url' => 'nullable|string|max:500',
         ]);
 
         $offer->update($data);
@@ -64,6 +65,7 @@ class IncentiveOfferController extends Controller
     public function destroy(int $id): JsonResponse
     {
         IncentiveOffer::findOrFail($id)->delete();
+
         return response()->json(['success' => true, 'message' => 'Incentive offer deleted.']);
     }
 }

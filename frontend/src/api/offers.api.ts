@@ -40,6 +40,10 @@ export const offersApi = {
             const { data } = await axios.post<ApiResponse<void>>(`/admin/offers/redemptions/${id}/deliver`, { notes });
             return data;
         },
+        cancelRedemption: async (id: number, notes?: string) => {
+            const { data } = await axios.post<ApiResponse<void>>(`/admin/offers/redemptions/${id}/cancel`, { notes });
+            return data;
+        },
         getParticipants: async (id: number) => {
             const { data } = await axios.get<ApiResponse<OfferParticipant[]>>(`/admin/offers/${id}/participants`);
             return data;
@@ -102,6 +106,23 @@ export const offersApi = {
         },
         claimAbsorbed: async (id: number) => {
             const { data } = await axios.post<ApiResponse<void>>(`/super-agent/offers/absorbed-points/${id}/claim`);
+            return data;
+        }
+    },
+        // ==============================
+    // ENUMERATOR ENDPOINTS
+    // ==============================
+    enumerator: {
+        getOffers: async () => {
+            const { data } = await axios.get<ApiResponse<UserOfferProgress[]>>('/enumerator/offers');
+            return data;
+        },
+        redeem: async (id: number) => {
+            const { data } = await axios.post<ApiResponse<OfferRedemption>>(`/enumerator/offers/${id}/redeem`);
+            return data;
+        },
+        getMyRedemptions: async () => {
+            const { data } = await axios.get<ApiResponse<OfferRedemption[]>>('/enumerator/offers/redemptions');
             return data;
         }
     }

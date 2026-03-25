@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use App\Models\User;
 use App\Services\ICardService;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
 
@@ -19,13 +19,13 @@ class ICardController extends Controller
      */
     public function download(Request $request): Response
     {
-        // If it's a signed request, we might not have 'Auth' session-based, 
+        // If it's a signed request, we might not have 'Auth' session-based,
         // but since we are using sanctum, we should be fine if the user is authenticated.
         // For temporary signed routes, sometimes we bypass standard auth if needed.
         // However, the prompt says "serve it via a secure authenticated route".
-        
+
         $user = Auth::user();
-        if (!$user && $request->hasValidSignature()) {
+        if (! $user && $request->hasValidSignature()) {
             // Retrieve user from the userId parameter in the signed URL
             $userId = $request->route('userId') ?? $request->query('userId');
             if ($userId) {
@@ -33,7 +33,7 @@ class ICardController extends Controller
             }
         }
 
-        if (!$user) {
+        if (! $user) {
             abort(401, 'Unauthorized or invalid download link');
         }
 
@@ -46,6 +46,8 @@ class ICardController extends Controller
     public function adminDownload(Request $request, int $userId): Response
     {
         $targetUser = User::findOrFail($userId);
+        $this->authorize('view', $targetUser);
+
         return $this->iCardService->generateAndDownload($targetUser);
     }
 
@@ -67,7 +69,7 @@ class ICardController extends Controller
                 abort(403, 'ID card is available only for approved users with at least 75% complete profiles.');
             }
         }
-        
+
         $url = URL::temporarySignedRoute(
             'api.v1.icard.download',
             now()->addMinutes(10),
@@ -83,7 +85,9 @@ class ICardController extends Controller
     public function preview(Request $request, int $userId)
     {
         $targetUser = User::findOrFail($userId);
+        $this->authorize('view', $targetUser);
         $data = $this->iCardService->buildViewData($targetUser);
+
         return view('icard.index', $data);
     }
 }

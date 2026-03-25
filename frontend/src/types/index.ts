@@ -2,13 +2,14 @@
 // SURYAMITRA - TypeScript Interfaces
 // ============================================================
 
-export type UserRole = 'admin' | 'super_agent' | 'agent';
+export type UserRole = 'admin' | 'super_agent' | 'agent' | 'enumerator';
 export type UserStatus = 'active' | 'inactive' | 'pending';
 export type OverrideStatus = 'pending' | 'approved' | 'paid';
 
 export type LeadStatus =
     | 'new'
     | 'registered'
+    | 'at_bank'
     | 'installed'
     | 'rejected'
     | 'on_hold'
@@ -18,7 +19,7 @@ export type ExcitementState = 'dormant' | 'building' | 'close' | 'ready';
 
 export type CommissionStatus = 'pending' | 'approved' | 'paid';
 
-export type CommissionPayeeRole = 'super_agent' | 'agent';
+export type CommissionPayeeRole = 'super_agent' | 'agent' | 'enumerator';
 export type CommissionPaymentStatus = 'unpaid' | 'paid';
 export type CommissionPaymentMethod = 'bank_transfer' | 'upi' | 'cash' | 'cheque';
 export type LeadCommissionEntryStatus = 'none' | 'super_agent_entered' | 'agent_entered' | 'both_entered';
@@ -27,17 +28,19 @@ export type LeadCommissionEntryStatus = 'none' | 'super_agent_entered' | 'agent_
 export interface User {
     id: number;
     name: string;
-    email: string | null;
+    email: string;
     mobile: string;
-    role: UserRole;
-    status: UserStatus;
-    agent_id: string | null;
-    super_agent_code: string | null;       // SSM-YYYY-XXXX (super agents only)
+    role: string;
+    status: string;
+    agent_id?: string;
+    super_agent_code?: string;
+    enumerator_id?: string;
+    enumerator_creator_role?: 'admin' | 'super_agent' | 'agent';
+    district?: string;
+    state?: string;  // SSM-YYYY-XXXX (super agents only)
     super_agent_id: number | null;          // FK → super agent (agents only)
     super_agent?: SuperAgentRef;            // populated via eager loading
     managed_states: string[] | null;        // super agents only
-    district: string | null;
-    state: string | null;
     area: string | null;
     whatsapp_number: string | null;
     profile_photo: string | null;
@@ -96,6 +99,7 @@ export interface User {
     // Aggregates (populated on some API calls)
     agent_count?: number;
     total_leads?: number;
+    created_by?: { name: string; code: string } | null;
 }
 
 /** Minimal Business Development Manager reference for nested display */
@@ -138,8 +142,10 @@ export type LeadOwnerType = 'admin_pool' | 'super_agent_pool' | 'agent_pool';
 
 export type LeadVerificationStatus =
     | 'not_required'
+    | 'pending_agent_verification'
     | 'pending_super_agent_verification'
     | 'super_agent_verified'
+    | 'reverted_to_enumerator'
     | 'reverted_to_agent'
     | 'admin_override';
 
@@ -170,6 +176,7 @@ export interface Lead {
     assigned_agent_id: number | null;
     assigned_super_agent_id: number | null;
     submitted_by_agent_id: number | null;
+    submitted_by_enumerator_id: number | null;
     created_by_super_agent_id: number | null;
     verified_by_super_agent_id: number | null;
     verified_at: string | null;
@@ -177,6 +184,7 @@ export interface Lead {
     assigned_agent?: User;
     assigned_super_agent?: User;
     submitted_by_agent?: User;
+    submitted_by_enumerator?: User;
     created_by_super_agent?: User;
     verifications?: LeadVerification[];
 
@@ -204,11 +212,16 @@ export interface Lead {
 
     commission_entry_status: LeadCommissionEntryStatus;
     commission_prompt?: CommissionPrompt;
-    formatted_commissions?: {
-        super_agent_commission: any;
-        agent_commission: any;
+    commission_status?: {
+        prompts: CommissionPrompt[];
     };
-    commissions?: any[];
+    formatted_commissions?: {
+        super_agent_commission: Commission | null;
+        agent_commission: Commission | null;
+        enumerator_commission: Commission | null;
+        all?: Commission[];
+    };
+    commissions?: Commission[];
 
     status_logs?: LeadStatusLog[];
     documents?: LeadDocument[];
@@ -246,6 +259,7 @@ export interface Commission {
     id: number;
     lead_id: number;
     payee_role: CommissionPayeeRole;
+    payee_id: number;
     amount: number;
     payment_status: CommissionPaymentStatus;
     paid_at: string | null;
@@ -318,11 +332,13 @@ export interface SuperAgentCommissionSummary {
 }
 
 export interface AgentCommissionSummary {
-    total_earned: number;
-    total_unpaid: number;
-    total_paid: number;
-    this_month: number;
-    last_month: number;
+    my_earnings_total: number;
+    my_earnings_unpaid: number;
+    my_earnings_paid: number;
+    my_earnings_this_month: number;
+    enumerator_payouts_total: number;
+    enumerator_payouts_unpaid: number;
+    enumerator_payouts_paid: number;
 }
 
 // ====== Notification ======
@@ -425,7 +441,7 @@ export interface SuperAgentDashboardStats {
 // ====== Offers & Incentives (v2) ======
 export type OfferType = 'individual' | 'collective';
 export type OfferStatus = 'active' | 'paused' | 'ended';
-export type RedemptionStatus = 'pending' | 'approved' | 'delivered';
+export type RedemptionStatus = 'pending' | 'approved' | 'delivered' | 'cancelled';
 
 export interface Offer {
     id: number;
@@ -437,7 +453,7 @@ export interface Offer {
     prize_image_path?: string | null;
     offer_from: string;
     offer_to: string;
-    target_installations: number;
+    target_points: number;
     offer_type: OfferType;
     visible_to: 'agents' | 'super_agents' | 'both';
     status: OfferStatus;
@@ -472,7 +488,7 @@ export interface UserOfferProgress {
     offer_from: string;
     offer_to: string;
     offer_type: OfferType;
-    target_installations: number;
+    target_points: number;
     days_remaining: number;
     is_featured: boolean;
     is_annual: boolean;
@@ -480,20 +496,20 @@ export interface UserOfferProgress {
     offer_ended_zeroed_at: string | null;
 
     // Collective data
-    current_installations?: number;
+    current_points?: number;
     collective_remaining?: number;
     collective_redeemed?: boolean;
 
     // Personal data (Individual)
-    my_total_installations: number;
-    my_redeemed_installations: number;
-    my_unredeemed_installations: number;
+    my_total_points: number;
+    my_redeemed_points: number;
+    my_unredeemed_points: number;
     my_redemption_count: number;
     can_redeem: boolean;
     pending_redemption_count: number;
 
     // Cycle progress
-    cycle_installations: number;
+    cycle_points: number;
     cycle_needed: number;
     cycle_percentage: number;
 }
@@ -503,8 +519,8 @@ export interface SuperAgentAbsorbedPoint {
     super_agent_id: number;
     source_agent_id: number;
     offer_id: number;
-    absorbed_installations: number;
-    agent_total_installations: number;
+    absorbed_points: number;
+    agent_total_points: number;
     offer_target: number;
     absorption_reason: 'agent_fell_short' | 'grace_period_expired';
     absorbed_at: string;
@@ -521,7 +537,7 @@ export interface SuperAgentAbsorbedPoint {
         title: string;
         offer_from: string;
         offer_to: string;
-        target_installations: number;
+        target_points: number;
         prize_label: string;
         prize_image_path: string | null;
         visible_to: 'agents' | 'super_agents' | 'both';
@@ -535,7 +551,7 @@ export interface OfferParticipant {
     name: string;
     agent_id: string; // The code
     role: 'agent' | 'super_agent';
-    total_installations: number;
+    total_points: number;
     unredeemed: number;
     redemptions: number;
     last_activity: string | null;
@@ -546,7 +562,7 @@ export interface OfferRedemption {
     offer_id: number;
     user_id: number;
     redemption_number: number;
-    installations_used: number;
+    points_used: number;
     status: RedemptionStatus;
     notes: string | null;
     approved_by: number | null;
@@ -566,15 +582,15 @@ export interface TeamOfferPerformance {
     offer_title: string;
     prize_label: string;
     prize_image_url: string | null;
-    target_installations: number;
+    target_points: number;
     offer_to: string;
     days_remaining: number;
     is_featured: boolean;
     agents: TeamAgentOfferRow[];
     team_totals: {
-        total_installations: number;
-        redeemed_installations: number;
-        unredeemed_installations: number;
+        total_points: number;
+        redeemed_points: number;
+        unredeemed_points: number;
         redemption_count: number;
         agents_who_can_redeem: number;
     };
@@ -584,12 +600,12 @@ export interface TeamAgentOfferRow {
     agent_id: number;
     agent_name: string;
     agent_code: string | null;
-    total_installations: number;
-    redeemed_installations: number;
-    unredeemed_installations: number;
+    total_points: number;
+    redeemed_points: number;
+    unredeemed_points: number;
     redemption_count: number;
     can_redeem: boolean;
-    cycle_installations: number;
+    cycle_points: number;
     cycle_needed: number;
     last_installation_at: string | null;
 }
@@ -601,8 +617,8 @@ export interface TeamAgentOfferRow {
  * This handles the 'my_' prefix mapping.
  */
 export interface OfferProgress {
-    total_installations: number;
-    unredeemed_installations: number;
+    total_points: number;
+    unredeemed_points: number;
     redemption_count: number;
     can_redeem: boolean;
 }
@@ -618,20 +634,20 @@ export interface OfferWithProgress extends Offer {
  */
 export function getExcitementState(
     progress: OfferProgress | UserOfferProgress | null | undefined,
-    targetInstallations: number
+    targetPoints: number
 ): ExcitementState {
     if (!progress) return 'dormant';
 
     // Support both OfferProgress and UserOfferProgress field naming
-    const total = (progress as UserOfferProgress).my_total_installations ?? (progress as OfferProgress).total_installations;
+    const total = (progress as UserOfferProgress).my_total_points ?? (progress as OfferProgress).total_points;
     if (total === 0) return 'dormant';
 
     if (progress.can_redeem) return 'ready';
 
-    const unredeemed = (progress as UserOfferProgress).my_unredeemed_installations ?? (progress as OfferProgress).unredeemed_installations;
-    const cycleInstalls = unredeemed % targetInstallations;
-    const pct = targetInstallations > 0
-        ? (cycleInstalls / targetInstallations) * 100
+    const unredeemed = (progress as UserOfferProgress).my_unredeemed_points ?? (progress as OfferProgress).unredeemed_points;
+    const cyclePoints = unredeemed % targetPoints;
+    const pct = targetPoints > 0
+        ? (cyclePoints / targetPoints) * 100
         : 0;
 
     if (pct >= 90) return 'ready';
@@ -650,10 +666,10 @@ export function computeUrgencyScore(
     if (!progress) return 0;
     if (progress.can_redeem) return 100;
 
-    const target = offer.target_installations;
-    const unredeemed = (progress as UserOfferProgress).my_unredeemed_installations ?? (progress as OfferProgress).unredeemed_installations;
-    const cycleInstalls = unredeemed % target;
-    const pct = target > 0 ? (cycleInstalls / target) * 100 : 0;
+    const target = offer.target_points;
+    const unredeemed = (progress as UserOfferProgress).my_unredeemed_points ?? (progress as OfferProgress).unredeemed_points;
+    const cyclePoints = unredeemed % target;
+    const pct = target > 0 ? (cyclePoints / target) * 100 : 0;
 
     const daysBonus =
         offer.days_remaining <= 2 ? 35 :
@@ -662,4 +678,33 @@ export function computeUrgencyScore(
                     offer.days_remaining <= 14 ? 5 : 0;
 
     return Math.min(100, Math.round(pct + daysBonus));
+}
+
+export interface CommissionSlab {
+    id: number;
+    capacity: string;
+    label: string;
+    agent_commission: number;
+    super_agent_override: number;
+    description: string | null;
+    is_active: boolean;
+    super_agent_id: number | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface WithdrawalRequest {
+    id: number;
+    user_id: number;
+    offer_id?: number;
+    points_withdrawn: number;
+    amount: number | null;
+    status: 'pending' | 'approved' | 'rejected' | 'paid';
+    admin_notes: string | null;
+    payment_method: string | null;
+    payment_details: string | null;
+    created_at: string;
+    updated_at: string;
+    user?: User;
+    offer?: Offer;
 }

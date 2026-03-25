@@ -1,71 +1,65 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Api\AchievementController;
 // Auth
-use App\Http\Controllers\Api\V1\Auth\AuthController;
-
+use App\Http\Controllers\Api\DocumentController;
 // Public
-use App\Http\Controllers\Api\V1\Public\LeadController as PublicLeadController;
-use App\Http\Controllers\Api\V1\Public\EligibilityController;
-
+use App\Http\Controllers\Api\FeedbackController;
+use App\Http\Controllers\Api\MediaController;
 // Agent
-use App\Http\Controllers\Api\V1\Agent\DashboardController as AgentDashboardController;
-use App\Http\Controllers\Api\V1\Agent\LeadController as AgentLeadController;
-use App\Http\Controllers\Api\V1\Agent\CommissionController as AgentCommissionController;
-use App\Http\Controllers\Api\V1\Agent\NotificationController as AgentNotificationController;
-use App\Http\Controllers\Api\V1\Agent\OfferController as AgentOfferController;
-
-// Super Agent
-use App\Http\Controllers\Api\V1\SuperAgent\DashboardController as SADashboardController;
-use App\Http\Controllers\Api\V1\SuperAgent\AgentController as SAAgentController;
-use App\Http\Controllers\Api\V1\SuperAgent\LeadController as SALeadController;
-use App\Http\Controllers\Api\V1\SuperAgent\CommissionController as SACommissionController;
-use App\Http\Controllers\Api\V1\SuperAgent\NotificationController as SANotificationController;
-use App\Http\Controllers\Api\V1\SuperAgent\OfferController as SAOfferController;
-
-// Admin
-use App\Http\Controllers\Api\V1\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\V1\Admin\AgentController as AdminAgentController;
+use App\Http\Controllers\Api\V1\Admin\CommissionSlabController as AdminCommissionSlabController;
+use App\Http\Controllers\Api\V1\Admin\DashboardController as AdminDashboardController;
+// Super Agent
 use App\Http\Controllers\Api\V1\Admin\LeadController as AdminLeadController;
-use App\Http\Controllers\Api\V1\Admin\CommissionController as AdminCommissionController;
+use App\Http\Controllers\Api\V1\Admin\OfferController as AdminOfferController;
 use App\Http\Controllers\Api\V1\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Api\V1\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Api\V1\Admin\SuperAgentController as AdminSuperAgentController;
-use App\Http\Controllers\Api\V1\Admin\CommissionSlabController as AdminCommissionSlabController;
-use App\Http\Controllers\Api\V1\Admin\OfferController as AdminOfferController;
+// Admin
+use App\Http\Controllers\Api\V1\Agent\DashboardController as AgentDashboardController;
+use App\Http\Controllers\Api\V1\Agent\LeadController as AgentLeadController;
+use App\Http\Controllers\Api\V1\Agent\NotificationController as AgentNotificationController;
+use App\Http\Controllers\Api\V1\Agent\OfferController as AgentOfferController;
+use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\ICardController;
 use App\Http\Controllers\Api\V1\JoiningLetterController;
-
-// CMS
-use App\Http\Controllers\Api\AchievementController;
-use App\Http\Controllers\Api\FeedbackController;
-use App\Http\Controllers\Api\PublicController;
-use App\Http\Controllers\Api\MediaController;
-use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\V1\LeadDocumentController;
+use App\Http\Controllers\Api\V1\Portal\EligibilityController;
+use App\Http\Controllers\Api\V1\Portal\LeadController as PublicLeadController;
+// CMS
+use App\Http\Controllers\Api\V1\SuperAgent\AgentController as SAAgentController;
+use App\Http\Controllers\Api\V1\SuperAgent\DashboardController as SADashboardController;
+use App\Http\Controllers\Api\V1\SuperAgent\LeadController as SALeadController;
+use App\Http\Controllers\Api\V1\SuperAgent\NotificationController as SANotificationController;
+use App\Http\Controllers\Api\V1\SuperAgent\OfferController as SAOfferController;
+use Illuminate\Support\Facades\Route;
 
 // Health check — no auth required — used by uptime monitoring
 Route::get('/health', function () {
     try {
         \Illuminate\Support\Facades\DB::select('SELECT 1');
+
         return response()->json([
-            'status'    => 'ok',
-            'database'  => 'connected',
+            'status' => 'ok',
+            'database' => 'connected',
             'timestamp' => now()->toISOString(),
-            'version'   => config('app.version', '1.0.0'),
-            'env'       => app()->environment(),
+            'version' => config('app.version', '1.0.0'),
+            'env' => app()->environment(),
         ]);
     } catch (\Exception $e) {
         return response()->json([
-            'status'   => 'error',
+            'status' => 'error',
             'database' => 'disconnected',
-            'message'  => 'Service unavailable',
+            'message' => 'Service unavailable',
         ], 503);
     }
 });
 
-Route::prefix('v1')->as('api.v1.')->group(function () {
+/** @var \Illuminate\Routing\RouteRegistrar $api */
+$api = Route::prefix('v1');
+$api->as('api.v1.')->group(function () {
 
     // ==============================
     // PUBLIC ROUTES
@@ -83,31 +77,34 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
     Route::get('/public/feedbacks', [PublicController::class, 'feedbacks']);
     Route::get('/public/media', [MediaController::class, 'index']); // Public Reward Winners
     Route::get('/public/feedback', [FeedbackController::class, 'store']);
-    Route::get('/public/documents', [DocumentController::class, 'publicIndex']); 
+    Route::get('/public/documents', [DocumentController::class, 'publicIndex']);
     Route::get('/public/verify-agent/{token}', [PublicController::class, 'verifyAgent']);
 
     // Signed View for Lead Documents (No auth header needed, secured by signature)
-    Route::get('/signed/leads/{ulid}/documents/{id}/view', [\App\Http\Controllers\Api\V1\LeadDocumentController::class, 'viewSigned'])
+    Route::get('/signed/leads/{ulid}/documents/{id}/view', [LeadDocumentController::class, 'viewSigned'])
         ->name('leads.documents.signed-view')
         ->middleware('signed');
 
+    Route::get('/signed/documents/{id}/view/{type}', [DocumentController::class, 'viewSigned'])
+        ->name('documents.signed-view')
+        ->middleware('signed');
 
     // ==============================
     // AUTHENTICATION
     // ==============================
-    Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
-    Route::post('/auth/admin/login', [AuthController::class, 'adminLogin'])->middleware('throttle:6,1');
-    Route::post('/auth/agent/login', [AuthController::class, 'agentLogin'])->middleware('throttle:6,1');
-    Route::post('/super-agent/auth/login', [AuthController::class, 'superAgentLogin'])->middleware('throttle:6,1');
+    Route::post('/auth/send-otp', [AuthController::class, 'sendOtp'])->middleware('throttle:6,1');
+    Route::post('/auth/login-otp', [AuthController::class, 'loginOtp'])->middleware('throttle:6,1');
+    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
+    Route::post('/auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
 
     // ── Signed Download Routes (No sanctum needed, signature is the key) ────
     Route::get('/icard/download/{userId?}', [ICardController::class, 'download'])
-         ->middleware('signed')
-         ->name('icard.download');
+        ->middleware('signed')
+        ->name('icard.download');
 
     Route::get('/joining-letter/download/{userId}', [JoiningLetterController::class, 'download'])
-         ->middleware('signed')
-         ->name('joining-letter.download');
+        ->middleware('signed')
+        ->name('joining-letter.download');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -118,10 +115,33 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
         Route::get('/icard/download-url', [ICardController::class, 'getDownloadUrl']);
         Route::get('/joining-letter/download-url', [JoiningLetterController::class, 'getDownloadUrl']);
         Route::get('/documents', [DocumentController::class, 'index']); // Auth-only resources
-        
+        Route::get('/documents/{id}/view-url', [DocumentController::class, 'getSignedUrl']);
+
         // Lead Documents
         Route::get('/leads/{ulid}/documents/{id}/download', [LeadDocumentController::class, 'download'])->name('leads.documents.download');
         Route::get('/leads/{ulid}/documents/{id}/view-url', [LeadDocumentController::class, 'getSignedUrl']);
+
+        // ==============================
+        // ENUMERATOR ROUTES
+        // ==============================
+        Route::middleware('enumerator')->prefix('enumerator')->group(function () {
+            Route::get('/dashboard/stats', [\App\Http\Controllers\Api\V1\Enumerator\DashboardController::class, 'stats']);
+            Route::get('/profile', [AuthController::class, 'me']);
+            Route::put('/profile', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'update']);
+            
+            Route::get('/leads', [\App\Http\Controllers\Api\V1\Enumerator\LeadController::class, 'index']);
+            Route::post('/leads', [\App\Http\Controllers\Api\V1\Enumerator\LeadController::class, 'store']);
+            Route::get('/leads/{ulid}', [\App\Http\Controllers\Api\V1\Enumerator\LeadController::class, 'show']);
+            Route::post('/leads/{ulid}/documents', [\App\Http\Controllers\Api\V1\Enumerator\LeadController::class, 'uploadDocument']);
+            
+            Route::get('/commissions', [\App\Http\Controllers\Api\V1\Enumerator\CommissionController::class, 'index']);
+            
+            Route::get('/notifications', [\App\Http\Controllers\Api\V1\Enumerator\NotificationController::class, 'index']);
+            Route::put('/notifications/{id}/read', [\App\Http\Controllers\Api\V1\Enumerator\NotificationController::class, 'markAsRead']);
+            
+            Route::get('/withdrawals', [\App\Http\Controllers\WithdrawalRequestController::class, 'index']);
+            Route::post('/withdrawals', [\App\Http\Controllers\WithdrawalRequestController::class, 'store']);
+        });
 
         // ==============================
         // AGENT ROUTES
@@ -129,18 +149,23 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
         Route::middleware('agent')->prefix('agent')->group(function () {
             Route::get('/dashboard/stats', [AgentDashboardController::class, 'stats']);
 
-            Route::get('/profile', [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'me']);
+            Route::get('/profile', [AuthController::class, 'me']);
             Route::get('/profile/qr-scans', [AgentDashboardController::class, 'getQrScans']);
 
             Route::get('/leads', [AgentLeadController::class, 'index']);
             Route::get('/leads/{ulid}', [AgentLeadController::class, 'show']);
             Route::post('/leads', [AgentLeadController::class, 'store']);
             Route::put('/leads/{ulid}/resubmit', [AgentLeadController::class, 'resubmit']);
+            Route::put('/leads/{ulid}/verify', [AgentLeadController::class, 'verify']);
+            Route::put('/leads/{ulid}/revert', [AgentLeadController::class, 'revert']);
             Route::get('/leads/{ulid}/verification-history', [AgentLeadController::class, 'verificationHistory']);
             Route::post('/leads/{ulid}/documents', [AgentLeadController::class, 'uploadDocument']);
 
             Route::get('/commissions', [\App\Http\Controllers\Api\V1\Agent\CommissionController::class, 'index']);
             Route::get('/commissions/summary', [\App\Http\Controllers\Api\V1\Agent\CommissionController::class, 'summary']);
+            Route::post('/leads/{ulid}/commission/enumerator', [\App\Http\Controllers\Api\V1\Agent\CommissionController::class, 'enterEnumeratorCommission']);
+            Route::put('/commissions/{id}', [\App\Http\Controllers\Api\V1\Agent\CommissionController::class, 'update']);
+            Route::put('/commissions/{id}/mark-paid', [\App\Http\Controllers\Api\V1\Agent\CommissionController::class, 'markPaid']);
 
             Route::get('/notifications', [AgentNotificationController::class, 'index']);
             Route::put('/notifications/{id}/read', [AgentNotificationController::class, 'markAsRead']);
@@ -148,6 +173,7 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
             // My assigned Super Agent
             Route::get('/my-super-agent', function (\Illuminate\Http\Request $r) {
                 $user = $r->user()->load('superAgent');
+
                 return response()->json(['success' => true, 'data' => $user->superAgent]);
             });
 
@@ -156,6 +182,13 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
             Route::get('/offers/redemptions', [AgentOfferController::class, 'redemptions']);
 
             Route::put('/profile', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'update']);
+
+            // Enumerators
+            Route::apiResource('enumerators', \App\Http\Controllers\Api\V1\Agent\EnumeratorController::class)->names('agent.enumerators');
+            Route::put('/enumerators/{id}/status', [\App\Http\Controllers\Api\V1\Agent\EnumeratorController::class, 'updateStatus']);
+
+            Route::get('/withdrawals', [\App\Http\Controllers\WithdrawalRequestController::class, 'index']);
+            Route::post('/withdrawals', [\App\Http\Controllers\WithdrawalRequestController::class, 'store']);
         });
 
         // ==============================
@@ -171,7 +204,6 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
             Route::get('/leads', [SALeadController::class, 'index']);
             Route::post('/leads', [SALeadController::class, 'store']);
             Route::get('/leads/{ulid}', [SALeadController::class, 'show']);
-            Route::put('/leads/{ulid}/status', [SALeadController::class, 'updateStatus']);
             Route::put('/leads/{ulid}/verify', [SALeadController::class, 'verify']);
             Route::put('/leads/{ulid}/revert', [SALeadController::class, 'revert']);
             Route::put('/leads/{ulid}/notes', [SALeadController::class, 'updateNotes']);
@@ -183,6 +215,7 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
             Route::get('/commissions', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'index']);
             Route::get('/commissions/summary', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'summary']);
             Route::post('/leads/{ulid}/commission/agent', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'enterAgentCommission']);
+            Route::post('/leads/{ulid}/commission/enumerator', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'enterEnumeratorCommission']);
             Route::put('/commissions/{id}', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'update']);
             Route::put('/commissions/{id}/mark-paid', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'markPaid']);
             Route::get('/leads/{ulid}/commissions', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'getLeadCommissions']);
@@ -198,10 +231,14 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
             Route::post('/offers/{id}/redeem', [SAOfferController::class, 'redeem']);
             Route::get('/offers/redemptions', [SAOfferController::class, 'redemptions']);
 
-            Route::get('/profile', [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'me']);
+            Route::get('/profile', [AuthController::class, 'me']);
             Route::get('/profile/qr-scans', [SADashboardController::class, 'getQrScans']);
             Route::put('/profile', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'update']);
             Route::put('/change-password', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'changePassword']);
+
+            // Enumerators
+            Route::apiResource('enumerators', \App\Http\Controllers\Api\V1\SuperAgent\EnumeratorController::class)->names('super-agent.enumerators');
+            Route::put('/enumerators/{id}/status', [\App\Http\Controllers\Api\V1\SuperAgent\EnumeratorController::class, 'updateStatus']);
         });
 
         // ADMIN ROUTES
@@ -210,11 +247,15 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
             Route::get('/dashboard/stats', [AdminDashboardController::class, 'stats']);
 
             // Agents
-            Route::get('/agents/unassigned', [AdminSuperAgentController::class, 'unassignedAgents']);
+            Route::get('/agents', [AdminSuperAgentController::class, 'unassignedAgents']);
             Route::put('/agents/{id}/status', [AdminAgentController::class, 'updateStatus']);
             Route::apiResource('agents', AdminAgentController::class);
             Route::post('/agents/{id}/regenerate-qr', [AdminAgentController::class, 'regenerateQr']);
             Route::get('/agents/{id}/qr-scans', [AdminAgentController::class, 'getQrScans']);
+
+            // Enumerators
+            Route::apiResource('enumerators', \App\Http\Controllers\Api\V1\Admin\EnumeratorController::class)->names('admin.enumerators');
+            Route::put('/enumerators/{id}/status', [\App\Http\Controllers\Api\V1\Admin\EnumeratorController::class, 'updateStatus']);
 
             // Super Agents CRUD
             Route::get('/super-agents', [AdminSuperAgentController::class, 'index']);
@@ -233,8 +274,6 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
             Route::delete('/super-agents/{id}/agents/{agent_id}', [AdminSuperAgentController::class, 'unassignAgent']);
             Route::get('/super-agents/{id}/team-log', [AdminSuperAgentController::class, 'teamLog']);
 
-
-
             // Leads
             Route::get('/leads', [AdminLeadController::class, 'index']);
             Route::get('/leads/{ulid}', [AdminLeadController::class, 'show']);
@@ -251,6 +290,7 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
             Route::get('/commissions/summary', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'summary']);
             Route::post('/leads/{ulid}/commission/super-agent', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'enterSuperAgentCommission']);
             Route::post('/leads/{ulid}/commission/agent-direct', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'enterDirectAgentCommission']);
+            Route::post('/leads/{ulid}/commission/enumerator', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'enterEnumeratorCommission']);
             Route::put('/commissions/{id}', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'update']);
             Route::put('/commissions/{id}/mark-paid', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'markPaid']);
             Route::get('/leads/{ulid}/commissions', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'getLeadCommissions']);
@@ -264,6 +304,13 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
 
             // Commission Slabs
             Route::get('/commission-slabs', [AdminCommissionSlabController::class, 'index']);
+
+            // Withdrawals
+            Route::get('/withdrawals', [\App\Http\Controllers\WithdrawalRequestController::class, 'adminIndex']);
+            Route::put('/withdrawals/{id}/approve', [\App\Http\Controllers\WithdrawalRequestController::class, 'approve']);
+            Route::put('/withdrawals/{id}/reject', [\App\Http\Controllers\WithdrawalRequestController::class, 'reject']);
+            Route::put('/withdrawals/{id}/mark-paid', [\App\Http\Controllers\WithdrawalRequestController::class, 'markPaid']);
+
             Route::post('/commission-slabs', [AdminCommissionSlabController::class, 'store']);
             Route::put('/commission-slabs/{id}', [AdminCommissionSlabController::class, 'update']);
             Route::delete('/commission-slabs/{id}', [AdminCommissionSlabController::class, 'destroy']);
@@ -272,6 +319,7 @@ Route::prefix('v1')->as('api.v1.')->group(function () {
             Route::get('/offers/redemptions', [AdminOfferController::class, 'redemptions']);
             Route::post('/offers/redemptions/{id}/approve', [AdminOfferController::class, 'approveRedemption']);
             Route::post('/offers/redemptions/{id}/deliver', [AdminOfferController::class, 'deliveredRedemption']);
+            Route::post('/offers/redemptions/{id}/cancel', [AdminOfferController::class, 'cancelRedemption']);
             Route::get('/offers/{offer}/participants', [AdminOfferController::class, 'participants']);
             Route::get('/offers/absorbed-points', [AdminOfferController::class, 'absorbedPoints']);
             Route::post('/offers/absorbed-points/{absorbedPoint}/approve', [AdminOfferController::class, 'approveAbsorption']);

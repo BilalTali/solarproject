@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -11,7 +12,7 @@ class EnsureIsSuperAgent
     {
         $user = $request->user();
 
-        if (!$user || $user->role !== 'super_agent') {
+        if (! $user || $user->role !== 'super_agent') {
             return response()->json(['success' => false, 'message' => 'Unauthorized. Super Agent access only.'], 403);
         }
 

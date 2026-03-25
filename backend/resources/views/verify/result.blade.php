@@ -1,3 +1,18 @@
+@php
+  use App\Models\User;
+  /** @var User $user */
+  /** @var bool $isActive */
+  /** @var bool $isSuspended */
+  /** @var string $cardNumber */
+  /** @var string $designation */
+  /** @var string $scannedAt */
+  /** @var string $initials */
+  /** @var string $fatherName */
+  /** @var string $dob */
+  /** @var string $bloodGroup */
+  /** @var string $mobile */
+  /** @var string $clearance */
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>

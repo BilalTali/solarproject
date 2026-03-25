@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('ip_address', 45)->nullable();
             $table->string('user_agent', 500)->nullable();
             $table->string('referer', 500)->nullable();
-            
+
             $table->index(['user_id', 'scanned_at'], 'idx_user_scanned');
         });
     }

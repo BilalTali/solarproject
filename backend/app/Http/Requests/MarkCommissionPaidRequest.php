@@ -14,9 +14,9 @@ class MarkCommissionPaidRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'payment_method'    => ['required', 'in:bank_transfer,upi,cash,cheque'],
+            'payment_method' => ['required', 'in:bank_transfer,upi,cash,cheque'],
             'payment_reference' => ['required', 'string', 'max:150'],
-            'payment_notes'     => ['nullable', 'string', 'max:500'],
+            'payment_notes' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

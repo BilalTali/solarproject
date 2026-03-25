@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api\V1\Agent;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Offer, OfferRedemption};
+use App\Models\Offer;
+use App\Models\OfferRedemption;
 use App\Services\OfferService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class OfferController extends Controller
 {
@@ -18,6 +19,7 @@ class OfferController extends Controller
     public function index(Request $request): JsonResponse
     {
         $offers = $this->offerService->getOffersForUser($request->user());
+
         return response()->json(['success' => true, 'data' => $offers]);
     }
 
@@ -32,12 +34,12 @@ class OfferController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Redemption claim submitted successfully!',
-                'data'    => $redemption
+                'data' => $redemption,
             ]);
         } catch (\InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 422);
         }
     }
@@ -47,7 +49,7 @@ class OfferController extends Controller
      */
     public function redemptions(Request $request): JsonResponse
     {
-        $redemptions = OfferRedemption::where('user_id', $request->user()->id)
+        $redemptions = OfferRedemption::query()->where(fn($q) => $q->where('user_id', $request->user()->id))
             ->with('offer')
             ->orderByDesc('claimed_at')
             ->get();

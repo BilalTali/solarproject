@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1\SuperAgent;
 
 use App\Http\Controllers\Controller;
@@ -10,7 +11,7 @@ class NotificationController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $notifications = Notification::where('user_id', $request->user()->id)
+        $notifications = Notification::query()->where(fn ($q) => $q->where('user_id', $request->user()->id))
             ->latest()->paginate(20);
 
         return response()->json(['success' => true, 'data' => $notifications]);
@@ -18,8 +19,8 @@ class NotificationController extends Controller
 
     public function markRead(Request $request, int $id): JsonResponse
     {
-        $notification = Notification::where('id', $id)
-            ->where('user_id', $request->user()->id)->firstOrFail();
+        $notification = Notification::query()->where(fn ($q) => $q->where('id', $id))
+            ->where(fn ($q) => $q->where('user_id', $request->user()->id))->firstOrFail();
         $notification->update(['read_at' => now()]);
 
         return response()->json(['success' => true, 'message' => 'Marked as read.']);
@@ -27,7 +28,7 @@ class NotificationController extends Controller
 
     public function markAllRead(Request $request): JsonResponse
     {
-        Notification::where('user_id', $request->user()->id)
+        Notification::query()->where(fn ($q) => $q->where('user_id', $request->user()->id))
             ->whereNull('read_at')->update(['read_at' => now()]);
 
         return response()->json(['success' => true, 'message' => 'All notifications marked as read.']);

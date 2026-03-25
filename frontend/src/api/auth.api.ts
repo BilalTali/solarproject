@@ -2,8 +2,17 @@ import api from './axios';
 import type { User, ApiResponse } from '@/types';
 
 export const authApi = {
-    login: async (data: { identifier: string; password: string }) => {
-        const res = await api.post<ApiResponse<{ token: string; user: User; requires_password_set: boolean }>>('/auth/login', data);
+    sendOtp: async (data: { identifier: string; password?: string; role: string }) => {
+        const res = await api.post<ApiResponse<null>>('/auth/send-otp', data);
+        return {
+            success: res.data.success,
+            message: res.data.message,
+            debug_otp: (res.data as any).debug_otp
+        };
+    },
+
+    loginOtp: async (identifier: string, otp: string, role: string) => {
+        const res = await api.post<ApiResponse<{ token: string; user: User; requires_password_set?: boolean }>>('/auth/login-otp', { identifier, otp, role });
         return res.data;
     },
 
@@ -33,6 +42,14 @@ export const authApi = {
     },
     changePassword: async (data: { current_password?: string; password: string; password_confirmation: string }) => {
         const res = await api.put<ApiResponse<null>>('/profile/change-password', data);
+        return res.data;
+    },
+    forgotPassword: async (data: { identifier: string; role?: string }) => {
+        const res = await api.post<{ success: boolean; message: string; debug_otp?: string }>('/auth/forgot-password', data);
+        return res.data;
+    },
+    resetPassword: async (data: { identifier: string; otp: string; password: string; password_confirmation: string; role?: string }) => {
+        const res = await api.post<{ success: boolean; message: string }>('/auth/reset-password', data);
         return res.data;
     },
 };

@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             // ── PERSONAL DETAILS ───────────────────────────────────────────
-            // some fields like father_name, dob, blood_group might already exist from previous tasks, 
+            // some fields like father_name, dob, blood_group might already exist from previous tasks,
             // but let's ensure they are all here or handled safely.
-            // Check User model/previous migrations: 
+            // Check User model/previous migrations:
             // father_name, dob, blood_group were present in User.php $fillable and some migrations.
-            
+
             $table->string('religion', 100)->nullable()->after('blood_group');
             $table->enum('gender', ['male', 'female', 'other'])->nullable()->after('dob');
             $table->enum('marital_status', ['single', 'married', 'divorced', 'widowed'])->nullable()->after('religion');
@@ -71,7 +71,7 @@ return new class extends Migration
                 'qualification', 'experience_years', 'languages_known',
                 'reference_name', 'reference_mobile', 'territory', 'target_monthly',
                 'approved_at', 'approved_by', 'letter_number', 'joining_date',
-                'signature_image'
+                'signature_image',
             ]);
         });
     }

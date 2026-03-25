@@ -102,27 +102,27 @@ export const OfferExcitementCard = ({
     offer, progress, role, onRedeem, compact = false,
 }: OfferExcitementCardProps) => {
     const navigate = useNavigate()
-    const target = offer.target_installations
+    const target = offer.target_points
     const state = getExcitementState(progress, target)
     const cfg = STATE_CONFIG[state]
 
     // Handle cross-over from UserOfferProgress to the card logic
     const unredeemed = progress
-        ? (progress as UserOfferProgress).my_unredeemed_installations ?? (progress as OfferProgress).unredeemed_installations
+        ? (progress as UserOfferProgress).my_unredeemed_points ?? (progress as OfferProgress).unredeemed_points
         : 0
 
     // Cycle progress — reset per redemption:
-    const cycleInstalls = progress
+    const cyclePoints = progress
         ? (progress.can_redeem ? target : unredeemed % target)
         : 0
-    const pct = target > 0 ? Math.min(100, Math.round((cycleInstalls / target) * 100)) : 0
-    const needed = Math.max(0, target - cycleInstalls)
+    const pct = target > 0 ? Math.min(100, Math.round((cyclePoints / target) * 100)) : 0
+    const needed = Math.max(0, target - cyclePoints)
     const redeemCount = (progress as UserOfferProgress)?.my_redemption_count ?? (progress as OfferProgress)?.redemption_count ?? 0
 
     // Tick marks (cap at 12 for visual clarity):
     const showTicks = target <= 12
     const ticks = showTicks
-        ? Array.from({ length: target }, (_, i) => i < cycleInstalls)
+        ? Array.from({ length: target }, (_, i) => i < cyclePoints)
         : []
 
     const handleCTA = (e: React.MouseEvent) => {
@@ -261,7 +261,7 @@ export const OfferExcitementCard = ({
                 <div className="flex justify-between items-center mb-1.5">
                     <span className="text-[10px] text-neutral-400 font-semibold italic">Progress this cycle</span>
                     <span className={`text-[11.5px] font-extrabold tabular-nums ${cfg.countClass}`}>
-                        {state === 'ready' ? `${target} / ${target} ✓` : `${cycleInstalls} / ${target}`}
+                        {state === 'ready' ? `${target} / ${target} ✓` : `${cyclePoints} / ${target}`}
                     </span>
                 </div>
 
@@ -298,7 +298,7 @@ export const OfferExcitementCard = ({
                             </span>
                         ) : needed > 0 ? (
                             <span className="text-neutral-500">
-                                <strong className={cfg.countColor}>{needed} more install{needed !== 1 ? 's' : ''}</strong>
+                                <strong className={cfg.countColor}>{needed} more point{needed !== 1 ? 's' : ''}</strong>
                                 {' '}to go
                             </span>
                         ) : null}

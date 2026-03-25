@@ -110,7 +110,7 @@ export default function SuperAgentCommissionsPage() {
                 <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
                     <div className="flex justify-between items-start">
                         <div className="p-2 bg-amber-50 rounded-xl text-amber-600"><Clock size={20} /></div>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">To Pay Agents</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">To Pay Team</span>
                     </div>
                     <div className="mt-4">
                         <div className="text-2xl font-black text-slate-800 tracking-tight">₹{Number(summary?.agent_payouts_unpaid || 0).toLocaleString('en-IN')}</div>
@@ -182,7 +182,7 @@ export default function SuperAgentCommissionsPage() {
                     <table className="w-full text-sm text-left">
                         <thead className="bg-slate-50/50 border-b border-slate-100">
                             <tr>
-                                {['Ref/Date', 'Lead Identity', tab === 'my_earnings' ? 'Source' : 'Agent (Payee)', 'Amount', 'Status', 'Action'].map(h => (
+                                {['Ref/Date', 'Lead Identity', tab === 'my_earnings' ? 'Source' : 'Team (Payee)', 'Amount', 'Status', 'Action'].map(h => (
                                     <th key={h} className="px-5 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px] whitespace-nowrap">{h}</th>
                                 ))}
                             </tr>
@@ -282,7 +282,7 @@ export default function SuperAgentCommissionsPage() {
                 <div className="fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setShowPaidModal(null)}>
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in-up" onClick={e => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                            <h3 className="font-black text-slate-800 tracking-tight">Agent Payout</h3>
+                            <h3 className="font-black text-slate-800 tracking-tight">Team Payout</h3>
                             <button onClick={() => setShowPaidModal(null)} className="text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
                         </div>
                         <div className="p-6 space-y-5">

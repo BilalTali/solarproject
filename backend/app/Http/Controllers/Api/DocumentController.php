@@ -3,98 +3,134 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreDocumentRequest;
+use App\Http\Requests\UpdateDocumentRequest;
 use App\Models\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 class DocumentController extends Controller
 {
     public function index()
     {
-        $documents = Document::orderBy('sort_order')->orderBy('created_at', 'desc')->get()
-            ->map(fn($d) => $this->format($d));
+        $documents = Document::query()->orderBy('sort_order')->orderBy('created_at', 'desc')->get()
+            ->map(fn ($d) => $this->format($d));
+
         return response()->json(['success' => true, 'data' => $documents]);
     }
 
     /** Public endpoint — returns only published documents */
     public function publicIndex()
     {
-        $documents = Document::where('is_published', true)
+        $documents = Document::query()->where(fn ($q) => $q->where('is_published', true))
             ->orderBy('sort_order')->orderBy('created_at', 'desc')->get()
-            ->map(fn($d) => $this->format($d));
+            ->map(fn ($d) => $this->format($d));
+
         return response()->json(['success' => true, 'data' => $documents]);
     }
 
-    public function store(Request $request)
+    public function store(StoreDocumentRequest $request)
     {
-        $data = $request->validate([
-            'title'        => 'required|string|max:255',
-            'description'  => 'nullable|string',
-            'category'     => 'nullable|string|max:100',
-            'is_published' => 'sometimes|boolean',
-            'sort_order'   => 'sometimes|integer',
-            'file'         => 'required|file|max:51200', // 50MB limit
-            'thumbnail'    => 'nullable|file|image|max:5120', // 5MB limit
-        ]);
+        $data = $request->validated();
 
         if ($request->hasFile('file')) {
-            $data['file_path'] = $request->file('file')->store('documents', 'public');
+            $data['file_path'] = $request->file('file')->store('documents', 'local');
         }
         if ($request->hasFile('thumbnail')) {
-            $data['thumbnail_path'] = $request->file('thumbnail')->store('document_thumbs', 'public');
+            $data['thumbnail_path'] = $request->file('thumbnail')->store('document_thumbs', 'local');
         }
         unset($data['file'], $data['thumbnail']);
 
-        $document = Document::create($data);
+        $document = Document::query()->create($data);
+
         return response()->json(['success' => true, 'data' => $this->format($document)], 201);
     }
 
-    public function update(Request $request, Document $document)
+    public function update(UpdateDocumentRequest $request, Document $document)
     {
-        $data = $request->validate([
-            'title'        => 'sometimes|string|max:255',
-            'description'  => 'nullable|string',
-            'category'     => 'nullable|string|max:100',
-            'is_published' => 'sometimes|boolean',
-            'sort_order'   => 'sometimes|integer',
-            'file'         => 'nullable|file|max:51200',
-            'thumbnail'    => 'nullable|file|image|max:5120',
-        ]);
+        $data = $request->validated();
 
         if ($request->hasFile('file')) {
-            if ($document->file_path) Storage::disk('public')->delete($document->file_path);
-            $data['file_path'] = $request->file('file')->store('documents', 'public');
+            if ($document->file_path) {
+                Storage::disk('local')->delete($document->file_path);
+                Storage::disk('public')->delete($document->file_path);
+            }
+            $data['file_path'] = $request->file('file')->store('documents', 'local');
         }
         if ($request->hasFile('thumbnail')) {
-            if ($document->thumbnail_path) Storage::disk('public')->delete($document->thumbnail_path);
-            $data['thumbnail_path'] = $request->file('thumbnail')->store('document_thumbs', 'public');
+            if ($document->thumbnail_path) {
+                Storage::disk('local')->delete($document->thumbnail_path);
+                Storage::disk('public')->delete($document->thumbnail_path);
+            }
+            $data['thumbnail_path'] = $request->file('thumbnail')->store('document_thumbs', 'local');
         }
         unset($data['file'], $data['thumbnail']);
 
         $document->update($data);
+
         return response()->json(['success' => true, 'data' => $this->format($document)]);
     }
 
     public function destroy(Document $document)
     {
-        if ($document->file_path) Storage::disk('public')->delete($document->file_path);
-        if ($document->thumbnail_path) Storage::disk('public')->delete($document->thumbnail_path);
+        if ($document->file_path) {
+            Storage::disk('local')->delete($document->file_path);
+            Storage::disk('public')->delete($document->file_path);
+        }
+        if ($document->thumbnail_path) {
+            Storage::disk('local')->delete($document->thumbnail_path);
+            Storage::disk('public')->delete($document->thumbnail_path);
+        }
         $document->delete();
+
         return response()->json(['success' => true]);
+    }
+
+    public function getSignedUrl(Request $request, $id, $type = 'file')
+    {
+        $document = Document::findOrFail($id);
+        
+        $url = URL::temporarySignedRoute(
+            'api.v1.documents.signed-view',
+            now()->addMinutes(30),
+            ['id' => $id, 'type' => $type]
+        );
+
+        return response()->json(['url' => $url]);
+    }
+
+    public function viewSigned(Request $request, $id, $type)
+    {
+        $document = Document::findOrFail($id);
+        
+        $path = $type === 'thumbnail' ? $document->thumbnail_path : $document->file_path;
+
+        if (!$path) abort(404);
+
+        if (Storage::disk('local')->exists($path)) {
+            return Storage::disk('local')->response($path);
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->response($path);
+        }
+
+        abort(404, 'File not found');
     }
 
     private function format(Document $d): array
     {
         return [
-            'id'             => $d->id,
-            'title'          => $d->title,
-            'description'    => $d->description,
-            'category'       => $d->category,
-            'file_url'       => $d->file_path ? asset('storage/' . $d->file_path) : null,
-            'thumbnail_url'  => $d->thumbnail_path ? asset('storage/' . $d->thumbnail_path) : null,
-            'is_published'   => $d->is_published,
-            'sort_order'     => $d->sort_order,
-            'created_at'     => $d->created_at,
+            'id' => $d->id,
+            'title' => $d->title,
+            'description' => $d->description,
+            'category' => $d->category,
+            'file_url' => $d->file_path ? url('/api/v1/documents/'.$d->id.'/view-url?type=file') : null,
+            'thumbnail_url' => $d->thumbnail_path ? url('/api/v1/documents/'.$d->id.'/view-url?type=thumbnail') : null,
+            'is_published' => $d->is_published,
+            'sort_order' => $d->sort_order,
+            'created_at' => $d->created_at,
         ];
     }
 }

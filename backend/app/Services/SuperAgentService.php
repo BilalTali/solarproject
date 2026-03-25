@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Commission;
@@ -6,7 +7,6 @@ use App\Models\Lead;
 use App\Models\SuperAgentTeamLog;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class SuperAgentService
 {
@@ -17,41 +17,43 @@ class SuperAgentService
      */
     public function getTeamStats(User $superAgent): array
     {
-        $agentIds = User::agents()->where('super_agent_id', $superAgent->id)->pluck('id');
-        
+        $agentIds = User::query()->agents()->where(fn ($q) => $q->where('super_agent_id', $superAgent->id))->pluck('id');
+
         // 1. Team Stats (Consolidated)
-        $agentStats = User::agents()
-            ->where('super_agent_id', $superAgent->id)
+        $agentStats = User::query()->agents()
+            ->where(fn ($q) => $q->where('super_agent_id', $superAgent->id))
             ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status');
 
         // 2. Lead Status Summary
-        $leadsQuery = Lead::where(function ($q) use ($agentIds, $superAgent) {
-            $q->where('assigned_super_agent_id', $superAgent->id)
-              ->orWhereIn('assigned_agent_id', $agentIds)
-              ->orWhereIn('submitted_by_agent_id', $agentIds);
+        $leadsQuery = Lead::query()->where(function ($q) use ($agentIds, $superAgent) {
+            $q->where(fn ($q2) => $q2->where('assigned_super_agent_id', $superAgent->id))
+                ->orWhereIn('assigned_agent_id', $agentIds)
+                ->orWhereIn('submitted_by_agent_id', $agentIds);
         });
 
         $statusCounts = (clone $leadsQuery)
             ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status');
-        
+
         $totalLeads = $statusCounts->sum();
 
         // 3. Commissions Summary (using conditional sums)
-        $commSummary = Commission::where('payee_id', $superAgent->id)
-            ->where('payee_role', 'super_agent')
+        /** @var object|null $commSummary */
+        $commSummary = Commission::query()->where(fn ($q) => $q->where('payee_id', $superAgent->id))
+            ->where(fn ($q) => $q->where('payee_role', 'super_agent'))
             ->select(
                 DB::raw('sum(case when payment_status = "unpaid" then amount else 0 end) as pending'),
                 DB::raw('sum(case when payment_status = "paid" then amount else 0 end) as paid'),
-                DB::raw('sum(case when payment_status = "paid" and month(paid_at) = ' . now()->month . ' and year(paid_at) = ' . now()->year . ' then amount else 0 end) as this_month')
+                DB::raw('sum(case when payment_status = "paid" and month(paid_at) = '.now()->month.' and year(paid_at) = '.now()->year.' then amount else 0 end) as this_month')
             )
             ->first();
 
-        $agentCommSummary = Commission::whereIn('payee_id', $agentIds)
-            ->where('payee_role', 'agent')
+        /** @var object|null $agentCommSummary */
+        $agentCommSummary = Commission::query()->where(fn ($q) => $q->whereIn('payee_id', $agentIds))
+            ->where(fn ($q) => $q->where('payee_role', 'agent'))
             ->select(
                 DB::raw('sum(case when payment_status = "unpaid" then amount else 0 end) as pending'),
                 DB::raw('sum(case when payment_status = "paid" then amount else 0 end) as paid')
@@ -64,30 +66,38 @@ class SuperAgentService
 
         return [
             'team' => [
-                'total_agents'   => $agentIds->count(),
-                'active_agents'  => $agentStats->get('active', 0),
+                'total_agents' => $agentIds->count(),
+                'active_agents' => $agentStats->get('active', 0),
                 'pending_agents' => $agentStats->get('pending', 0),
             ],
             'leads' => [
-                'total'       => $totalLeads,
-                'new'         => $statusCounts->get('new', 0),
+                'total' => $totalLeads,
+                'new' => $statusCounts->get('new', 0),
                 'in_progress' => $totalLeads - $statusCounts->get('new', 0) - $statusCounts->get('installed', 0) - $statusCounts->get('completed', 0) - $statusCounts->get('rejected', 0),
-                'installed'   => $statusCounts->get('installed', 0),
-                'completed'   => $statusCounts->get('completed', 0),
-                'rejected'    => $statusCounts->get('rejected', 0),
+                'installed' => $statusCounts->get('installed', 0),
+                'completed' => $statusCounts->get('completed', 0),
+                'rejected' => $statusCounts->get('rejected', 0),
             ],
             'commissions' => [
-                'override_pending'    => (float)($commSummary->pending ?? 0),
-                'override_paid'       => (float)($commSummary->paid ?? 0),
-                'override_this_month' => (float)($commSummary->this_month ?? 0),
-                'agent_pending'       => (float)($agentCommSummary->pending ?? 0),
-                'agent_paid'          => (float)($agentCommSummary->paid ?? 0),
+                'override_pending' => (float) ($commSummary?->pending ?? 0),
+                'override_paid' => (float) ($commSummary?->paid ?? 0),
+                'override_this_month' => (float) ($commSummary?->this_month ?? 0),
+                'agent_pending' => (float) ($agentCommSummary?->pending ?? 0),
+                'agent_paid' => (float) ($agentCommSummary?->paid ?? 0),
             ],
             'trends' => [
-                'leads_this_month'    => (clone $leadsQuery)->whereYear('created_at', $now->year)->whereMonth('created_at', $now->month)->count(),
-                'leads_last_month'    => (clone $leadsQuery)->whereYear('created_at', $lastMonth->year)->whereMonth('created_at', $lastMonth->month)->count(),
-                'installs_this_month' => (clone $leadsQuery)->whereIn('status', ['installed', 'completed'])->whereYear('updated_at', $now->year)->whereMonth('updated_at', $now->month)->count(),
-                'installs_last_month' => (clone $leadsQuery)->whereIn('status', ['installed', 'completed'])->whereYear('updated_at', $lastMonth->year)->whereMonth('updated_at', $lastMonth->month)->count(),
+                'leads_this_month' => (clone $leadsQuery)->where(function ($q) use ($now) {
+                    $q->whereYear('created_at', $now->year)->whereMonth('created_at', $now->month);
+                })->count(),
+                'leads_last_month' => (clone $leadsQuery)->where(function ($q) use ($lastMonth) {
+                    $q->whereYear('created_at', $lastMonth->year)->whereMonth('created_at', $lastMonth->month);
+                })->count(),
+                'installs_this_month' => (clone $leadsQuery)->where(function ($q) use ($now) {
+                    $q->whereIn('status', ['installed', 'completed'])->whereYear('updated_at', $now->year)->whereMonth('updated_at', $now->month);
+                })->count(),
+                'installs_last_month' => (clone $leadsQuery)->where(function ($q) use ($lastMonth) {
+                    $q->whereIn('status', ['installed', 'completed'])->whereYear('updated_at', $lastMonth->year)->whereMonth('updated_at', $lastMonth->month);
+                })->count(),
             ],
         ];
     }
@@ -99,13 +109,14 @@ class SuperAgentService
     {
         DB::transaction(function () use ($superAgent, $agent, $assignedBy) {
             $agent->super_agent_id = $superAgent->id;
+            $agent->parent_id = $superAgent->id;
             $agent->save();
 
             SuperAgentTeamLog::create([
                 'super_agent_id' => $superAgent->id,
-                'agent_id'       => $agent->id,
-                'assigned_by'    => $assignedBy->id,
-                'assigned_at'    => now(),
+                'agent_id' => $agent->id,
+                'assigned_by' => $assignedBy->id,
+                'assigned_at' => now(),
             ]);
 
             // Notify super agent
@@ -131,12 +142,12 @@ class SuperAgentService
      */
     public function unassignAgent(User $superAgent, User $agent, User $removedBy, ?string $notes = null): void
     {
-        DB::transaction(function () use ($superAgent, $agent, $removedBy, $notes) {
+        DB::transaction(function () use ($superAgent, $agent, $notes) {
             $agent->super_agent_id = null;
             $agent->save();
 
-            $log = SuperAgentTeamLog::where('super_agent_id', $superAgent->id)
-                ->where('agent_id', $agent->id)
+            $log = SuperAgentTeamLog::query()->where(fn ($q) => $q->where('super_agent_id', $superAgent->id))
+                ->where(fn ($q) => $q->where('agent_id', $agent->id))
                 ->whereNull('unassigned_at')
                 ->latest()
                 ->first();
@@ -169,23 +180,23 @@ class SuperAgentService
         return DB::transaction(function () use ($superAgent, $admin) {
             $updateData = ['status' => 'active'];
 
-            if (!$superAgent->super_agent_code) {
+            if (! $superAgent->super_agent_code) {
                 $updateData['super_agent_code'] = app(AgentService::class)->generateSuperAgentCode();
             }
 
-            if (!$superAgent->letter_number) {
+            if (! $superAgent->letter_number) {
                 $updateData['letter_number'] = app(JoiningLetterService::class)->generateLetterNumber($superAgent);
                 $updateData['joining_date'] = now()->toDateString();
                 $updateData['approved_at'] = now();
                 $updateData['approved_by'] = $admin ? $admin->id : null;
 
                 // QR Token Generation
-                $updateData['qr_token'] = hash('sha256', \Illuminate\Support\Str::random(40) . $superAgent->id . now()->timestamp);
+                $updateData['qr_token'] = hash('sha256', \Illuminate\Support\Str::random(40).$superAgent->id.now()->timestamp);
                 $updateData['qr_generated_at'] = now();
             }
 
             $superAgent->update($updateData);
-            
+
             $this->notificationService->send(
                 $superAgent->id,
                 'super_agent_approved',
@@ -202,8 +213,8 @@ class SuperAgentService
      */
     public function canAccessLead(User $superAgent, Lead $lead): bool
     {
-        $agentIds = User::agents()
-            ->where('super_agent_id', $superAgent->id)
+        $agentIds = User::query()->agents()
+            ->where(fn ($q) => $q->where('super_agent_id', $superAgent->id))
             ->pluck('id');
 
         return $lead->assigned_super_agent_id === $superAgent->id

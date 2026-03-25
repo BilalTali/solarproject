@@ -23,6 +23,7 @@ export const formatDateTime = (dateStr: string | null | undefined): string => {
 export const STATUS_LABELS: Record<LeadStatus, string> = {
     new: 'New',
     registered: 'Registered',
+    at_bank: 'At Bank',
     installed: 'Installed',
     completed: 'Completed',
     rejected: 'Rejected',
@@ -32,6 +33,7 @@ export const STATUS_LABELS: Record<LeadStatus, string> = {
 export const STATUS_COLORS: Record<LeadStatus, string> = {
     new: 'badge-new',
     registered: 'badge-registered',
+    at_bank: 'badge-at_bank',
     installed: 'badge-installed',
     completed: 'badge-completed',
     rejected: 'badge-rejected',

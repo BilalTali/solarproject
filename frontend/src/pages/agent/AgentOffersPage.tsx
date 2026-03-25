@@ -55,7 +55,7 @@ export const AgentOffersPage: React.FC = () => {
                         </div>
                         <h1 className="text-3xl font-black mb-2 tracking-tight">Suryamitra Leaderboard Prizes</h1>
                         <p className="text-indigo-100 font-medium leading-relaxed opacity-90">
-                            The harder you work, the bigger you win! Track your installations and redeem premium prizes.
+                            The harder you work, the bigger you win! Track your points and redeem premium prizes.
                             <span className="block mt-1 font-bold">Note: Unclaimed points are absorbed by your Super Agent when an offer period expires.</span>
                         </p>
                     </div>
@@ -155,7 +155,7 @@ export const AgentOffersPage: React.FC = () => {
                         <ul className="space-y-2 text-xs text-amber-800/80 font-medium">
                             <li className="flex gap-2">
                                 <span className="shrink-0 w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[10px] flex items-center justify-center font-black">1</span>
-                                Complete installations to fill your progress bar.
+                                Earn points to fill your progress bar.
                             </li>
                             <li className="flex gap-2">
                                 <span className="shrink-0 w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[10px] flex items-center justify-center font-black">2</span>
@@ -163,7 +163,7 @@ export const AgentOffersPage: React.FC = () => {
                             </li>
                             <li className="flex gap-2">
                                 <span className="shrink-0 w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[10px] flex items-center justify-center font-black">3</span>
-                                Excess installations are carried over to your next prize cycle!
+                                Excess points are carried over to your next prize cycle!
                             </li>
                         </ul>
                     </div>

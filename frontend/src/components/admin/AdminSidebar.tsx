@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     Sun, LayoutDashboard, List, Users, DollarSign, BarChart3,
-    Settings, LogOut, Shield, Star, Award, FileText, Gift, Inbox
+    Settings, LogOut, Shield, Star, Award, FileText, Gift, Inbox, Wallet
 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -16,12 +16,15 @@ const NAV = [
     { icon: <Gift className="w-5 h-5" />, label: 'Incentive Offers', to: '/admin/offers' },
     { icon: <Award className="w-5 h-5" />, label: 'Prize Redemptions', to: '/admin/redemptions' },
     { icon: <Inbox className="w-5 h-5" />, label: 'Absorbed Points', to: '/admin/absorptions' },
+    { icon: <Wallet className="w-5 h-5" />, label: 'Withdrawal Requests', to: '/admin/withdrawals' },
     { icon: <Users className="w-5 h-5" />, label: 'Business Development Executives', to: '/admin/agents' },
+    { icon: <Users className="w-5 h-5" />, label: 'Enumerators', to: '/admin/enumerators' },
     { icon: <Star className="w-5 h-5" />, label: 'Business Development Managers', to: '/admin/super-agents' },
     { icon: <Award className="w-5 h-5" />, label: 'Reward Winners', to: '/admin/media' },
     { icon: <FileText className="w-5 h-5" />, label: 'Agent Documents', to: '/admin/documents' },
     { icon: <DollarSign className="w-5 h-5" />, label: 'Commissions', to: '/admin/commissions' },
     { icon: <BarChart3 className="w-5 h-5" />, label: 'Reports', to: '/admin/reports' },
+    { icon: <Settings className="w-5 h-5" />, label: 'Commission Slabs', to: '/admin/commission-slabs' },
     { icon: <Settings className="w-5 h-5" />, label: 'Settings', to: '/admin/settings' },
 ];
 
@@ -76,7 +79,7 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
                             key={item.to}
                             to={item.to}
                             onClick={onClose}
-                            className={`sidebar-item ${isActive ? 'sidebar-item-active' : ''}`}
+                            className={`sidebar-item group ${isActive ? 'sidebar-item-active' : ''}`}
                             aria-current={isActive ? 'page' : undefined}
                         >
                             <span aria-hidden="true">{item.icon}</span>

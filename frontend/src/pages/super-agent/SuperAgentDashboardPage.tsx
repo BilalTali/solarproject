@@ -19,21 +19,23 @@ import toast from 'react-hot-toast';
 import api from '@/api/axios';
 import { OffersDashboardSection } from '@/components/offers/OffersDashboardSection';
 import { ReferralShareWidget } from '@/components/shared/ReferralShareWidget';
+import DashboardSkeleton from '@/components/shared/DashboardSkeleton';
 
 function StatCard({
     label, value, icon: Icon, color, sub,
 }: { label: string; value: string | number; icon: React.ElementType; color: string; sub?: string }) {
     return (
-        <div className={`bg-white rounded-xl p-5 border-l-4 shadow-sm ${color}`}>
-            <div className="flex items-start justify-between">
-                <div>
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</p>
-                    <p className="text-2xl font-bold text-slate-800 mt-1">{value}</p>
-                    {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
-                </div>
-                <div className="p-2 rounded-lg bg-slate-50">
-                    <Icon size={20} className="text-slate-500" />
-                </div>
+        <div className={`stat-card group ${color}`}>
+            {/* Decorative Background Pattern */}
+            <div className="absolute -right-4 -top-4 w-20 h-20 bg-current opacity-[0.03] rounded-full group-hover:scale-125 transition-transform duration-500" />
+
+            <div className="relative z-10">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">{value}</p>
+                {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+            </div>
+            <div className="relative z-10 p-2 rounded-xl bg-slate-50 group-hover:scale-110 transition-transform duration-300">
+                <Icon size={20} className="text-slate-500" />
             </div>
         </div>
     );
@@ -96,13 +98,7 @@ export default function SuperAgentDashboardPage() {
     });
     const pendingVerifCount: number = (pendingVerifData?.data as any)?.total ?? 0;
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-10 w-10 border-4 border-orange-500 border-t-transparent" />
-            </div>
-        );
-    }
+    if (isLoading) return <DashboardSkeleton />;
 
     const leadsThisMonthTrend = stats
         ? stats.trends.leads_this_month - stats.trends.leads_last_month

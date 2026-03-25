@@ -130,6 +130,10 @@
     @apply bg-indigo-50 text-indigo-700;
   }
 
+  .badge-at_bank {
+    @apply bg-violet-50 text-violet-700;
+  }
+
   .badge-site_survey {
     @apply bg-purple-50 text-purple-700;
   }
@@ -173,20 +177,29 @@
 
   /* Sidebar Dark */
   .sidebar {
-    @apply bg-dark text-white;
+    @apply bg-dark text-white border-r border-white/5;
   }
 
   .sidebar-item {
-    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer;
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-400 hover:bg-white/10 hover:text-white transition-all duration-300 cursor-pointer;
+  }
+
+  .sidebar-item svg {
+    @apply transition-transform duration-300;
+  }
+
+  .sidebar-item:hover svg {
+    transform: scale(1.1);
   }
 
   .sidebar-item-active {
-    @apply bg-accent/10 text-accent font-semibold border-l-4 border-accent;
+    @apply bg-gradient-to-r from-accent/20 to-transparent text-accent font-bold border-l-4 border-accent shadow-[inset_4px_0_0_0_#FF9500];
+    @apply translate-x-1;
   }
 
   /* Stat Cards */
   .stat-card {
-    @apply bg-white rounded-card shadow-card p-6 flex items-start justify-between border-b-4 border-primary/10 hover:border-primary transition-all duration-300;
+    @apply bg-white rounded-2xl shadow-sm p-6 flex items-start justify-between border-b-4 border-primary/5 hover:border-primary hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden;
   }
 }
 

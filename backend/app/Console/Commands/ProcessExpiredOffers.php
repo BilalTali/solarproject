@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Offer;
 use App\Services\OfferService;
+use Illuminate\Console\Command;
 
 class ProcessExpiredOffers extends Command
 {
@@ -31,25 +31,29 @@ class ProcessExpiredOffers extends Command
 
         // Find offers that ended (offer_to passed) AND grace period also passed
         // AND have not been processed yet.
-        $expiredOffers = Offer::whereNull('absorption_processed_at')
-            ->where('status', 'active')
-            ->whereNotNull('offer_to')
+        $expiredOffers = Offer::query()->where(fn ($q) => $q->whereNull('absorption_processed_at'))
+            ->where(fn ($q) => $q->where('status', 'active'))
+            ->where(fn ($q) => $q->whereNotNull('offer_to'))
             ->get()
             ->filter(function ($offer) {
                 // grace_period_ends_at is basically (offer_to + grace_period_days)
                 return now()->gt($offer->grace_period_ends_at);
             });
 
+        /** @var \Illuminate\Support\Collection<int, Offer> $expiredOffers */
+
         if ($expiredOffers->isEmpty()) {
             $this->info('No newly expired offers found.');
+
             return;
         }
 
         foreach ($expiredOffers as $offer) {
+            /** @var Offer $offer */
             $this->info("Processing Offer ID: {$offer->id} ({$offer->title})...");
-            
+
             $stats = $offerService->processOfferExpiry($offer);
-            
+
             $this->table(
                 ['Agents Processed', 'Absorbed', 'Grace Expired', 'Points Transfer'],
                 [[$stats['agents_processed'], $stats['agents_absorbed'], $stats['agents_grace_period_expired'], $stats['total_points_absorbed']]]

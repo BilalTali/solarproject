@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1\Agent;
 
 use App\Http\Controllers\Controller;
@@ -11,23 +12,23 @@ class NotificationController extends Controller
         $notifications = $request->user()
             ->notifications()
             ->orderBy('created_at', 'desc')
-            ->paginate($request->get('per_page', 15));
+            ->paginate($request->input('per_page', 15));
 
         return response()->json([
             'success' => true,
-            'data' => $notifications
+            'data' => $notifications,
         ]);
     }
 
     public function markAsRead(Request $request, $id)
     {
         $notification = $request->user()->notifications()->findOrFail($id);
-        
+
         $notification->update(['read_at' => now()]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Notification marked as read'
+            'message' => 'Notification marked as read',
         ]);
     }
 }

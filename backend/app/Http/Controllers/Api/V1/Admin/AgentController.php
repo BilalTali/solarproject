@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
@@ -13,22 +14,22 @@ class AgentController extends Controller
 
     public function index(Request $request)
     {
-        $query = User::where('role', 'agent')
-                     ->withCount(['submittedLeads as total_leads',
-                                  'submittedLeads as installed_leads' => function ($q) {
-                                      $q->where('status', 'installed');
-                                  }]);
+        $query = User::query()->where(fn ($q) => $q->where('role', 'agent'))
+            ->withCount(['submittedLeads as total_leads',
+                'submittedLeads as installed_leads' => function ($q) {
+                    $q->where(fn ($query) => $query->where('status', 'installed'));
+                }]);
 
         if ($request->has('status')) {
-            $query->where('status', $request->status);
+            $query->where(fn ($q) => $q->where('status', $request->status));
         }
 
         if ($request->has('search')) {
             $search = str_replace(['%', '_'], ['\%', '\_'], $request->search);
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('mobile', 'like', "%{$search}%")
-                  ->orWhere('agent_id', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where(fn ($query) => $query->where('name', 'like', "%{$search}%"))
+                    ->orWhere('mobile', 'like', "%{$search}%")
+                    ->orWhere('agent_id', 'like', "%{$search}%");
             });
         }
 
@@ -38,28 +39,30 @@ class AgentController extends Controller
                 'createdBySuperAgent:id,name,super_agent_code',
             ])
             ->orderBy('created_at', 'desc')
-            ->paginate($request->get('per_page', 15));
+            ->paginate($request->input('per_page', 15));
 
         return response()->json([
             'success' => true,
-            'data' => $agents
+            'data' => $agents,
         ]);
     }
 
     public function show($id)
     {
-        $agent = User::where('role', 'agent')
-                     ->with([
-                         'commissions' => function($q) { $q->orderBy('created_at', 'desc'); },
-                         'superAgent:id,name,super_agent_code',
-                         'createdBySuperAgent:id,name,super_agent_code',
-                     ])
-                     ->withCount('submittedLeads')
-                     ->findOrFail($id);
+        $agent = User::query()->where(fn ($q) => $q->where('role', 'agent'))
+            ->with([
+                'commissions' => function ($q) {
+                    $q->orderBy('created_at', 'desc');
+                },
+                'superAgent:id,name,super_agent_code',
+                'createdBySuperAgent:id,name,super_agent_code',
+            ])
+            ->withCount('submittedLeads')
+            ->findOrFail($id);
 
         return response()->json([
             'success' => true,
-            'data' => $agent
+            'data' => $agent,
         ]);
     }
 
@@ -70,18 +73,18 @@ class AgentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Agent created and approved successfully',
-            'data'    => $agent->fresh()
+            'data' => $agent->fresh(),
         ], 201);
     }
 
     public function update(Request $request, $id)
     {
-        $agent = User::where('role', 'agent')->findOrFail($id);
+        $agent = User::query()->where(fn ($q) => $q->where('role', 'agent'))->findOrFail($id);
 
         $data = $request->validate([
-            'name'            => 'sometimes|string|max:255',
-            'district'        => 'sometimes|string|max:255',
-            'state'           => 'sometimes|string|max:255',
+            'name' => 'sometimes|string|max:255',
+            'district' => 'sometimes|string|max:255',
+            'state' => 'sometimes|string|max:255',
             'whatsapp_number' => 'sometimes|string|size:10',
         ]);
 
@@ -90,7 +93,7 @@ class AgentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Agent updated successfully',
-            'data'    => $agent
+            'data' => $agent,
         ]);
     }
 
@@ -101,10 +104,10 @@ class AgentController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        $agent = User::where('role', 'agent')->findOrFail($id);
+        $agent = User::query()->where(fn ($q) => $q->where('role', 'agent'))->findOrFail($id);
 
         $request->validate([
-            'status'         => 'required|in:active,inactive,pending',
+            'status' => 'required|in:active,inactive,pending',
             'super_agent_id' => 'nullable|exists:users,id',
         ]);
 
@@ -112,7 +115,7 @@ class AgentController extends Controller
             $this->agentService->approveAgent(
                 $agent,
                 $request->user(),
-                $request->super_agent_id ? (int)$request->super_agent_id : null
+                $request->super_agent_id ? (int) $request->super_agent_id : null
             );
         } else {
             $agent->forceFill(['status' => $request->status])->save();
@@ -121,7 +124,7 @@ class AgentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Agent status updated successfully',
-            'data'    => clone $agent->fresh(['superAgent', 'createdBySuperAgent'])
+            'data' => clone $agent->fresh(['superAgent', 'createdBySuperAgent']),
         ]);
     }
 
@@ -133,64 +136,66 @@ class AgentController extends Controller
     {
         $request->validate([
             'super_agent_id' => 'required|exists:users,id',
-            'force'          => 'nullable|boolean',
+            'force' => 'nullable|boolean',
         ]);
 
-        $agent      = User::where('role', 'agent')->findOrFail($id);
-        $superAgent = User::where('id', $request->super_agent_id)->where('role', 'super_agent')->firstOrFail();
+        $agent = User::query()->where(fn ($q) => $q->where('role', 'agent'))->findOrFail($id);
+        $superAgent = User::query()->where(fn ($q) => $q->where('id', $request->super_agent_id))
+            ->where(fn ($q) => $q->where('role', 'super_agent'))
+            ->firstOrFail();
 
         $agent = $this->agentService->assignAgentToSuperAgent(
             $agent,
             $superAgent,
             $request->user(),
-            (bool)$request->input('force', false)
+            (bool) $request->input('force', false)
         );
 
         return response()->json([
             'success' => true,
             'message' => 'Agent assigned to Super Agent successfully',
-            'data'    => $agent->fresh(['superAgent']),
+            'data' => $agent->fresh(['superAgent']),
         ]);
     }
 
     public function regenerateQr($id)
     {
-        $agent = User::where('role', 'agent')->findOrFail($id);
-        
+        $agent = User::query()->where(fn ($q) => $q->where('role', 'agent'))->findOrFail($id);
+
         $agent->update([
-            'qr_token'        => hash('sha256', \Illuminate\Support\Str::random(40) . $agent->id . now()->timestamp),
+            'qr_token' => hash('sha256', \Illuminate\Support\Str::random(40).$agent->id.now()->timestamp),
             'qr_generated_at' => now(),
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'QR code regenerated successfully. Old cards are now invalid.',
-            'data'    => $agent->fresh()
+            'data' => $agent->fresh(),
         ]);
     }
 
     public function getQrScans($id)
     {
-        $agent = User::where('role', 'agent')->findOrFail($id);
-        
+        $agent = User::query()->where(fn ($q) => $q->where('role', 'agent'))->findOrFail($id);
+
         $scans = $agent->qrScanLogs()
-                       ->orderBy('scanned_at', 'desc')
-                       ->paginate(15);
+            ->orderBy('scanned_at', 'desc')
+            ->paginate(15);
 
         return response()->json([
             'success' => true,
-            'data'    => $scans
+            'data' => $scans,
         ]);
     }
 
     public function destroy($id)
     {
-        $agent = User::where('role', 'agent')->findOrFail($id);
+        $agent = User::query()->where(fn ($q) => $q->where('role', 'agent'))->findOrFail($id);
         $agent->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Agent deleted successfully'
+            'message' => 'Agent deleted successfully',
         ]);
     }
 }

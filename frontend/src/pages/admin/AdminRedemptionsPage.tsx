@@ -4,7 +4,7 @@ import { offersApi } from '../../api/offers.api';
 import { OfferRedemption, RedemptionStatus } from '../../types';
 import {
     CheckCircle2, Package, Clock, Filter, Search,
-    User, Gift, ChevronRight, Info
+    User, Gift, ChevronRight, Info, XCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
@@ -43,6 +43,19 @@ export const AdminRedemptionsPage: React.FC = () => {
         }
     });
 
+    const cancelMutation = useMutation({
+        mutationFn: ({ id, notes }: { id: number, notes?: string }) =>
+            offersApi.admin.cancelRedemption(id, notes),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin-redemptions'] });
+            toast.success('Redemption cancelled and points reverted');
+            setSelectedRedemption(null);
+        },
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || 'Failed to cancel redemption');
+        }
+    });
+
     const redemptions = redemptionsResp?.data || [];
     const filtered = redemptions.filter(r =>
         r.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -55,6 +68,7 @@ export const AdminRedemptionsPage: React.FC = () => {
             case 'pending': return "bg-amber-50 text-amber-700 border-amber-100";
             case 'approved': return "bg-blue-50 text-blue-700 border-blue-100";
             case 'delivered': return "bg-emerald-50 text-emerald-700 border-emerald-100";
+            case 'cancelled': return "bg-red-50 text-red-700 border-red-100";
             default: return "bg-slate-50 text-slate-700 border-slate-100";
         }
     };
@@ -113,7 +127,7 @@ export const AdminRedemptionsPage: React.FC = () => {
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex gap-4">
                                     <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                                        {r.status === 'pending' ? <Clock size={24} /> : r.status === 'approved' ? <Package size={24} /> : <CheckCircle2 size={24} />}
+                                        {r.status === 'pending' ? <Clock size={24} /> : r.status === 'approved' ? <Package size={24} /> : r.status === 'cancelled' ? <XCircle size={24} /> : <CheckCircle2 size={24} />}
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-slate-900">{r.offer?.title}</h3>
@@ -190,8 +204,8 @@ export const AdminRedemptionsPage: React.FC = () => {
                                                 <span className="font-black text-indigo-600">{selectedRedemption.redemption_number}</span>
                                             </div>
                                             <div className="flex justify-between text-sm">
-                                                <span className="text-slate-500">Installs Consumed</span>
-                                                <span className="font-black">{selectedRedemption.installations_used}</span>
+                                                <span className="text-slate-500">Points Consumed</span>
+                                                <span className="font-black">{selectedRedemption.points_used}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -231,6 +245,21 @@ export const AdminRedemptionsPage: React.FC = () => {
                                                     MARK AS DELIVERED
                                                 </button>
                                             )}
+                                            
+                                            {(selectedRedemption.status === 'pending' || selectedRedemption.status === 'approved') && (
+                                                <button
+                                                    onClick={() => {
+                                                        if (window.confirm("Are you sure you want to cancel this redemption? Points will be reverted to the user's balance.")) {
+                                                            cancelMutation.mutate({ id: selectedRedemption.id, notes: actionNotes });
+                                                        }
+                                                    }}
+                                                    className="w-full py-3 bg-white text-red-600 border-2 border-red-100 rounded-2xl font-black text-xs transition-all hover:bg-red-50 active:scale-[0.98] flex items-center justify-center gap-2 mt-2"
+                                                    disabled={cancelMutation.isPending}
+                                                >
+                                                    <XCircle size={16} />
+                                                    {cancelMutation.isPending ? "CANCELLING..." : "CANCEL REDEMPTION & REVERT POINTS"}
+                                                </button>
+                                            )}
 
                                             {selectedRedemption.status === 'delivered' && (
                                                 <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 text-center">
@@ -238,6 +267,16 @@ export const AdminRedemptionsPage: React.FC = () => {
                                                     <p className="text-emerald-800 font-black text-sm tracking-tight uppercase">Successfully Fulfilled</p>
                                                     <p className="text-[10px] text-emerald-600 font-bold mt-1">
                                                         Delivered on {format(new Date(selectedRedemption.delivered_at!), 'dd MMM yyyy')}
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            {selectedRedemption.status === 'cancelled' && (
+                                                <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-center">
+                                                    <XCircle size={24} className="mx-auto text-red-600 mb-2" />
+                                                    <p className="text-red-800 font-black text-sm tracking-tight uppercase">Cancelled</p>
+                                                    <p className="text-[10px] text-red-600 font-bold mt-1">
+                                                        Points have been reverted to user.
                                                     </p>
                                                 </div>
                                             )}

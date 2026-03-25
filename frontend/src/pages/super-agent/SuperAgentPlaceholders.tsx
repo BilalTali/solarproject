@@ -7,6 +7,7 @@ import {
     Camera, Mail, Shield, BadgeCheck, Save
 } from 'lucide-react';
 import { superAgentApi } from '@/api/superAgent.api';
+import { superAgentCommissionsApi } from '@/api/commissions.api';
 import { openAuthenticatedFile } from '@/utils/documentUtils';
 import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/store/authStore';
@@ -30,7 +31,7 @@ const STATUS_BADGE: Record<string, string> = {
     on_hold: 'bg-yellow-100 text-yellow-700',
 };
 
-const ALL_STATUSES = Object.keys(STATUS_BADGE);
+
 
 function label(status: string) { return status.replace(/_/g, ' '); }
 function fmt(iso: string) { return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); }
@@ -40,8 +41,7 @@ export function SuperAgentLeadDetailPage() {
     const qc = useQueryClient();
 
     // Status update states
-    const [newStatus, setNewStatus] = useState('');
-    const [statusNote, setStatusNote] = useState('');
+
 
     const { data, isLoading } = useQuery({
         queryKey: ['sa-lead-detail', ulid],
@@ -61,24 +61,7 @@ export function SuperAgentLeadDetailPage() {
     const [activeCommissionPrompt, setActiveCommissionPrompt] = useState<CommissionPrompt | null>(null);
     const [assignAgentId, setAssignAgentId] = useState<number | string>('');
 
-    const statusMut = useMutation({
-        mutationFn: ({ ulid, status, notes }: { ulid: string; status: string; notes?: string }) =>
-            superAgentApi.updateLeadStatus(ulid, { status, notes }),
-        onSuccess: (res: any) => {
-            qc.invalidateQueries({ queryKey: ['sa-lead-detail', ulid] });
-            qc.invalidateQueries({ queryKey: ['sa-leads'] });
-            toast.success('Lead status updated');
-            setNewStatus('');
-            setStatusNote('');
 
-            if (res.data?.commission_prompt?.should_prompt) {
-                setActiveCommissionPrompt(res.data.commission_prompt);
-            } else {
-                setActiveCommissionPrompt(null);
-            }
-        },
-        onError: () => toast.error('Failed to update status.'),
-    });
 
     const assignMut = useMutation({
         mutationFn: ({ ulid, agent_id }: { ulid: string; agent_id: number }) =>
@@ -101,9 +84,7 @@ export function SuperAgentLeadDetailPage() {
     }
 
     // Initialize status dropdown if not set
-    if (!newStatus && lead.status) {
-        setNewStatus(lead.status);
-    }
+
 
     const docs = lead.documents || [];
     const getDoc = (type: string) => docs.find(d => d.document_type === type);
@@ -138,6 +119,11 @@ export function SuperAgentLeadDetailPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {(() => {
+                    const currentPrompt = activeCommissionPrompt || lead.commission_prompt;
+                    return (
+                        <>
 
                 {/* ── Left Column: Details ── */}
                 <div className="lg:col-span-2 space-y-6">
@@ -275,54 +261,38 @@ export function SuperAgentLeadDetailPage() {
                 <div className="space-y-6">
 
                     {/* Status Update Card / Commission Entry */}
-                    {(activeCommissionPrompt || (lead.status === 'completed' && lead.assigned_agent)) ? (
+                    {(currentPrompt && currentPrompt.should_prompt) ? (
                         <div className="bg-orange-50 rounded-xl border border-orange-200 shadow-sm p-0 mb-6 overflow-hidden">
                             <CommissionInlineEntryForAgent
                                 leadUlid={lead.ulid}
                                 leadStatus={lead.status}
-                                commissionPrompt={activeCommissionPrompt || undefined}
-                                existingCommission={lead.formatted_commissions?.agent_commission || null}
-                                agentName={activeCommissionPrompt?.payee_name || lead.assigned_agent?.name || 'Business Development Executive'}
-                                agentCode={activeCommissionPrompt?.payee_code || lead.assigned_agent?.agent_id || ''}
+                                commissionPrompt={currentPrompt}
+                                existingCommission={currentPrompt.payee_role === 'enumerator' ? (lead.formatted_commissions?.enumerator_commission || null) : (lead.formatted_commissions?.agent_commission || null)}
+                                agentName={currentPrompt.payee_name || lead.assigned_agent?.name || 'Business Development Executive'}
+                                agentCode={currentPrompt.payee_code || lead.assigned_agent?.agent_id || ''}
                                 onSaved={() => {
                                     setActiveCommissionPrompt(null);
                                     qc.invalidateQueries({ queryKey: ['sa-lead-detail', ulid] });
                                 }}
                                 onSkip={() => setActiveCommissionPrompt(null)}
+                                commissionsApi={superAgentCommissionsApi}
                             />
                         </div>
                     ) : (
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Update Status</h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-xs font-semibold text-slate-600 mb-1">Status</label>
-                                    <select
-                                        value={newStatus}
-                                        onChange={e => setNewStatus(e.target.value)}
-                                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 capitalize"
-                                    >
-                                        {ALL_STATUSES.map(s => (
-                                            <option key={s} value={s}>{label(s)}</option>
-                                        ))}
-                                    </select>
+                            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2 flex items-center gap-2">
+                                <Shield size={16} className="text-orange-600" /> Pipeline Status
+                            </h2>
+                            <div className="flex flex-col gap-3">
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                    <p className="text-xs text-slate-500 uppercase font-black tracking-widest mb-2">Current Stage</p>
+                                    <span className={`px-3 py-1 rounded-lg text-sm font-bold capitalize ${STATUS_BADGE[lead.status] ?? 'bg-slate-100 text-slate-600'}`}>
+                                        {label(lead.status)}
+                                    </span>
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-slate-600 mb-1">Notes (Optional)</label>
-                                    <textarea
-                                        value={statusNote}
-                                        onChange={e => setStatusNote(e.target.value)}
-                                        placeholder="Add context to this status change..."
-                                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none min-h-[80px]"
-                                    />
-                                </div>
-                                <button
-                                    disabled={newStatus === lead.status || statusMut.isPending}
-                                    onClick={() => statusMut.mutate({ ulid: lead.ulid, status: newStatus, notes: statusNote || undefined })}
-                                    className="w-full py-2.5 bg-orange-600 text-white rounded-lg text-sm font-bold hover:bg-orange-700 disabled:opacity-40 transition-colors"
-                                >
-                                    {statusMut.isPending ? 'Saving...' : 'Update Status'}
-                                </button>
+                                <p className="text-[10px] text-slate-400 italic leading-snug">
+                                    Note: Only administrators can progress a lead through the pipeline.
+                                </p>
                             </div>
                         </div>
                     )}
@@ -412,6 +382,9 @@ export function SuperAgentLeadDetailPage() {
                     )}
 
                 </div>
+                        </>
+                    );
+                })()}
             </div>
         </div>
     );

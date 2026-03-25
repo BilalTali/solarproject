@@ -14,8 +14,6 @@ return new class extends Migration
             DB::statement("ALTER TABLE leads MODIFY COLUMN source ENUM('public_form','agent_submission','super_agent_submission','admin_manual') NOT NULL DEFAULT 'public_form'");
         }
 
-
-
         Schema::table('leads', function (Blueprint $table) {
             // Track which super agent created this lead
             $table->unsignedBigInteger('created_by_super_agent_id')->nullable()->after('submitted_by_agent_id');
@@ -23,8 +21,8 @@ return new class extends Migration
 
             // Who currently "owns" this lead (controls visibility)
             $table->enum('owner_type', ['admin_pool', 'super_agent_pool', 'agent_pool'])
-                  ->default('admin_pool')
-                  ->after('created_by_super_agent_id');
+                ->default('admin_pool')
+                ->after('created_by_super_agent_id');
 
             // Verification pipeline
             $table->enum('verification_status', [
@@ -81,7 +79,6 @@ return new class extends Migration
         if (DB::getDriverName() !== 'sqlite') {
             DB::statement("ALTER TABLE leads MODIFY COLUMN source ENUM('public_form','agent_submission') NOT NULL DEFAULT 'public_form'");
         }
-
 
     }
 };

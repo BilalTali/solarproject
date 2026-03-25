@@ -15,10 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
         $middleware->alias([
-            'admin'              => \App\Http\Middleware\EnsureIsAdmin::class,
-            'agent'              => \App\Http\Middleware\EnsureIsAgent::class,
-            'super_agent'        => \App\Http\Middleware\EnsureIsSuperAgent::class,
+            'admin' => \App\Http\Middleware\EnsureIsAdmin::class,
+            'agent' => \App\Http\Middleware\EnsureIsAgent::class,
+            'super_agent' => \App\Http\Middleware\EnsureIsSuperAgent::class,
             'admin_or_super_agent' => \App\Http\Middleware\EnsureIsAdminOrSuperAgent::class,
+            'enumerator' => \App\Http\Middleware\EnsureIsEnumerator::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

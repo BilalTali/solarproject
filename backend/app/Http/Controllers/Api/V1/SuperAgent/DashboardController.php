@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1\SuperAgent;
 
 use App\Http\Controllers\Controller;
@@ -16,7 +17,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $stats,
+            'data' => $stats,
         ]);
     }
 
@@ -29,7 +30,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $scans,
+            'data' => $scans,
         ]);
     }
 }

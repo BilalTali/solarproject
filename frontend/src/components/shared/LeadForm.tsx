@@ -11,13 +11,14 @@ import {
 import { useSearchParams } from 'react-router-dom';
 import { leadsApi } from '@/api/leads.api';
 import { superAgentApi } from '@/api/superAgent.api';
+import { enumeratorApi } from '@/api/enumerator.api';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
 import MobileInput from '@/components/shared/MobileInput';
 import { compressImage } from '@/utils/imageUtils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type LeadFormRole = 'agent' | 'super_agent' | 'public';
+type LeadFormRole = 'agent' | 'super_agent' | 'enumerator' | 'public';
 
 interface FileUploadState {
     file: File | null;
@@ -199,10 +200,34 @@ function Select({ label, name, value, onChange, options, required = false, autoC
     );
 }
 
+function SuccessScreen({ role, onDone }: { role: LeadFormRole, onDone: () => void }) {
+    return (
+        <div className="flex flex-col items-center justify-center py-12 px-6 text-center animate-in fade-in zoom-in duration-500">
+            <div className="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center mb-6 relative">
+                <div className="absolute inset-0 rounded-full bg-green-200 animate-ping opacity-20" />
+                <CheckCircle2 size={48} className="text-green-600 relative z-10" />
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2 font-display">Application Submitted!</h2>
+            <p className="text-slate-600 max-w-md mb-8">
+                Your application for the PM Surya Ghar Muft Bijli Yojana has been successfully recorded.
+                {role === 'public' ? ' Our team will review your details and contact you shortly.' : ' It is now visible in your leads list for further processing.'}
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+                <button
+                    onClick={onDone}
+                    className="px-8 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all transform hover:-translate-y-1"
+                >
+                    Return to Dashboard
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export default function LeadForm({ role, onSuccess }: LeadFormProps) {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const backPath = role === 'super_agent' ? '/super-agent/leads' : role === 'agent' ? '/agent/leads' : '/';
+    const backPath = role === 'super_agent' ? '/super-agent/leads' : role === 'agent' ? '/agent/leads' : role === 'enumerator' ? '/enumerator/leads' : '/';
 
     const [currentStep, setCurrentStep] = useState(1);
     const [form, setForm] = useState({
@@ -228,6 +253,7 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
     const [photo, setPhoto] = useState<FileUploadState>({ file: null, preview: null, name: '' });
     const [solarRoofPhoto, setSolarRoofPhoto] = useState<FileUploadState>({ file: null, preview: null, name: '' });
     const [bankPassbook, setBankPassbook] = useState<FileUploadState>({ file: null, preview: null, name: '' });
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -252,15 +278,15 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
 
             if (role === 'super_agent') return superAgentApi.createLead(fd);
             if (role === 'agent') return leadsApi.submitAgentLead(fd);
+            if (role === 'enumerator') return enumeratorApi.storeLead(fd);
 
             return leadsApi.submitPublicLeadForm(fd);
         },
         onSuccess: (res) => {
             toast.success(res.message ?? 'Lead submitted successfully!');
+            setIsSubmitted(true);
             if (onSuccess) {
                 onSuccess(res);
-            } else {
-                navigate(backPath);
             }
         },
         onError: (err: any) => {
@@ -339,6 +365,10 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
         { id: 3, title: 'Service', icon: Zap },
         { id: 4, title: 'Finalize', icon: FileText },
     ];
+
+    if (isSubmitted) {
+        return <SuccessScreen role={role} onDone={() => navigate(backPath)} />;
+    }
 
     return (
         <div ref={formRef} className="max-w-4xl mx-auto px-4 sm:px-0">

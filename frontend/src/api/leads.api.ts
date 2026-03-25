@@ -45,6 +45,14 @@ export const leadsApi = {
         });
         return res.data;
     },
+    verifyAgentLead: async (ulid: string, notes?: string) => {
+        const res = await api.put<ApiResponse<Lead>>(`/agent/leads/${ulid}/verify`, { notes });
+        return res.data;
+    },
+    revertAgentLead: async (ulid: string, reason: string) => {
+        const res = await api.put<ApiResponse<Lead>>(`/agent/leads/${ulid}/revert`, { reason });
+        return res.data;
+    },
 
     // ── Super Agent ───────────────────────────────────────────────────
     getSALeads: async (params?: Record<string, unknown>) => {

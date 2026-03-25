@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -11,7 +12,7 @@ class EnsureIsAdminOrSuperAgent
     {
         $user = $request->user();
 
-        if (!$user || !in_array($user->role, ['admin', 'super_agent'])) {
+        if (! $user || ! in_array($user->role, ['admin', 'super_agent'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 

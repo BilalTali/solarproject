@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sun, LayoutDashboard, List, PlusCircle, DollarSign, Bell, User, LogOut, BadgeCheck, FileText, Gift } from 'lucide-react';
+import { Sun, LayoutDashboard, List, PlusCircle, DollarSign, Bell, User, Users, LogOut, BadgeCheck, FileText, Gift, Wallet } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { authApi } from '@/api/auth.api';
@@ -9,8 +9,10 @@ import { useSettings } from '@/hooks/useSettings';
 
 const NAV = [
     { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', to: '/agent/dashboard' },
+    { icon: <Users className="w-5 h-5" />, label: 'Enumerators', to: '/agent/enumerators' },
     { icon: <List className="w-5 h-5" />, label: 'My Leads', to: '/agent/leads' },
     { icon: <Gift className="w-5 h-5" />, label: 'Milestone Prizes', to: '/agent/offers' },
+    { icon: <Wallet className="w-5 h-5" />, label: 'Withdraw Cash', to: '/agent/withdrawals' },
     { icon: <PlusCircle className="w-5 h-5" />, label: 'Submit Lead', to: '/agent/leads/new' },
     { icon: <FileText className="w-5 h-5" />, label: 'Resource Library', to: '/agent/documents' },
     { icon: <DollarSign className="w-5 h-5" />, label: 'My Earnings', to: '/agent/commissions' },
@@ -74,7 +76,7 @@ export default function AgentSidebar({ onClose }: { onClose?: () => void }) {
                             key={item.to}
                             to={item.to}
                             onClick={onClose}
-                            className={`sidebar-item ${isActive ? 'sidebar-item-active' : ''}`}
+                            className={`sidebar-item group ${isActive ? 'sidebar-item-active' : ''}`}
                             aria-current={isActive ? 'page' : undefined}
                         >
                             <span aria-hidden="true">{item.icon}</span>

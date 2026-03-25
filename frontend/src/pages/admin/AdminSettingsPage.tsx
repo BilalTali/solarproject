@@ -17,7 +17,7 @@ import api from '@/api/axios';
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm';
 import MobileInput from '@/components/shared/MobileInput';
 
-type TabId = 'company' | 'branding' | 'homepage' | 'achievements' | 'feedback' | 'portal' | 'icard' | 'profile' | 'letter';
+type TabId = 'company' | 'branding' | 'homepage' | 'achievements' | 'feedback' | 'portal' | 'icard' | 'profile' | 'letter' | 'incentive';
 
 type CalculatorOption = {
     id: string;
@@ -191,6 +191,7 @@ const AdminSettingsPage: React.FC = () => {
     const [heroStatsData, setHeroStatsData] = useState<any[]>(defaultHeroStats);
     const [howItWorksData, setHowItWorksData] = useState<any[]>(defaultHowItWorks);
     const [whyChooseUsData, setWhyChooseUsData] = useState<any[]>(defaultWhyChooseUs);
+    const [capacityPointsData, setCapacityPointsData] = useState<{ id: string, kw: number, points: number }[]>([]);
 
     // Profile state
     const [profileEditing, setProfileEditing] = useState(false);
@@ -250,6 +251,20 @@ const AdminSettingsPage: React.FC = () => {
                 if (flat['why_choose_us_json']) {
                     const parsed = JSON.parse(flat['why_choose_us_json']);
                     setWhyChooseUsData(Array.isArray(parsed) ? parsed : defaultWhyChooseUs);
+                }
+                if (flat['capacity_points_json']) {
+                    const parsed = JSON.parse(flat['capacity_points_json']);
+                    if (Array.isArray(parsed)) {
+                        setCapacityPointsData(parsed.map((p, i) => ({ id: `p-${i}`, ...p })));
+                    } else if (typeof parsed === 'object') {
+                        // Convert dictionary {"3kw": 1} to array [{id, kw: 3, points: 1}]
+                        const asArray = Object.entries(parsed).map(([k, v], i) => ({
+                            id: `p-${i}`,
+                            kw: parseInt(k) || 0,
+                            points: Number(v)
+                        }));
+                        setCapacityPointsData(asArray);
+                    }
                 }
             } catch (e) {
                 if (import.meta.env.DEV) {
@@ -512,6 +527,19 @@ const AdminSettingsPage: React.FC = () => {
     const addWhyChooseUs = () => setWhyChooseUsData(prev => [...prev, { icon: 'Sparkles', title: 'New Feature', desc: 'Description' }]);
     const removeWhyChooseUs = (idx: number) => setWhyChooseUsData(prev => prev.filter((_, i) => i !== idx));
 
+    const handleCapacityPointChange = (id: string, field: 'kw' | 'points', val: string) => {
+        setCapacityPointsData(prev => prev.map(item => item.id === id ? { ...item, [field]: parseFloat(val) || 0 } : item));
+    };
+    const addCapacityPoint = () => setCapacityPointsData(prev => [
+        ...prev, 
+        { 
+            id: `p-${Date.now()}`, 
+            kw: (prev.length > 0 ? Math.max(...prev.map(p => p.kw)) + 1 : 1), 
+            points: 0 
+        }
+    ]);
+    const removeCapacityPoint = (id: string) => setCapacityPointsData(prev => prev.filter(item => item.id !== id));
+
     /*
     const handleMediaSubmit = (e: React.FormEvent) => { ... };
     const handleDocSubmit = (e: React.FormEvent) => { ... };
@@ -558,6 +586,7 @@ const AdminSettingsPage: React.FC = () => {
         { id: 'letter', label: 'Joining Letter', icon: FileText },
         { id: 'portal', label: 'Portal', icon: Globe },
         { id: 'profile', label: 'My Profile', icon: User },
+        { id: 'incentive', label: 'Incentive Points', icon: Trophy },
     ];
 
     return (
@@ -1310,6 +1339,82 @@ const AdminSettingsPage: React.FC = () => {
                                         </div>
                                     </>
                                 )}
+                            </div>
+                        </div>
+                    )}
+                    {/* ══ INCENTIVE POINTS ══ */}
+                    {activeTab === 'incentive' && (
+                        <div className="space-y-8 animate-in fade-in duration-300">
+                            <div className="space-y-6">
+                                <h3 className="font-bold text-slate-800">Incentive Points Configuration</h3>
+                                <p className="text-sm text-slate-500">Configure how many points are awarded to agents based on the system capacity (kW) of completed installations.</p>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {F('offer_grace_period_days', 'Offer Grace Period (Days)', 'number', '7')}
+                                </div>
+
+                                <div className="mt-8">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wider">Capacity Point Mapping</h4>
+                                        <button onClick={addCapacityPoint} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors">
+                                            <Plus size={14} /> Add Mapping
+                                        </button>
+                                    </div>
+                                    <div className="space-y-3 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                                        <div className="grid grid-cols-5 gap-4 px-4 mb-2">
+                                            <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">System Capacity (kW)</div>
+                                            <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Points Awarded</div>
+                                            <div className="col-span-1"></div>
+                                        </div>
+                                        {capacityPointsData.sort((a, b) => a.kw - b.kw).map((item) => (
+                                            <div key={item.id} className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4 group animate-in slide-in-from-left-2 duration-200">
+                                                <div className="col-span-2 flex-1 flex items-center gap-2">
+                                                    <input 
+                                                        type="number" 
+                                                        step="1"
+                                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-primary/20 outline-none" 
+                                                        value={item.kw} 
+                                                        onChange={e => handleCapacityPointChange(item.id, 'kw', e.target.value)} 
+                                                    />
+                                                    <span className="text-xs font-bold text-slate-400">kW</span>
+                                                </div>
+                                                <div className="col-span-2 flex-1 flex items-center gap-2">
+                                                    <input 
+                                                        type="number" 
+                                                        step="0.1"
+                                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20 outline-none" 
+                                                        value={item.points} 
+                                                        onChange={e => handleCapacityPointChange(item.id, 'points', e.target.value)} 
+                                                    />
+                                                    <span className="text-xs font-bold text-slate-400">Pts</span>
+                                                </div>
+                                                <button onClick={() => removeCapacityPoint(item.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {capacityPointsData.length === 0 && (
+                                            <div className="text-center py-8 text-slate-400 text-sm italic">No point mappings defined. Click "Add Mapping" to start.</div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex gap-3">
+                                    <AlertCircle className="text-blue-500 shrink-0" size={18} />
+                                    <div className="text-xs text-blue-800 space-y-1">
+                                        <p><strong>3kW Threshold Note:</strong> Per business requirements, systems below 3kW usually earn 0 points. Ensure you map 1kW and 2kW to 0 points if required.</p>
+                                        <p>Changes here affect all future point calculations for completed installations.</p>
+                                    </div>
+                                </div>
+                                <SectionSave 
+                                    label="Save Incentive Settings" 
+                                    keys={['offer_grace_period_days']} 
+                                    customData={{ 
+                                        capacity_points_json: capacityPointsData.reduce((acc, curr) => ({
+                                            ...acc,
+                                            [`${curr.kw}kw`]: curr.points
+                                        }), {})
+                                    }} 
+                                />
                             </div>
                         </div>
                     )}

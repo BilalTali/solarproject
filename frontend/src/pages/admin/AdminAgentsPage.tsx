@@ -357,7 +357,7 @@ export default function AdminAgentsPage() {
                                         </div>
                                         <div className="col-span-2 grid grid-cols-2 gap-4">
                                             <MobileInput
-                                                label="Mobile *"
+                                                label="Mobile"
                                                 value={editForm.mobile}
                                                 onChange={(val) => setEditForm({ ...editForm, mobile: val })}
                                                 required

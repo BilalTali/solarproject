@@ -1,17 +1,57 @@
+@php
+    /** @var \App\Models\User $user */
+    /** @var string $companyName */
+    /** @var string $companyTagline */
+    /** @var string $companyAddress */
+    /** @var string $companyAffiliatedWith */
+    /** @var string $companyPhone */
+    /** @var string $companyEmail */
+    /** @var string $companyWebsite */
+    /** @var string $letterNumber */
+    /** @var string|null $barcodeBase64 */
+    /** @var string|null $qrBase64 */
+    /** @var string $designation */
+    /** @var string $body */
+    /** @var array $terms */
+    /** @var string|null $logoBase64 */
+    /** @var string|null $sigBase64 */
+    /** @var string $authorizedSignatory */
+    /** @var string $signatoryTitle */
+    /** @var array $settings */
+@endphp
 <!DOCTYPE html>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Appointment Letter - {{ $user->name }}</title>
     <style>
+        @font-face {
+            font-family: 'Cinzel';
+            src: local('Cinzel'), url('{{ public_path("fonts/Cinzel-Bold.ttf") }}') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'DM Sans';
+            src: local('DM Sans'), url('{{ public_path("fonts/DMSans-Regular.ttf") }}') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'DM Sans';
+            src: local('DM Sans'), url('{{ public_path("fonts/DMSans-Bold.ttf") }}') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
+
         @page {
             margin: 1.0cm;
         }
         body {
-            font-family: 'Times New Roman', Times, serif;
+            font-family: 'DM Sans', 'Times New Roman', Times, serif;
             font-size: 10.5pt;
-            line-height: 1.4;
-            color: #2D3748;
+            line-height: 1.5;
+            color: #04111F;
             margin: 0;
             padding: 0;
             background: #fff;
@@ -19,13 +59,13 @@
 
         .header-table {
             width: 100%;
-            border-bottom: 2px solid #2c5282;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
+            border-bottom: 2px solid #04111F;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
         }
 
         .logo-cell {
-            width: 60px;
+            width: 70px;
             vertical-align: middle;
         }
         .company-cell {
@@ -33,33 +73,36 @@
             text-align: right;
         }
         .logo {
-            max-width: 60px;
-            max-height: 60px;
+            max-width: 65px;
+            max-height: 65px;
         }
 
         .company-name {
-            font-family: 'Helvetica', Arial, sans-serif;
+            font-family: 'Cinzel', serif;
             font-size: 20pt;
             font-weight: bold;
-            color: #2c5282;
+            color: #04111F;
             text-transform: uppercase;
             margin: 0;
             padding: 0;
             line-height: 1.1;
         }
         .company-tagline {
-            font-family: 'Helvetica', Arial, sans-serif;
-            font-size: 9pt;
-            color: #4A5568;
-            margin: 2px 0;
-            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 9.5pt;
+            color: #FF9500;
+            margin: 3px 0;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
         .company-info {
-            font-family: 'Helvetica', Arial, sans-serif;
-            font-size: 8pt;
-            color: #718096;
-            line-height: 1.3;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 8.5pt;
+            color: #555E70;
+            line-height: 1.4;
         }
+
         .metadata-table {
             width: 100%;
             margin-bottom: 10px;

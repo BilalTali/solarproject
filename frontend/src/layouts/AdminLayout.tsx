@@ -33,25 +33,28 @@ export default function AdminLayout() {
                 </div>
             )}
 
-            {/* Main */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                {/* Top Bar (mobile) */}
-                <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-dark shadow-sm">
-                    <button
-                        onClick={() => setSidebarOpen(true)}
-                        className="p-2 text-white/60 hover:bg-white/5 rounded-lg"
-                        aria-label="Open sidebar"
-                    >
-                        <Menu className="w-5 h-5" />
-                    </button>
-                    <span className="font-display font-bold text-white">{companyName} Admin</span>
-                </header>
+                {/* Main */}
+                <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+                    {/* Top Bar (mobile) */}
+                    <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-dark shadow-sm border-b border-white/5">
+                        <button
+                            onClick={() => setSidebarOpen(true)}
+                            className="p-2 text-white/80 hover:bg-white/10 rounded-xl transition-colors"
+                            aria-label="Open sidebar"
+                        >
+                            <Menu className="w-5 h-5" />
+                        </button>
+                        <span className="font-display font-bold text-white tracking-wide">{companyName} <span className="text-accent text-xs font-medium ml-1">Admin</span></span>
+                    </header>
 
-                {/* Content */}
-                <main id="main-content" className="flex-1 overflow-y-auto p-4 md:p-6" tabIndex={-1}>
-                    <Outlet />
-                </main>
-            </div>
+                    {/* Content Area with subtle background pattern */}
+                    <main id="main-content" className="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8FAFC] relative" tabIndex={-1}>
+                        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30 pointer-events-none" />
+                        <div className="relative z-10 max-w-7xl mx-auto">
+                            <Outlet />
+                        </div>
+                    </main>
+                </div>
         </div>
     );
 }

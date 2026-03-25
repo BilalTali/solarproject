@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1\SuperAgent;
 
 use App\Exceptions\InvalidLeadOperationException;
@@ -7,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSuperAgentLeadRequest;
 use App\Http\Requests\UpdateSuperAgentLeadRequest;
 use App\Models\Lead;
-use App\Models\LeadVerification;
 use App\Models\User;
 use App\Services\LeadService;
 use App\Services\SuperAgentService;
@@ -28,49 +28,49 @@ class LeadController extends Controller
     {
         $superAgent = $request->user();
 
-        $query = Lead::visibleToSuperAgent($superAgent->id)
-                     ->with(['assignedAgent', 'submittedByAgent', 'assignedSuperAgent', 'documents', 'commissions']);
+        $query = Lead::query()->visibleToSuperAgent($superAgent->id)
+            ->with(['assignedAgent', 'submittedByAgent', 'assignedSuperAgent', 'documents', 'commissions']);
 
         if ($request->status) {
-            $query->where('status', $request->status);
+            $query->where(fn ($q) => $q->where('status', $request->status));
         }
 
         if ($request->has('verification_status')) {
-            $query->where('verification_status', $request->verification_status);
+            $query->where(fn ($q) => $q->where('verification_status', $request->verification_status));
         }
 
         if ($request->agent_id) {
-            $query->where('assigned_agent_id', $request->agent_id);
+            $query->where(fn ($q) => $q->where('assigned_agent_id', $request->agent_id));
         }
 
         if ($request->has('scope')) {
             if ($request->scope === 'my_leads') {
                 $query->where(function ($q) use ($superAgent) {
-                    $q->where('assigned_super_agent_id', $superAgent->id)
-                      ->orWhere('created_by_super_agent_id', $superAgent->id);
+                    $q->where(fn ($q2) => $q2->where('assigned_super_agent_id', $superAgent->id))
+                        ->orWhere(fn ($q2) => $q2->where('created_by_super_agent_id', $superAgent->id));
                 });
             } elseif ($request->scope === 'team_leads') {
                 $query->where(function ($q) use ($superAgent) {
                     $q->whereHas('assignedAgent', function ($q2) use ($superAgent) {
-                          $q2->where('super_agent_id', $superAgent->id);
-                      })
-                      ->orWhereHas('submittedByAgent', function ($q2) use ($superAgent) {
-                          $q2->where('super_agent_id', $superAgent->id);
-                      });
+                        $q2->where(fn ($q3) => $q3->where('super_agent_id', $superAgent->id));
+                    })
+                        ->orWhereHas('submittedByAgent', function ($q2) use ($superAgent) {
+                            $q2->where(fn ($q3) => $q3->where('super_agent_id', $superAgent->id));
+                        });
                 });
             }
         }
 
         if ($request->district) {
-            $query->where('beneficiary_district', $request->district);
+            $query->where(fn ($q) => $q->where('beneficiary_district', $request->district));
         }
 
         if ($request->search) {
             $search = str_replace(['%', '_'], ['\%', '\_'], $request->search);
             $query->where(function ($q) use ($search) {
-                $q->where('beneficiary_name', 'like', "%{$search}%")
-                  ->orWhere('beneficiary_mobile', 'like', "%{$search}%")
-                  ->orWhere('ulid', 'like', "%{$search}%");
+                $q->where(fn ($q2) => $q2->where('beneficiary_name', 'like', "%{$search}%"))
+                    ->orWhere(fn ($q2) => $q2->where('beneficiary_mobile', 'like', "%{$search}%"))
+                    ->orWhere(fn ($q2) => $q2->where('ulid', 'like', "%{$search}%"));
             });
         }
 
@@ -82,52 +82,39 @@ class LeadController extends Controller
 
         // Transform collection to include commission prompts
         $leads->getCollection()->transform(function ($lead) {
-            $lead->commission_prompt = $this->calculateCommissionPrompt($lead);
+            $lead->commission_status = $lead->commission_status; // Accessing the attribute triggers the accessor
+
             return $lead;
         });
 
         // Also return pending verification count
-        $pendingVerificationCount = Lead::needsVerificationBySuperAgent($superAgent->id)->count();
+        $pendingVerificationCount = Lead::query()->needsVerificationBySuperAgent($superAgent->id)->count();
 
         return response()->json([
             'success' => true,
-            'data'    => $leads,
-            'meta'    => ['pending_verification_count' => $pendingVerificationCount],
+            'data' => $leads,
+            'meta' => ['pending_verification_count' => $pendingVerificationCount],
         ]);
     }
 
-    /** Helper to determine if commission prompt is needed for a lead (Super Agent scope) */
-    private function calculateCommissionPrompt(Lead $lead): array
+    /**
+     * Unified commission prompt helper
+     */
+    private function getCommissionPrompts(Lead $lead): array
     {
-        if ($lead->status !== 'completed' || !$lead->assignedAgent) {
-            return ['should_prompt' => false];
-        }
-
-        $hasAgentComm = $lead->commissions->where('payee_role', 'agent')->isNotEmpty();
-        if ($hasAgentComm) {
-            return ['should_prompt' => false];
-        }
-
-        return [
-            'should_prompt'    => true,
-            'payee_role'       => 'agent',
-            'payee_id'         => $lead->assignedAgent->id,
-            'payee_name'       => $lead->assignedAgent->name,
-            'payee_code'       => $lead->assignedAgent->agent_id ?? '',
-            'payee_type_label' => 'Agent',
-        ];
+        return app(\App\Services\CommissionService::class)->getCommissionStatus($lead);
     }
 
     /** Create a new lead as Super Agent */
     public function store(StoreSuperAgentLeadRequest $request): JsonResponse
     {
         $superAgent = $request->user();
-        $data       = $request->validated();
+        $data = $request->validated();
         $data['ulid'] = Str::ulid()->toBase32();
 
         // Handle optional agent assignment (assign to a team agent after creation)
-        if (!empty($data['agent_id'])) {
-            $agentIds = User::agents()->where('super_agent_id', $superAgent->id)->pluck('id');
+        if (! empty($data['agent_id'])) {
+            $agentIds = User::query()->agents()->where(fn ($q) => $q->where('super_agent_id', $superAgent->id))->pluck('id');
             if ($agentIds->contains($data['agent_id'])) {
                 $data['assigned_agent_id'] = $data['agent_id'];
             }
@@ -150,7 +137,7 @@ class LeadController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Lead submitted successfully!',
-            'data'    => $lead,
+            'data' => $lead,
         ], 201);
     }
 
@@ -158,13 +145,13 @@ class LeadController extends Controller
     public function show(Request $request, string $ulid): JsonResponse
     {
         $superAgent = $request->user();
-        $lead = Lead::where('ulid', $ulid)->with([
+        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->with([
             'assignedAgent', 'submittedByAgent', 'assignedSuperAgent',
             'documents', 'statusLogs.changedBy', 'commissions',
             'verifications.performedBy',
         ])->firstOrFail();
 
-        if (!$this->superAgentService->canAccessLead($superAgent, $lead)) {
+        if (! $this->superAgentService->canAccessLead($superAgent, $lead)) {
             return response()->json(['success' => false, 'message' => 'You do not have access to this lead.'], 403);
         }
 
@@ -177,7 +164,7 @@ class LeadController extends Controller
         $request->validate(['notes' => 'nullable|string|max:500']);
 
         $superAgent = $request->user();
-        $lead       = Lead::where('ulid', $ulid)->firstOrFail();
+        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
 
         try {
             $lead = $this->leadService->verifyLead($lead, $superAgent, $request->notes);
@@ -190,7 +177,7 @@ class LeadController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Lead verified and sent to Admin for processing.',
-            'data'    => $lead,
+            'data' => $lead,
         ]);
     }
 
@@ -200,7 +187,7 @@ class LeadController extends Controller
         $request->validate(['reason' => 'required|string|min:10|max:1000']);
 
         $superAgent = $request->user();
-        $lead       = Lead::where('ulid', $ulid)->firstOrFail();
+        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
 
         try {
             $lead = $this->leadService->revertLead($lead, $superAgent, $request->reason);
@@ -211,12 +198,13 @@ class LeadController extends Controller
         }
 
         $isEscalated = $lead->verification_status === 'admin_override';
+
         return response()->json([
             'success' => true,
             'message' => $isEscalated
                 ? 'Lead has been auto-escalated to Admin (max reverts reached).'
                 : 'Lead returned to agent for correction.',
-            'data'    => $lead,
+            'data' => $lead,
         ]);
     }
 
@@ -226,8 +214,8 @@ class LeadController extends Controller
         $request->validate(['agent_id' => 'required|exists:users,id']);
 
         $superAgent = $request->user();
-        $lead       = Lead::where('ulid', $ulid)->firstOrFail();
-        $agent      = User::where('role', 'agent')->findOrFail($request->agent_id);
+        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
+        $agent = User::query()->where(fn ($q) => $q->where('role', 'agent'))->findOrFail($request->agent_id);
 
         try {
             $lead = $this->leadService->assignLeadToAgent($lead, $agent, $superAgent);
@@ -238,56 +226,19 @@ class LeadController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Lead assigned to agent successfully.',
-            'data'    => $lead->fresh(['assignedAgent']),
+            'data' => $lead->fresh(['assignedAgent']),
         ]);
     }
 
-    /** Update lead status */
-    public function updateStatus(Request $request, string $ulid): JsonResponse
-    {
-        $superAgent = $request->user();
-        $lead       = Lead::where('ulid', $ulid)->firstOrFail();
 
-        if (!$this->superAgentService->canAccessLead($superAgent, $lead)) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
-        }
-
-        $restrictedStatuses = ['rejected'];
-        $newStatus          = $request->input('status');
-
-        if (in_array($newStatus, $restrictedStatuses)) {
-            return response()->json([
-                'success' => false,
-                'message' => "Status '{$newStatus}' can only be set by Admin.",
-            ], 403);
-        }
-
-        if (!$lead->isVerified()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cannot change status of a lead that has not been verified yet.',
-            ], 422);
-        }
-
-        $this->leadService->updateStatus($lead, $newStatus, $superAgent->id, $request->input('notes'));
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Lead status updated.',
-            'data'    => [
-                'lead' => clone $lead->fresh(['statusLogs', 'commissions', 'assignedAgent']), 
-                'commission_prompt' => $this->calculateCommissionPrompt($lead)
-            ],
-        ]);
-    }
 
     /** Get verification history for a lead */
     public function verificationHistory(Request $request, string $ulid): JsonResponse
     {
         $superAgent = $request->user();
-        $lead       = Lead::where('ulid', $ulid)->firstOrFail();
+        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
 
-        if (!$this->superAgentService->canAccessLead($superAgent, $lead)) {
+        if (! $this->superAgentService->canAccessLead($superAgent, $lead)) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
@@ -300,14 +251,14 @@ class LeadController extends Controller
     public function updateNotes(UpdateSuperAgentLeadRequest $request, string $ulid): JsonResponse
     {
         $superAgent = $request->user();
-        $lead       = Lead::where('ulid', $ulid)->firstOrFail();
+        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
 
-        if (!$this->superAgentService->canAccessLead($superAgent, $lead)) {
+        if (! $this->superAgentService->canAccessLead($superAgent, $lead)) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
         $lead->update([
-            'notes'          => $request->notes ?? $lead->notes,
+            'notes' => $request->notes ?? $lead->notes,
             'follow_up_date' => $request->follow_up_date ?? $lead->follow_up_date,
         ]);
 
@@ -319,17 +270,17 @@ class LeadController extends Controller
     {
         $request->validate([
             'document' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
-            'type'     => ['required', 'string'],
+            'type' => ['required', 'string'],
         ]);
 
         $superAgent = $request->user();
-        $lead       = Lead::where('ulid', $ulid)->firstOrFail();
+        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
 
-        if (!$this->superAgentService->canAccessLead($superAgent, $lead)) {
+        if (! $this->superAgentService->canAccessLead($superAgent, $lead)) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
-        $doc = $this->leadService->uploadDocument($request->file('document'), $request->type, $superAgent->id);
+        $doc = $this->leadService->uploadDocument($lead, $request->file('document'), $request->type, $superAgent->id);
 
         return response()->json(['success' => true, 'data' => $doc, 'message' => 'Document uploaded.'], 201);
     }

@@ -15,6 +15,13 @@ const config: Record<LeadVerificationStatus, { label: string; bgClass: string; t
         icon: '⏳',
         pulse: true,
     },
+    pending_agent_verification: {
+        label: 'Pending Agent Review',
+        bgClass: 'bg-amber-100',
+        textClass: 'text-amber-800',
+        icon: '⏳',
+        pulse: true,
+    },
     super_agent_verified: {
         label: 'SA Verified',
         bgClass: 'bg-green-100',
@@ -23,6 +30,12 @@ const config: Record<LeadVerificationStatus, { label: string; bgClass: string; t
     },
     reverted_to_agent: {
         label: 'Action Needed',
+        bgClass: 'bg-red-100',
+        textClass: 'text-red-700',
+        icon: '↩',
+    },
+    reverted_to_enumerator: {
+        label: 'Enm Action Needed',
         bgClass: 'bg-red-100',
         textClass: 'text-red-700',
         icon: '↩',

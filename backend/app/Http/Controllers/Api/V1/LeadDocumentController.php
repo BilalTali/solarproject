@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
@@ -6,7 +7,6 @@ use App\Models\Lead;
 use App\Models\LeadDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\URL;
 
 class LeadDocumentController extends Controller
@@ -16,10 +16,13 @@ class LeadDocumentController extends Controller
      */
     public function download(Request $request, string $ulid, int $documentId)
     {
-        $lead = Lead::where('ulid', $ulid)->firstOrFail();
+        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
         $this->authorizeDocument($request->user(), $lead);
 
-        $document = LeadDocument::where('id', $documentId)->where('lead_id', $lead->id)->firstOrFail();
+        $document = LeadDocument::query()
+            ->where(fn ($q) => $q->where('id', $documentId))
+            ->where(fn ($q) => $q->where('lead_id', $lead->id))
+            ->firstOrFail();
         $path = $document->file_path;
 
         // Try 'local' disk first (new secure storage), fallback to 'public' (legacy storage)
@@ -39,7 +42,7 @@ class LeadDocumentController extends Controller
      */
     public function getSignedUrl(Request $request, string $ulid, int $id)
     {
-        $lead = Lead::where('ulid', $ulid)->firstOrFail();
+        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
         $this->authorizeDocument($request->user(), $lead);
 
         $url = URL::temporarySignedRoute(
@@ -57,8 +60,11 @@ class LeadDocumentController extends Controller
     public function viewSigned(Request $request, string $ulid, int $id)
     {
         // middleware('signed') handles the integrity check
-        $lead = Lead::where('ulid', $ulid)->firstOrFail();
-        $document = LeadDocument::where('id', $id)->where('lead_id', $lead->id)->firstOrFail();
+        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
+        $document = LeadDocument::query()
+            ->where(fn ($q) => $q->where('id', $id))
+            ->where(fn ($q) => $q->where('lead_id', $lead->id))
+            ->firstOrFail();
         $path = $document->file_path;
 
         if (Storage::disk('local')->exists($path)) {
@@ -74,12 +80,12 @@ class LeadDocumentController extends Controller
 
     private function authorizeDocument($user, $lead)
     {
-        $isAuthorized = $user->isAdmin() || 
-                        ($user->id === (int)$lead->assigned_agent_id) || 
-                        ($user->id === (int)$lead->assigned_super_agent_id) ||
-                        ($user->id === (int)$lead->submitted_by_agent_id);
+        $isAuthorized = $user->isAdmin() ||
+                        ($user->id === (int) $lead->assigned_agent_id) ||
+                        ($user->id === (int) $lead->assigned_super_agent_id) ||
+                        ($user->id === (int) $lead->submitted_by_agent_id);
 
-        if (!$isAuthorized) {
+        if (! $isAuthorized) {
             abort(403, 'Unauthorized access to this document.');
         }
     }

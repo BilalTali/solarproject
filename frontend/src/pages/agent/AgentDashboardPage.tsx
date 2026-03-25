@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/api/axios';
 import type { AgentDashboardStats } from '@/types';
-import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import DashboardSkeleton from '@/components/shared/DashboardSkeleton';
 import LeadStatusBadge from '@/components/shared/LeadStatusBadge';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { TrendingUp, Users, IndianRupee, CheckCircle2, PlusCircle, ArrowRight } from 'lucide-react';
@@ -48,7 +48,7 @@ export default function AgentDashboardPage() {
     });
     const revertedCount: number = (revertedData?.data as any)?.total ?? 0;
 
-    if (isLoading) return <LoadingSpinner text="Loading your dashboard..." />;
+    if (isLoading) return <DashboardSkeleton />;
 
     const stats = [
         { icon: <Users className="w-6 h-6" />, label: 'Total Leads Submitted', value: data?.total_leads ?? 0, color: 'border-primary text-primary' },
@@ -81,12 +81,15 @@ export default function AgentDashboardPage() {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
                 {stats.map((stat) => (
-                    <div key={stat.label} className={`stat-card ${stat.color}`}>
-                        <div>
+                    <div key={stat.label} className={`stat-card group ${stat.color}`}>
+                        {/* Decorative Background Pattern */}
+                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-current opacity-[0.03] rounded-full group-hover:scale-125 transition-transform duration-500" />
+                        
+                        <div className="relative z-10">
                             <p className="text-xs text-neutral-600 font-medium mb-1">{stat.label}</p>
                             <p className="font-display font-bold text-2xl text-dark">{stat.value}</p>
                         </div>
-                        <div className={`p-2 rounded-xl bg-current/10 ${stat.color}`}>
+                        <div className={`relative z-10 p-2 rounded-xl bg-current/10 ${stat.color} group-hover:scale-110 transition-transform duration-300`}>
                             {stat.icon}
                         </div>
                     </div>

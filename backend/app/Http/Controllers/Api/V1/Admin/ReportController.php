@@ -1,23 +1,27 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\Lead;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
     public function pipelineSummary(Request $request)
     {
-        $statusCounts = Lead::select('status', DB::raw('count(*) as total'))
-                            ->groupBy('status')
-                            ->pluck('total', 'status');
+        $query = Lead::select('status', DB::raw('count(*) as total'));
+        if ($request->has('status')) {
+            $query->where(fn ($q) => $q->where('status', (string) $request->status));
+        }
+        $statusCounts = $query->groupBy('status')
+            ->pluck('total', 'status');
 
         $total = Lead::count();
-        
+
         // Define funnel steps to calculate drop-offs
         $funnel = [
             'new' => $statusCounts['new'] ?? 0,
@@ -31,37 +35,43 @@ class ReportController extends Controller
             'data' => [
                 'total' => $total,
                 'funnel' => $funnel,
-                'status_distribution' => $statusCounts
-            ]
+                'status_distribution' => $statusCounts,
+            ],
         ]);
     }
 
     public function agentPerformance(Request $request)
     {
-        $agents = User::where('role', 'agent')
+        $agents = User::query()->where(fn($q) => $q->where('role', 'agent'))
             ->select('id', 'name', 'agent_id')
             ->withCount('submittedLeads as total_source_leads')
             ->withCount('assignedLeads as total_assigned_leads')
-            ->withCount(['assignedLeads as installed_leads' => function ($q) {
-                $q->where('status', 'installed');
+            ->withCount(['assignedLeads as installed_leads' => function ($q) use ($request) {
+                $q->where(fn($q2) => $q2->where('status', 'installed'));
+                if ($request->has('active')) {
+                    // Note: 'is_active' is typically a user property, not a lead property.
+                    // This filter will apply to the assigned leads, not the agent.
+                    $q->where(fn ($subQ) => $subQ->where('is_active', (bool) filter_var($request->active, FILTER_VALIDATE_BOOLEAN)));
+                }
             }])
-            ->withSum(['commissions as total_earned' => function($q) {
-                $q->where('payment_status', 'paid');
+            ->withSum(['commissions as total_earned' => function ($q) {
+                $q->where(fn($q2) => $q2->where('payment_status', 'paid'));
             }], 'amount')
             ->get();
 
         foreach ($agents as $agent) {
             $agent->total_leads = $agent->total_source_leads + $agent->total_assigned_leads;
-            $agent->conversion_rate = $agent->total_leads > 0 
-                ? round(($agent->installed_leads / $agent->total_leads) * 100, 2) 
+            $agent->conversion_rate = $agent->total_leads > 0
+                ? round(($agent->installed_leads / $agent->total_leads) * 100, 2)
                 : 0;
         }
 
         // Sort by total_leads and paginate
         $sortedAgents = $agents->sortByDesc('total_leads')->values();
-        
-        $perPage = $request->get('per_page', 20);
-        $page = $request->get('page', 1);
+
+
+        $perPage = $request->input('per_page', 20);
+        $page = $request->input('page', 1);
         $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
             $sortedAgents->forPage($page, $perPage),
             $sortedAgents->count(),
@@ -72,7 +82,7 @@ class ReportController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $paginated
+            'data' => $paginated,
         ]);
     }
 
@@ -93,8 +103,8 @@ class ReportController extends Controller
             'success' => true,
             'data' => [
                 'by_state' => $byState,
-                'top_districts' => $topDistricts
-            ]
+                'top_districts' => $topDistricts,
+            ],
         ]);
     }
 
@@ -105,50 +115,51 @@ class ReportController extends Controller
 
         for ($i = $months - 1; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
-            
-            $newLeads = Lead::whereMonth('created_at', $date->month)
-                            ->whereYear('created_at', $date->year)
-                            ->count();
-                            
-            $installations = Lead::where('status', 'installed')
-                                 ->whereMonth('updated_at', $date->month)
-                                 ->whereYear('updated_at', $date->year)
-                                 ->count();
 
-            $trend->push([
+            $newLeads = Lead::query()->whereMonth('created_at', $date->month)
+                ->whereYear('created_at', $date->year)
+                ->count();
+
+            $installations = Lead::query()->where(fn($q) => $q->where('status', 'installed'))
+                ->whereMonth('updated_at', $date->month)
+                ->whereYear('updated_at', $date->year)
+                ->count();
+
+            $trend->push((object) [
                 'month' => $date->format('M Y'),
                 'new_leads' => $newLeads,
-                'installations' => $installations
+                'installations' => $installations,
             ]);
         }
 
+
         return response()->json([
             'success' => true,
-            'data' => $trend
+            'data' => $trend,
         ]);
     }
 
     public function superAgentPerformance(Request $request)
     {
-        $superAgents = User::where('role', 'super_agent')
+        $superAgents = User::query()->where(fn($q) => $q->where('role', 'super_agent'))
             ->select('id', 'name', 'agent_id', 'super_agent_code')
             ->withCount('managedAgents as team_size')
             ->get();
 
         foreach ($superAgents as $sa) {
             $agentIds = $sa->managedAgents()->pluck('id');
-            
+
             // Aggregated Team Metrics (Count leads where team is submitter OR assignee)
-            $teamLeadsQuery = Lead::where(function($q) use ($agentIds) {
+            $teamLeadsQuery = Lead::where(function ($q) use ($agentIds) {
                 $q->whereIn('submitted_by_agent_id', $agentIds)
-                  ->orWhereIn('assigned_agent_id', $agentIds);
+                    ->orWhereIn('assigned_agent_id', $agentIds);
             });
 
             $sa->total_leads = (clone $teamLeadsQuery)->count();
-            $sa->total_installed = (clone $teamLeadsQuery)->where('status', 'installed')->count();
-            
-            $sa->conversion_rate = $sa->total_leads > 0 
-                ? round(($sa->total_installed / $sa->total_leads) * 100, 2) 
+            $sa->total_installed = (clone $teamLeadsQuery)->where(fn($q) => $q->where('status', 'installed'))->count();
+
+            $sa->conversion_rate = $sa->total_leads > 0
+                ? round(($sa->total_installed / $sa->total_leads) * 100, 2)
                 : 0;
 
             // Top Performing Agents in this SA's team
@@ -163,8 +174,8 @@ class ReportController extends Controller
 
             foreach ($sa->top_agents as $agent) {
                 $agent->total_leads = $agent->total_source_leads + $agent->total_assigned_leads;
-                $agent->conversion_rate = $agent->total_leads > 0 
-                    ? round(($agent->installed_leads / $agent->total_leads) * 100, 2) 
+                $agent->conversion_rate = $agent->total_leads > 0
+                    ? round(($agent->installed_leads / $agent->total_leads) * 100, 2)
                     : 0;
             }
 
@@ -177,7 +188,7 @@ class ReportController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $sortedSAs
+            'data' => $sortedSAs,
         ]);
     }
 }

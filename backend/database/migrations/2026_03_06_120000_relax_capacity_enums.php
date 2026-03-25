@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         // Change leads table system_capacity to string
@@ -20,7 +21,7 @@ return new class extends Migration {
 
     public function down(): void
     {
-        // Reverting to enums is complex if custom strings were added, 
+        // Reverting to enums is complex if custom strings were added,
         // but for safety we'll just leave them as strings or handle it if needed.
     }
 };

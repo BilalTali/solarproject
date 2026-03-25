@@ -15,7 +15,7 @@ return new class extends Migration
             // Drop obsolete columns based on actual SQLite schema
             $table->dropColumn([
                 'paid_at',
-                'notes'
+                'notes',
             ]);
 
             // ── AGENT PAYMENT TRACK ──────────────────────────────────────────
@@ -62,14 +62,14 @@ return new class extends Migration
                 'super_agent_paid_by',
                 'super_agent_payment_method',
                 'super_agent_payment_ref',
-                'super_agent_notes'
+                'super_agent_notes',
             ]);
 
             // Re-add obsolete columns (with defaults to avoid errors on rollback)
             $table->enum('status', ['pending', 'approved', 'paid'])->default('pending');
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('approved_at')->nullable();
-            
+
             $table->decimal('amount', 10, 2)->default(0);
             $table->string('payment_method')->nullable();
             $table->string('transaction_reference')->nullable();

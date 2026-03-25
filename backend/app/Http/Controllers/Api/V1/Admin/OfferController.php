@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Offer, OfferRedemption};
+use App\Models\Offer;
+use App\Models\OfferRedemption;
 use App\Services\OfferService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class OfferController extends Controller
@@ -15,7 +16,7 @@ class OfferController extends Controller
 
     public function index(): JsonResponse
     {
-        $offers = Offer::withCount('redemptions')
+        $offers = Offer::query()->withCount('redemptions')
             ->orderByDesc('is_featured')
             ->orderBy('display_order')
             ->get();
@@ -26,19 +27,19 @@ class OfferController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'title'                => 'required|string|max:255',
-            'description'          => 'nullable|string',
-            'prize_label'          => 'required|string|max:255',
-            'prize_amount'         => 'nullable|numeric|min:0',
-            'prize_image'          => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
-            'offer_from'           => 'required|date',
-            'offer_to'             => 'required|date|after_or_equal:offer_from',
-            'target_installations' => 'required|integer|min:1',
-            'offer_type'           => 'required|in:individual,collective',
-            'visible_to'           => 'required|in:agents,super_agents,both',
-            'status'               => 'sometimes|in:active,paused,ended',
-            'is_featured'          => 'sometimes|boolean',
-            'display_order'        => 'sometimes|integer',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'prize_label' => 'required|string|max:255',
+            'prize_amount' => 'nullable|numeric|min:0',
+            'prize_image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+            'offer_from' => 'required|date',
+            'offer_to' => 'required|date|after_or_equal:offer_from',
+            'target_points' => 'required|numeric|min:0.1',
+            'offer_type' => 'required|in:individual,collective',
+            'visible_to' => 'required|in:agents,super_agents,both',
+            'status' => 'sometimes|in:active,paused,ended',
+            'is_featured' => 'sometimes|boolean',
+            'display_order' => 'sometimes|integer',
         ]);
 
         if ($request->hasFile('prize_image')) {
@@ -47,14 +48,16 @@ class OfferController extends Controller
         unset($data['prize_image']);
 
         $data['created_by'] = $request->user()->id;
-        $offer = Offer::create($data);
+        $offer = Offer::query()->create($data);
 
+        /** @var Offer $offer */
         return response()->json(['success' => true, 'data' => $this->formatOffer($offer)], 201);
     }
 
     public function show(int $id): JsonResponse
     {
-        $offer = Offer::with(['redemptions.user'])->findOrFail($id);
+        $offer = Offer::query()->with(['redemptions.user'])->findOrFail($id);
+
         return response()->json(['success' => true, 'data' => $offer]);
     }
 
@@ -62,19 +65,19 @@ class OfferController extends Controller
     {
         $offer = Offer::findOrFail($id);
         $data = $request->validate([
-            'title'                => 'sometimes|string|max:255',
-            'description'          => 'nullable|string',
-            'prize_label'          => 'sometimes|string|max:255',
-            'prize_amount'         => 'nullable|numeric|min:0',
-            'prize_image'          => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
-            'offer_from'           => 'sometimes|date',
-            'offer_to'             => 'sometimes|date',
-            'target_installations' => 'sometimes|integer|min:1',
-            'offer_type'           => 'sometimes|in:individual,collective',
-            'visible_to'           => 'sometimes|in:agents,super_agents,both',
-            'status'               => 'sometimes|in:active,paused,ended',
-            'is_featured'          => 'sometimes|boolean',
-            'display_order'        => 'sometimes|integer',
+            'title' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'prize_label' => 'sometimes|string|max:255',
+            'prize_amount' => 'nullable|numeric|min:0',
+            'prize_image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+            'offer_from' => 'sometimes|date',
+            'offer_to' => 'sometimes|date',
+            'target_points' => 'sometimes|numeric|min:0.1',
+            'offer_type' => 'sometimes|in:individual,collective',
+            'visible_to' => 'sometimes|in:agents,super_agents,both',
+            'status' => 'sometimes|in:active,paused,ended',
+            'is_featured' => 'sometimes|boolean',
+            'display_order' => 'sometimes|integer',
         ]);
 
         if ($request->hasFile('prize_image')) {
@@ -87,7 +90,10 @@ class OfferController extends Controller
         unset($data['prize_image']);
 
         $offer->update($data);
-        return response()->json(['success' => true, 'data' => $this->formatOffer($offer->fresh())]);
+
+        /** @var Offer $offerFresh */
+        $offerFresh = $offer->fresh();
+        return response()->json(['success' => true, 'data' => $this->formatOffer($offerFresh)]);
     }
 
     /** Format offer with computed prize_image_url */
@@ -95,14 +101,16 @@ class OfferController extends Controller
     {
         $arr = $offer->toArray();
         $arr['prize_image_url'] = $offer->prize_image_path
-            ? asset('storage/' . $offer->prize_image_path)
+            ? asset('storage/'.$offer->prize_image_path)
             : null;
+
         return $arr;
     }
 
     public function destroy(int $id): JsonResponse
     {
         Offer::findOrFail($id)->delete();
+
         return response()->json(['success' => true, 'message' => 'Offer deleted.']);
     }
 
@@ -111,12 +119,12 @@ class OfferController extends Controller
      */
     public function redemptions(Request $request): JsonResponse
     {
-        $query = OfferRedemption::with(['offer', 'user', 'approvedBy'])
+        $query = OfferRedemption::query()->with(['offer', 'user', 'approvedBy'])
             ->orderByRaw("CASE WHEN status = 'pending' THEN 0 WHEN status = 'approved' THEN 1 ELSE 2 END")
             ->orderByDesc('claimed_at');
 
         if ($request->has('status')) {
-            $query->where('status', $request->status);
+            $query->where(fn ($q) => $q->where('status', (string) $request->status));
         }
 
         return response()->json(['success' => true, 'data' => $query->get()]);
@@ -124,7 +132,7 @@ class OfferController extends Controller
 
     public function approveRedemption(Request $request, int $id): JsonResponse
     {
-        $redemption = OfferRedemption::findOrFail($id);
+        $redemption = OfferRedemption::query()->findOrFail($id);
         $this->offerService->approveRedemption($redemption, $request->user(), $request->notes);
 
         return response()->json(['success' => true, 'message' => 'Redemption approved.']);
@@ -132,31 +140,38 @@ class OfferController extends Controller
 
     public function deliveredRedemption(Request $request, int $id): JsonResponse
     {
-        $redemption = OfferRedemption::findOrFail($id);
+        $redemption = OfferRedemption::query()->findOrFail($id);
         $this->offerService->markDelivered($redemption, $request->user(), $request->notes);
 
         return response()->json(['success' => true, 'message' => 'Redemption marked as delivered.']);
     }
 
+    public function cancelRedemption(Request $request, int $id): JsonResponse
+    {
+        $redemption = OfferRedemption::query()->findOrFail($id);
+        $this->offerService->cancelRedemption($redemption, $request->user(), $request->notes);
+
+        return response()->json(['success' => true, 'message' => 'Redemption cancelled and points reverted.']);
+    }
+
     /**
      * NEW v3 METHODS
      */
-
     public function participants(int $id): JsonResponse
     {
         $offer = Offer::findOrFail($id);
-        
-        $participants = \App\Models\OfferProgress::where('offer_id', $id)
+
+        $participants = \App\Models\OfferProgress::query()->where(fn($q) => $q->where('offer_id', $id))
             ->with(['user'])
             ->get()
-            ->map(function($p) {
+            ->map(function ($p) {
                 return [
                     'user_id' => $p->user_id,
                     'name' => $p->user->name,
                     'agent_id' => $p->user->agent_id ?? $p->user->super_agent_code,
                     'role' => $p->role_context,
-                    'total_installations' => $p->total_installations,
-                    'unredeemed' => $p->unredeemed_installations,
+                    'total_points' => $p->total_points,
+                    'unredeemed' => $p->unredeemed_points,
                     'redemptions' => $p->redemption_count,
                     'last_activity' => $p->last_installation_at?->diffForHumans(),
                 ];
@@ -167,24 +182,24 @@ class OfferController extends Controller
 
     public function absorbedPoints(): JsonResponse
     {
-        $points = \App\Models\SuperAgentAbsorbedPoints::with(['superAgent', 'sourceAgent', 'offer'])
+        $points = \App\Models\SuperAgentAbsorbedPoints::query()->with(['superAgent', 'sourceAgent', 'offer'])
             ->orderByDesc('absorbed_at')
             ->get();
-            
+
         return response()->json(['success' => true, 'data' => $points]);
     }
 
     public function approveAbsorption(Request $request, int $id): JsonResponse
     {
-        $ap = \App\Models\SuperAgentAbsorbedPoints::findOrFail($id);
-        
+        $ap = \App\Models\SuperAgentAbsorbedPoints::query()->findOrFail($id);
+
         $ap->update([
             'status' => 'delivered',
             'delivered_at' => now(),
             'approved_by' => $request->user()->id,
-            'admin_notes' => $request->notes
+            'admin_notes' => $request->notes,
         ]);
-        
+
         return response()->json(['success' => true, 'message' => 'Absorption approved and marked as delivered.']);
     }
 
@@ -192,7 +207,7 @@ class OfferController extends Controller
     {
         $offer = Offer::findOrFail($id);
         $stats = $this->offerService->processOfferExpiry($offer);
-        
+
         return response()->json(['success' => true, 'data' => $stats]);
     }
 }

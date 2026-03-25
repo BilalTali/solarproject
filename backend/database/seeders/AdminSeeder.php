@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class AdminSeeder extends Seeder
@@ -11,8 +10,8 @@ class AdminSeeder extends Seeder
     {
         $adminEmail = env('ADMIN_EMAIL', 'admin@suryamitra.in');
 
-        $admin = \App\Models\User::where('email', $adminEmail)->first();
-        if (!$admin) {
+        $admin = \App\Models\User::query()->where(fn($q) => $q->where('email', $adminEmail))->first();
+        if (! $admin) {
             \App\Models\User::forceCreate([
                 'email' => $adminEmail,
                 'name' => env('ADMIN_NAME', 'Super Admin'),

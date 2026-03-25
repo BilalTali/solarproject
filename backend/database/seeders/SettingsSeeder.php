@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Setting;
 
 class SettingsSeeder extends Seeder
 {
@@ -89,13 +89,17 @@ class SettingsSeeder extends Seeder
             ['key' => 'footer_about_text', 'value' => 'Facilitating solar rooftop installations under the PM Surya Ghar Muft Bijli Yojana across India.', 'group' => 'company'],
             ['key' => 'footer_copyright', 'value' => '© 2026 SuryaMitra. All rights reserved.', 'group' => 'company'],
             ['key' => 'footer_disclaimer', 'value' => '⚠️ SuryaMitra is an independent facilitation agency. Not a government body. PM Surya Ghar Muft Bijli Yojana is a Government of India scheme.', 'group' => 'company'],
+
+            // ── Offers & Points ────────────────────────────────────────────────
+            ['key' => 'capacity_points_json', 'value' => '{"1kw":0,"2kw":0,"3kw":1,"3.3kw":1.1,"4kw":1.5,"5kw":2,"5.5kw":2.2,"6kw":2.5,"7kw":3,"8kw":3.5,"9kw":4,"10kw":5,"above_10kw":6,"above_3kw":1.5}', 'group' => 'offer'],
+            ['key' => 'offer_grace_period_days', 'value' => '7', 'group' => 'offer'],
         ];
 
         foreach ($settings as $setting) {
             // Protect existing user-uploaded branding to avoid overwriting with placeholders
             if (in_array($setting['key'], ['company_logo', 'company_favicon', 'company_signature', 'company_seal', 'company_logo_2'])) {
-                $existing = \App\Models\Setting::where('key', $setting['key'])->first();
-                if ($existing && !empty($existing->value) && str_contains($existing->value, 'branding/')) {
+                $existing = Setting::query()->where(fn($q) => $q->where('key', $setting['key']))->first();
+                if ($existing && ! empty($existing->value) && str_contains($existing->value, 'branding/')) {
                     // Only update if current value is the placeholder we are trying to set (e.g. logo.png)
                     if ($existing->value !== $setting['value']) {
                         continue;
@@ -103,7 +107,7 @@ class SettingsSeeder extends Seeder
                 }
             }
 
-            \App\Models\Setting::updateOrCreate(['key' => $setting['key']], $setting);
+            Setting::updateOrCreate(['key' => $setting['key']], $setting);
         }
     }
 }

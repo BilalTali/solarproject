@@ -17,44 +17,44 @@ return new class extends Migration
         // 2. Create new commissions table
         Schema::create('commissions', function (Blueprint $table) {
             $table->id();
-            
+
             // Which lead this commission is for
             $table->unsignedBigInteger('lead_id');
             $table->foreign('lead_id')->references('id')->on('leads')->onDelete('cascade');
-            
+
             // Who receives this commission (the payee)
             $table->unsignedBigInteger('payee_id');
             $table->foreign('payee_id')->references('id')->on('users')->onDelete('cascade');
-            
+
             // 'super_agent' = admin is paying a super agent for this lead
             // 'agent'       = super agent (or admin directly) is paying an agent for this lead
             $table->enum('payee_role', ['super_agent', 'agent']);
-            
+
             // The commission amount (entered manually by admin or super agent)
             $table->decimal('amount', 10, 2);
-            
+
             // Who entered this commission
             $table->unsignedBigInteger('entered_by');
             $table->foreign('entered_by')->references('id')->on('users');
-            
+
             // Payment tracking
             $table->enum('payment_status', ['unpaid', 'paid'])->default('unpaid');
             $table->timestamp('paid_at')->nullable();
-            
+
             $table->unsignedBigInteger('paid_by')->nullable();
             $table->foreign('paid_by')->references('id')->on('users')->onDelete('set null');
-            
+
             $table->enum('payment_method', ['bank_transfer', 'upi', 'cash', 'cheque'])->nullable();
             $table->string('payment_reference', 150)->nullable();
             $table->text('payment_notes')->nullable();
-            
+
             // Edit lock: commission is locked from editing after 24 hours
             $table->timestamp('locked_at')->nullable();
-            
+
             // Soft audit
             $table->timestamps();
             $table->softDeletes();
-            
+
             // Constraints: only ONE commission record per lead per payee_role
             $table->unique(['lead_id', 'payee_role'], 'unique_lead_payee_role');
         });
@@ -62,8 +62,8 @@ return new class extends Migration
         // 3. Add commission_entry_status to leads table
         Schema::table('leads', function (Blueprint $table) {
             $table->enum('commission_entry_status', ['none', 'super_agent_entered', 'agent_entered', 'both_entered'])
-                  ->default('none')
-                  ->after('status');
+                ->default('none')
+                ->after('status');
         });
     }
 

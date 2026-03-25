@@ -145,7 +145,7 @@ export const SuperAgentTeamOffersPage: React.FC = () => {
                         <div className="space-y-6">
                             {summary && (
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                    <SummaryBadge label="Unclaimed Points" value={summary.unclaimed_installations} icon={Clock} color="text-amber-600 bg-amber-50" />
+                                    <SummaryBadge label="Unclaimed Points" value={summary.unclaimed_points} icon={Clock} color="text-amber-600 bg-amber-50" />
                                     <SummaryBadge label="Available Claims" value={summary.unclaimed_count} icon={AlertCircle} color="text-blue-600 bg-blue-50" />
                                     <SummaryBadge label="Total Absorbed" value={summary.total_absorbed_ever} icon={CheckCircle2} color="text-emerald-600 bg-emerald-50" />
                                     <SummaryBadge label="Approved Rewards" value={summary.delivered_count} icon={Gift} color="text-indigo-600 bg-indigo-50" />
@@ -217,8 +217,8 @@ const TeamOfferSection: React.FC<{ offer: any }> = ({ offer }) => (
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full md:w-auto p-4 bg-slate-50 rounded-2xl border border-slate-100">
                 <div className="px-3 border-r border-slate-200">
-                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Total Team Installs</p>
-                    <p className="text-lg font-black text-slate-900 leading-none">{offer.team_totals.total_installations}</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Total Team Points</p>
+                    <p className="text-lg font-black text-slate-900 leading-none">{offer.team_totals.total_points}</p>
                 </div>
                 <div className="px-3 border-r border-slate-200">
                     <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Prizes Won</p>
@@ -232,7 +232,7 @@ const TeamOfferSection: React.FC<{ offer: any }> = ({ offer }) => (
                 <thead className="bg-slate-50/50 border-b border-slate-100 uppercase tracking-widest text-[9px] font-black text-slate-400">
                     <tr>
                         <th className="px-6 py-4">Agent</th>
-                        <th className="px-6 py-4">Lifetime</th>
+                        <th className="px-6 py-4">Total Points</th>
                         <th className="px-6 py-4">Cycle Progress</th>
                         <th className="px-6 py-4">Redeemable</th>
                     </tr>
@@ -244,13 +244,13 @@ const TeamOfferSection: React.FC<{ offer: any }> = ({ offer }) => (
                                 <p className="font-bold text-slate-900">{agent.agent_name}</p>
                                 <p className="text-xs text-indigo-600 font-medium">{agent.agent_code}</p>
                             </td>
-                            <td className="px-6 py-4 text-slate-900">{agent.total_installations}</td>
+                            <td className="px-6 py-4 text-slate-900">{agent.total_points}</td>
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-3 w-32 md:w-48">
                                     <div className="flex-grow h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                        <div className="h-full bg-indigo-600" style={{ width: `${Math.min(100, (agent.cycle_installations / offer.target_installations) * 100)}%` }} />
+                                        <div className="h-full bg-indigo-600" style={{ width: `${Math.min(100, (agent.cycle_points / offer.target_points) * 100)}%` }} />
                                     </div>
-                                    <span className="text-[10px] font-black text-slate-400 shrink-0">{agent.cycle_installations}/{offer.target_installations}</span>
+                                    <span className="text-[10px] font-black text-slate-400 shrink-0">{agent.cycle_points}/{offer.target_points}</span>
                                 </div>
                             </td>
                             <td className="px-6 py-4">
@@ -277,7 +277,7 @@ const AbsorbedPointCard: React.FC<{ point: any, onClaim: () => void, isClaiming:
             <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center">
                 <div className="flex items-center gap-4 flex-shrink-0">
                     <div className="w-16 h-16 rounded-2xl bg-indigo-600 flex flex-col items-center justify-center text-white shadow-lg shadow-indigo-200 shrink-0">
-                        <span className="text-xl font-black leading-none">{point.absorbed_installations}</span>
+                        <span className="text-xl font-black leading-none">{point.absorbed_points}</span>
                         <span className="text-[9px] font-bold uppercase tracking-tighter opacity-80">Points</span>
                     </div>
                     <div className="flex flex-col">

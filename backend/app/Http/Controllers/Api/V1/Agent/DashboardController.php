@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1\Agent;
 
 use App\Http\Controllers\Controller;
@@ -22,13 +23,13 @@ class DashboardController extends Controller
 
         $pendingCommission = (float) ($commStats['unpaid'] ?? 0);
         $totalEarned = (float) ($commStats['paid'] ?? 0);
-        
+
         $thisMonthEarned = $user->commissions()
             ->where('payment_status', 'paid')
             ->whereMonth('paid_at', now()->month)
             ->whereYear('paid_at', now()->year)
             ->sum('amount');
-            
+
         $lastMonth = now()->subMonth();
         $lastMonthEarned = $user->commissions()
             ->where('payment_status', 'paid')
@@ -49,8 +50,8 @@ class DashboardController extends Controller
                     ->with(['documents', 'commissions'])
                     ->orderBy('created_at', 'desc')
                     ->take(5)
-                    ->get()
-            ]
+                    ->get(),
+            ],
         ]);
     }
 
@@ -64,7 +65,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $scans
+            'data' => $scans,
         ]);
     }
 }

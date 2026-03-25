@@ -54,4 +54,12 @@ export const agentsApi = {
         const res = await api.get<ApiResponse<PaginatedResponse<User>>>('/admin/agents', { params });
         return res.data;
     },
+    getNotifications: async (params?: { page?: number; per_page?: number }) => {
+        const res = await api.get('/agent/notifications', { params });
+        return res.data;
+    },
+    markNotificationAsRead: async (id: number) => {
+        const res = await api.put(`/agent/notifications/${id}/read`);
+        return res.data;
+    },
 };

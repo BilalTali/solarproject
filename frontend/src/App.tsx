@@ -40,7 +40,10 @@ import AgentLeadsPage from '@/pages/agent/AgentLeadsPage';
 import AgentProfilePage from '@/pages/agent/AgentProfilePage';
 
 import AgentCommissionsPage from '@/pages/agent/AgentCommissionsPage';
+import AgentNotificationsPage from '@/pages/agent/AgentNotificationsPage';
+import AgentEnumeratorsPage from '@/pages/agent/AgentEnumeratorsPage';
 import { AgentOffersPage } from '@/pages/agent/AgentOffersPage';
+import { AgentWithdrawalsPage } from '@/pages/agent/AgentWithdrawalsPage';
 
 // Business Development Manager Pages
 import SuperAgentDashboardPage from '@/pages/super-agent/SuperAgentDashboardPage';
@@ -50,6 +53,7 @@ import SuperAgentLeadsPage from '@/pages/super-agent/SuperAgentLeadsPage';
 import SuperAgentCommissionsPage from '@/pages/super-agent/SuperAgentCommissionsPage';
 import SuperAgentCreateLeadPage from '@/pages/super-agent/SuperAgentCreateLeadPage';
 import SuperAgentProfilePage from '@/pages/super-agent/SuperAgentProfilePage';
+import SuperAgentEnumeratorsPage from '@/pages/super-agent/SuperAgentEnumeratorsPage';
 import { SuperAgentTeamOffersPage } from '@/pages/super-agent/SuperAgentTeamOffersPage';
 import {
   SuperAgentLeadDetailPage,
@@ -62,6 +66,7 @@ import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import AdminSuperAgentsPage from '@/pages/admin/AdminSuperAgentsPage';
 import AdminSuperAgentDetailPage from '@/pages/admin/AdminSuperAgentDetailPage';
 import AdminAgentsPage from '@/pages/admin/AdminAgentsPage';
+import AdminEnumeratorsPage from '@/pages/admin/AdminEnumeratorsPage';
 import AdminLeadsPage from '@/pages/admin/AdminLeadsPage';
 import AdminCommissionsPage from '@/pages/admin/AdminCommissionsPage';
 import AdminReportsPage from '@/pages/admin/AdminReportsPage';
@@ -71,6 +76,19 @@ import AdminSettingsPage from '@/pages/admin/AdminSettingsPage';
 import { AdminOffersPage } from '@/pages/admin/AdminOffersPage';
 import { AdminRedemptionsPage } from '@/pages/admin/AdminRedemptionsPage';
 import { AdminAbsorptionsPage } from '@/pages/admin/AdminAbsorptionsPage';
+import { AdminWithdrawalsPage } from '@/pages/admin/AdminWithdrawalsPage';
+import { AdminCommissionSlabsPage } from '@/pages/admin/AdminCommissionSlabsPage';
+
+// Enumerator Pages
+import EnumeratorLayout from '@/layouts/EnumeratorLayout';
+import EnumeratorDashboardPage from '@/pages/enumerator/EnumeratorDashboardPage';
+import EnumeratorLeadsPage from '@/pages/enumerator/EnumeratorLeadsPage';
+import EnumeratorCreateLeadPage from '@/pages/enumerator/EnumeratorCreateLeadPage';
+import EnumeratorProfilePage from '@/pages/enumerator/EnumeratorProfilePage';
+import EnumeratorCommissionsPage from '@/pages/enumerator/EnumeratorCommissionsPage';
+import EnumeratorNotificationsPage from '@/pages/enumerator/EnumeratorNotificationsPage';
+import EnumeratorLoginPage from '@/pages/enumerator/EnumeratorLoginPage';
+import { EnumeratorWithdrawalsPage } from '@/pages/enumerator/EnumeratorWithdrawalsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -130,12 +148,14 @@ export default function App() {
             }
           >
             <Route path="dashboard" element={<AgentDashboardPage />} />
+            <Route path="enumerators" element={<AgentEnumeratorsPage />} />
             <Route path="leads" element={<AgentLeadsPage />} />
             <Route path="leads/new" element={<AgentCreateLeadPage />} />
             <Route path="leads/:ulid" element={<div className="p-8 text-center text-slate-500">This module is currently disabled for maintenance.</div>} />
             <Route path="commissions" element={<AgentCommissionsPage />} />
             <Route path="offers" element={<AgentOffersPage />} />
-            <Route path="notifications" element={<div className="p-8 text-center text-slate-500">This module is currently disabled for maintenance.</div>} />
+            <Route path="withdrawals" element={<AgentWithdrawalsPage />} />
+            <Route path="notifications" element={<AgentNotificationsPage />} />
             <Route path="documents" element={<DocumentsPage />} />
             <Route path="profile" element={<AgentProfilePage />} />
             <Route index element={<Navigate to="/agent/dashboard" replace />} />
@@ -157,6 +177,7 @@ export default function App() {
             <Route path="dashboard" element={<SuperAgentDashboardPage />} />
             <Route path="team" element={<SuperAgentTeamPage />} />
             <Route path="team/:agentId" element={<SuperAgentAgentDetailPage />} />
+            <Route path="enumerators" element={<SuperAgentEnumeratorsPage />} />
             <Route path="leads" element={<SuperAgentLeadsPage />} />
             <Route path="leads/new" element={<SuperAgentCreateLeadPage />} />
             <Route path="leads/:ulid" element={<SuperAgentLeadDetailPage />} />
@@ -186,6 +207,7 @@ export default function App() {
             <Route path="leads" element={<AdminLeadsPage />} />
             <Route path="leads/:ulid" element={<AdminLeadsPage />} />
             <Route path="agents" element={<AdminAgentsPage />} />
+            <Route path="enumerators" element={<AdminEnumeratorsPage />} />
             <Route path="agents/:id" element={<div className="p-8 text-center text-slate-500">This module is currently disabled for maintenance.</div>} />
             <Route path="commissions" element={<AdminCommissionsPage />} />
             <Route path="reports" element={<AdminReportsPage />} />
@@ -195,7 +217,32 @@ export default function App() {
             <Route path="redemptions" element={<AdminRedemptionsPage />} />
             <Route path="absorptions" element={<AdminAbsorptionsPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
+            <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
+            <Route path="commission-slabs" element={<AdminCommissionSlabsPage />} />
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          </Route>
+
+          {/* Enumerator Auth */}
+          <Route path="/enumerator/login" element={<EnumeratorLoginPage />} />
+
+          {/* Enumerator Protected Routes */}
+          <Route
+            path="/enumerator"
+            element={
+              <ProtectedRoute requiredRole="enumerator" loginPath="/enumerator/login">
+                <EnumeratorLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="dashboard" element={<EnumeratorDashboardPage />} />
+            <Route path="leads" element={<EnumeratorLeadsPage />} />
+            <Route path="leads/new" element={<EnumeratorCreateLeadPage />} />
+            <Route path="commissions" element={<EnumeratorCommissionsPage />} />
+            <Route path="notifications" element={<EnumeratorNotificationsPage />} />
+            <Route path="documents" element={<DocumentsPage />} />
+            <Route path="profile" element={<EnumeratorProfilePage />} />
+            <Route path="withdrawals" element={<EnumeratorWithdrawalsPage />} />
+            <Route index element={<Navigate to="/enumerator/dashboard" replace />} />
           </Route>
 
           {/* Catch-all */}

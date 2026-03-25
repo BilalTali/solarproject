@@ -5,9 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Achievement;
 use App\Models\Setting;
-use App\Models\User;
-use App\Models\QrScanLog;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PublicController extends Controller
@@ -28,16 +25,17 @@ class PublicController extends Controller
             'footer_about_text', 'footer_copyright', 'footer_disclaimer',
         ];
 
-        $settings = Setting::whereIn('key', $keys)->get()->keyBy('key');
+        $settings = Setting::query()->where(fn ($q) => $q->whereIn('key', $keys))->get()->keyBy('key');
 
         $result = [];
         foreach ($keys as $key) {
+            /** @var Setting|null $item */
             $item = $settings[$key] ?? null;
             $value = $item?->value;
 
             // File paths — return as full URLs
             if (in_array($key, ['company_logo', 'company_logo_2', 'company_signature', 'company_seal', 'hero_video']) && $value) {
-                $value = asset('storage/' . $value);
+                $value = asset('storage/'.$value);
             }
 
             $result[$key] = $value;
@@ -51,16 +49,16 @@ class PublicController extends Controller
      */
     public function achievements()
     {
-        $achievements = Achievement::where('is_published', true)
+        $achievements = Achievement::query()->where(fn ($q) => $q->where('is_published', true))
             ->orderBy('sort_order')
             ->orderBy('date', 'desc')
             ->get()
-            ->map(fn($a) => [
-                'id'          => $a->id,
-                'title'       => $a->title,
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'title' => $a->title,
                 'description' => $a->description,
-                'image_url'   => $a->image_path ? asset('storage/' . $a->image_path) : null,
-                'date'        => $a->date?->format('d M Y'),
+                'image_url' => $a->image_path ? asset('storage/'.$a->image_path) : null,
+                'date' => $a->date?->format('d M Y'),
             ]);
 
         return response()->json(['success' => true, 'data' => $achievements]);
@@ -71,16 +69,16 @@ class PublicController extends Controller
      */
     public function feedbacks()
     {
-        $feedbacks = \App\Models\Feedback::where('is_published', true)
+        $feedbacks = \App\Models\Feedback::query()->where(fn ($q) => $q->where('is_published', true))
             ->latest()
             ->get()
-            ->map(fn($f) => [
-                'id'          => $f->id,
-                'name'        => $f->name,
-                'message'     => $f->message,
-                'rating'      => $f->rating,
+            ->map(fn ($f) => [
+                'id' => $f->id,
+                'name' => $f->name,
+                'message' => $f->message,
+                'rating' => $f->rating,
                 'admin_reply' => $f->admin_reply,
-                'date'        => $f->created_at->format('d M Y'),
+                'date' => $f->created_at->format('d M Y'),
             ]);
 
         return response()->json(['success' => true, 'data' => $feedbacks]);
@@ -91,26 +89,27 @@ class PublicController extends Controller
      */
     public function verifyAgent(\Illuminate\Http\Request $request, string $token)
     {
-        $user = \App\Models\User::where('qr_token', $token)
+        /** @var \App\Models\User|null $user */
+        $user = \App\Models\User::query()->where(fn ($q) => $q->where('qr_token', $token))
             ->with(['superAgent'])
             ->first();
 
         // Log the scan
         try {
             \App\Models\QrScanLog::create([
-                'user_id'    => $user?->id,
+                'user_id' => $user?->id,
                 'ip_address' => $request->ip(),
                 'user_agent' => substr($request->userAgent() ?? '', 0, 500),
-                'referer'    => substr($request->header('referer') ?? '', 0, 500),
+                'referer' => substr($request->header('referer') ?? '', 0, 500),
             ]);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning('Public QR scan log failed: ' . $e->getMessage());
+            Log::warning('Public QR scan log failed: '.$e->getMessage());
         }
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid or expired QR token.'
+                'message' => 'Invalid or expired QR token.',
             ], 404);
         }
 
@@ -123,34 +122,34 @@ class PublicController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'name'         => $user->name,
-                'agent_id'     => $user->agent_id ?? $user->super_agent_code ?? 'ADM-' . str_pad($user->id, 4, '0', STR_PAD_LEFT),
-                'role'         => $user->role,
-                'designation'  => $this->getDesignation($user),
-                'photo_url'    => $user->profile_photo ? asset('storage/' . $user->profile_photo) : null,
-                'status'       => $user->status,
-                'is_active'    => $user->status === 'active',
-                'district'     => $user->district,
-                'state'        => $user->state,
+                'name' => $user->name,
+                'agent_id' => $user->agent_id ?? $user->super_agent_code ?? 'ADM-'.str_pad($user->id, 4, '0', STR_PAD_LEFT),
+                'role' => $user->role,
+                'designation' => $this->getDesignation($user),
+                'photo_url' => $user->profile_photo ? asset('storage/'.$user->profile_photo) : null,
+                'status' => $user->status,
+                'is_active' => $user->status === 'active',
+                'district' => $user->district,
+                'state' => $user->state,
                 'joining_date' => ($user->approved_at ?? $user->joining_date)?->format('d M Y'),
-                'clearance'    => \App\Models\Setting::getValue('icard_clearance', 'Level-V (Elite)'),
-                'mobile'       => $user->mobile ? 'XXXXXX' . substr($user->mobile, -4) : null,
-                'blood_group'  => $user->blood_group,
-                'super_agent'  => $user->superAgent ? [
+                'clearance' => Setting::getValue('icard_clearance', 'Level-V (Elite)'),
+                'mobile' => $user->mobile ? 'XXXXXX'.substr($user->mobile, -4) : null,
+                'blood_group' => $user->blood_group,
+                'super_agent' => $user->superAgent ? [
                     'name' => $user->superAgent->name,
-                    'code' => $user->superAgent->super_agent_code
-                ] : null
-            ]
+                    'code' => $user->superAgent->super_agent_code,
+                ] : null,
+            ],
         ]);
     }
 
     private function getDesignation(\App\Models\User $user): string
     {
-        return match($user->role) {
-            'admin'       => 'ADMINISTRATOR',
+        return match ($user->role) {
+            'admin' => 'ADMINISTRATOR',
             'super_agent' => 'BUSINESS DEVELOPMENT MANAGER',
-            'agent'       => 'BUSINESS DEVELOPMENT EXECUTIVE',
-            default       => 'MEMBER',
+            'agent' => 'BUSINESS DEVELOPMENT EXECUTIVE',
+            default => 'MEMBER',
         };
     }
 }

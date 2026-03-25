@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
@@ -23,13 +24,13 @@ class SuperAgentController extends Controller
     /** List all super agents with team stats */
     public function index(Request $request): JsonResponse
     {
-        $query = User::superAgents()
+        $query = User::query()->superAgents()
             ->withCount(['managedAgents as agent_count'])
             ->withSum(['managedAgents as total_leads' => function ($q) {
                 // sub-query is not directly supported for relations like this
             }], 'id');
 
-        $query = User::superAgents()->withCount('managedAgents as agent_count');
+        $query = User::query()->superAgents()->withCount('managedAgents as agent_count');
 
         if ($request->status) {
             $query->where('status', $request->status);
@@ -41,8 +42,8 @@ class SuperAgentController extends Controller
             $search = str_replace(['%', '_'], ['\%', '\_'], $request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('super_agent_code', 'like', "%{$search}%")
-                  ->orWhere('mobile', 'like', "%{$search}%");
+                    ->orWhere('super_agent_code', 'like', "%{$search}%")
+                    ->orWhere('mobile', 'like', "%{$search}%");
             });
         }
 
@@ -54,7 +55,7 @@ class SuperAgentController extends Controller
     /** Get a single super agent's full detail */
     public function show(int $id): JsonResponse
     {
-        $superAgent = User::superAgents()
+        $superAgent = User::query()->superAgents()
             ->with(['managedAgents'])
             ->withCount('managedAgents as agent_count')
             ->findOrFail($id);
@@ -63,7 +64,7 @@ class SuperAgentController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => array_merge($superAgent->toArray(), ['stats' => $stats]),
+            'data' => array_merge($superAgent->toArray(), ['stats' => $stats]),
         ]);
     }
 
@@ -72,19 +73,20 @@ class SuperAgentController extends Controller
     {
         $superAgent = DB::transaction(function () use ($request) {
             $superAgent = User::forceCreate([
-                'name'            => $request->name,
-                'mobile'          => $request->mobile,
-                'email'           => $request->email,
-                'password'        => $request->password,
+                'name' => $request->name,
+                'mobile' => $request->mobile,
+                'email' => $request->email,
+                'password' => $request->password,
                 'whatsapp_number' => $request->whatsapp_number,
-                'district'        => $request->district,
-                'state'           => $request->state,
-                'area'            => $request->area,
-                'managed_states'  => $request->managed_states,
-                'role'            => 'super_agent',
-                'status'          => 'active',
-                'super_agent_code'=> $this->agentService->generateSuperAgentCode(),
-                'qr_token'        => hash('sha256', \Illuminate\Support\Str::random(40) . uniqid() . now()->timestamp),
+                'district' => $request->district,
+                'state' => $request->state,
+                'area' => $request->area,
+                'managed_states' => $request->managed_states,
+                'role' => 'super_agent',
+                'status' => 'active',
+                'parent_id' => $request->user()->id,
+                'super_agent_code' => $this->agentService->generateSuperAgentCode(),
+                'qr_token' => hash('sha256', \Illuminate\Support\Str::random(40).uniqid().now()->timestamp),
                 'qr_generated_at' => now(),
             ]);
 
@@ -93,7 +95,7 @@ class SuperAgentController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $superAgent,
+            'data' => $superAgent,
             'message' => "Super Agent created. Code: {$superAgent->super_agent_code}",
         ], 201);
     }
@@ -101,7 +103,7 @@ class SuperAgentController extends Controller
     /** Update super agent info */
     public function update(UpdateSuperAgentRequest $request, int $id): JsonResponse
     {
-        $superAgent = User::superAgents()->findOrFail($id);
+        $superAgent = User::query()->superAgents()->findOrFail($id);
         $superAgent->update($request->validated());
 
         return response()->json(['success' => true, 'data' => $superAgent->fresh(), 'message' => 'Updated.']);
@@ -111,13 +113,13 @@ class SuperAgentController extends Controller
     public function updateStatus(Request $request, int $id): JsonResponse
     {
         $request->validate(['status' => ['required', 'in:active,inactive']]);
-        $superAgent = User::superAgents()->findOrFail($id);
-        
+        $superAgent = User::query()->superAgents()->findOrFail($id);
+
         $updateData = ['status' => $request->status];
-        
+
         // Generate QR if activating and missing
-        if ($request->status === 'active' && !$superAgent->qr_token) {
-            $updateData['qr_token'] = hash('sha256', \Illuminate\Support\Str::random(40) . $superAgent->id . now()->timestamp);
+        if ($request->status === 'active' && ! $superAgent->qr_token) {
+            $updateData['qr_token'] = hash('sha256', \Illuminate\Support\Str::random(40).$superAgent->id.now()->timestamp);
             $updateData['qr_generated_at'] = now();
         }
 
@@ -129,7 +131,7 @@ class SuperAgentController extends Controller
     /** Soft delete super agent */
     public function destroy(int $id): JsonResponse
     {
-        $superAgent = User::superAgents()->findOrFail($id);
+        $superAgent = User::query()->superAgents()->findOrFail($id);
         if ($superAgent->managedAgents()->exists()) {
             return response()->json([
                 'success' => false,
@@ -144,7 +146,7 @@ class SuperAgentController extends Controller
     /** List agents assigned to this super agent */
     public function teamAgents(int $id): JsonResponse
     {
-        $superAgent = User::superAgents()->findOrFail($id);
+        $superAgent = User::query()->superAgents()->findOrFail($id);
         $agents = $superAgent->managedAgents()->withCount('assignedLeads as total_leads')->get();
 
         return response()->json(['success' => true, 'data' => $agents]);
@@ -153,8 +155,8 @@ class SuperAgentController extends Controller
     /** Assign a single agent to super agent */
     public function assignAgent(AssignAgentToSuperAgentRequest $request, int $id): JsonResponse
     {
-        $superAgent = User::superAgents()->findOrFail($id);
-        $agent = User::agents()->findOrFail($request->agent_id);
+        $superAgent = User::query()->superAgents()->findOrFail($id);
+        $agent = User::query()->agents()->findOrFail($request->agent_id);
 
         if ($agent->super_agent_id) {
             return response()->json([
@@ -171,17 +173,20 @@ class SuperAgentController extends Controller
     /** Bulk assign multiple agents */
     public function assignAgentsBulk(AssignAgentToSuperAgentRequest $request, int $id): JsonResponse
     {
-        $superAgent = User::superAgents()->findOrFail($id);
+        $superAgent = User::query()->superAgents()->findOrFail($id);
         $agentIds = $request->agent_ids ?? [$request->agent_id];
 
         $assigned = [];
         $skipped = [];
 
         foreach ($agentIds as $agentId) {
-            $agent = User::agents()->find($agentId);
-            if (!$agent) continue;
+            $agent = User::query()->agents()->find($agentId);
+            if (! $agent) {
+                continue;
+            }
             if ($agent->super_agent_id) {
                 $skipped[] = $agentId;
+
                 continue;
             }
             $this->superAgentService->assignAgent($superAgent, $agent, $request->user());
@@ -190,16 +195,16 @@ class SuperAgentController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => count($assigned) . ' agent(s) assigned.',
-            'data'    => ['assigned' => $assigned, 'skipped' => $skipped],
+            'message' => count($assigned).' agent(s) assigned.',
+            'data' => ['assigned' => $assigned, 'skipped' => $skipped],
         ]);
     }
 
     /** Unassign a specific agent */
     public function unassignAgent(Request $request, int $id, int $agentId): JsonResponse
     {
-        $superAgent = User::superAgents()->findOrFail($id);
-        $agent = User::agents()->where('super_agent_id', $superAgent->id)->findOrFail($agentId);
+        $superAgent = User::query()->superAgents()->findOrFail($id);
+        $agent = User::query()->agents()->where(fn($q) => $q->where('super_agent_id', $superAgent->id))->findOrFail($agentId);
 
         $this->superAgentService->unassignAgent($superAgent, $agent, $request->user(), $request->notes);
 
@@ -209,8 +214,8 @@ class SuperAgentController extends Controller
     /** Full audit log of agent assignments */
     public function teamLog(int $id): JsonResponse
     {
-        $superAgent = User::superAgents()->findOrFail($id);
-        $logs = SuperAgentTeamLog::where('super_agent_id', $superAgent->id)
+        $superAgent = User::query()->superAgents()->findOrFail($id);
+        $logs = SuperAgentTeamLog::query()->where(fn($q) => $q->where('super_agent_id', $superAgent->id))
             ->with(['agent', 'assignedBy'])->latest()->paginate(50);
 
         return response()->json(['success' => true, 'data' => $logs]);
@@ -220,7 +225,7 @@ class SuperAgentController extends Controller
     public function unassignedAgents(Request $request): JsonResponse
     {
         $search = $request->search ? str_replace(['%', '_'], ['\%', '\_'], $request->search) : null;
-        $agents = User::agents()->active()->whereNull('super_agent_id')
+        $agents = User::query()->agents()->active()->whereNull('super_agent_id')
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%")
                 ->orWhere('agent_id', 'like', "%{$search}%"))
             ->paginate(50);
@@ -230,32 +235,31 @@ class SuperAgentController extends Controller
 
     public function getQrScans($id)
     {
-        $sa = User::superAgents()->findOrFail($id);
-        
+        $sa = User::query()->superAgents()->findOrFail($id);
+
         $scans = $sa->qrScanLogs()
-                       ->orderBy('scanned_at', 'desc')
-                       ->paginate(15);
+            ->orderBy('scanned_at', 'desc')
+            ->paginate(15);
 
         return response()->json([
             'success' => true,
-            'data'    => $scans
+            'data' => $scans,
         ]);
     }
 
     public function regenerateQr($id)
     {
-        $sa = User::superAgents()->findOrFail($id);
-        
+        $sa = User::query()->superAgents()->findOrFail($id);
+
         $sa->update([
-            'qr_token'        => hash('sha256', \Illuminate\Support\Str::random(40) . $sa->id . now()->timestamp),
+            'qr_token' => hash('sha256', \Illuminate\Support\Str::random(40).$sa->id.now()->timestamp),
             'qr_generated_at' => now(),
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'QR code regenerated successfully. Old cards are now invalid.',
-            'data'    => $sa->fresh()
+            'data' => $sa->fresh(),
         ]);
     }
-
 }

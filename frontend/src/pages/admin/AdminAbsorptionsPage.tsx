@@ -110,7 +110,7 @@ export const AdminAbsorptionsPage: React.FC = () => {
                                             <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                                                 <span>From: {p.source_agent?.name}</span>
                                                 <span className="w-1 h-1 rounded-full bg-slate-200" />
-                                                <span className="text-slate-800">{p.absorbed_installations} Pts</span>
+                                                <span className="text-slate-800">{p.absorbed_points} Pts</span>
                                             </div>
                                         </div>
                                     </div>
@@ -150,7 +150,7 @@ export const AdminAbsorptionsPage: React.FC = () => {
                                     <div className="grid grid-cols-2 gap-4">
                                         <DetailItem label="Source Agent" value={selectedPoint.source_agent?.name} />
                                         <DetailItem label="Target SA" value={selectedPoint.super_agent?.name} />
-                                        <DetailItem label="Points" value={selectedPoint.absorbed_installations.toString()} />
+                                        <DetailItem label="Points" value={selectedPoint.absorbed_points.toString()} />
                                         <DetailItem label="Reason" value={selectedPoint.absorption_reason.replace(/_/g, ' ')} />
                                     </div>
                                 </div>

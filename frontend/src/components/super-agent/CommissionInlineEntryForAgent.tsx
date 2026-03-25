@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { superAgentCommissionsApi } from '@/api/commissions.api';
+
 import type { CommissionPrompt, Commission } from '@/types';
 import { Lock, Edit2, Loader2, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -14,16 +14,23 @@ interface Props {
     onSaved: (commission: Commission) => void;
     onSkip?: () => void;
     leadStatus?: string;
+    commissionsApi: {
+        updateCommission: (id: number, payload: any) => Promise<any>;
+        enterEnumeratorCommission: (leadUlid: string, payload: any) => Promise<any>;
+        enterAgentCommission?: (leadUlid: string, payload: any) => Promise<any>;
+    };
 }
 
 export default function CommissionInlineEntryForAgent({
     leadUlid,
+    commissionPrompt,
     existingCommission,
     agentName,
     agentCode,
     onSaved,
     onSkip,
-    leadStatus
+    leadStatus,
+    commissionsApi
 }: Props) {
     const queryClient = useQueryClient();
     const [isEditing, setIsEditing] = useState(!existingCommission);
@@ -34,15 +41,20 @@ export default function CommissionInlineEntryForAgent({
         mutationFn: async (val: string) => {
             const payload = { amount: parseFloat(val) };
             if (existingCommission) {
-                const res = await superAgentCommissionsApi.updateCommission(existingCommission.id, payload);
+                const res = await commissionsApi.updateCommission(existingCommission.id, payload);
                 return res.data.data;
             } else {
-                const res = await superAgentCommissionsApi.enterAgentCommission(leadUlid, payload);
+                const payee_role = commissionPrompt?.payee_role;
+                const apiCall = (payee_role === 'enumerator' || !commissionsApi.enterAgentCommission)
+                    ? commissionsApi.enterEnumeratorCommission 
+                    : commissionsApi.enterAgentCommission;
+                const res = await apiCall(leadUlid, payload);
                 return (res.data.data as any).commission as Commission;
             }
         },
         onSuccess: (data) => {
-            toast.success('Business Development Executive commission saved successfully');
+            const label = commissionPrompt?.payee_role === 'enumerator' ? 'Enumerator' : 'Business Development Executive';
+            toast.success(`${label} commission saved successfully`);
             setIsEditing(false);
             onSaved(data);
             queryClient.invalidateQueries({ queryKey: ['super-agent-leads'] });
@@ -75,12 +87,19 @@ export default function CommissionInlineEntryForAgent({
         }
     };
 
+    const getRoleLabel = (role?: string) => {
+        if (role === 'super_agent') return 'Business Development Manager';
+        if (role === 'agent') return 'Business Development Executive';
+        if (role === 'enumerator') return 'Enumerator';
+        return 'Business Development Executive';
+    };
+
     return (
         <div className="bg-[#F0F9FF] border-l-4 border-sky-500 p-4 m-2 rounded-r-lg shadow-sm w-full mx-auto max-w-4xl animate-in slide-in-from-top-2 duration-200">
             <div className="flex items-center gap-2 mb-3">
                 <span className="text-xl">💰</span>
                 <h4 className="font-semibold text-sky-900">
-                    Business Development Executive Commission
+                    {commissionPrompt?.payee_type_label || getRoleLabel(commissionPrompt?.payee_role)} Commission
                 </h4>
                 <div className="text-sm text-sky-800 bg-sky-100 px-2 py-0.5 rounded ml-2">
                     <span className="font-medium">{agentName}</span> ({agentCode})
@@ -125,7 +144,11 @@ export default function CommissionInlineEntryForAgent({
             ) : (
                 <div className="flex items-center gap-4">
                     <div className="text-2xl font-bold font-mono text-slate-800">
-                        ₹{Number(existingCommission?.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        ₹{(existingCommission?.amount != null) 
+                            ? Number(existingCommission.amount).toLocaleString('en-IN', { 
+                                minimumFractionDigits: Number(existingCommission.amount) % 1 === 0 ? 0 : 2 
+                              })
+                            : '0'}
                     </div>
 
                     {existingCommission?.is_locked ? (
@@ -135,7 +158,7 @@ export default function CommissionInlineEntryForAgent({
                         </div>
                     ) : (
                         <div className="flex items-center gap-3">
-                            {leadStatus === 'completed' ? (
+                            {(leadStatus === 'completed' || leadStatus === 'installed') ? (
                                 <>
                                     <button
                                         onClick={() => setIsEditing(true)}

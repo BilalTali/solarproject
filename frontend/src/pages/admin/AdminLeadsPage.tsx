@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Search, Filter, ChevronLeft, ChevronRight, X,
     Phone, MapPin, User, Hash, FileText, AlertCircle, Calendar,
-    Image as ImageIcon, CreditCard, FileBadge, Download
+    Image as ImageIcon, CreditCard, FileBadge, Download, CheckCircle
 } from 'lucide-react';
 import { openAuthenticatedFile } from '@/utils/documentUtils';
 import { leadsApi } from '@/api/leads.api';
@@ -20,6 +20,7 @@ const CAPACITY_LABEL: Record<string, string> = {
 const STATUS_BADGE: Record<string, string> = {
     new: 'bg-blue-100 text-blue-700',
     registered: 'bg-cyan-100 text-cyan-700',
+    at_bank: 'bg-indigo-100 text-indigo-700',
     installed: 'bg-green-100 text-green-700',
     completed: 'bg-emerald-100 text-emerald-700',
     rejected: 'bg-red-100 text-red-700',
@@ -45,7 +46,6 @@ export default function AdminLeadsPage() {
     const [assignSuperAgent, setAssignSuperAgent] = useState<number | string>('');
     const [activePrompts, setActivePrompts] = useState<Record<string, CommissionPrompt>>({});
     // commission prompt shown inside sidebar after status change
-    const [sidebarCommissionPrompt, setSidebarCommissionPrompt] = useState<CommissionPrompt | null>(null);
 
     const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -110,13 +110,10 @@ export default function AdminLeadsPage() {
             leadsApi.updateLeadStatus(ulid, { status, notes }),
         onSuccess: (res: any) => {
             const returnedData = res?.data;
-            if (returnedData?.commission_prompt?.should_prompt) {
-                // Show commission prompt INSIDE the sidebar (don't close it)
-                setSidebarCommissionPrompt(returnedData.commission_prompt);
-                // also track in activePrompts for the table row (retained for backwards compat)
-                setActivePrompts(p => ({ ...p, [detail?.ulid || '']: returnedData.commission_prompt }));
+            if (returnedData?.commission_prompts?.length > 0) {
+                // also track for the table row
+                setActivePrompts(p => ({ ...p, [detail?.ulid || '']: returnedData.commission_prompts[0] }));
             } else {
-                setSidebarCommissionPrompt(null);
                 setActivePrompts(p => {
                     const newPrompts = { ...p };
                     delete newPrompts[detail?.ulid || ''];
@@ -159,7 +156,6 @@ export default function AdminLeadsPage() {
         setNewStatus(lead.status);
         setStatusNote('');
         setAssignSuperAgent('');
-        setSidebarCommissionPrompt(null); // clear previous prompt
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -229,7 +225,6 @@ export default function AdminLeadsPage() {
                                 {[
                                     'Ref', 'Beneficiary', 'Mobile', 'Referral ID', 'State', 'District', 'Address',
                                     'DISCOM', 'Consumer No.', 'Capacity', 'Roof Size', 'Monthly Bill',
-                                    'Aadhaar', 'Electricity Bill', 'PAN', 'Photo', 'Solar Roof', 'Passbook',
                                     'Source', 'Business Development Manager', 'Business Development Executive', 'Status', 'Date', 'Action'
                                 ].map(h => (
                                     <th key={h} scope="col" className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide whitespace-nowrap">{h}</th>
@@ -238,10 +233,10 @@ export default function AdminLeadsPage() {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {isLoading ? (
-                                <tr><td colSpan={23} className="text-center py-12 text-slate-400">Loading leads…</td></tr>
+                                <tr><td colSpan={17} className="text-center py-12 text-slate-400">Loading leads…</td></tr>
                             ) : leads.length === 0 ? (
                                 <tr>
-                                    <td colSpan={23} className="text-center py-12">
+                                    <td colSpan={17} className="text-center py-12">
                                         <FileText size={32} className="mx-auto text-slate-300 mb-2" />
                                         <p className="text-slate-400">No leads found{search || status || source ? ' matching your filters' : ''}.</p>
                                     </td>
@@ -280,29 +275,7 @@ export default function AdminLeadsPage() {
                                         <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.roof_size?.replace(/_/g, ' ') || '—'}</td>
                                         <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.monthly_bill_amount ? `₹${lead.monthly_bill_amount}` : '—'}</td>
 
-                                        {/* Documents */}
-                                        {['aadhaar', 'electricity_bill', 'other', 'photo', 'solar_roof_photo', 'bank_passbook'].map(docType => {
-                                            const doc = lead.documents?.find(d => d.document_type === docType);
-                                            return (
-                                                <td key={docType} className="px-4 py-3 text-center">
-                                                    {doc ? (
-                                                        <a
-                                                            href={import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') + '/storage/' + doc.file_path}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-orange-600 hover:text-orange-700 inline-flex"
-                                                            title="View Document"
-                                                            aria-label={`View ${docType} for ${lead.beneficiary_name}`}
-                                                            onClick={e => e.stopPropagation()}
-                                                        >
-                                                            <FileText size={16} aria-hidden="true" />
-                                                        </a>
-                                                    ) : (
-                                                        <span className="text-slate-400">—</span>
-                                                    )}
-                                                </td>
-                                            );
-                                        })}
+
                                         {/* Source */}
                                         <td className="px-4 py-3">
                                             <span className={`px-2 py-0.5 rounded text-xs font-medium ${lead.source === 'public_form' ? 'bg-violet-100 text-violet-700' : 'bg-sky-100 text-sky-700'}`}>
@@ -311,11 +284,22 @@ export default function AdminLeadsPage() {
                                         </td>
                                         {/* Business Development Manager */}
                                         <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
-                                            {lead.assigned_super_agent?.name ?? <span className="text-slate-400 italic">Unassigned</span>}
+                                            {lead.submitted_by_enumerator?.enumerator_creator_role === 'admin' ? (
+                                                <span className="text-emerald-700 font-semibold italic text-xs">Direct Settlement</span>
+                                            ) : (
+                                                lead.assigned_super_agent?.name ?? <span className="text-slate-400 italic">Unassigned</span>
+                                            )}
                                         </td>
                                         {/* Business Development Executive */}
                                         <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
-                                            {lead.submitted_by_agent?.name ?? lead.assigned_agent?.name ?? <span className="text-slate-500 italic">Direct</span>}
+                                            {lead.submitted_by_enumerator ? (
+                                                <div className="flex flex-col leading-tight">
+                                                    <span>{lead.submitted_by_enumerator.name}</span>
+                                                    <span className="text-[9px] text-emerald-600 font-mono font-bold uppercase tracking-tighter">Enm: {lead.submitted_by_enumerator.enumerator_id}</span>
+                                                </div>
+                                            ) : (
+                                                lead.submitted_by_agent?.name ?? lead.assigned_agent?.name ?? <span className="text-slate-500 italic">Direct</span>
+                                            )}
                                         </td>
                                         {/* Status */}
                                         <td className="px-4 py-3 whitespace-nowrap">
@@ -340,7 +324,7 @@ export default function AdminLeadsPage() {
                                     </tr>
                                     {activePrompts[lead.ulid] && (
                                         <tr key={`${lead.id}-comm`}>
-                                            <td colSpan={23} className="p-0 border-b border-slate-200 bg-orange-50/50">
+                                            <td colSpan={17} className="p-0 border-b border-slate-200 bg-orange-50/50">
                                                 <CommissionInlineEntry
                                                     leadUlid={lead.ulid}
                                                     leadStatus={lead.status}
@@ -406,11 +390,19 @@ export default function AdminLeadsPage() {
                                 </div>
                                 <div className="space-y-0.5">
                                     <p className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">Manager</p>
-                                    <p className="text-xs text-slate-700 truncate">{lead.assigned_super_agent?.name ?? '—'}</p>
+                                    <p className="text-xs text-slate-700 truncate">
+                                        {lead.submitted_by_enumerator?.enumerator_creator_role === 'admin' 
+                                            ? 'Direct Settlement' 
+                                            : (lead.assigned_super_agent?.name ?? '—')}
+                                    </p>
                                 </div>
                                 <div className="space-y-0.5 text-right">
                                     <p className="text-[10px] text-slate-500 uppercase font-semibold tracking-wider">Executive</p>
-                                    <p className="text-xs text-slate-700 truncate">{lead.submitted_by_agent?.name ?? lead.assigned_agent?.name ?? 'Direct'}</p>
+                                    <p className="text-xs text-slate-700 truncate">
+                                        {lead.submitted_by_enumerator 
+                                            ? lead.submitted_by_enumerator.name 
+                                            : (lead.submitted_by_agent?.name ?? lead.assigned_agent?.name ?? 'Direct')}
+                                    </p>
                                 </div>
                             </div>
 
@@ -553,39 +545,48 @@ export default function AdminLeadsPage() {
                                         </section>
 
                                         {/* ── Business Development Manager Assignment ── */}
-                                        <section>
-                                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Business Development Manager Assignment</p>
+                                        {fullLead?.submitted_by_enumerator?.enumerator_creator_role === 'admin' ? (
+                                            <section className="bg-emerald-50 border border-emerald-100 rounded-lg p-3">
+                                                <p className="text-xs font-semibold text-emerald-700 mb-1 flex items-center gap-1 uppercase tracking-wider">
+                                                    <CheckCircle size={14} /> Direct Settlement Lead
+                                                </p>
+                                                <p className="text-[11px] text-emerald-600">This lead was submitted by an admin-created enumerator. Settlement is handled directly between Admin and {fullLead.submitted_by_enumerator?.name}.</p>
+                                            </section>
+                                        ) : (
+                                            <section>
+                                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Business Development Manager Assignment</p>
 
-                                            {fullLead?.assigned_super_agent ? (
-                                                <div className="flex gap-3">
-                                                    <span className="text-xs text-slate-600 w-28 shrink-0">Assigned to</span>
-                                                    <span className="text-xs font-medium text-slate-800">{fullLead.assigned_super_agent.name} ({fullLead.assigned_super_agent.mobile})</span>
-                                                </div>
-                                            ) : (
-                                                <div>
-                                                    <p className="text-xs text-slate-600 mb-2">Not yet assigned to a manager</p>
-                                                    <div className="flex gap-2">
-                                                        <select
-                                                            value={assignSuperAgent}
-                                                            onChange={e => setAssignSuperAgent(e.target.value ? Number(e.target.value) : '')}
-                                                            className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                                        >
-                                                            <option value="">Select active manager…</option>
-                                                            {activeSuperAgents.map(a => (
-                                                                <option key={a.id} value={a.id}>{a.name} {a.super_agent_code ? `(${a.super_agent_code})` : ''}</option>
-                                                            ))}
-                                                        </select>
-                                                        <button
-                                                            disabled={!assignSuperAgent || assignMut.isPending}
-                                                            onClick={() => assignMut.mutate({ ulid: fullLead!.ulid, super_agent_id: assignSuperAgent as number })}
-                                                            className="px-3 py-2 bg-orange-500 text-white text-xs rounded-lg hover:bg-orange-600 disabled:opacity-40 shrink-0"
-                                                        >
-                                                            {assignMut.isPending ? '…' : 'Assign'}
-                                                        </button>
+                                                {fullLead?.assigned_super_agent ? (
+                                                    <div className="flex gap-3">
+                                                        <span className="text-xs text-slate-600 w-28 shrink-0">Assigned to</span>
+                                                        <span className="text-xs font-medium text-slate-800">{fullLead.assigned_super_agent.name} ({fullLead.assigned_super_agent.mobile})</span>
                                                     </div>
-                                                </div>
-                                            )}
-                                        </section>
+                                                ) : (
+                                                    <div>
+                                                        <p className="text-xs text-slate-600 mb-2">Not yet assigned to a manager</p>
+                                                        <div className="flex gap-2">
+                                                            <select
+                                                                value={assignSuperAgent}
+                                                                onChange={e => setAssignSuperAgent(e.target.value ? Number(e.target.value) : '')}
+                                                                className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                                            >
+                                                                <option value="">Select active manager…</option>
+                                                                {activeSuperAgents.map(a => (
+                                                                    <option key={a.id} value={a.id}>{a.name} {a.super_agent_code ? `(${a.super_agent_code})` : ''}</option>
+                                                                ))}
+                                                            </select>
+                                                            <button
+                                                                disabled={!assignSuperAgent || assignMut.isPending}
+                                                                onClick={() => assignMut.mutate({ ulid: fullLead!.ulid, super_agent_id: assignSuperAgent as number })}
+                                                                className="px-3 py-2 bg-orange-500 text-white text-xs rounded-lg hover:bg-orange-600 disabled:opacity-40 shrink-0"
+                                                            >
+                                                                {assignMut.isPending ? '…' : 'Assign'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </section>
+                                        )}
                                         {/* ── Documents ── */}
                                         <section>
                                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Documents</p>
@@ -668,61 +669,37 @@ export default function AdminLeadsPage() {
                                             </div>
                                         </section>
 
-                                        {/* ── Commission Entry (Persistent Management) ── */}
-                                        {(fullLead?.status === 'completed' || fullLead?.status === 'installed') && (
+                                        {/* ── Commission Entry ── */}
+                                        {(fullLead?.commission_status?.prompts?.length ?? 0) > 0 && (
                                             <section className="bg-orange-50 border border-orange-200 rounded-xl p-4">
                                                 <div className="flex items-center justify-between mb-3">
                                                     <p className="text-xs font-semibold text-orange-600 uppercase tracking-widest">💰 Commission Management</p>
-                                                    {fullLead?.formatted_commissions?.super_agent_commission && (
-                                                        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">Already recorded</span>
-                                                    )}
                                                 </div>
 
-                                                {(() => {
-                                                    const agent = fullLead.assigned_agent ?? fullLead.submitted_by_agent;
-                                                    const superAgent = fullLead.assigned_super_agent;
+                                                <div className="space-y-4">
+                                                    {fullLead!.commission_status!.prompts!.map((p: any, idx: number) => {
+                                                        const existing = fullLead?.formatted_commissions?.all?.find((c: any) => 
+                                                            (c.payee_id === p.payee_id || c.payee_role === p.payee_role)
+                                                        );
 
-                                                    // Use sidebarCommissionPrompt if it exists (meaning we just changed state)
-                                                    // Otherwise derive it from the lead to allow persistent editing/entry
-                                                    let prompt = sidebarCommissionPrompt;
-                                                    if (!prompt) {
-                                                        if (superAgent) {
-                                                            prompt = {
-                                                                should_prompt: true,
-                                                                payee_role: 'super_agent',
-                                                                payee_id: superAgent.id,
-                                                                payee_name: superAgent.name,
-                                                                payee_code: (superAgent as any).super_agent_code || '',
-                                                                payee_type_label: 'Business Development Manager',
-                                                            };
-                                                        } else if (agent) {
-                                                            prompt = {
-                                                                should_prompt: true,
-                                                                payee_role: 'agent',
-                                                                payee_id: agent.id,
-                                                                payee_name: agent.name,
-                                                                payee_code: (agent as any).agent_id || (agent as any).code || '',
-                                                                payee_type_label: 'Business Development Executive (Direct)',
-                                                            };
-                                                        }
-                                                    }
-
-                                                    if (!prompt) return <p className="text-[10px] text-slate-400 italic">No eligible payee found for this lead.</p>;
-
-                                                    return (
-                                                        <CommissionInlineEntry
-                                                            leadUlid={fullLead.ulid}
-                                                            leadStatus={fullLead.status}
-                                                            commissionPrompt={prompt}
-                                                            existingCommission={fullLead.formatted_commissions?.super_agent_commission || fullLead.formatted_commissions?.agent_commission || null}
-                                                            onSaved={() => {
-                                                                setSidebarCommissionPrompt(null);
-                                                                qc.invalidateQueries({ queryKey: ['admin-lead-detail', fullLead.ulid] });
-                                                            }}
-                                                            onSkip={() => setSidebarCommissionPrompt(null)}
-                                                        />
-                                                    );
-                                                })()}
+                                                        return (
+                                                            <CommissionInlineEntry
+                                                                key={`${p.payee_role}-${p.payee_id}-${idx}`}
+                                                                leadUlid={fullLead!.ulid}
+                                                                leadStatus={fullLead!.status}
+                                                                commissionPrompt={p}
+                                                                existingCommission={existing || null}
+                                                                onSaved={() => {
+                                                                    if (fullLead) {
+                                                                        qc.invalidateQueries({ queryKey: ['admin-lead-detail', fullLead.ulid] });
+                                                                        qc.invalidateQueries({ queryKey: ['admin-leads'] });
+                                                                    }
+                                                                }}
+                                                                onSkip={() => {}}
+                                                            />
+                                                        );
+                                                    })}
+                                                </div>
                                             </section>
                                         )}
 

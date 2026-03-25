@@ -18,13 +18,13 @@ export const OfferCard: React.FC<OfferCardProps> = ({
 }) => {
     const isCollective = offer.offer_type === 'collective';
     const isEnded = !!offer.offer_ended_zeroed_at;
-    const isTargetHit = isCollective ? (offer.current_installations || 0) >= offer.target_installations : offer.can_redeem;
+    const isTargetHit = isCollective ? (offer.current_points || 0) >= offer.target_points : offer.can_redeem;
 
     // Progress calculation
     const currentProgress = isEnded
         ? 0
         : (isCollective
-            ? Math.min(100, Math.round(((offer.current_installations || 0) / offer.target_installations) * 100))
+            ? Math.min(100, Math.round(((offer.current_points || 0) / offer.target_points) * 100))
             : (offer.pending_redemption_count > 0 ? 100 : offer.cycle_percentage));
 
     return (
@@ -98,7 +98,7 @@ export const OfferCard: React.FC<OfferCardProps> = ({
                     <p className="text-sm text-slate-500 line-clamp-2 min-h-[40px] leading-relaxed">
                         {isEnded
                             ? `This offer ended on ${offer.offer_to}. Points have been processed.`
-                            : (offer.description || `Complete ${offer.target_installations} installations to win: ${offer.prize_label}`)
+                            : (offer.description || `Earn ${offer.target_points} points to win: ${offer.prize_label}`)
                         }
                     </p>
                 </div>
@@ -111,8 +111,8 @@ export const OfferCard: React.FC<OfferCardProps> = ({
                                 {isCollective ? "TEAM PROGRESS" : "YOUR PROGRESS"}
                             </p>
                             <p className="text-xl font-black text-slate-900 leading-none">
-                                {isEnded ? 0 : (isCollective ? offer.current_installations : offer.my_unredeemed_installations)}
-                                <span className="text-sm text-slate-400 font-medium ml-1">/ {offer.target_installations}</span>
+                                {isEnded ? 0 : (isCollective ? offer.current_points : offer.my_unredeemed_points)}
+                                <span className="text-sm text-slate-400 font-medium ml-1">/ {offer.target_points}</span>
                             </p>
                         </div>
                         <div className="text-right">
@@ -192,7 +192,7 @@ export const OfferCard: React.FC<OfferCardProps> = ({
                             ) : (
                                 <>
                                     <Info size={16} />
-                                    {offer.cycle_needed} MORE INSTALLS
+                                    {offer.cycle_needed} MORE POINTS
                                 </>
                             )}
                         </button>

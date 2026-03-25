@@ -1,3 +1,29 @@
 {
-  "css.lint.unknownAtRules": "ignore"
+    "css.lint.unknownAtRules": "ignore",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/node_modules": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/vendor": true
+    },
+    "intelephense.environment.phpVersion": "8.4.18",
+    "php.version": "8.4",
+    "intelephense.diagnostics.exclude": [
+        "**/vendor/**",
+        "vendor/**"
+    ],
+    "php.problems.exclude": {
+        "**/vendor/**": true,
+        "vendor/**": true
+    },
+    "php.analysis.exclude": [
+        "**/vendor/**",
+        "vendor/**"
+    ],
+    "php.validate.enable": false,
+    "php.suggest.basic": false,
+    "telemetry.enableTelemetry": false
 }

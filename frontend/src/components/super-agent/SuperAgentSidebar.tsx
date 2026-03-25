@@ -27,11 +27,11 @@ export default function SuperAgentSidebar({ onClose }: SuperAgentSidebarProps) {
     };
 
     const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-orange-500 text-white shadow' : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group ${isActive ? 'bg-orange-500 text-white shadow' : 'text-slate-300 hover:bg-slate-700 hover:text-white'
         }`;
 
     const subLinkClass = ({ isActive }: { isActive: boolean }) =>
-        `flex items-center gap-2 pl-9 pr-3 py-2 rounded-lg text-xs font-medium transition-all ${isActive ? 'bg-orange-500/80 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+        `flex items-center gap-2 pl-9 pr-3 py-2 rounded-lg text-xs font-medium transition-all group ${isActive ? 'bg-orange-500/80 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-white'
         }`;
 
     return (
@@ -74,6 +74,10 @@ export default function SuperAgentSidebar({ onClose }: SuperAgentSidebarProps) {
 
                 <NavLink to="/super-agent/team" onClick={onClose} className={navLinkClass}>
                     <Users size={18} aria-hidden="true" /> My Team
+                </NavLink>
+
+                <NavLink to="/super-agent/enumerators" onClick={onClose} className={navLinkClass}>
+                    <Users size={18} aria-hidden="true" /> Enumerators
                 </NavLink>
 
                 <NavLink to="/super-agent/offers" onClick={onClose} className={navLinkClass}>

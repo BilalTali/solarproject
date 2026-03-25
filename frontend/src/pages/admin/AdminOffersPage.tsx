@@ -85,7 +85,7 @@ export const AdminOffersPage: React.FC = () => {
         fd.append('prize_label', rawForm.get('prize_label') as string);
         fd.append('offer_from', rawForm.get('offer_from') as string);
         fd.append('offer_to', rawForm.get('offer_to') as string);
-        fd.append('target_installations', rawForm.get('target_installations') as string);
+        fd.append('target_points', rawForm.get('target_points') as string);
         fd.append('offer_type', rawForm.get('offer_type') as string);
         fd.append('visible_to', rawForm.get('visible_to') as string);
         fd.append('status', rawForm.get('status') as string || 'active');
@@ -182,7 +182,7 @@ export const AdminOffersPage: React.FC = () => {
                                             </span>
                                             <div className="flex items-center gap-1.5 text-slate-600">
                                                 <Target size={14} className="text-slate-400" />
-                                                <span className="text-sm font-bold">{offer.target_installations}</span>
+                                                <span className="text-sm font-bold">{offer.target_points} Pts</span>
                                             </div>
                                         </div>
                                     </td>
@@ -359,12 +359,13 @@ export const AdminOffersPage: React.FC = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Target Installations</label>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Target Points</label>
                                     <input
-                                        name="target_installations"
+                                        name="target_points"
                                         type="number"
+                                        step="0.1"
                                         required
-                                        defaultValue={editingOffer?.target_installations}
+                                        defaultValue={editingOffer?.target_points}
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
                                         placeholder="e.g., 5"
                                     />
@@ -508,7 +509,7 @@ const ParticipantsModal: React.FC<{ offerId: number, onClose: () => void }> = ({
                                     <tr>
                                         <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Agent</th>
                                         <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Role</th>
-                                        <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Lifetime</th>
+                                        <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Total Points</th>
                                         <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Unredeemed</th>
                                         <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Prizes Won</th>
                                         <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">Last Activity</th>
@@ -526,7 +527,7 @@ const ParticipantsModal: React.FC<{ offerId: number, onClose: () => void }> = ({
                                                     {p.role.toUpperCase()}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3 text-center text-sm font-bold text-slate-700">{p.total_installations}</td>
+                                            <td className="px-4 py-3 text-center text-sm font-bold text-slate-700">{p.total_points}</td>
                                             <td className="px-4 py-3 text-center">
                                                 <span className="text-sm font-black text-indigo-600">{p.unredeemed}</span>
                                             </td>

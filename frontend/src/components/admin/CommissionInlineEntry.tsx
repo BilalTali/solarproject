@@ -38,7 +38,9 @@ export default function CommissionInlineEntry({
             } else {
                 const apiCall = payee_role === 'super_agent'
                     ? adminCommissionsApi.enterSuperAgentCommission
-                    : adminCommissionsApi.enterDirectAgentCommission;
+                    : payee_role === 'enumerator'
+                        ? adminCommissionsApi.enterEnumeratorCommission
+                        : adminCommissionsApi.enterDirectAgentCommission;
                 const res = await apiCall(leadUlid, payload);
                 return (res.data.data as any).commission as Commission;
             }
@@ -127,7 +129,11 @@ export default function CommissionInlineEntry({
             ) : (
                 <div className="flex items-center gap-4">
                     <div className="text-2xl font-bold font-mono text-slate-800">
-                        ₹{Number(existingCommission?.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        ₹{(existingCommission?.amount != null) 
+                            ? Number(existingCommission.amount).toLocaleString('en-IN', { 
+                                minimumFractionDigits: Number(existingCommission.amount) % 1 === 0 ? 0 : 2 
+                              })
+                            : '0'}
                     </div>
 
                     {existingCommission?.is_locked ? (

@@ -24,10 +24,10 @@ export const OfferNotificationBanner = ({ offers, progressMap, role }: Props) =>
     const { o: offer, score } = best
     const progress = progressMap[offer.id]
     const isReady = progress?.can_redeem
-    const target = offer.target_installations
+    const target = offer.target_points
 
     const unredeemed = progress
-        ? (progress as UserOfferProgress).my_unredeemed_installations ?? (progress as OfferProgress).unredeemed_installations
+        ? (progress as UserOfferProgress).my_unredeemed_points ?? (progress as OfferProgress).unredeemed_points
         : 0
 
     const needed = target - (unredeemed % target)
@@ -74,7 +74,7 @@ export const OfferNotificationBanner = ({ offers, progressMap, role }: Props) =>
                     {isReady
                         ? `🎉 You've earned it! Claim your prize from "${offer.title}"`
                         : score >= 70
-                            ? `⚡ Only ${needed} install${needed !== 1 ? 's' : ''} away from "${offer.title}"!`
+                            ? `⚡ Only ${needed} point${needed !== 1 ? 's' : ''} away from "${offer.title}"!`
                             : `🔥 You're ${Math.round(score)}% toward "${offer.title}" — keep going!`}
                 </div>
                 <div className="text-[10.5px] text-neutral-500 mt-0.5 truncate">

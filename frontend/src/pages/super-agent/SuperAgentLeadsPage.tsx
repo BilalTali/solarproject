@@ -8,12 +8,14 @@ import { LeadSourceBadge } from '@/components/shared/LeadSourceBadge';
 import { VerifyLeadModal } from '@/components/super-agent/VerifyLeadModal';
 import { RevertLeadModal } from '@/components/super-agent/RevertLeadModal';
 import { leadsApi } from '@/api/leads.api';
+import { superAgentCommissionsApi } from '@/api/commissions.api';
 import CommissionInlineEntryForAgent from '@/components/super-agent/CommissionInlineEntryForAgent';
 import React from 'react';
 
 const STATUS_BADGE: Record<string, string> = {
     new: 'bg-blue-100 text-blue-700',
     registered: 'bg-cyan-100 text-cyan-700',
+    at_bank: 'bg-indigo-100 text-indigo-700',
     installed: 'bg-green-100 text-green-700',
     completed: 'bg-emerald-100 text-emerald-700',
     rejected: 'bg-red-100 text-red-700',
@@ -130,7 +132,7 @@ export default function SuperAgentLeadsPage() {
                                 {[
                                     'Lead Ref', 'Beneficiary', 'Source', 'Verification',
                                     'Mobile', 'District', 'DISCOM', 'Consumer No.',
-                                    'Agent', 'Status', 'Date', 'Action'
+                                    'Business Development Manager', 'Business Development Executive / Enumerator', 'Status', 'Date', 'Action'
                                 ].map(h => (
                                     <th key={h} scope="col" className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide whitespace-nowrap">
                                         {h}
@@ -156,7 +158,6 @@ export default function SuperAgentLeadsPage() {
                             ) : (
                                 leads.map((lead) => {
                                     const isPending = lead.verification_status === 'pending_super_agent_verification';
-                                    const showPrompt = lead.commission_prompt?.should_prompt && !hiddenPrompts[lead.ulid];
 
                                     return (
                                         <React.Fragment key={lead.id}>
@@ -176,7 +177,21 @@ export default function SuperAgentLeadsPage() {
                                                 <td className="px-4 py-3 text-slate-800 whitespace-nowrap">{lead.discom_name || '—'}</td>
                                                 <td className="px-4 py-3 text-slate-600 font-mono whitespace-nowrap">{lead.consumer_number || '—'}</td>
                                                 <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-xs">
-                                                    {lead.submitted_by_agent?.name ?? lead.assigned_agent?.name ?? <span className="text-slate-400 italic">No Agent</span>}
+                                                    {lead.submitted_by_enumerator?.enumerator_creator_role === 'admin' ? (
+                                                        <span className="text-emerald-700 font-semibold italic text-xs uppercase tracking-tighter">Direct Settlement</span>
+                                                    ) : (
+                                                        lead.assigned_super_agent?.name ?? <span className="text-slate-400 italic">Unassigned</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-xs text-center">
+                                                    {lead.submitted_by_enumerator ? (
+                                                        <div className="flex flex-col leading-tight">
+                                                            <span>{lead.submitted_by_enumerator.name}</span>
+                                                            <span className="text-[9px] text-emerald-600 font-mono font-bold uppercase tracking-tighter">Enm: {lead.submitted_by_enumerator.enumerator_id}</span>
+                                                        </div>
+                                                    ) : (
+                                                        lead.submitted_by_agent?.name ?? lead.assigned_agent?.name ?? <span className="text-slate-500 italic">Direct</span>
+                                                    )}
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${STATUS_BADGE[lead.status] ?? 'bg-slate-100 text-slate-600'}`}>
@@ -212,27 +227,42 @@ export default function SuperAgentLeadsPage() {
                                                     )}
                                                 </td>
                                             </tr>
-                                            {showPrompt && lead.commission_prompt && (
-                                                <tr key={`${lead.id}-comm`}>
-                                                    <td colSpan={12} className="p-0 border-b border-slate-200 bg-orange-50/50">
-                                                        <CommissionInlineEntryForAgent
-                                                            leadUlid={lead.ulid}
-                                                            leadStatus={lead.status}
-                                                            commissionPrompt={lead.commission_prompt}
-                                                            existingCommission={lead.formatted_commissions?.agent_commission || null}
-                                                            agentName={lead.commission_prompt.payee_name || ''}
-                                                            agentCode={lead.commission_prompt.payee_code || ''}
-                                                            onSaved={() => {
-                                                                refetch();
-                                                                setHiddenPrompts(prev => ({ ...prev, [lead.ulid]: true }));
-                                                            }}
-                                                            onSkip={() => {
-                                                                setHiddenPrompts(prev => ({ ...prev, [lead.ulid]: true }));
-                                                            }}
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            )}
+                                            {(() => {
+                                                const prompts = lead.commission_status?.prompts || [];
+                                                if (prompts.length === 0 || hiddenPrompts[lead.ulid]) return null;
+
+                                                return prompts.map((p, idx) => {
+                                                    const existing = lead.formatted_commissions?.all?.find(c => 
+                                                        (c.payee_id === p.payee_id || c.payee_role === p.payee_role)
+                                                    );
+
+                                                    return (
+                                                        <tr key={`${lead.id}-comm-${idx}`}>
+                                                            <td colSpan={13} className="p-0 border-b border-slate-200 bg-orange-50/50">
+                                                                <CommissionInlineEntryForAgent
+                                                                    leadUlid={lead.ulid}
+                                                                    leadStatus={lead.status}
+                                                                    commissionPrompt={p}
+                                                                    existingCommission={existing || null}
+                                                                    agentName={p.payee_name || ''}
+                                                                    agentCode={p.payee_code || ''}
+                                                                    commissionsApi={superAgentCommissionsApi}
+                                                                    onSaved={() => {
+                                                                        refetch();
+                                                                        // If it was the only prompt, hide it
+                                                                        if (prompts.length === 1) {
+                                                                            setHiddenPrompts(prev => ({ ...prev, [lead.ulid]: true }));
+                                                                        }
+                                                                    }}
+                                                                    onSkip={() => {
+                                                                        setHiddenPrompts(prev => ({ ...prev, [lead.ulid]: true }));
+                                                                    }}
+                                                                />
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                });
+                                            })()}
                                         </React.Fragment>
                                     );
                                 })
@@ -276,25 +306,39 @@ export default function SuperAgentLeadsPage() {
                                             <button onClick={() => setRevertLead(lead)} className="flex-1 py-2 bg-red-100 text-red-700 text-xs font-medium rounded-lg">↩ Revert</button>
                                         </div>
                                     )}
-                                    {lead.commission_prompt?.should_prompt && !hiddenPrompts[lead.ulid] && (
-                                        <div className="bg-orange-50 p-3 rounded-lg border border-orange-100 mt-2">
-                                            <CommissionInlineEntryForAgent
-                                                leadUlid={lead.ulid}
-                                                leadStatus={lead.status}
-                                                commissionPrompt={lead.commission_prompt}
-                                                existingCommission={lead.formatted_commissions?.agent_commission || null}
-                                                agentName={lead.commission_prompt.payee_name || ''}
-                                                agentCode={lead.commission_prompt.payee_code || ''}
-                                                onSaved={() => {
-                                                    refetch();
-                                                    setHiddenPrompts(prev => ({ ...prev, [lead.ulid]: true }));
-                                                }}
-                                                onSkip={() => {
-                                                    setHiddenPrompts(prev => ({ ...prev, [lead.ulid]: true }));
-                                                }}
-                                            />
-                                        </div>
-                                    )}
+                                    {(() => {
+                                        const prompts = lead.commission_status?.prompts || [];
+                                        if (prompts.length === 0 || hiddenPrompts[lead.ulid]) return null;
+
+                                        return prompts.map((p, idx) => {
+                                            const existing = lead.formatted_commissions?.all?.find(c => 
+                                                (c.payee_id === p.payee_id || c.payee_role === p.payee_role)
+                                            );
+
+                                            return (
+                                                <div key={`${lead.id}-comm-mob-${idx}`} className="bg-orange-50 p-3 rounded-lg border border-orange-100 mt-2">
+                                                    <CommissionInlineEntryForAgent
+                                                        leadUlid={lead.ulid}
+                                                        leadStatus={lead.status}
+                                                        commissionPrompt={p}
+                                                        existingCommission={existing || null}
+                                                        agentName={p.payee_name || ''}
+                                                        agentCode={p.payee_code || ''}
+                                                        commissionsApi={superAgentCommissionsApi}
+                                                        onSaved={() => {
+                                                            refetch();
+                                                            if (prompts.length === 1) {
+                                                                setHiddenPrompts(prev => ({ ...prev, [lead.ulid]: true }));
+                                                            }
+                                                        }}
+                                                        onSkip={() => {
+                                                            setHiddenPrompts(prev => ({ ...prev, [lead.ulid]: true }));
+                                                        }}
+                                                    />
+                                                </div>
+                                            );
+                                        });
+                                    })()}
                                 </div>
                             );
                         })

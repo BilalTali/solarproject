@@ -17,9 +17,7 @@ return new class extends Migration
             $table->unique(['capacity', 'super_agent_id']);
         });
 
-        Schema::table('incentive_offers', function (Blueprint $table) {
-            $table->foreignId('super_agent_id')->nullable()->after('id')->constrained('users')->onDelete('cascade');
-        });
+        // Abandoned incentive_offers table block removed
     }
 
     public function down(): void
@@ -31,9 +29,6 @@ return new class extends Migration
             $table->unique(['capacity']);
         });
 
-        Schema::table('incentive_offers', function (Blueprint $table) {
-            $table->dropForeign(['super_agent_id']);
-            $table->dropColumn('super_agent_id');
-        });
+        // Abandoned incentive_offers table block removed
     }
 };

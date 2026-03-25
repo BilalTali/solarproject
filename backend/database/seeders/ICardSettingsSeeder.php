@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Setting;
+use Illuminate\Database\Seeder;
 
 class ICardSettingsSeeder extends Seeder
 {
@@ -20,7 +20,7 @@ class ICardSettingsSeeder extends Seeder
             ['key' => 'company_mobile',   'value' => '+91 XXXXX XXXXX', 'group' => 'company'],
             ['key' => 'company_whatsapp', 'value' => '+91 XXXXX XXXXX', 'group' => 'company'],
             ['key' => 'company_slogan',   'value' => 'Powering the Future with Solar', 'group' => 'branding'],
-            
+
             // Branding
             ['key' => 'company_logo',      'value' => null, 'group' => 'branding'],
             ['key' => 'company_signature', 'value' => null, 'group' => 'branding'],
@@ -28,7 +28,7 @@ class ICardSettingsSeeder extends Seeder
 
             // iCard
             ['key' => 'authorized_signatory', 'value' => 'General Secretary', 'group' => 'icard'],
-            
+
             // Homepage / CMS
             ['key' => 'hero_headline',    'value' => 'Switch to Solar, Save for Life', 'group' => 'homepage'],
             ['key' => 'hero_subheadline', 'value' => 'The PM Surya Ghar: Muft Bijli Yojana is a government-backed subsidy program to provide free solar energy to households.', 'group' => 'homepage'],

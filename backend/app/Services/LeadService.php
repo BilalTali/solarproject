@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Exceptions\InvalidLeadOperationException;
@@ -16,7 +17,8 @@ class LeadService
     public function __construct(
         private NotificationService $notificationService,
         private CommissionService $commissionService,
-        private OfferService $offerService
+        private OfferService $offerService,
+        private HierarchyService $hierarchyService
     ) {}
 
     // ────────────────────────────────────────────────────────────────
@@ -30,19 +32,20 @@ class LeadService
             $referringAgent = null;
 
             if ($referralCode) {
-                $referringAgent = User::where('agent_id', $referralCode)
-                    ->where('status', 'active')
-                    ->whereIn('role', ['agent', 'super_agent'])
+                $referringAgent = User::query()->where(fn($q) => $q->where('agent_id', $referralCode))
+                    ->where(fn($q) => $q->where('status', 'active'))
+                    ->where(fn($q) => $q->whereIn('role', ['agent', 'super_agent']))
                     ->first();
+                /** @var User|null $referringAgent */
             }
 
             $leadData = collect($data)->except(['aadhaar', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook', 'referral_agent_id'])->toArray();
 
             $createData = [
                 ...$leadData,
-                'source'              => 'public_form',
-                'referral_agent_id'   => $referralCode,
-                'status'              => 'new',
+                'source' => 'public_form',
+                'referral_agent_id' => $referralCode,
+                'status' => 'new',
             ];
 
             if ($referringAgent) {
@@ -55,11 +58,13 @@ class LeadService
                 $createData['verification_status'] = 'not_required';
             }
 
+            /** @var Lead $lead */
             $lead = Lead::forceCreate($createData);
 
-            $this->logStatusChange($lead, null, null, 'new', 'Lead received from public form' . ($referralCode ? " (Ref: {$referralCode})" : ""));
+            $this->logStatusChange($lead, null, null, 'new', 'Lead received from public form'.($referralCode ? " (Ref: {$referralCode})" : ''));
 
             if ($referringAgent) {
+                /** @var User $referringAgent */
                 $this->notifyAgentNewReferralLead($lead, $referringAgent);
                 if ($referringAgent->super_agent_id) {
                     $sa = User::find($referringAgent->super_agent_id);
@@ -75,33 +80,26 @@ class LeadService
         });
     }
 
-    // ────────────────────────────────────────────────────────────────
-    // METHOD 2: createFromAgent()
-    // Goes to agent's super agent for verification (if they have one)
-    // If agent has no super agent → goes directly to admin
-    // ────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+
     public function createFromAgent(array $data, User $agent): Lead
     {
         return DB::transaction(function () use ($data, $agent) {
-            $hasSuperAgent = !is_null($agent->super_agent_id);
+            $routing = $this->hierarchyService->resolveInitialRouting($agent);
             $leadData = collect($data)->except(['aadhaar', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook'])->toArray();
 
+            /** @var Lead $lead */
             $lead = Lead::forceCreate([
                 ...$leadData,
-                'source'                     => 'agent_submission',
-                'submitted_by_agent_id'      => $agent->id,
-                'assigned_agent_id'          => $agent->id,
-                'assigned_super_agent_id'    => $agent->super_agent_id,
-                'owner_type'                 => $hasSuperAgent ? 'super_agent_pool' : 'admin_pool',
-                'verification_status'        => $hasSuperAgent
-                                                  ? 'pending_super_agent_verification'
-                                                  : 'not_required',
-                'status'                     => 'new',
+                'source' => 'agent_submission',
+                'submitted_by_agent_id' => $agent->id,
+                ...$routing,
+                'status' => 'new',
             ]);
 
             $this->logStatusChange($lead, $agent->id, null, 'new', 'Lead submitted by agent');
 
-            if ($hasSuperAgent) {
+            if ($lead->assigned_super_agent_id) {
                 $this->notifySuperAgentLeadPendingVerification($lead, $agent);
             } else {
                 $this->notifyAdminNewAgentLead($lead, $agent);
@@ -111,28 +109,166 @@ class LeadService
         });
     }
 
-    // ────────────────────────────────────────────────────────────────
-    // METHOD 3: createFromSuperAgent()
-    // SA-created leads start as pending SA self-verification
-    // ────────────────────────────────────────────────────────────────
-    public function createFromSuperAgent(array $data, User $superAgent): Lead
+    /**
+     * METHOD 2B: createFromEnumerator()
+     * Uses HierarchyService to resolve routing for any Enumerator creation scenario (Case 1-3)
+     */
+    public function createFromEnumerator(array $data, User $enumerator): Lead
     {
-        return DB::transaction(function () use ($data, $superAgent) {
+        return DB::transaction(function () use ($data, $enumerator) {
+            $routing = $this->hierarchyService->resolveInitialRouting($enumerator);
             $leadData = collect($data)->except(['aadhaar', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook'])->toArray();
 
             $lead = Lead::forceCreate([
                 ...$leadData,
-                'source'                    => 'super_agent_submission',
-                'created_by_super_agent_id' => $superAgent->id,
-                'assigned_super_agent_id'   => $superAgent->id,
-                'owner_type'                => 'super_agent_pool',
-                'verification_status'       => 'pending_super_agent_verification',
-                'status'                    => 'new',
+                'source' => 'enumerator_submission',
+                'submitted_by_enumerator_id' => $enumerator->id,
+                ...$routing,
+                'status' => 'new',
             ]);
 
-            $this->logStatusChange($lead, $superAgent->id, null, 'new', 'Lead created by Super Agent');
+            $this->logStatusChange($lead, $enumerator->id, null, 'new', "Lead submitted by enumerator {$enumerator->name}");
+            
+            // Notification logic
+            if ($lead->verification_status === 'pending_agent_verification') {
+                 $agent = User::find($lead->assigned_agent_id);
+                 if ($agent) {
+                    $this->notificationService->send($agent->id, 'new_enumerator_lead', 'New Enumerator Lead', "Enumerator {$enumerator->name} submitted a new lead: {$lead->ulid}", ['lead_ulid' => $lead->ulid]);
+                 }
+            } elseif ($lead->verification_status === 'pending_super_agent_verification') {
+                 $sa = User::find($lead->assigned_super_agent_id);
+                 if ($sa) {
+                    $this->notificationService->send($sa->id, 'new_enumerator_lead', 'New Enumerator Lead (Pending Verification)', "Enumerator {$enumerator->name} submitted a lead: {$lead->ulid}", ['lead_ulid' => $lead->ulid]);
+                 }
+            } else {
+                // Admin pool
+                $this->notifyAdminNewPublicLead($lead); // reusable for admin pool
+            }
 
             return $lead;
+        });
+    }
+    public function createFromSuperAgent(array $data, User $sa): Lead
+    {
+        return DB::transaction(function () use ($data, $sa) {
+            $routing = $this->hierarchyService->resolveInitialRouting($sa);
+            $leadData = collect($data)->except(['aadhaar', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook'])->toArray();
+
+            $lead = Lead::forceCreate([
+                ...$leadData,
+                'source' => 'super_agent_submission',
+                'created_by_super_agent_id' => $sa->id,
+                ...$routing,
+                'status' => 'new',
+            ]);
+
+            $this->logStatusChange($lead, $sa->id, null, 'new', "Lead created by Super Agent {$sa->name}");
+            
+            if ($lead->assigned_super_agent_id && (int)$lead->assigned_super_agent_id !== (int)$sa->id) {
+                // If SA routed to ANOTHER SA (unlikely but possible in deeper hierarchy)
+                $this->notifySuperAgentLeadAssigned($lead, $lead->assignedSuperAgent, $sa);
+            } else {
+                $this->notifyAdminNewAgentLead($lead, $sa);
+            }
+
+            return $lead;
+        });
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // METHOD 4a: verifyLeadByAgent()
+    // Agent approves the enumerator lead → sends to Super Agent pool
+    // ────────────────────────────────────────────────────────────────
+    public function verifyLeadByAgent(Lead $lead, User $agent, ?string $notes = null): Lead
+    {
+        if ((int) $lead->assigned_agent_id !== (int) $agent->id) {
+            throw new LeadAccessDeniedException('You are not authorized to verify this lead.');
+        }
+
+        if ($lead->verification_status !== 'pending_agent_verification') {
+            throw new InvalidLeadOperationException('This lead is not pending agent verification.');
+        }
+
+        return DB::transaction(function () use ($lead, $agent, $notes) {
+            $hasSuperAgent = ! is_null($agent->super_agent_id);
+
+            $lead->forceFill([
+                'verification_status' => $hasSuperAgent ? 'pending_super_agent_verification' : 'not_required',
+                'owner_type' => $hasSuperAgent ? 'super_agent_pool' : 'admin_pool',
+            ])->save();
+
+            LeadVerification::create([
+                'lead_id' => $lead->id,
+                'action' => 'verified',
+                'performed_by' => $agent->id,
+                'performer_role' => 'agent',
+                'reason' => $notes,
+                'revert_count_at_time' => $lead->revert_count,
+            ]);
+
+            $this->logStatusChange($lead, $agent->id, $lead->status, $lead->status,
+                'Lead verified by Agent — sent forward for processing');
+
+            if ($hasSuperAgent) {
+                $this->notifySuperAgentLeadPendingVerification($lead, $agent);
+            } else {
+                $this->notifyAdminNewAgentLead($lead, $agent);
+            }
+
+            return $lead->fresh();
+        });
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // METHOD 4b: revertLeadByAgent()
+    // Agent sends lead back to enumerator
+    // ────────────────────────────────────────────────────────────────
+    public function revertLeadByAgent(Lead $lead, User $agent, string $reason): Lead
+    {
+        if (empty(trim($reason))) {
+            throw new \InvalidArgumentException('A revert reason is required.');
+        }
+
+        if ($lead->verification_status !== 'pending_agent_verification') {
+            throw new InvalidLeadOperationException('This lead cannot be reverted in its current state.');
+        }
+
+        if ((int) $lead->assigned_agent_id !== (int) $agent->id) {
+            throw new LeadAccessDeniedException('You are not authorized to revert this lead.');
+        }
+
+        return DB::transaction(function () use ($lead, $agent, $reason) {
+            $newRevertCount = $lead->revert_count + 1;
+
+            if ($newRevertCount >= 3) {
+                 $lead->forceFill([
+                     'verification_status' => 'admin_override',
+                     'revert_count' => $newRevertCount,
+                     'revert_reason' => $reason.' [AUTO-ESCALATED: max reverts reached]',
+                     'reverted_at' => now(),
+                     'reverted_by' => $agent->id,
+                     'owner_type' => 'admin_pool',
+                 ])->save();
+            } else {
+                 $lead->forceFill([
+                     'verification_status' => 'reverted_to_enumerator',
+                     'revert_count' => $newRevertCount,
+                     'revert_reason' => $reason,
+                     'reverted_at' => now(),
+                     'reverted_by' => $agent->id,
+                 ])->save();
+            }
+
+            LeadVerification::create([
+                'lead_id' => $lead->id,
+                'action' => 'reverted',
+                'performed_by' => $agent->id,
+                'performer_role' => 'agent',
+                'reason' => $reason,
+                'revert_count_at_time' => $newRevertCount,
+            ]);
+
+            return $lead->fresh();
         });
     }
 
@@ -142,29 +278,29 @@ class LeadService
     // ────────────────────────────────────────────────────────────────
     public function verifyLead(Lead $lead, User $superAgent, ?string $notes = null): Lead
     {
-        if ((int)$lead->assigned_super_agent_id !== (int)$superAgent->id &&
-            !$this->leadBelongsToSuperAgentTeam($lead, $superAgent)) {
+        if ((int) $lead->assigned_super_agent_id !== (int) $superAgent->id &&
+            ! $this->leadBelongsToSuperAgentTeam($lead, $superAgent)) {
             throw new LeadAccessDeniedException('You are not authorized to verify this lead.');
         }
 
-        if (!in_array($lead->verification_status, ['pending_super_agent_verification'])) {
+        if (! in_array($lead->verification_status, ['pending_super_agent_verification'])) {
             throw new InvalidLeadOperationException('This lead is not pending verification.');
         }
 
         return DB::transaction(function () use ($lead, $superAgent, $notes) {
             $lead->forceFill([
-                'verification_status'        => 'super_agent_verified',
+                'verification_status' => 'super_agent_verified',
                 'verified_by_super_agent_id' => $superAgent->id,
-                'verified_at'                => now(),
-                'owner_type'                 => 'admin_pool',
+                'verified_at' => now(),
+                'owner_type' => 'admin_pool',
             ])->save();
 
             LeadVerification::create([
-                'lead_id'              => $lead->id,
-                'action'               => 'verified',
-                'performed_by'         => $superAgent->id,
-                'performer_role'       => 'super_agent',
-                'reason'               => $notes,
+                'lead_id' => $lead->id,
+                'action' => 'verified',
+                'performed_by' => $superAgent->id,
+                'performer_role' => 'super_agent',
+                'reason' => $notes,
                 'revert_count_at_time' => $lead->revert_count,
             ]);
 
@@ -187,12 +323,12 @@ class LeadService
             throw new \InvalidArgumentException('A revert reason is required.');
         }
 
-        if (!in_array($lead->verification_status, ['pending_super_agent_verification'])) {
+        if (! in_array($lead->verification_status, ['pending_super_agent_verification'])) {
             throw new InvalidLeadOperationException('This lead cannot be reverted in its current state.');
         }
 
-        if (!$this->leadBelongsToSuperAgentTeam($lead, $superAgent) &&
-            (int)$lead->assigned_super_agent_id !== (int)$superAgent->id) {
+        if (! $this->leadBelongsToSuperAgentTeam($lead, $superAgent) &&
+            (int) $lead->assigned_super_agent_id !== (int) $superAgent->id) {
             throw new LeadAccessDeniedException('You are not authorized to revert this lead.');
         }
 
@@ -203,19 +339,19 @@ class LeadService
                 // Auto-escalate to admin
                 $lead->forceFill([
                     'verification_status' => 'admin_override',
-                    'revert_count'        => $newRevertCount,
-                    'revert_reason'       => $reason . ' [AUTO-ESCALATED: max reverts reached]',
-                    'reverted_at'         => now(),
-                    'reverted_by'         => $superAgent->id,
-                    'owner_type'          => 'admin_pool',
+                    'revert_count' => $newRevertCount,
+                    'revert_reason' => $reason.' [AUTO-ESCALATED: max reverts reached]',
+                    'reverted_at' => now(),
+                    'reverted_by' => $superAgent->id,
+                    'owner_type' => 'admin_pool',
                 ])->save();
 
                 LeadVerification::create([
-                    'lead_id'              => $lead->id,
-                    'action'               => 'reverted',
-                    'performed_by'         => $superAgent->id,
-                    'performer_role'       => 'super_agent',
-                    'reason'               => $reason . ' [AUTO-ESCALATED]',
+                    'lead_id' => $lead->id,
+                    'action' => 'reverted',
+                    'performed_by' => $superAgent->id,
+                    'performer_role' => 'super_agent',
+                    'reason' => $reason.' [AUTO-ESCALATED]',
                     'revert_count_at_time' => $newRevertCount,
                 ]);
 
@@ -225,18 +361,18 @@ class LeadService
                 // Normal revert
                 $lead->forceFill([
                     'verification_status' => 'reverted_to_agent',
-                    'revert_count'        => $newRevertCount,
-                    'revert_reason'       => $reason,
-                    'reverted_at'         => now(),
-                    'reverted_by'         => $superAgent->id,
+                    'revert_count' => $newRevertCount,
+                    'revert_reason' => $reason,
+                    'reverted_at' => now(),
+                    'reverted_by' => $superAgent->id,
                 ])->save();
 
                 LeadVerification::create([
-                    'lead_id'              => $lead->id,
-                    'action'               => 'reverted',
-                    'performed_by'         => $superAgent->id,
-                    'performer_role'       => 'super_agent',
-                    'reason'               => $reason,
+                    'lead_id' => $lead->id,
+                    'action' => 'reverted',
+                    'performed_by' => $superAgent->id,
+                    'performer_role' => 'super_agent',
+                    'reason' => $reason,
                     'revert_count_at_time' => $newRevertCount,
                 ]);
 
@@ -257,7 +393,7 @@ class LeadService
             throw new InvalidLeadOperationException('Only reverted leads can be resubmitted.');
         }
 
-        if ((int)$lead->submitted_by_agent_id !== (int)$agent->id) {
+        if ((int) $lead->submitted_by_agent_id !== (int) $agent->id) {
             throw new LeadAccessDeniedException('You can only resubmit your own leads.');
         }
 
@@ -265,11 +401,11 @@ class LeadService
             $lead->update([
                 ...$correctedData,
                 'verification_status' => 'pending_super_agent_verification',
-                'revert_reason'       => null,
+                'revert_reason' => null,
             ]);
 
             $this->logStatusChange($lead, $agent->id, $lead->status, $lead->status,
-                'Lead corrected and resubmitted by agent (revert #' . $lead->revert_count . ')');
+                'Lead corrected and resubmitted by agent (revert #'.$lead->revert_count.')');
 
             if ($lead->assigned_super_agent_id) {
                 $this->notifySuperAgentLeadResubmitted($lead, $agent);
@@ -288,12 +424,12 @@ class LeadService
         return DB::transaction(function () use ($lead, $superAgent, $admin) {
             $lead->update([
                 'assigned_super_agent_id' => $superAgent->id,
-                'owner_type'              => 'super_agent_pool',
-                'verification_status'     => 'not_required',
+                'owner_type' => 'super_agent_pool',
+                'verification_status' => 'not_required',
             ]);
 
             $this->logStatusChange($lead, $admin->id, $lead->status, $lead->status,
-                'Lead assigned to Super Agent ' . ($superAgent->super_agent_code ?? $superAgent->name) . ' by Admin');
+                'Lead assigned to Super Agent '.($superAgent->super_agent_code ?? $superAgent->name).' by Admin');
 
             $this->notifySuperAgentLeadAssigned($lead, $superAgent, $admin);
 
@@ -308,23 +444,23 @@ class LeadService
     public function assignLeadToAgent(Lead $lead, User $agent, User $assigner): Lead
     {
         if ($assigner->isSuperAgent()) {
-            if ((int)$agent->super_agent_id !== (int)$assigner->id) {
+            if ((int) $agent->super_agent_id !== (int) $assigner->id) {
                 throw new LeadAccessDeniedException('You can only assign leads to agents in your team.');
             }
-            if ((int)$lead->assigned_super_agent_id !== (int)$assigner->id) {
+            if ((int) $lead->assigned_super_agent_id !== (int) $assigner->id) {
                 throw new LeadAccessDeniedException('You can only assign leads that belong to your pool.');
             }
         }
 
         return DB::transaction(function () use ($lead, $agent, $assigner) {
             $lead->update([
-                'assigned_agent_id'       => $agent->id,
+                'assigned_agent_id' => $agent->id,
                 'assigned_super_agent_id' => $agent->super_agent_id ?? $lead->assigned_super_agent_id,
-                'owner_type'              => 'agent_pool',
+                'owner_type' => 'agent_pool',
             ]);
 
             $this->logStatusChange($lead, $assigner->id, $lead->status, $lead->status,
-                'Lead assigned to Agent ' . ($agent->agent_id ?? $agent->name));
+                'Lead assigned to Agent '.($agent->agent_id ?? $agent->name));
 
             $this->notifyAgentLeadAssigned($lead, $agent, $assigner);
 
@@ -339,14 +475,16 @@ class LeadService
     public function updateStatus(Lead $lead, string $newStatus, int $changedById, ?string $notes = null): void
     {
         $allStatuses = [
-            'new', 'registered', 'installed', 'rejected', 'on_hold', 'completed'
+            'new', 'registered', 'at_bank', 'installed', 'rejected', 'on_hold', 'completed',
         ];
 
-        if (!in_array($newStatus, $allStatuses)) {
+        if (! in_array($newStatus, $allStatuses)) {
             throw new \Exception("Invalid status: {$newStatus}");
         }
 
-        if ($lead->status === $newStatus) return;
+        if ($lead->status === $newStatus) {
+            return;
+        }
 
         DB::transaction(function () use ($lead, $newStatus, $changedById, $notes) {
             $oldStatus = $lead->status;
@@ -380,20 +518,32 @@ class LeadService
             // TRIGGER OFFERS: if status just became 'installed' or 'completed'
             if (in_array($newStatus, ['installed', 'completed'])) {
                 $affectedAgent = null;
-                if ($lead->assigned_agent_id) {
-                    $affectedAgent = User::find($lead->assigned_agent_id);
-                } elseif ($lead->submitted_by_agent_id) {
-                    $affectedAgent = User::find($lead->submitted_by_agent_id);
-                } elseif ($lead->assigned_super_agent_id) {
-                    // Fallback for direct SA leads
-                    $affectedAgent = User::find($lead->assigned_super_agent_id);
-                } elseif ($lead->created_by_super_agent_id) {
-                    // Fallback for direct SA leads
-                    $affectedAgent = User::find($lead->created_by_super_agent_id);
+
+                // Priority 1: If submitted by an enumerator, points go to their creator/parent
+                if ($lead->submitted_by_enumerator_id) {
+                    $enumerator = User::find($lead->submitted_by_enumerator_id);
+                    if ($enumerator && $enumerator->parent_id) {
+                        $affectedAgent = User::find($enumerator->parent_id);
+                    }
+                }
+
+                // Priority 2: Standard fallback chain
+                if (!$affectedAgent) {
+                    if ($lead->assigned_agent_id) {
+                        $affectedAgent = User::find($lead->assigned_agent_id);
+                    } elseif ($lead->submitted_by_agent_id) {
+                        $affectedAgent = User::find($lead->submitted_by_agent_id);
+                    } elseif ($lead->assigned_super_agent_id) {
+                        // Fallback for direct SA leads
+                        $affectedAgent = User::find($lead->assigned_super_agent_id);
+                    } elseif ($lead->created_by_super_agent_id) {
+                        // Fallback for direct SA leads
+                        $affectedAgent = User::find($lead->created_by_super_agent_id);
+                    }
                 }
 
                 if ($affectedAgent) {
-                    $this->offerService->processInstallation($lead, $affectedAgent);
+                    $this->offerService->processPoints($lead, $affectedAgent);
                 }
             }
         });
@@ -407,11 +557,11 @@ class LeadService
         $path = $file->store("leads/{$lead->ulid}", 'local');
 
         return LeadDocument::create([
-            'lead_id'           => $lead->id,
-            'document_type'     => $type,
-            'file_path'         => $path,
+            'lead_id' => $lead->id,
+            'document_type' => $type,
+            'file_path' => $path,
             'original_filename' => $file->getClientOriginalName(),
-            'uploaded_by'       => $uploadedById,
+            'uploaded_by' => $uploadedById,
         ]);
     }
 
@@ -422,20 +572,23 @@ class LeadService
     private function logStatusChange(Lead $lead, ?int $changedById, ?string $fromStatus, string $toStatus, ?string $notes): void
     {
         LeadStatusLog::create([
-            'lead_id'     => $lead->id,
-            'changed_by'  => $changedById,
+            'lead_id' => $lead->id,
+            'changed_by' => $changedById,
             'from_status' => $fromStatus ?? $lead->status ?? 'new',
-            'to_status'   => $toStatus,
-            'notes'       => $notes,
+            'to_status' => $toStatus,
+            'notes' => $notes,
         ]);
     }
 
     private function leadBelongsToSuperAgentTeam(Lead $lead, User $superAgent): bool
     {
         if ($lead->submitted_by_agent_id) {
-            $submittingAgent = User::find($lead->submitted_by_agent_id);
-            return $submittingAgent && (int)$submittingAgent->super_agent_id === (int)$superAgent->id;
+            /** @var User|null $submittingAgent */
+            $submittingAgent = User::query()->find($lead->submitted_by_agent_id);
+
+            return $submittingAgent && (int) $submittingAgent->super_agent_id === (int) $superAgent->id;
         }
+
         return false;
     }
 
@@ -443,7 +596,8 @@ class LeadService
 
     private function notifyAdminNewPublicLead(Lead $lead): void
     {
-        $admin = User::where('role', 'admin')->first();
+        /** @var User|null $admin */
+        $admin = User::query()->where(fn ($q) => $q->where('role', 'admin'))->first();
         if ($admin) {
             $this->notificationService->send(
                 $admin->id, 'new_public_lead',
@@ -456,7 +610,8 @@ class LeadService
 
     private function notifyAdminNewAgentLead(Lead $lead, User $agent): void
     {
-        $admin = User::where('role', 'admin')->first();
+        /** @var User|null $admin */
+        $admin = User::query()->where(fn ($q) => $q->where('role', 'admin'))->first();
         if ($admin) {
             $this->notificationService->send(
                 $admin->id, 'new_agent_lead',
@@ -469,7 +624,8 @@ class LeadService
 
     private function notifyAdminLeadVerified(Lead $lead, User $sa): void
     {
-        $admin = User::where('role', 'admin')->first();
+        /** @var User|null $admin */
+        $admin = User::query()->where(fn ($q) => $q->where('role', 'admin'))->first();
         if ($admin) {
             $this->notificationService->send(
                 $admin->id, 'lead_verified',
@@ -482,7 +638,8 @@ class LeadService
 
     private function notifyAdminLeadAutoEscalated(Lead $lead, User $sa, string $reason): void
     {
-        $admin = User::where('role', 'admin')->first();
+        /** @var User|null $admin */
+        $admin = User::query()->where(fn ($q) => $q->where('role', 'admin'))->first();
         if ($admin) {
             $this->notificationService->send(
                 $admin->id, 'lead_auto_escalated',
@@ -495,7 +652,9 @@ class LeadService
 
     private function notifySuperAgentLeadPendingVerification(Lead $lead, User $agent): void
     {
-        if (!$lead->assigned_super_agent_id) return;
+        if (! $lead->assigned_super_agent_id) {
+            return;
+        }
         $sa = User::find($lead->assigned_super_agent_id);
         if ($sa) {
             $this->notificationService->send(
@@ -519,7 +678,9 @@ class LeadService
 
     private function notifySuperAgentLeadResubmitted(Lead $lead, User $agent): void
     {
-        if (!$lead->assigned_super_agent_id) return;
+        if (! $lead->assigned_super_agent_id) {
+            return;
+        }
         $sa = User::find($lead->assigned_super_agent_id);
         if ($sa) {
             $this->notificationService->send(
@@ -533,7 +694,9 @@ class LeadService
 
     private function notifySuperAgentStatusChanged(Lead $lead, string $from, string $to, User $changer): void
     {
-        if (!$lead->assigned_super_agent_id) return;
+        if (! $lead->assigned_super_agent_id) {
+            return;
+        }
         $sa = User::find($lead->assigned_super_agent_id);
         if ($sa) {
             $this->notificationService->send(
@@ -558,7 +721,9 @@ class LeadService
 
     private function notifyAgentLeadReverted(Lead $lead, string $reason, int $count): void
     {
-        if (!$lead->assigned_agent_id && !$lead->submitted_by_agent_id) return;
+        if (! $lead->assigned_agent_id && ! $lead->submitted_by_agent_id) {
+            return;
+        }
         $agentId = $lead->assigned_agent_id ?? $lead->submitted_by_agent_id;
         $this->notificationService->send(
             $agentId, 'lead_reverted',
@@ -571,7 +736,9 @@ class LeadService
     private function notifyAgentLeadAutoEscalated(Lead $lead, string $reason): void
     {
         $agentId = $lead->assigned_agent_id ?? $lead->submitted_by_agent_id;
-        if (!$agentId) return;
+        if (! $agentId) {
+            return;
+        }
         $this->notificationService->send(
             $agentId, 'lead_auto_escalated',
             'Lead Escalated to Admin',
@@ -603,7 +770,9 @@ class LeadService
     private function notifyAgentStatusChanged(Lead $lead, string $from, string $to, User $changer): void
     {
         $agentId = $lead->assigned_agent_id ?? $lead->submitted_by_agent_id;
-        if (!$agentId) return;
+        if (! $agentId) {
+            return;
+        }
         $byLabel = $changer->isAdmin() ? 'Admin' : 'your Super Agent';
         $this->notificationService->send(
             $agentId, 'lead_status_changed',
