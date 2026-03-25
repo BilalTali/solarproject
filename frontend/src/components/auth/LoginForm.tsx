@@ -142,7 +142,7 @@ export default function LoginForm({ role, redirectPath }: LoginFormProps) {
     }
 
     return (
-        <form onSubmit={step2Form.handleSubmit((d) => loginMutation.mutate(d))} className="space-y-6 animate-in fade-in slide-in-from-right-4">
+        <form onSubmit={step2Form.handleSubmit((d) => loginMutation.mutate(d))} className="space-y-6 animate-in fade-in slide-in-from-right-4" autoComplete="off">
             <div className="text-center bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-2">
                 <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Enter OTP Sent To</p>
                 <p className="font-bold text-slate-900">{credentials?.email}</p>
@@ -162,6 +162,8 @@ export default function LoginForm({ role, redirectPath }: LoginFormProps) {
                     <input
                         type="text"
                         maxLength={6}
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
                         className={`w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400 text-center tracking-[0.5em] font-mono text-xl ${step2Form.formState.errors.otp ? 'border-red-500 focus:ring-red-500/5' : ''}`}
                         placeholder="000000"
                         {...step2Form.register('otp')}
