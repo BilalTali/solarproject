@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,6 +36,15 @@ export default function LoginForm({ role, redirectPath }: LoginFormProps) {
 
     const step1Form = useForm<Step1Data>({ resolver: zodResolver(step1Schema) });
     const step2Form = useForm<Step2Data>({ resolver: zodResolver(step2Schema) });
+
+    // Force-clear OTP field when step 2 mounts to block browser autofill
+    useEffect(() => {
+        if (step === 2) {
+            step2Form.setValue('otp', '');
+            setTimeout(() => step2Form.setValue('otp', ''), 100);
+            setTimeout(() => step2Form.setValue('otp', ''), 300);
+        }
+    }, [step]);
 
     const sendOtpMutation = useMutation({
         mutationFn: (data: Step1Data) => authApi.sendOtp({ 
@@ -143,6 +152,9 @@ export default function LoginForm({ role, redirectPath }: LoginFormProps) {
 
     return (
         <form onSubmit={step2Form.handleSubmit((d) => loginMutation.mutate(d))} className="space-y-6 animate-in fade-in slide-in-from-right-4" autoComplete="off">
+            {/* Honeypot inputs fool browser into autofilling here instead of OTP field */}
+            <input type="text" name="username" style={{ display: 'none' }} autoComplete="username" />
+            <input type="password" name="password" style={{ display: 'none' }} autoComplete="current-password" />
             <div className="text-center bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-2">
                 <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Enter OTP Sent To</p>
                 <p className="font-bold text-slate-900">{credentials?.email}</p>
@@ -164,6 +176,8 @@ export default function LoginForm({ role, redirectPath }: LoginFormProps) {
                         maxLength={6}
                         inputMode="numeric"
                         autoComplete="one-time-code"
+                        data-lpignore="true"
+                        data-form-type="other"
                         className={`w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400 text-center tracking-[0.5em] font-mono text-xl ${step2Form.formState.errors.otp ? 'border-red-500 focus:ring-red-500/5' : ''}`}
                         placeholder="000000"
                         {...step2Form.register('otp')}
