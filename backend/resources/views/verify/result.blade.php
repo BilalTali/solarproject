@@ -1,17 +1,16 @@
 @php
-  use App\Models\User;
-  /** @var User $user */
+  /** @var \App\Models\User $user */
   /** @var bool $isActive */
   /** @var bool $isSuspended */
   /** @var string $cardNumber */
   /** @var string $designation */
   /** @var string $scannedAt */
   /** @var string $initials */
-  /** @var string $fatherName */
-  /** @var string $dob */
-  /** @var string $bloodGroup */
-  /** @var string $mobile */
-  /** @var string $clearance */
+  /** @var string|null $fatherName */
+  /** @var string|null $dob */
+  /** @var string|null $bloodGroup */
+  /** @var string|null $mobile */
+  /** @var string|null $clearance */
 @endphp
 <!DOCTYPE html>
 <html lang="en">

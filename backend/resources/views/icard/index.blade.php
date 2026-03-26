@@ -117,9 +117,8 @@
     .initials-avatar {
       position: absolute; top: 0; left: 0; width: 140px; height: 140px;
       line-height: 140px; text-align: center;
-      font-size: 40px; font-weight: 800; color: #0A1931; border-radius: 70px;
-      background: #F7B100;
-      border: 3px solid #0A1931;
+      background: transparent;
+      border: none;
     }
 
     /* ══════ MAIN CONTENT ══════ */
@@ -302,7 +301,12 @@
         @if($profilePhotoBase64)
           <img class="user-crop-img" src="{{ $profilePhotoBase64 }}" alt="Photo">
         @else
-          <div class="initials-avatar">{{ $initials ?? 'SM' }}</div>
+          <div class="initials-avatar">
+            <svg width="140" height="140" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="70,3 135,36 135,104 70,137 5,104 5,36" fill="#F7B100" stroke="#0A1931" stroke-width="4" />
+              <text x="70" y="85" font-family="Arial" font-size="45" font-weight="900" fill="#0A1931" text-anchor="middle">{{ $initials ?? 'SM' }}</text>
+            </svg>
+          </div>
         @endif
       </div>
 
@@ -403,8 +407,8 @@
         </div>
       </div>
 
-      <div class="footer-lock">
-        <table style="width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 5px;">
+      <div class="footer-lock" style="height: 115px; padding-bottom: 15px;">
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 5px;">
           <tr>
             <td style="width: 48%; padding-left: 20px; vertical-align: middle;">
               <div style="border: 2px solid #F7B100; color: #0A1931; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 9px; background: #FFFBEB; display: inline-block;">

@@ -34,6 +34,9 @@ export default defineConfig({
           }
         ],
       },
+      workbox: {
+        navigateFallbackDenylist: [/^\/api/, /^\/storage/],
+      }
     })
   ],
   resolve: {
@@ -46,12 +49,14 @@ export default defineConfig({
   },
   build: {
     sourcemap: false,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-ui': ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-label', '@radix-ui/react-slot'],
-          'vendor-utils': ['axios', '@tanstack/react-query', 'date-fns', 'clsx', 'tailwind-merge'],
+          'vendor-utils': ['axios', '@tanstack/react-query', 'date-fns', 'clsx', 'tailwind-merge', 'zod', 'zustand'],
+          'vendor-charts': ['recharts'],
         },
       },
     },

@@ -8,7 +8,7 @@ class AdminSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminEmail = env('ADMIN_EMAIL', 'admin@suryamitra.in');
+        $adminEmail = env('ADMIN_EMAIL', 'talibilal342@gmail.com');
 
         $admin = \App\Models\User::query()->where(fn($q) => $q->where('email', $adminEmail))->first();
         if (! $admin) {

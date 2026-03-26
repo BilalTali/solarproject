@@ -18,33 +18,36 @@ return new class extends Migration
                 $table->text('description')->nullable();
                 $table->string('prize_label');
                 $table->decimal('prize_amount', 10, 2)->nullable();
-                $table->string('prize_image_url')->nullable();
+                $table->string('prize_image_path')->nullable();
                 
                 // Types
                 $table->enum('offer_type', ['individual', 'collective'])->default('individual');
-                $table->enum('visible_to', ['agent', 'super_agent', 'both'])->default('both');
+                $table->enum('visible_to', ['agents', 'super_agents', 'both'])->default('both');
                 
-                // Decimal for Target Points (v3 point-based system)
-                $table->decimal('target_installations', 8, 2)->default(0); 
+                // Points system
+                $table->decimal('target_points', 8, 2)->default(0); 
                 
                 // Active period
                 $table->timestamp('offer_from')->nullable();
                 $table->timestamp('offer_to')->nullable();
+                $table->integer('grace_period_days')->default(7);
                 
                 // Status and meta
-                $table->enum('status', ['draft', 'live', 'ended'])->default('draft');
+                $table->enum('status', ['draft', 'active', 'ended'])->default('draft');
                 $table->boolean('is_featured')->default(false);
                 $table->boolean('is_annual')->default(false);
                 $table->integer('display_order')->default(0);
                 
                 // Collective fields
-                $table->unsignedInteger('current_installations')->default(0); // Optional: keep as int if collective remains raw count, or change to decimal if collective uses points. Keeping int for now as default.
+                $table->decimal('current_points', 8, 2)->default(0);
                 $table->boolean('collective_redeemed')->default(false);
                 $table->timestamp('collective_redeemed_at')->nullable();
                 
-                // Expiry tracking
+                // Ownership
+                $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
                 $table->timestamp('absorption_processed_at')->nullable();
                 
+                $table->softDeletes();
                 $table->timestamps();
             });
         }
@@ -57,10 +60,9 @@ return new class extends Migration
                 
                 $table->enum('role_context', ['agent', 'super_agent'])->default('agent');
                 
-                // v3 Decimal points tracking
-                $table->decimal('total_installations', 8, 2)->default(0);
-                $table->decimal('redeemed_installations', 8, 2)->default(0);
-                $table->decimal('unredeemed_installations', 8, 2)->default(0);
+                $table->decimal('total_points', 8, 2)->default(0);
+                $table->decimal('redeemed_points', 8, 2)->default(0);
+                $table->decimal('unredeemed_points', 8, 2)->default(0);
                 
                 $table->integer('redemption_count')->default(0);
                 $table->boolean('can_redeem')->default(false);
@@ -85,9 +87,9 @@ return new class extends Migration
                 $table->foreignId('user_id')->constrained()->cascadeOnDelete();
                 
                 $table->integer('redemption_number');
-                $table->decimal('installations_used', 8, 2); // decimal points used
+                $table->decimal('points_used', 8, 2); 
                 
-                $table->enum('status', ['pending', 'approved', 'delivered', 'rejected'])->default('pending');
+                $table->enum('status', ['pending', 'approved', 'delivered', 'rejected', 'cancelled'])->default('pending');
                 $table->text('notes')->nullable();
                 
                 $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
@@ -110,11 +112,10 @@ return new class extends Migration
                 $table->timestamp('installed_at');
                 $table->timestamps();
                 
-                $table->unique(['offer_id', 'lead_id']); // Idempotency key
+                $table->unique(['offer_id', 'lead_id']);
             });
         }
         
-        // Track absorbed points for Super Agents
         if (!Schema::hasTable('super_agent_absorbed_points')) {
             Schema::create('super_agent_absorbed_points', function (Blueprint $table) {
                 $table->id();
@@ -122,8 +123,8 @@ return new class extends Migration
                 $table->foreignId('source_agent_id')->constrained('users')->cascadeOnDelete();
                 $table->foreignId('offer_id')->constrained('offers')->cascadeOnDelete();
                 
-                $table->decimal('absorbed_installations', 8, 2);
-                $table->decimal('agent_total_installations', 8, 2);
+                $table->decimal('absorbed_points', 8, 2);
+                $table->decimal('agent_total_points', 8, 2);
                 $table->decimal('offer_target', 8, 2);
                 $table->string('absorption_reason');
                 
@@ -136,7 +137,6 @@ return new class extends Migration
             });
         }
         
-        // Expiry run logs
         if (!Schema::hasTable('offer_expiry_logs')) {
             Schema::create('offer_expiry_logs', function (Blueprint $table) {
                 $table->id();

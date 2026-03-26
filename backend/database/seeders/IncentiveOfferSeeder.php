@@ -2,48 +2,65 @@
 
 namespace Database\Seeders;
 
-use App\Models\IncentiveOffer;
+use App\Models\Offer;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class IncentiveOfferSeeder extends Seeder
 {
     public function run(): void
     {
+        $admin = User::where('role', 'admin')->first();
+        
+        if (!$admin) {
+            $this->command->error('Admin user not found. Run AdminSeeder first.');
+            return;
+        }
+
         $offers = [
             [
                 'title' => 'Umrah Trip for Two',
-                'description' => 'Complete Umrah package for two persons including flight, hotel, and visa. Achieve 50 installations in a quarter to qualify.',
-                'offer_type' => 'trip',
-                'target_installs' => 50,
-                'reward_value' => 150000.00,
-                'valid_from' => '2026-04-01',
-                'valid_until' => '2026-09-30',
-                'is_active' => true,
+                'description' => 'Complete Umrah package for two persons including flight, hotel, and visa. Achieve 50 points in a quarter to qualify.',
+                'prize_label' => 'Umrah Trip for Two',
+                'offer_type' => 'individual',
+                'target_points' => 50,
+                'prize_amount' => 150000.00,
+                'offer_from' => '2026-04-01',
+                'offer_to' => '2026-09-30',
+                'status' => 'active',
+                'visible_to' => 'both',
+                'created_by' => $admin->id,
             ],
             [
                 'title' => 'Hero Splendor Plus Bike',
-                'description' => 'Brand new Hero Splendor Plus motorcycle. Achieve 30 installations in a quarter to qualify.',
-                'offer_type' => 'physical',
-                'target_installs' => 30,
-                'reward_value' => 75000.00,
-                'valid_from' => '2026-04-01',
-                'valid_until' => '2026-09-30',
-                'is_active' => true,
+                'description' => 'Brand new Hero Splendor Plus motorcycle. Achieve 30 points in a quarter to qualify.',
+                'prize_label' => 'Hero Splendor Plus Bike',
+                'offer_type' => 'individual',
+                'target_points' => 30,
+                'prize_amount' => 75000.00,
+                'offer_from' => '2026-04-01',
+                'offer_to' => '2026-09-30',
+                'status' => 'active',
+                'visible_to' => 'both',
+                'created_by' => $admin->id,
             ],
             [
                 'title' => '₹25,000 Cash Bonus',
-                'description' => 'Direct bank transfer of ₹25,000. Achieve 20 installations in a quarter to qualify.',
-                'offer_type' => 'cash',
-                'target_installs' => 20,
-                'reward_value' => 25000.00,
-                'valid_from' => '2026-04-01',
-                'valid_until' => '2026-06-30',
-                'is_active' => true,
+                'description' => 'Direct bank transfer of ₹25,000. Achieve 20 points in a quarter to qualify.',
+                'prize_label' => '₹25,000 Cash Bonus',
+                'offer_type' => 'individual',
+                'target_points' => 20,
+                'prize_amount' => 25000.00,
+                'offer_from' => '2026-04-01',
+                'offer_to' => '2026-06-30',
+                'status' => 'active',
+                'visible_to' => 'both',
+                'created_by' => $admin->id,
             ],
         ];
 
         foreach ($offers as $offer) {
-            IncentiveOffer::updateOrCreate(
+            Offer::updateOrCreate(
                 ['title' => $offer['title']],
                 $offer
             );

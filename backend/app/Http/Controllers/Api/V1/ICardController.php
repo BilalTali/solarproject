@@ -19,14 +19,15 @@ class ICardController extends Controller
      */
     public function download(Request $request): Response
     {
-        // If it's a signed request, we might not have 'Auth' session-based,
-        // but since we are using sanctum, we should be fine if the user is authenticated.
-        // For temporary signed routes, sometimes we bypass standard auth if needed.
-        // However, the prompt says "serve it via a secure authenticated route".
+        \Illuminate\Support\Facades\Log::warning('ICard download request', [
+            'userId_param' => $request->route('userId'),
+            'userId_query' => $request->query('userId'),
+            'has_valid_signature' => $request->hasValidSignature(),
+            'auth_user' => Auth::id()
+        ]);
 
         $user = Auth::user();
         if (! $user && $request->hasValidSignature()) {
-            // Retrieve user from the userId parameter in the signed URL
             $userId = $request->route('userId') ?? $request->query('userId');
             if ($userId) {
                 $user = User::find($userId);
@@ -34,6 +35,7 @@ class ICardController extends Controller
         }
 
         if (! $user) {
+            \Illuminate\Support\Facades\Log::warning('ICard download failed: User not found or unauthorized');
             abort(401, 'Unauthorized or invalid download link');
         }
 

@@ -34,13 +34,20 @@ const DownloadJoiningLetterButton: React.FC<DownloadJoiningLetterButtonProps> = 
             setIsDownloading(true);
             const downloadUrl = await joiningLetterApi.getDownloadUrl();
 
-            // Create a temporary link and trigger download
+            // Fetch as blob to bypass PWA navigation cache interception
+            const fileResponse = await fetch(downloadUrl);
+            if (!fileResponse.ok) throw new Error('Failed to download');
+            
+            const blob = await fileResponse.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            
             const link = document.createElement('a');
-            link.href = downloadUrl;
+            link.href = blobUrl;
             link.download = `Joining_Letter_${user.name.replace(/\s+/g, '_')}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
 
             toast.success('Joining letter download started.');
         } catch (error: any) {

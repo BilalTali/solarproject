@@ -34,10 +34,34 @@ export const DownloadIdCardButton = ({ variant = 'button', className, userId }: 
             });
             const url = response.data.url;
 
-            // Trigger download by opening the signed URL
-            // This will trigger the backend generateAndDownload method
-            window.open(url, '_blank');
-            toast.success('ID Card generation started!');
+            // Trigger download by fetching as blob to bypass PWA navigation cache interception
+            const fileResponse = await fetch(url);
+            
+            if (!fileResponse.ok) throw new Error('Failed to download');
+            
+            const blob = await fileResponse.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            
+            // Extract filename from Content-Disposition if available, or fallback
+            const disposition = fileResponse.headers.get('content-disposition');
+            let filename = 'ID_Card.pdf';
+            if (disposition && disposition.indexOf('attachment') !== -1) {
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(disposition);
+                if (matches != null && matches[1]) {
+                    filename = matches[1].replace(/['"]/g, '');
+                }
+            }
+            
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(blobUrl);
+
+            toast.success('ID Card downloaded successfully!');
         } catch (error) {
             if (import.meta.env.DEV) {
                 console.error('ID Card Download Error:', error);
