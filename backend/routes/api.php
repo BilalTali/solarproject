@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\Admin\DashboardController as AdminDashboardContr
 // Super Agent
 use App\Http\Controllers\Api\V1\Admin\LeadController as AdminLeadController;
 use App\Http\Controllers\Api\V1\Admin\OfferController as AdminOfferController;
+use App\Http\Controllers\Api\V1\Admin\OperatorController as AdminOperatorController;
 use App\Http\Controllers\Api\V1\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Api\V1\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Api\V1\Admin\SuperAgentController as AdminSuperAgentController;
@@ -257,6 +258,12 @@ $api->as('api.v1.')->group(function () {
             Route::apiResource('enumerators', \App\Http\Controllers\Api\V1\Admin\EnumeratorController::class)->names('admin.enumerators');
             Route::put('/enumerators/{id}/status', [\App\Http\Controllers\Api\V1\Admin\EnumeratorController::class, 'updateStatus']);
 
+            // Operators (Admin-only management)
+            Route::get('/operators', [AdminOperatorController::class, 'index']);
+            Route::post('/operators', [AdminOperatorController::class, 'store']);
+            Route::put('/operators/{id}/status', [AdminOperatorController::class, 'updateStatus']);
+            Route::delete('/operators/{id}', [AdminOperatorController::class, 'destroy']);
+
             // Super Agents CRUD
             Route::get('/super-agents', [AdminSuperAgentController::class, 'index']);
             Route::post('/super-agents', [AdminSuperAgentController::class, 'store']);
@@ -274,11 +281,8 @@ $api->as('api.v1.')->group(function () {
             Route::delete('/super-agents/{id}/agents/{agent_id}', [AdminSuperAgentController::class, 'unassignAgent']);
             Route::get('/super-agents/{id}/team-log', [AdminSuperAgentController::class, 'teamLog']);
 
-            // Leads
-            Route::get('/leads', [AdminLeadController::class, 'index']);
-            Route::get('/leads/{ulid}', [AdminLeadController::class, 'show']);
+            // Leads — Admin-only actions (assign, edit, document upload, override)
             Route::put('/leads/{ulid}', [AdminLeadController::class, 'update']);
-            Route::put('/leads/{ulid}/status', [AdminLeadController::class, 'updateStatus']);
             Route::put('/leads/{ulid}/assign', [AdminLeadController::class, 'assign']);
             Route::put('/leads/{ulid}/assign-super-agent', [AdminLeadController::class, 'assignSuperAgent']);
             Route::put('/leads/{ulid}/assign-agent', [AdminLeadController::class, 'assignAgent']);
@@ -355,6 +359,17 @@ $api->as('api.v1.')->group(function () {
             Route::post('/documents', [DocumentController::class, 'store']);
             Route::patch('/documents/{document}', [DocumentController::class, 'update']);
             Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
+        });
+
+        // ==============================
+        // ADMIN + OPERATOR SHARED ROUTES
+        // Operators can: view all leads, update lead status.
+        // They CANNOT access the admin group above (no dashboard, agents, settings etc.)
+        // ==============================
+        Route::middleware('admin_or_operator')->prefix('admin')->group(function () {
+            Route::get('/leads', [AdminLeadController::class, 'index']);
+            Route::get('/leads/{ulid}', [AdminLeadController::class, 'show']);
+            Route::put('/leads/{ulid}/status', [AdminLeadController::class, 'updateStatus']);
         });
     });
 });

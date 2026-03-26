@@ -33,7 +33,10 @@ class AuthController extends Controller
 
         $user = User::query()->where(function ($q) use ($field, $identifier, $expectedRole) {
             $q->where($field, $identifier);
-            if ($expectedRole !== 'any') {
+            if ($expectedRole === 'admin') {
+                // Operators log in via the admin portal
+                $q->whereIn('role', ['admin', 'operator']);
+            } elseif ($expectedRole !== 'any') {
                 $q->where('role', $expectedRole);
             }
         })->first();

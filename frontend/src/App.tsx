@@ -9,6 +9,7 @@ import SuperAgentLayout from '@/layouts/SuperAgentLayout';
 
 // Route Guards
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
+import { useAuthStore } from '@/store/authStore';
 
 // Public Pages
 import HomePage from '@/pages/public/HomePage';
@@ -78,6 +79,7 @@ import { AdminRedemptionsPage } from '@/pages/admin/AdminRedemptionsPage';
 import { AdminAbsorptionsPage } from '@/pages/admin/AdminAbsorptionsPage';
 import { AdminWithdrawalsPage } from '@/pages/admin/AdminWithdrawalsPage';
 import { AdminCommissionSlabsPage } from '@/pages/admin/AdminCommissionSlabsPage';
+import AdminOperatorsPage from '@/pages/admin/AdminOperatorsPage';
 
 // Enumerator Pages
 import EnumeratorLayout from '@/layouts/EnumeratorLayout';
@@ -89,6 +91,12 @@ import EnumeratorCommissionsPage from '@/pages/enumerator/EnumeratorCommissionsP
 import EnumeratorNotificationsPage from '@/pages/enumerator/EnumeratorNotificationsPage';
 import EnumeratorLoginPage from '@/pages/enumerator/EnumeratorLoginPage';
 import { EnumeratorWithdrawalsPage } from '@/pages/enumerator/EnumeratorWithdrawalsPage';
+
+/** Redirect admin to dashboard; operators straight to leads */
+function AdminIndexRedirect() {
+    const { role } = useAuthStore();
+    return <Navigate to={role === 'operator' ? '/admin/leads' : '/admin/dashboard'} replace />;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -196,7 +204,7 @@ export default function App() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute requiredRole="admin" loginPath="/admin/login">
+          <ProtectedRoute requiredRole={['admin', 'operator']} loginPath="/admin/login">
                 <AdminLayout />
               </ProtectedRoute>
             }
@@ -219,7 +227,8 @@ export default function App() {
             <Route path="settings" element={<AdminSettingsPage />} />
             <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
             <Route path="commission-slabs" element={<AdminCommissionSlabsPage />} />
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="operators" element={<AdminOperatorsPage />} />
+            <Route index element={<AdminIndexRedirect />} />
           </Route>
 
           {/* Enumerator Auth */}

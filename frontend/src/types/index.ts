@@ -2,7 +2,7 @@
 // SURYAMITRA - TypeScript Interfaces
 // ============================================================
 
-export type UserRole = 'admin' | 'super_agent' | 'agent' | 'enumerator';
+export type UserRole = 'admin' | 'super_agent' | 'agent' | 'enumerator' | 'operator';
 export type UserStatus = 'active' | 'inactive' | 'pending';
 export type OverrideStatus = 'pending' | 'approved' | 'paid';
 

@@ -10,7 +10,7 @@ import { useAuthStore } from '@/store/authStore';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import { useSettings } from '@/hooks/useSettings';
 
-const NAV = [
+const ADMIN_NAV = [
     { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', to: '/admin/dashboard' },
     { icon: <List className="w-5 h-5" />, label: 'Leads', to: '/admin/leads' },
     { icon: <Gift className="w-5 h-5" />, label: 'Incentive Offers', to: '/admin/offers' },
@@ -20,6 +20,7 @@ const NAV = [
     { icon: <Users className="w-5 h-5" />, label: 'Business Development Executives', to: '/admin/agents' },
     { icon: <Users className="w-5 h-5" />, label: 'Enumerators', to: '/admin/enumerators' },
     { icon: <Star className="w-5 h-5" />, label: 'Business Development Managers', to: '/admin/super-agents' },
+    { icon: <Shield className="w-5 h-5" />, label: 'Operators', to: '/admin/operators' },
     { icon: <Award className="w-5 h-5" />, label: 'Reward Winners', to: '/admin/media' },
     { icon: <FileText className="w-5 h-5" />, label: 'Agent Documents', to: '/admin/documents' },
     { icon: <DollarSign className="w-5 h-5" />, label: 'Commissions', to: '/admin/commissions' },
@@ -28,11 +29,18 @@ const NAV = [
     { icon: <Settings className="w-5 h-5" />, label: 'Settings', to: '/admin/settings' },
 ];
 
+const OPERATOR_NAV = [
+    { icon: <List className="w-5 h-5" />, label: 'Leads', to: '/admin/leads' },
+];
+
 export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, clearAuth } = useAuthStore();
     const { companyName } = useSettings();
+
+    const isOperator = user?.role === 'operator';
+    const NAV = isOperator ? OPERATOR_NAV : ADMIN_NAV;
 
     const logoutMutation = useMutation({
         mutationFn: authApi.logout,
@@ -65,7 +73,7 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
                     </div>
                     <div className="min-w-0">
                         <p className="text-white font-semibold text-sm truncate">{user?.name}</p>
-                        <span className="text-accent text-xs font-medium">Admin</span>
+                        <span className="text-accent text-xs font-medium capitalize">{isOperator ? 'Operator' : 'Admin'}</span>
                     </div>
                 </div>
             </div>
@@ -88,9 +96,11 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
                     );
                 })}
 
-                <div className="px-3 mt-2">
-                    <DownloadIdCardButton className="w-full justify-start !shadow-none !bg-white/5 hover:!bg-white/10 !border !border-white/10" />
-                </div>
+                {!isOperator && (
+                    <div className="px-3 mt-2">
+                        <DownloadIdCardButton className="w-full justify-start !shadow-none !bg-white/5 hover:!bg-white/10 !border !border-white/10" />
+                    </div>
+                )}
             </nav>
 
             {/* Logout */}

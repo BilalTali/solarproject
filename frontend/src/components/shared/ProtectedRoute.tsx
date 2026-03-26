@@ -4,14 +4,18 @@ import type { UserRole } from '@/types';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
-    requiredRole: UserRole;
+    requiredRole: UserRole | UserRole[];
     loginPath: string;
 }
 
 export default function ProtectedRoute({ children, requiredRole, loginPath }: ProtectedRouteProps) {
     const { token, role } = useAuthStore();
 
-    if (!token || role !== requiredRole) {
+    const allowed = Array.isArray(requiredRole)
+        ? role !== null && requiredRole.includes(role)
+        : role === requiredRole;
+
+    if (!token || !allowed) {
         return <Navigate to={loginPath} replace />;
     }
 

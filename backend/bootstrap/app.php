@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureIsAdmin::class,
+            'admin_or_operator' => \App\Http\Middleware\EnsureIsAdminOrOperator::class,
             'agent' => \App\Http\Middleware\EnsureIsAgent::class,
             'super_agent' => \App\Http\Middleware\EnsureIsSuperAgent::class,
             'admin_or_super_agent' => \App\Http\Middleware\EnsureIsAdminOrSuperAgent::class,

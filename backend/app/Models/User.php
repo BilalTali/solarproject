@@ -428,6 +428,11 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         return $query->where(fn ($q) => $q->where('role', 'enumerator'));
     }
 
+    public function scopeOperators(Builder $query): Builder
+    {
+        return $query->where(fn ($q) => $q->where('role', 'operator'));
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where(fn ($q) => $q->where('status', 'active'));
@@ -453,6 +458,11 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
     public function isEnumerator(): bool
     {
         return $this->role === 'enumerator';
+    }
+
+    public function isOperator(): bool
+    {
+        return $this->role === 'operator';
     }
 
     public function hasAssignedSuperAgent(): bool
