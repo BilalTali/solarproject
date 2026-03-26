@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/api/axios';
 import type { AdminDashboardStats } from '@/types';
@@ -21,7 +21,12 @@ const PIPELINE_COLORS: Record<string, string> = {
 };
 
 export default function AdminDashboardPage() {
-    const { user } = useAuthStore();
+    const { user, role } = useAuthStore();
+    
+    if (role === 'operator') {
+        return <Navigate to="/admin/leads" replace />;
+    }
+
     const { data, isLoading } = useQuery({
         queryKey: ['admin-dashboard'],
         queryFn: async () => {

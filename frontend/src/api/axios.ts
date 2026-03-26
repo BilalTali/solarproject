@@ -30,7 +30,7 @@ api.interceptors.response.use(
             // Determine redirect based on stored role
             const role = localStorage.getItem('sm_role');
             let loginPath = '/agent/login';
-            if (role === 'admin') loginPath = '/admin/login';
+            if (role === 'admin' || role === 'operator') loginPath = '/admin/login';
             if (role === 'super_agent') loginPath = '/super-agent/login';
 
             if (!window.location.pathname.includes('/login')) {

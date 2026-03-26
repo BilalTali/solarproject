@@ -10,7 +10,7 @@ export default function AdminLoginPage() {
         >
             <LoginForm 
                 role="admin"
-                redirectPath="/admin/dashboard"
+                redirectPath="/admin"
             />
         </LoginLayout>
     );
