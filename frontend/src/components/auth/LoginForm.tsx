@@ -73,8 +73,14 @@ export default function LoginForm({ role, redirectPath }: LoginFormProps) {
                 const { token, user, requires_password_set } = res.data;
                 setAuth(token, user);
                 toast.success(`Welcome back, ${user.name}!`);
-                if (requires_password_set && role === 'agent') navigate('/agent/set-password');
-                else navigate(redirectPath);
+                
+                if (requires_password_set && role === 'agent') {
+                    navigate('/agent/set-password');
+                } else if (user.role === 'operator') {
+                    navigate('/admin/leads');
+                } else {
+                    navigate(redirectPath);
+                }
             } else {
                 toast.error(res.message || 'Invalid OTP');
             }

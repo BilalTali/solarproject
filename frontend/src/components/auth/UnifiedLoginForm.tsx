@@ -27,6 +27,7 @@ function dashboardForRole(role: string): string {
         case 'super_agent':  return '/super-agent/dashboard';
         case 'agent':        return '/agent/dashboard';
         case 'enumerator':   return '/enumerator/dashboard';
+        case 'operator':     return '/admin/leads';
         default:             return '/';
     }
 }
