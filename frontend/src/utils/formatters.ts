@@ -21,25 +21,45 @@ export const formatDateTime = (dateStr: string | null | undefined): string => {
 };
 
 export const STATUS_LABELS: Record<LeadStatus, string> = {
-    new: 'New',
-    registered: 'Registered',
-    at_bank: 'At Bank',
-    installed: 'Installed',
-    completed: 'Completed',
-    rejected: 'Rejected',
-    on_hold: 'On Hold',
+    NEW: 'New Application',
+    CONTACTED: 'Contacted',
+    DOCUMENTS_COLLECTED: 'Documents Collected',
+    REGISTERED: 'Registered at MNRE',
+    SITE_SURVEY: 'Site Survey Done',
+    INSTALLATION_PENDING: 'Installation Pending',
+    INSTALLED: 'Solar Installed',
+    PROJECT_COMMISSIONING: 'Project Commissioning',
+    SUBSIDY_REQUEST: 'Subsidy Request Filed',
+    SUBSIDY_APPLIED: 'Subsidy Applied',
+    SUBSIDY_DISBURSED: 'Subsidy Disbursed',
+    COMPLETED: 'Successfully Completed',
+    REJECTED: 'Rejected',
+    ON_HOLD: 'On Hold',
+    AT_BANK: 'At Bank',
+    INVALID: 'Invalid Registration',
+    DUPLICATE: 'Duplicate Entry',
 };
 
 export const STATUS_COLORS: Record<LeadStatus, string> = {
-    new: 'badge-new',
-    registered: 'badge-registered',
-    at_bank: 'badge-at_bank',
-    installed: 'badge-installed',
-    completed: 'badge-completed',
-    rejected: 'badge-rejected',
-    on_hold: 'badge-on_hold',
+    NEW: 'badge-new',
+    CONTACTED: 'badge-contacted',
+    DOCUMENTS_COLLECTED: 'badge-docs',
+    REGISTERED: 'badge-registered',
+    SITE_SURVEY: 'badge-survey',
+    INSTALLATION_PENDING: 'badge-pending',
+    INSTALLED: 'badge-installed',
+    PROJECT_COMMISSIONING: 'badge-commissioning',
+    SUBSIDY_REQUEST: 'badge-subsidy-req',
+    SUBSIDY_APPLIED: 'badge-subsidy',
+    SUBSIDY_DISBURSED: 'badge-subsidy-paid',
+    COMPLETED: 'badge-completed',
+    REJECTED: 'badge-rejected',
+    ON_HOLD: 'badge-on_hold',
+    AT_BANK: 'badge-at_bank',
+    INVALID: 'badge-invalid',
+    DUPLICATE: 'badge-duplicate',
 };
 
 export const PIPELINE_STAGES: LeadStatus[] = [
-    'new', 'registered', 'installed', 'completed'
+    'NEW', 'REGISTERED', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED', 'COMPLETED'
 ];

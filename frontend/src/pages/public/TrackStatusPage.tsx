@@ -32,7 +32,11 @@ export default function TrackStatusPage() {
         { label: 'Assigned', desc: 'Agent assigned' },
         { label: 'In Progress', desc: 'Processing' },
         { label: 'Verified', desc: 'Manager verified' },
-        { label: 'Completed', desc: 'Installed' }
+        { label: 'Installed', desc: 'Solar installed' },
+        { label: 'Testing', desc: 'Commissioned' },
+        { label: 'Subsidy Req', desc: 'Claim filed' },
+        { label: 'Disbursed', desc: 'Subsidy paid' },
+        { label: 'Completed', desc: 'All done' }
     ];
 
     const currentStep = trackingData?.data?.step_index || 0;

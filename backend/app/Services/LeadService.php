@@ -475,7 +475,8 @@ class LeadService
     public function updateStatus(Lead $lead, string $newStatus, int $changedById, ?string $notes = null): void
     {
         $allStatuses = [
-            'new', 'registered', 'at_bank', 'installed', 'rejected', 'on_hold', 'completed',
+            'NEW', 'CONTACTED', 'DOCUMENTS_COLLECTED', 'REGISTERED', 'SITE_SURVEY', 'INSTALLATION_PENDING', 'INSTALLED', 
+            'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED', 'REJECTED', 'ON_HOLD', 'COMPLETED', 'INVALID', 'DUPLICATE', 'AT_BANK',
         ];
 
         if (! in_array($newStatus, $allStatuses)) {
@@ -491,7 +492,7 @@ class LeadService
             $changer = User::find($changedById);
 
             // REVOKE UNPAID COMMISSIONS if old status was completed
-            if ($oldStatus === 'completed' && $newStatus !== 'completed') {
+            if ($oldStatus === 'COMPLETED' && $newStatus !== 'COMPLETED') {
                 $this->commissionService->revokeUnpaidCommissions($lead, $changer);
             }
 
@@ -515,8 +516,8 @@ class LeadService
                 }
             }
 
-            // TRIGGER OFFERS: if status just became 'installed' or 'completed'
-            if (in_array($newStatus, ['installed', 'completed'])) {
+            // TRIGGER OFFERS: if status just became 'INSTALLED', 'COMPLETED', or beyond.
+            if (in_array($newStatus, ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED'])) {
                 $affectedAgent = null;
 
                 // Priority 1: If submitted by an enumerator, points go to their creator/parent

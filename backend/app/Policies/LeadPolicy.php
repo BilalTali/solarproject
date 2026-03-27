@@ -21,7 +21,7 @@ class LeadPolicy
      */
     public function view(User $user, Lead $lead): bool
     {
-        if ($user->isAdmin()) return true;
+        if ($user->isAdmin() || $user->isOperator()) return true;
 
         if ($user->isSuperAgent()) {
             return $lead->assigned_super_agent_id === $user->id || $lead->created_by_super_agent_id === $user->id;
@@ -43,7 +43,7 @@ class LeadPolicy
      */
     public function update(User $user, Lead $lead): bool
     {
-        if ($user->isAdmin()) return true;
+        if ($user->isAdmin() || $user->isOperator()) return true;
 
         if ($user->isSuperAgent()) {
             return $lead->assigned_super_agent_id === $user->id || $lead->created_by_super_agent_id === $user->id;

@@ -93,6 +93,7 @@ The Andleeb Surya Portal manages the complete lifecycle of solar installation le
 ### 2.1 Hierarchy
 ```
 Admin
+  ├── Operator (Support Staff)
   └── Business Development Manager (BDM / Super Agent)  [SSM-YYYY-XXXX]
         └── Business Development Executive (BDE / Agent)  [SM-YYYY-XXXX]
               └── Field Enumerator (ENM)  [ENM-YYYY-XXXX]
@@ -106,15 +107,19 @@ All four roles share a single `users` table, discriminated by the `role` enum. O
 - **Auth:** Email OTP.
 - **Can do:** Full control. Manage all leads, users, commissions, and withdrawals. Configure slabs, points, and system settings. Bulk-assign orphaned leads. View global leaderboard. Download any iCard/Letter. View QR scan logs.
 
-### 2.3 BDM (Super Agent) — SSM-YYYY-XXXX
+### 2.3 Operator
+- **Auth:** Email OTP.
+- **Can do:** Limited administrative access. View all leads and update lead statuses. Primarily acts as support staff to process applications. Cannot manage users, commissions, or system settings.
+
+### 2.4 BDM (Super Agent) — SSM-YYYY-XXXX
 - **Can do:** Verify/revert team leads. Submit directly (auto-verified). Enter commissions for team. Manage own wallet. Team leaderboard. Own iCard + joining letter. Earns absorbed points from expired agent offers.
 - **Direct Submission:** Created with `owner_type = super_agent_pool`, `verification_status = not_required`. Manual assignment to BDE updates `owner_type` to `agent_pool`.
 
-### 2.4 BDE (Agent) — SM-YYYY-XXXX
+### 2.5 BDE (Agent) — SM-YYYY-XXXX
 - **Can do:** Submit leads + documents. Log call outcomes: `no_answer`, `callback_requested`, `interested`, `not_interested`, `wrong_number`, `already_registered`, `disconnected`. Re-upload docs. Create/approve ENMs. Redeem offers. Wallet + withdrawal.
 - **Identifiers:** `super_agent_id` is the current responsible BDM. `created_by_super_agent_id` is the fixed original recruiter.
 
-### 2.5 Enumerator (ENM) — ENM-YYYY-XXXX
+### 2.6 Enumerator (ENM) — ENM-YYYY-XXXX
 - **Can do:** Submit leads (source = `enumerator_submission`). View own leads. View own commissions (read-only). Wallet + withdrawal.
 - **Exclusions:** ENMs do **NOT** receive iCards or joining letters. Role-guards return 403 for download endpoints. ENMs do not appear on leaderboards.
 
@@ -353,9 +358,9 @@ Rank by **completed leads in current month**, ties broken by **total commission 
 ---
 
 ## PART 18 — ROLE-PERMISSION MATRIX
-- **Update lead status:** BDE (forward only: contacted → site_survey → registered → installed).
-- **iCard/Letter:** ENM (❌ - No access).
-- **Leaderboard:** ENM (❌).
+- **Update lead status:** BDE (forward only: contacted → site_survey → registered → installed). Operator (all). Admin (all).
+- **iCard/Letter:** ENM (❌ - No access). Operator (❌).
+- **Leaderboard:** ENM (❌). Operator (❌).
 
 ---
 
@@ -366,6 +371,9 @@ Rank by **completed leads in current month**, ties broken by **total commission 
 
 ### Admin (`/admin/*`, Guard: `admin`)
 Dashboard, Leads, Users, Commissions, Withdrawals, Offers, Slabs, Settings, Surveys, Leaderboard, Reports.
+
+### Operator (`/admin/*`, Guard: `operator`)
+Leads.
 
 ### BDM (`/super-agent/*`, Guard: `super_agent`)
 Dashboard, Leads, Commissions, Wallet, Team, Leaderboard, Profile, iCard/Letter download.

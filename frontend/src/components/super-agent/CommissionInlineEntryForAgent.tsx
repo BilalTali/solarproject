@@ -158,7 +158,7 @@ export default function CommissionInlineEntryForAgent({
                         </div>
                     ) : (
                         <div className="flex items-center gap-3">
-                            {(leadStatus === 'completed' || leadStatus === 'installed') ? (
+                            {['COMPLETED', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED'].includes(leadStatus || '') ? (
                                 <>
                                     <button
                                         onClick={() => setIsEditing(true)}

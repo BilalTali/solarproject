@@ -14,7 +14,7 @@ class UpdateLeadStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'required|in:new,registered,installed,rejected,on_hold,completed',
+            'status' => 'required|in:NEW,REGISTERED,INSTALLED,REJECTED,ON_HOLD,COMPLETED,PROJECT_COMMISSIONING,SUBSIDY_REQUEST,SUBSIDY_DISBURSED',
             'notes' => 'nullable|string',
         ];
     }

@@ -320,7 +320,7 @@ class Lead extends Model
             'all' => []
         ];
 
-        if (! in_array($this->status, ['completed', 'installed'])) {
+        if (! in_array($this->status, ['COMPLETED', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED'])) {
             return $result;
         }
 

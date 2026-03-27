@@ -73,9 +73,9 @@ class SuperAgentService
             'leads' => [
                 'total' => $totalLeads,
                 'new' => $statusCounts->get('new', 0),
-                'in_progress' => $totalLeads - $statusCounts->get('new', 0) - $statusCounts->get('installed', 0) - $statusCounts->get('completed', 0) - $statusCounts->get('rejected', 0),
-                'installed' => $statusCounts->get('installed', 0),
-                'completed' => $statusCounts->get('completed', 0),
+                'in_progress' => $totalLeads - $statusCounts->get('NEW', 0) - $statusCounts->get('INSTALLED', 0) - $statusCounts->get('COMPLETED', 0) - $statusCounts->get('REJECTED', 0),
+                'installed' => $statusCounts->get('INSTALLED', 0),
+                'completed' => $statusCounts->get('COMPLETED', 0),
                 'rejected' => $statusCounts->get('rejected', 0),
             ],
             'commissions' => [
@@ -93,10 +93,10 @@ class SuperAgentService
                     $q->whereYear('created_at', $lastMonth->year)->whereMonth('created_at', $lastMonth->month);
                 })->count(),
                 'installs_this_month' => (clone $leadsQuery)->where(function ($q) use ($now) {
-                    $q->whereIn('status', ['installed', 'completed'])->whereYear('updated_at', $now->year)->whereMonth('updated_at', $now->month);
+                    $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED'])->whereYear('updated_at', $now->year)->whereMonth('updated_at', $now->month);
                 })->count(),
                 'installs_last_month' => (clone $leadsQuery)->where(function ($q) use ($lastMonth) {
-                    $q->whereIn('status', ['installed', 'completed'])->whereYear('updated_at', $lastMonth->year)->whereMonth('updated_at', $lastMonth->month);
+                    $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED'])->whereYear('updated_at', $lastMonth->year)->whereMonth('updated_at', $lastMonth->month);
                 })->count(),
             ],
         ];

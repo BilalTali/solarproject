@@ -7,13 +7,23 @@ export type UserStatus = 'active' | 'inactive' | 'pending';
 export type OverrideStatus = 'pending' | 'approved' | 'paid';
 
 export type LeadStatus =
-    | 'new'
-    | 'registered'
-    | 'at_bank'
-    | 'installed'
-    | 'rejected'
-    | 'on_hold'
-    | 'completed';
+    | 'NEW'
+    | 'CONTACTED'
+    | 'DOCUMENTS_COLLECTED'
+    | 'REGISTERED'
+    | 'SITE_SURVEY'
+    | 'INSTALLATION_PENDING'
+    | 'INSTALLED'
+    | 'PROJECT_COMMISSIONING'
+    | 'SUBSIDY_REQUEST'
+    | 'SUBSIDY_APPLIED'
+    | 'SUBSIDY_DISBURSED'
+    | 'COMPLETED'
+    | 'REJECTED'
+    | 'ON_HOLD'
+    | 'AT_BANK'
+    | 'INVALID'
+    | 'DUPLICATE';
 
 export type ExcitementState = 'dormant' | 'building' | 'close' | 'ready';
 

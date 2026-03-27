@@ -5,12 +5,12 @@
 **Target Environment**: Ubuntu 24.04 (VPS) + Nginx + PHP 8.2+ + SSL
 
 ## 📋 Executive Summary
-A comprehensive security, architecture, and performance audit was performed on the SuryaMitra platform, culminating in Version 5.2.0. Over 50 critical hardening measures were implemented across the Laravel backend and React frontend. The system is now fully structured for the 4-tier commission hierarchy (Admin > Super Agent > Agent > Enumerator), resilient against common web vulnerabilities, optimized for deployment with PWA compliance, and free of fatal route/blade caching errors.
+A comprehensive security, architecture, and performance audit was performed on the SuryaMitra platform, culminating in Version 5.2.0. Over 50 critical hardening measures were implemented across the Laravel backend and React frontend. The system is now fully structured for the 5-tier role hierarchy (Admin > Operator > Super Agent > Agent > Enumerator), resilient against common web vulnerabilities, optimized for deployment with PWA compliance, and free of fatal route/blade caching errors.
 
 ---
 
 ## 🏗️ Core Architecture Integrity
-- **Role Scoping**: Enforced strict 4-tier authorization handling, correctly routing leads from Enumerators upwards without bypassing proper verification.
+- **Role Scoping**: Enforced strict 5-tier authorization handling (including Operator support), correctly routing leads from Enumerators upwards without bypassing proper verification.
 - **Service Logic**: Business logic for Commissions, Offers, and Lead transitions are strictly centralized in Services with locking and transactional safety.
 - **API Routing Optimization**: Resolved critical nested route name collisions (`api.v1.enumerators.index`), enabling full `route:cache` for production optimizations.
 

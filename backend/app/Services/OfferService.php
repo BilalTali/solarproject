@@ -17,7 +17,7 @@ class OfferService
 {
     /**
      * PROCESS POINTS (Formerly Installation)
-     * Called by LeadService when a lead status changes to 'installed'.
+     * Called by LeadService when a lead status changes to 'INSTALLED' or beyond.
      * Credit the points to all active, eligible offers.
      */
     public function processPoints(Lead $lead, User $agent): void

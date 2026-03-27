@@ -108,6 +108,7 @@ The Andleeb Surya Portal manages the complete lifecycle of solar installation le
 ### 2.1 Hierarchy
 ```
 Admin
+  ├── Operator (Support Staff)
   └── Business Development Manager (BDM / Super Agent)  [SSM-YYYY-XXXX]
         └── Business Development Executive (BDE / Agent)  [SM-YYYY-XXXX]
               └── Field Enumerator (ENM)  [ENM-YYYY-XXXX]
@@ -121,19 +122,23 @@ All four roles share a single `users` table, discriminated by the `role` enum. O
 - **Auth:** Email OTP.
 - **Can do:** Full control. Manage all leads, users, commissions, and withdrawals. Configure slabs, points, and system settings. Bulk-assign orphaned leads. View global leaderboard. Download any iCard/Letter. View QR scan logs. Publish beneficiary surveys.
 
-### 2.3 BDM (Super Agent) — SSM-YYYY-XXXX
+### 2.3 Operator
+- **Auth:** Email OTP.
+- **Can do:** Limited administrative access. View all leads and update lead statuses. Primarily acts as support staff to process applications. Cannot manage users, commissions, or system settings.
+
+### 2.4 BDM (Super Agent) — SSM-YYYY-XXXX
 - **Can do:** Verify/revert team leads. Submit directly (auto-verified). Enter commissions for team. Manage own wallet. Team leaderboard. Own iCard + joining letter. Earns absorbed points from expired agent offers.
 - **Direct Submission:** Leads created by BDM directly are `owner_type = super_agent_pool` and `verification_status = not_required`.
 
-### 2.4 BDE (Agent) — SM-YYYY-XXXX
+### 2.5 BDE (Agent) — SM-YYYY-XXXX
 - **Can do:** Submit leads + documents. Log call outcomes: `no_answer`, `callback_requested`, `interested`, `not_interested`, `wrong_number`, `already_registered`, `disconnected`. Re-upload docs via reset machine. Create/approve ENMs. Redeem offers. Wallet + withdrawal.
 - **FK distinction:** `super_agent_id` = the BDM currently responsible for this BDE. Used for: commission routing, team scoping in leaderboard, lead verification chain. `created_by_super_agent_id` = the BDM who originally recruited this BDE — immutable after account creation, used for audit only. BDE reassignment is admin-only via `PUT /api/v1/admin/users/{id}`.
 
-### 2.5 Enumerator (ENM) — ENM-YYYY-XXXX
+### 2.6 Enumerator (ENM) — ENM-YYYY-XXXX
 - **Can do:** Submit leads (source = `enumerator_submission`). View own leads. View own commissions (read-only). Wallet + withdrawal.
 - **Exclusions:** ENMs do **NOT** receive iCards or joining letters. `qr_token`, `letter_issued_at`, etc., remain null. Role guards on PDF endpoints return 403. ENMs do not appear on leaderboards; their leads count toward their assigned BDE's stats. (Restructured from v4.0.0 2.5).
 
-### 2.6 Enumerator Lead Routing (Restored)
+### 2.7 Enumerator Lead Routing (Restored)
 
 | ENM Created By | Lead Routes To | BDM Verification Required | Commission To |
 | :--- | :--- | :--- | :--- |
@@ -732,32 +737,32 @@ When an offer expires, `offers:process-expired` (daily 00:30) runs after the gra
 
 ## PART 18 — ROLE-PERMISSION MATRIX (Restored - Verbatim)
 
-| Action | Guest | ENM | BDE | BDM | Admin |
-| :--- | :--- | :---: | :---: | :---: | :---: |
-| Submit lead (public form) | ✅ | — | — | — | — |
-| Submit lead (authenticated) | — | ✅ | ✅ | ✅ | ✅ |
-| View own leads | — | ✅ | ✅ | ✅ | ✅ |
-| View team leads | — | ❌ | ✅ (own+ENMs) | ✅ (all team) | ✅ (all) |
-| Log call on lead | — | ❌ | ✅ | ❌ | ✅ |
-| Verify lead | — | ❌ | ❌ | ✅ | ✅ |
-| Revert lead | — | ❌ | ❌ | ✅ | ✅ |
-| Update lead status | — | ❌ | ✅ (limited) | ❌ | ✅ (all) |
-| Create enumerator | — | ❌ | ✅ | ❌ | ✅ |
-| Enter commission | — | ❌ | ❌ | ✅ (team) | ✅ (all) |
-| Approve commission | — | ❌ | ❌ | ❌ | ✅ |
-| View own commission | — | ✅ | ✅ | ✅ | ✅ |
-| Request withdrawal | — | ✅ | ✅ | ✅ | — |
-| Process withdrawal | — | ❌ | ❌ | ❌ | ✅ |
-| Redeem offer | — | ❌ | ✅ | ✅ | — |
-| Create offer | — | ❌ | ❌ | ❌ | ✅ |
-| View leaderboard | — | ❌ | ✅ (team) | ✅ (team) | ✅ (global) |
-| Download own iCard | — | ❌ | ✅ | ✅ | ✅ |
-| Download own letter | — | ❌ | ✅ | ✅ | ✅ |
-| Revoke/reissue letters | — | ❌ | ❌ | ❌ | ✅ |
-| Manage settings | — | ❌ | ❌ | ❌ | ✅ |
-| Configure offer points | — | ❌ | ❌ | ❌ | ✅ |
-| Export CSV reports | — | ❌ | ❌ | ❌ | ✅ |
-| View QR scan logs | — | ❌ | ❌ | ❌ | ✅ |
+| Action | Guest | ENM | BDE | BDM | Operator | Admin |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| Submit lead (public form) | ✅ | — | — | — | — | — |
+| Submit lead (authenticated) | — | ✅ | ✅ | ✅ | — | ✅ |
+| View own leads | — | ✅ | ✅ | ✅ | — | ✅ |
+| View team leads | — | ❌ | ✅ (own+ENMs) | ✅ (all team) | ✅ (all) | ✅ (all) |
+| Log call on lead | — | ❌ | ✅ | ❌ | ❌ | ✅ |
+| Verify lead | — | ❌ | ❌ | ✅ | ❌ | ✅ |
+| Revert lead | — | ❌ | ❌ | ✅ | ❌ | ✅ |
+| Update lead status | — | ❌ | ✅ (limited) | ❌ | ✅ (all) | ✅ (all) |
+| Create enumerator | — | ❌ | ✅ | ❌ | ❌ | ✅ |
+| Enter commission | — | ❌ | ❌ | ✅ (team) | ❌ | ✅ (all) |
+| Approve commission | — | ❌ | ❌ | ❌ | ❌ | ✅ |
+| View own commission | — | ✅ | ✅ | ✅ | ❌ | ✅ |
+| Request withdrawal | — | ✅ | ✅ | ✅ | ❌ | — |
+| Process withdrawal | — | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Redeem offer | — | ❌ | ✅ | ✅ | ❌ | — |
+| Create offer | — | ❌ | ❌ | ❌ | ❌ | ✅ |
+| View leaderboard | — | ❌ | ✅ (team) | ✅ (team) | ❌ | ✅ (global) |
+| Download own iCard | — | ❌ | ✅ | ✅ | ❌ | ✅ |
+| Download own letter | — | ❌ | ✅ | ✅ | ❌ | ✅ |
+| Revoke/reissue letters | — | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Manage settings | — | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Configure offer points | — | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Export CSV reports | — | ❌ | ❌ | ❌ | ❌ | ✅ |
+| View QR scan logs | — | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
