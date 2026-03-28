@@ -10,10 +10,10 @@ class IncentiveOfferSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::where('role', 'admin')->first();
+        $admin = User::whereIn('role', ['admin', 'super_admin'])->first();
         
         if (!$admin) {
-            $this->command->error('Admin user not found. Run AdminSeeder first.');
+            $this->command->error('No administrative user found. Run SuperAdminSeeder first.');
             return;
         }
 
