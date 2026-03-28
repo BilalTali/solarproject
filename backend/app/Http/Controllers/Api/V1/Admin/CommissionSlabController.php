@@ -9,9 +9,18 @@ use Illuminate\Http\Request;
 
 class CommissionSlabController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $slabs = CommissionSlab::ordered();
+        $saId = $request->query('super_agent_id'); 
+        $query = CommissionSlab::query();
+        
+        if ($saId) {
+            $query->where('super_agent_id', $saId);
+        } else {
+            $query->whereNull('super_agent_id');
+        }
+        
+        $slabs = $query->orderBy('capacity', 'asc')->get();
 
         return response()->json(['success' => true, 'data' => $slabs]);
     }
@@ -19,13 +28,24 @@ class CommissionSlabController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'capacity' => 'required|string|max:50|unique:commission_slabs,capacity',
+            'super_agent_id' => 'nullable|exists:users,id',
+            'capacity' => 'required|string|max:50',
             'label' => 'required|string|max:255',
             'agent_commission' => 'required|numeric|min:0',
             'super_agent_override' => 'sometimes|numeric|min:0',
             'description' => 'nullable|string',
             'is_active' => 'sometimes|boolean',
         ]);
+
+        // Ensure unique capacity per SA
+        $exists = CommissionSlab::query()
+            ->where('super_agent_id', $data['super_agent_id'] ?? null)
+            ->where('capacity', $data['capacity'])
+            ->exists();
+
+        if ($exists) {
+            return response()->json(['success' => false, 'message' => 'Slab for this capacity already exists.'], 422);
+        }
 
         $slab = CommissionSlab::query()->create($data);
 

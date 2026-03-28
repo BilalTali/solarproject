@@ -249,10 +249,39 @@ class CommissionService
             'payer_name' => $payee->parent?->name ?? 'Admin',
             'status' => $comm ? 'entered' : 'pending',
             'amount' => $comm ? (float)$comm->amount : null,
+            'suggested_amount' => $comm ? (float)$comm->amount : $this->getSuggestedAmount($lead, $payee),
             'payment_status' => $comm ? $comm->payment_status : null,
             'commission_id' => $comm ? $comm->id : null,
             'is_editable' => $comm ? (! $comm->isLocked() && ! $comm->isPaid()) : true,
         ];
+    }
+
+    private function getSuggestedAmount(Lead $lead, User $payee): float
+    {
+        $capacity = $lead->system_capacity ?: '1kw';
+        $payerId = $payee->parent_id;
+
+        // 1. Try to find slab owned by the Payer
+        $slabQuery = \App\Models\CommissionSlab::query()->where('capacity', $capacity);
+        
+        if ($payerId) {
+            $slab = (clone $slabQuery)->where('super_agent_id', $payerId)->first();
+        } else {
+            $slab = (clone $slabQuery)->whereNull('super_agent_id')->first();
+        }
+
+        // 2. Fallback to System default (NULL super_agent_id)
+        if (!$slab && $payerId) {
+            $slab = (clone $slabQuery)->whereNull('super_agent_id')->first();
+        }
+
+        if (!$slab) return 0;
+
+        return match($payee->role) {
+            'super_agent' => (float) $slab->super_agent_override,
+            'agent' => (float) $slab->agent_commission,
+            default => 0,
+        };
     }
 
     /**

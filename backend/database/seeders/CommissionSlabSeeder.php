@@ -88,7 +88,7 @@ class CommissionSlabSeeder extends Seeder
 
         foreach ($slabs as $slab) {
             CommissionSlab::updateOrCreate(
-                ['capacity' => $slab['capacity']],
+                ['capacity' => $slab['capacity'], 'super_agent_id' => null],
                 $slab
             );
         }

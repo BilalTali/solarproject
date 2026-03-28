@@ -237,6 +237,10 @@ $api->as('api.v1.')->group(function () {
             Route::put('/profile', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'update']);
             Route::put('/change-password', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'changePassword']);
 
+            // Commission Slabs (Dynamic)
+            Route::get('/commission-slabs', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionSlabController::class, 'index']);
+            Route::post('/commission-slabs', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionSlabController::class, 'store']);
+
             // Enumerators
             Route::apiResource('enumerators', \App\Http\Controllers\Api\V1\SuperAgent\EnumeratorController::class)->names('super-agent.enumerators');
             Route::put('/enumerators/{id}/status', [\App\Http\Controllers\Api\V1\SuperAgent\EnumeratorController::class, 'updateStatus']);
