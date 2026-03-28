@@ -11,6 +11,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SuperAdminSeeder::class,
             SettingsSeeder::class,
+            CommissionSlabSeeder::class,
+            ICardSettingsSeeder::class,
             IncentiveOfferSeeder::class,
         ]);
         // No agents seeded. Real agents will be created dynamically via the application UI.
