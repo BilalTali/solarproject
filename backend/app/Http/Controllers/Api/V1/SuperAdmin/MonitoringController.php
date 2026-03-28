@@ -14,17 +14,27 @@ class MonitoringController extends Controller
     /** Global stats for Super Admin */
     public function stats(): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'total_admins' => User::admins()->count(),
-                'total_super_agents' => User::superAgents()->count(),
-                'total_agents' => User::agents()->count(),
-                'total_enumerators' => User::enumerators()->count(),
-                'total_leads' => Lead::count(),
-                'total_commissions' => Commission::sum('amount'),
-            ]
-        ]);
+        try {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total_admins' => User::admins()->count(),
+                    'total_super_agents' => User::superAgents()->count(),
+                    'total_agents' => User::agents()->count(),
+                    'total_enumerators' => User::enumerators()->count(),
+                    'total_leads' => Lead::count(),
+                    'total_commissions' => Commission::sum('amount'),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Super Admin Stats Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Server Error: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /** Monitor Super Agents (BDMs) */
@@ -61,17 +71,27 @@ class MonitoringController extends Controller
     /** Monitor Enumerators (ENMs) */
     public function enumerators(Request $request): JsonResponse
     {
-        $query = User::enumerators()
-            ->with(['parentAgent'])
-            ->withCount(['enumeratorLeads'])
-            ->latest();
+        try {
+            $query = User::enumerators()
+                ->with(['parentAgent'])
+                ->withCount(['enumeratorLeads'])
+                ->latest();
 
-        if ($request->search) {
-            $search = "%{$request->search}%";
-            $query->where(fn($q) => $q->where('name', 'like', $search)->orWhere('enumerator_id', 'like', $search));
+            if ($request->search) {
+                $search = "%{$request->search}%";
+                $query->where(fn($q) => $q->where('name', 'like', $search)->orWhere('enumerator_id', 'like', $search));
+            }
+
+            return response()->json(['success' => true, 'data' => $query->paginate($request->per_page ?? 20)]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Super Admin Enumerators Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Server Error: ' . $e->getMessage()
+            ], 500);
         }
-
-        return response()->json(['success' => true, 'data' => $query->paginate($request->per_page ?? 20)]);
     }
 
     /** Monitor Leads (Read-only) */

@@ -41,8 +41,6 @@ class AuthController extends Controller
             }
         })->first();
 
-
-        // Security: Generic message if user not found or password incorrect to prevent email harvesting
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
