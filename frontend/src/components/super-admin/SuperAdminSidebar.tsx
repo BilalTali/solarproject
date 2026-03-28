@@ -29,7 +29,7 @@ export default function SuperAdminSidebar({ onClose }: { onClose?: () => void })
         mutationFn: authApi.logout,
         onSettled: () => {
             clearAuth();
-            navigate('/login');
+            navigate('/super-admin/login');
             toast.success('Logged out successfully');
         },
     });

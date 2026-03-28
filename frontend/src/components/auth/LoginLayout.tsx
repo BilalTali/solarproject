@@ -6,13 +6,19 @@ interface LoginLayoutProps {
     children: React.ReactNode;
     title: string;
     subtitle: string;
-    role: 'admin' | 'super_agent' | 'agent' | 'enumerator';
+    role: 'super_admin' | 'admin' | 'super_agent' | 'agent' | 'enumerator';
 }
 
 export default function LoginLayout({ children, title, subtitle, role }: LoginLayoutProps) {
     const { companyName } = useSettings();
 
     const roleConfig = {
+        super_admin: {
+            gradient: 'from-[#1E1B4B] to-[#312E81]', // Deep Indigo
+            accent: 'text-indigo-400',
+            bgImage: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80',
+            feature: 'Master Platform Oversight'
+        },
         admin: {
             gradient: 'from-[#0A3D7A] to-[#1A5FA8]',
             accent: 'text-blue-400',

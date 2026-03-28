@@ -100,6 +100,7 @@ import SuperAdminMonitorAgentsPage from '@/pages/super-admin/SuperAdminMonitorAg
 import SuperAdminMonitorEnumeratorsPage from '@/pages/super-admin/SuperAdminMonitorEnumeratorsPage';
 import SuperAdminMonitorLeadsPage from '@/pages/super-admin/SuperAdminMonitorLeadsPage';
 import SuperAdminReportsPage from '@/pages/admin/AdminReportsPage'; // Reuse admin reports for now
+import SuperAdminLoginPage from '@/pages/super-admin/SuperAdminLoginPage';
 
 /** Redirect admin to dashboard; operators straight to leads */
 function AdminIndexRedirect() {
@@ -242,6 +243,9 @@ export default function App() {
           {/* Enumerator Auth */}
           <Route path="/enumerator/login" element={<EnumeratorLoginPage />} />
 
+          {/* Super Admin Auth */}
+          <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
+
           {/* Enumerator Protected Routes */}
           <Route
             path="/enumerator"
@@ -266,7 +270,7 @@ export default function App() {
           <Route
             path="/super-admin"
             element={
-              <ProtectedRoute requiredRole="super_admin" loginPath="/admin/login">
+              <ProtectedRoute requiredRole="super_admin" loginPath="/super-admin/login">
                 <SuperAdminLayout />
               </ProtectedRoute>
             }
