@@ -18,10 +18,10 @@ class MonitoringController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'total_admins' => User::admins()->count(),
-                    'total_super_agents' => User::superAgents()->count(),
-                    'total_agents' => User::agents()->count(),
-                    'total_enumerators' => User::enumerators()->count(),
+                    'total_admins' => User::roleAdmin()->count(),
+                    'total_super_agents' => User::roleSuperAgent()->count(),
+                    'total_agents' => User::roleAgent()->count(),
+                    'total_enumerators' => User::roleEnumerator()->count(),
                     'total_leads' => Lead::count(),
                     'total_commissions' => Commission::sum('amount'),
                 ]
@@ -40,7 +40,7 @@ class MonitoringController extends Controller
     /** Monitor Super Agents (BDMs) */
     public function superAgents(Request $request): JsonResponse
     {
-        $query = User::superAgents()
+        $query = User::roleSuperAgent()
             ->withCount(['managedAgents', 'assignedSuperAgentLeads'])
             ->latest();
 
@@ -55,7 +55,7 @@ class MonitoringController extends Controller
     /** Monitor Agents (BDEs) */
     public function agents(Request $request): JsonResponse
     {
-        $query = User::agents()
+        $query = User::roleAgent()
             ->with(['superAgent'])
             ->withCount(['assignedLeads', 'enumerators'])
             ->latest();
@@ -72,7 +72,7 @@ class MonitoringController extends Controller
     public function enumerators(Request $request): JsonResponse
     {
         try {
-            $query = User::enumerators()
+            $query = User::roleEnumerator()
                 ->with(['parentAgent'])
                 ->withCount(['enumeratorLeads'])
                 ->latest();

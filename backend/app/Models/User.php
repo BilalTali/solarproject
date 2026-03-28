@@ -413,27 +413,27 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
 
     // ====== Query Scopes ======
 
-    public function scopeAdmins(Builder $query): Builder
+    public function scopeRoleAdmin(Builder $query): Builder
     {
         return $query->where(fn ($q) => $q->where('role', 'admin'));
     }
 
-    public function scopeSuperAgents(Builder $query): Builder
+    public function scopeRoleSuperAgent(Builder $query): Builder
     {
         return $query->where(fn ($q) => $q->where('role', 'super_agent'));
     }
 
-    public function scopeAgents(Builder $query): Builder
+    public function scopeRoleAgent(Builder $query): Builder
     {
         return $query->where(fn ($q) => $q->where('role', 'agent'));
     }
 
-    public function scopeEnumerators(Builder $query): Builder
+    public function scopeRoleEnumerator(Builder $query): Builder
     {
         return $query->where(fn ($q) => $q->where('role', 'enumerator'));
     }
 
-    public function scopeSuperAdmins(Builder $query): Builder
+    public function scopeRoleSuperAdmin(Builder $query): Builder
     {
         return $query->where(fn ($q) => $q->where('role', 'super_admin'));
     }

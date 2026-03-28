@@ -15,7 +15,7 @@ class AdminManagementController extends Controller
     /** List all admins (role=admin) */
     public function index(Request $request): JsonResponse
     {
-        $admins = User::admins()
+        $admins = User::roleAdmin()
             ->where('role', '=', User::ROLE_ADMIN)
             ->when($request->search, function ($q) use ($request) {
                 $search = "%{$request->search}%";
@@ -59,7 +59,7 @@ class AdminManagementController extends Controller
     /** Update an existing admin */
     public function update(Request $request, int $id): JsonResponse
     {
-        $admin = User::admins()->where('id', '=', $id)->firstOrFail();
+        $admin = User::roleAdmin()->where('id', '=', $id)->firstOrFail();
 
         $validator = Validator::make($request->all(), [
             'name' => 'string|max:255',
@@ -87,7 +87,7 @@ class AdminManagementController extends Controller
     /** Toggle Admin Status */
     public function toggleStatus(int $id): JsonResponse
     {
-        $admin = User::admins()->where('id', '=', $id)->firstOrFail();
+        $admin = User::roleAdmin()->where('id', '=', $id)->firstOrFail();
         $admin->status = $admin->status === 'active' ? 'inactive' : 'active';
         $admin->save();
 
@@ -97,7 +97,7 @@ class AdminManagementController extends Controller
     /** Delete (soft-delete) an admin */
     public function destroy(int $id): JsonResponse
     {
-        $admin = User::admins()->where('id', '=', $id)->firstOrFail();
+        $admin = User::roleAdmin()->where('id', '=', $id)->firstOrFail();
         $admin->delete();
 
         return response()->json(['success' => true, 'message' => 'Admin account deleted.']);
