@@ -16,7 +16,7 @@ class SuperAdminSeeder extends Seeder
             ['email' => 'superadmin@andleebsurya.in'],
             [
                 'name' => 'System Super Admin',
-                'mobile' => '9999999999',
+                'mobile' => '8888888888',
                 'password' => \Illuminate\Support\Facades\Hash::make('SuperAdmin@123'),
                 'role' => \App\Models\User::ROLE_SUPER_ADMIN,
                 'status' => 'active',
