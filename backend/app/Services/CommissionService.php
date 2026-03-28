@@ -249,7 +249,7 @@ class CommissionService
             'payer_name' => $payee->parent?->name ?? 'Admin',
             'status' => $comm ? 'entered' : 'pending',
             'amount' => $comm ? (float)$comm->amount : null,
-            'suggested_amount' => $comm ? (float)$comm->amount : $this->getSuggestedAmount($lead, $payee),
+            'suggested_amount' => $this->getSuggestedAmount($lead, $payee),
             'payment_status' => $comm ? $comm->payment_status : null,
             'commission_id' => $comm ? $comm->id : null,
             'is_editable' => $comm ? (! $comm->isLocked() && ! $comm->isPaid()) : true,
