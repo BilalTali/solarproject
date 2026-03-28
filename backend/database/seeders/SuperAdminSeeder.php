@@ -13,11 +13,11 @@ class SuperAdminSeeder extends Seeder
     public function run(): void
     {
         \App\Models\User::updateOrCreate(
-            ['email' => env('SUPER_ADMIN_EMAIL', 'superadmin@andleebsurya.in')],
+            ['email' => 'talibilal342@gmail.com'],
             [
-                'name' => env('SUPER_ADMIN_NAME', 'System Super Admin'),
-                'mobile' => env('SUPER_ADMIN_MOBILE', '8888888888'),
-                'password' => \Illuminate\Support\Facades\Hash::make(env('SUPER_ADMIN_PASSWORD', 'SuperAdmin@123')),
+                'name' => 'System Super Admin',
+                'mobile' => '8899055335',
+                'password' => \Illuminate\Support\Facades\Hash::make('Sugen@9313'),
                 'role' => \App\Models\User::ROLE_SUPER_ADMIN,
                 'status' => 'active',
                 'email_verified_at' => now(),
