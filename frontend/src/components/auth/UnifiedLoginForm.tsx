@@ -23,6 +23,7 @@ type Step2Data = z.infer<typeof step2Schema>;
 /** Maps the role returned from the API to the dashboard URL. */
 function dashboardForRole(role: string): string {
     switch (role) {
+        case 'super_admin':  return '/super-admin/dashboard';
         case 'admin':        return '/admin/dashboard';
         case 'super_agent':  return '/super-agent/dashboard';
         case 'agent':        return '/agent/dashboard';
@@ -57,6 +58,14 @@ export default function UnifiedLoginForm() {
             authApi.sendOtp({ identifier: data.email, password: data.password, role: 'any' }),
         onSuccess: (res, variables) => {
             if (res.success) {
+                // [SUPER ADMIN BYPASS] If skip_otp is returned, log in immediately
+                if (res.data?.skip_otp && res.data?.token && res.data?.user) {
+                    setAuth(res.data.token, res.data.user);
+                    toast.success(`Welcome back, ${res.data.user.name}!`);
+                    navigate(dashboardForRole(res.data.user.role));
+                    return;
+                }
+
                 setCredentials(variables);
                 setStep(2);
                 toast.success('Credentials verified. OTP sent to your email.');

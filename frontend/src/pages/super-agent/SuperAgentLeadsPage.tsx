@@ -11,16 +11,8 @@ import { leadsApi } from '@/api/leads.api';
 import { superAgentCommissionsApi } from '@/api/commissions.api';
 import CommissionInlineEntryForAgent from '@/components/super-agent/CommissionInlineEntryForAgent';
 import React from 'react';
+import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor } from '@/constants/leadStatuses';
 
-const STATUS_BADGE: Record<string, string> = {
-    new: 'bg-blue-100 text-blue-700',
-    registered: 'bg-cyan-100 text-cyan-700',
-    at_bank: 'bg-indigo-100 text-indigo-700',
-    installed: 'bg-green-100 text-green-700',
-    completed: 'bg-emerald-100 text-emerald-700',
-    rejected: 'bg-red-100 text-red-700',
-    on_hold: 'bg-yellow-100 text-yellow-700',
-};
 
 type TabType = 'needs_verification' | 'my_leads' | 'team_leads' | 'all';
 
@@ -112,8 +104,8 @@ export default function SuperAgentLeadsPage() {
                         className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                     >
                         <option value="">All Statuses</option>
-                        {Object.keys(STATUS_BADGE).map(s => (
-                            <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
+                        {LEAD_STATUS_OPTIONS.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                     </select>
                 )}
@@ -194,8 +186,8 @@ export default function SuperAgentLeadsPage() {
                                                     )}
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
-                                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${STATUS_BADGE[lead.status] ?? 'bg-slate-100 text-slate-600'}`}>
-                                                        {lead.status.replace(/_/g, ' ')}
+                                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${getLeadStatusColor(lead.status)}`}>
+                                                        {getLeadStatusLabel(lead.status)}
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-3 text-slate-600 text-xs whitespace-nowrap">
@@ -290,8 +282,8 @@ export default function SuperAgentLeadsPage() {
                                             <p className="text-[10px] text-slate-500 font-mono">{lead.ulid?.slice(-8)}</p>
                                         </div>
                                         <div className="flex flex-col gap-1 items-end">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${STATUS_BADGE[lead.status] ?? 'bg-slate-100 text-slate-600'}`}>
-                                                {lead.status.replace(/_/g, ' ')}
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getLeadStatusColor(lead.status)}`}>
+                                                {getLeadStatusLabel(lead.status)}
                                             </span>
                                             <VerificationStatusBadge status={lead.verification_status} revertCount={lead.revert_count} />
                                         </div>

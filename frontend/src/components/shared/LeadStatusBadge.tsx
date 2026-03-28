@@ -8,7 +8,7 @@ interface LeadStatusBadgeProps {
 
 export default function LeadStatusBadge({ status, className = '' }: LeadStatusBadgeProps) {
     const colorClass = STATUS_COLORS[status] || 'badge-new';
-    const label = STATUS_LABELS[status] || status;
+    const label = STATUS_LABELS[status] || status.replace(/_/g, ' ');
 
     return (
         <span

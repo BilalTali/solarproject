@@ -12,9 +12,8 @@ import { VerifyLeadModal } from '@/components/agent/VerifyLeadModal';
 import { RevertLeadModal } from '@/components/agent/RevertLeadModal';
 import { agentCommissionsApi } from '@/api/commissions.api';
 import CommissionInlineEntryForAgent from '@/components/super-agent/CommissionInlineEntryForAgent';
+import { LEAD_STATUS_OPTIONS } from '@/constants/leadStatuses';
 
-const ALL_STATUSES = ['NEW', 'CONTACTED', 'DOCUMENTS_COLLECTED', 'REGISTERED', 'SITE_SURVEY', 'INSTALLATION_PENDING', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED', 'COMPLETED', 'REJECTED', 'ON_HOLD', 'AT_BANK', 'INVALID', 'DUPLICATE'];
-function label(status: string) { return status.replace(/_/g, ' '); }
 
 export default function AgentLeadsPage() {
     const [page, setPage] = useState(1);
@@ -82,8 +81,8 @@ export default function AgentLeadsPage() {
                     className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                     <option value="">All Statuses</option>
-                    {ALL_STATUSES.map(s => (
-                        <option key={s} value={s}>{label(s)}</option>
+                    {LEAD_STATUS_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                 </select>
                 {(search || status) && (

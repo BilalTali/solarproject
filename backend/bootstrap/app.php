@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'super_agent' => \App\Http\Middleware\EnsureIsSuperAgent::class,
             'admin_or_super_agent' => \App\Http\Middleware\EnsureIsAdminOrSuperAgent::class,
             'enumerator' => \App\Http\Middleware\EnsureIsEnumerator::class,
+            'super_admin' => \App\Http\Middleware\EnsureIsSuperAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

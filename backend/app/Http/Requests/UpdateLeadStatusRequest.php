@@ -8,7 +8,7 @@ class UpdateLeadStatusRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() && $this->user()->role === 'admin';
+        return $this->user() && in_array($this->user()->role, ['admin', 'operator']);
     }
 
     public function rules(): array

@@ -25,7 +25,6 @@ const ADMIN_NAV = [
     { icon: <FileText className="w-5 h-5" />, label: 'Agent Documents', to: '/admin/documents' },
     { icon: <DollarSign className="w-5 h-5" />, label: 'Commissions', to: '/admin/commissions' },
     { icon: <BarChart3 className="w-5 h-5" />, label: 'Reports', to: '/admin/reports' },
-    { icon: <Settings className="w-5 h-5" />, label: 'Commission Slabs', to: '/admin/commission-slabs' },
     { icon: <Settings className="w-5 h-5" />, label: 'Settings', to: '/admin/settings' },
 ];
 

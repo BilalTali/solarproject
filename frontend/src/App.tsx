@@ -60,7 +60,6 @@ import {
   SuperAgentLeadDetailPage,
   SuperAgentNotificationsPage,
 } from '@/pages/super-agent/SuperAgentPlaceholders';
-import { SuperAgentCommissionSlabsPage } from '@/pages/super-agent/SuperAgentCommissionSlabsPage';
 import DocumentsPage from '@/pages/shared/DocumentsPage';
 
 // Admin Pages
@@ -79,7 +78,6 @@ import { AdminOffersPage } from '@/pages/admin/AdminOffersPage';
 import { AdminRedemptionsPage } from '@/pages/admin/AdminRedemptionsPage';
 import { AdminAbsorptionsPage } from '@/pages/admin/AdminAbsorptionsPage';
 import { AdminWithdrawalsPage } from '@/pages/admin/AdminWithdrawalsPage';
-import { AdminCommissionSlabsPage } from '@/pages/admin/AdminCommissionSlabsPage';
 import AdminOperatorsPage from '@/pages/admin/AdminOperatorsPage';
 
 // Enumerator Pages
@@ -92,6 +90,16 @@ import EnumeratorCommissionsPage from '@/pages/enumerator/EnumeratorCommissionsP
 import EnumeratorNotificationsPage from '@/pages/enumerator/EnumeratorNotificationsPage';
 import EnumeratorLoginPage from '@/pages/enumerator/EnumeratorLoginPage';
 import { EnumeratorWithdrawalsPage } from '@/pages/enumerator/EnumeratorWithdrawalsPage';
+
+// Super Admin Pages
+import SuperAdminLayout from '@/layouts/SuperAdminLayout';
+import SuperAdminDashboardPage from '@/pages/super-admin/SuperAdminDashboardPage';
+import SuperAdminAdminsPage from '@/pages/super-admin/SuperAdminAdminsPage';
+import SuperAdminMonitorSuperAgentsPage from '@/pages/super-admin/SuperAdminMonitorSuperAgentsPage';
+import SuperAdminMonitorAgentsPage from '@/pages/super-admin/SuperAdminMonitorAgentsPage';
+import SuperAdminMonitorEnumeratorsPage from '@/pages/super-admin/SuperAdminMonitorEnumeratorsPage';
+import SuperAdminMonitorLeadsPage from '@/pages/super-admin/SuperAdminMonitorLeadsPage';
+import SuperAdminReportsPage from '@/pages/admin/AdminReportsPage'; // Reuse admin reports for now
 
 /** Redirect admin to dashboard; operators straight to leads */
 function AdminIndexRedirect() {
@@ -191,7 +199,6 @@ export default function App() {
             <Route path="leads/new" element={<SuperAgentCreateLeadPage />} />
             <Route path="leads/:ulid" element={<SuperAgentLeadDetailPage />} />
             <Route path="commissions" element={<SuperAgentCommissionsPage />} />
-            <Route path="commission-slabs" element={<SuperAgentCommissionSlabsPage />} />
             <Route path="offers" element={<SuperAgentTeamOffersPage />} />
             <Route path="notifications" element={<SuperAgentNotificationsPage />} />
             <Route path="documents" element={<DocumentsPage />} />
@@ -228,7 +235,6 @@ export default function App() {
             <Route path="absorptions" element={<AdminAbsorptionsPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
             <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
-            <Route path="commission-slabs" element={<AdminCommissionSlabsPage />} />
             <Route path="operators" element={<AdminOperatorsPage />} />
             <Route index element={<AdminIndexRedirect />} />
           </Route>
@@ -254,6 +260,25 @@ export default function App() {
             <Route path="profile" element={<EnumeratorProfilePage />} />
             <Route path="withdrawals" element={<EnumeratorWithdrawalsPage />} />
             <Route index element={<Navigate to="/enumerator/dashboard" replace />} />
+          </Route>
+
+          {/* Super Admin Protected Routes */}
+          <Route
+            path="/super-admin"
+            element={
+              <ProtectedRoute requiredRole="super_admin" loginPath="/admin/login">
+                <SuperAdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="dashboard" element={<SuperAdminDashboardPage />} />
+            <Route path="admins" element={<SuperAdminAdminsPage />} />
+            <Route path="monitor/super-agents" element={<SuperAdminMonitorSuperAgentsPage />} />
+            <Route path="monitor/agents" element={<SuperAdminMonitorAgentsPage />} />
+            <Route path="monitor/enumerators" element={<SuperAdminMonitorEnumeratorsPage />} />
+            <Route path="monitor/leads" element={<SuperAdminMonitorLeadsPage />} />
+            <Route path="reports" element={<SuperAdminReportsPage />} />
+            <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
           </Route>
 
           {/* Catch-all */}

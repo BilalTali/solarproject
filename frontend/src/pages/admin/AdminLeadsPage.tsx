@@ -11,29 +11,19 @@ import { adminSuperAgentApi } from '@/api/adminSuperAgent.api';
 import toast from 'react-hot-toast';
 import type { Lead, ApiResponse, PaginatedResponse, CommissionPrompt } from '@/types';
 import CommissionInlineEntry from '@/components/admin/CommissionInlineEntry';
+import { useAuthStore } from '@/store/authStore';
+import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor } from '@/constants/leadStatuses';
 
 // ── constants ─────────────────────────────────────────────────────────────────
 const CAPACITY_LABEL: Record<string, string> = {
     '1kw': '1 kW', '2kw': '2 kW', '3kw': '3 kW', '3.3kw': '3.3 kW', '4kw': '4 kW', '5kw': '5 kW', '5.5kw': '5.5 kW', '6kw': '6 kW', '7kw': '7 kW', '8kw': '8 kW', '9kw': '9 kW', '10kw': '10 kW', 'above_10kw': 'Above 10 kW', 'above_3kw': 'Above 3 kW',
 };
 
-const STATUS_BADGE: Record<string, string> = {
-    new: 'bg-blue-100 text-blue-700',
-    registered: 'bg-cyan-100 text-cyan-700',
-    at_bank: 'bg-indigo-100 text-indigo-700',
-    installed: 'bg-green-100 text-green-700',
-    completed: 'bg-emerald-100 text-emerald-700',
-    rejected: 'bg-red-100 text-red-700',
-    on_hold: 'bg-yellow-100 text-yellow-700',
-};
-
-const ALL_STATUSES = Object.keys(STATUS_BADGE);
-
-function label(status: string) { return status.replace(/_/g, ' '); }
 function fmt(iso: string) { return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); }
 
 // ── component ─────────────────────────────────────────────────────────────────
 export default function AdminLeadsPage() {
+    const { role } = useAuthStore();
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
     const [source, setSource] = useState('');
@@ -110,7 +100,7 @@ export default function AdminLeadsPage() {
             leadsApi.updateLeadStatus(ulid, { status, notes }),
         onSuccess: (res: any) => {
             const returnedData = res?.data;
-            if (returnedData?.commission_prompts?.length > 0) {
+            if (returnedData?.commission_prompts?.length > 0 && role === 'admin') {
                 // also track for the table row
                 setActivePrompts(p => ({ ...p, [detail?.ulid || '']: returnedData.commission_prompts[0] }));
             } else {
@@ -190,8 +180,8 @@ export default function AdminLeadsPage() {
                     className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                     <option value="">All Statuses</option>
-                    {ALL_STATUSES.map(s => (
-                        <option key={s} value={s}>{label(s)}</option>
+                    {LEAD_STATUS_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                 </select>
                 <select
@@ -303,8 +293,8 @@ export default function AdminLeadsPage() {
                                         </td>
                                         {/* Status */}
                                         <td className="px-4 py-3 whitespace-nowrap">
-                                            <span className={`px-2 py-0.5 rounded text-xs font-medium capitalize ${STATUS_BADGE[lead.status] ?? 'bg-slate-100 text-slate-600'}`}>
-                                                {label(lead.status)}
+                                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${getLeadStatusColor(lead.status)}`}>
+                                                {getLeadStatusLabel(lead.status)}
                                             </span>
                                         </td>
                                         {/* Date */}
@@ -322,7 +312,7 @@ export default function AdminLeadsPage() {
                                             </button>
                                         </td>
                                     </tr>
-                                    {activePrompts[lead.ulid] && (
+                                    {role === 'admin' && activePrompts[lead.ulid] && (
                                         <tr key={`${lead.id}-comm`}>
                                             <td colSpan={17} className="p-0 border-b border-slate-200 bg-orange-50/50">
                                                 <CommissionInlineEntry
@@ -365,15 +355,15 @@ export default function AdminLeadsPage() {
                             className="p-4 space-y-4 cursor-pointer hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-inset"
                             onClick={() => openDetail(lead)}
                         >
-                            <div className="flex justify-between items-start">
-                                <div className="space-y-1">
-                                    <h3 className="font-bold text-slate-800 leading-tight">{lead.beneficiary_name}</h3>
-                                    <p className="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">Ref: {lead.ulid?.slice(-8)}</p>
-                                </div>
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[lead.status] ?? 'bg-slate-100 text-slate-600'}`}>
-                                    {label(lead.status)}
-                                </span>
-                            </div>
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-1">
+                                            <h3 className="font-bold text-slate-800 leading-tight">{lead.beneficiary_name}</h3>
+                                            <p className="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">Ref: {lead.ulid?.slice(-8)}</p>
+                                        </div>
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getLeadStatusColor(lead.status)}`}>
+                                            {getLeadStatusLabel(lead.status)}
+                                        </span>
+                                    </div>
 
                             <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                                 <div className="space-y-0.5">
@@ -638,8 +628,8 @@ export default function AdminLeadsPage() {
                                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Update Lead Status</p>
                                             <div className="space-y-3">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`px-2 py-0.5 rounded text-xs font-medium capitalize ${STATUS_BADGE[fullLead?.status ?? ''] ?? 'bg-slate-100 text-slate-600'}`}>
-                                                        {label(fullLead?.status ?? '')}
+                                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${getLeadStatusColor(fullLead?.status ?? '')}`}>
+                                                        {getLeadStatusLabel(fullLead?.status ?? '')}
                                                     </span>
                                                     <span className="text-slate-400 text-xs">→</span>
                                                     <select
@@ -647,8 +637,8 @@ export default function AdminLeadsPage() {
                                                         onChange={e => setNewStatus(e.target.value)}
                                                         className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"
                                                     >
-                                                        {ALL_STATUSES.map(s => (
-                                                            <option key={s} value={s}>{label(s)}</option>
+                                                        {LEAD_STATUS_OPTIONS.map(opt => (
+                                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -670,7 +660,7 @@ export default function AdminLeadsPage() {
                                         </section>
 
                                         {/* ── Commission Entry ── */}
-                                        {(fullLead?.commission_status?.prompts?.length ?? 0) > 0 && (
+                                        {role === 'admin' && (fullLead?.commission_status?.prompts?.length ?? 0) > 0 && (
                                             <section className="bg-orange-50 border border-orange-200 rounded-xl p-4">
                                                 <div className="flex items-center justify-between mb-3">
                                                     <p className="text-xs font-semibold text-orange-600 uppercase tracking-widest">💰 Commission Management</p>
@@ -723,9 +713,9 @@ export default function AdminLeadsPage() {
                                                         <li key={log.id} className="ml-4">
                                                             <span className="absolute -left-1.5 w-3 h-3 rounded-full bg-orange-400 border-2 border-white" />
                                                             <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className={`px-1.5 py-0.5 rounded text-xs ${STATUS_BADGE[log.from_status] ?? 'bg-slate-100 text-slate-600'}`}>{label(log.from_status)}</span>
+                                                                <span className={`px-1.5 py-0.5 rounded text-xs ${getLeadStatusColor(log.from_status)}`}>{getLeadStatusLabel(log.from_status)}</span>
                                                                 <span className="text-slate-400 text-xs">→</span>
-                                                                <span className={`px-1.5 py-0.5 rounded text-xs ${STATUS_BADGE[log.to_status] ?? 'bg-slate-100 text-slate-600'}`}>{label(log.to_status)}</span>
+                                                                <span className={`px-1.5 py-0.5 rounded text-xs ${getLeadStatusColor(log.to_status)}`}>{getLeadStatusLabel(log.to_status)}</span>
                                                             </div>
                                                             <div className="flex items-center gap-2 mt-1">
                                                                 <Calendar size={11} className="text-slate-400" />

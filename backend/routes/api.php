@@ -18,6 +18,9 @@ use App\Http\Controllers\Api\V1\Admin\OperatorController as AdminOperatorControl
 use App\Http\Controllers\Api\V1\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Api\V1\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Api\V1\Admin\SuperAgentController as AdminSuperAgentController;
+// Super Admin
+use App\Http\Controllers\Api\V1\SuperAdmin\AdminManagementController;
+use App\Http\Controllers\Api\V1\SuperAdmin\MonitoringController;
 // Admin
 use App\Http\Controllers\Api\V1\Agent\DashboardController as AgentDashboardController;
 use App\Http\Controllers\Api\V1\Agent\LeadController as AgentLeadController;
@@ -69,7 +72,7 @@ $api->as('api.v1.')->group(function () {
     Route::get('/public/leads/track', [PublicLeadController::class, 'track']);
     Route::post('/public/agent-register', [PublicLeadController::class, 'registerAgent']);
     Route::get('/public/eligibility', [EligibilityController::class, 'index']);
-    Route::get('/public/commission-slabs', [AdminCommissionSlabController::class, 'index']);
+    // Route::get('/public/commission-slabs', [AdminCommissionSlabController::class, 'index']);
     Route::get('/public/incentive-offers', [AdminOfferController::class, 'index']);
 
     // CMS Public (no auth required)
@@ -237,9 +240,8 @@ $api->as('api.v1.')->group(function () {
             Route::put('/profile', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'update']);
             Route::put('/change-password', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'changePassword']);
 
-            // Commission Slabs (Dynamic)
-            Route::get('/commission-slabs', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionSlabController::class, 'index']);
-            Route::post('/commission-slabs', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionSlabController::class, 'store']);
+            // Route::get('/commission-slabs', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionSlabController::class, 'index']);
+            // Route::post('/commission-slabs', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionSlabController::class, 'store']);
 
             // Enumerators
             Route::apiResource('enumerators', \App\Http\Controllers\Api\V1\SuperAgent\EnumeratorController::class)->names('super-agent.enumerators');
@@ -310,8 +312,7 @@ $api->as('api.v1.')->group(function () {
             Route::get('/reports/monthly-trend', [AdminReportController::class, 'monthlyTrend']);
             Route::get('/reports/super-agent-performance', [AdminReportController::class, 'superAgentPerformance']);
 
-            // Commission Slabs
-            Route::get('/commission-slabs', [AdminCommissionSlabController::class, 'index']);
+            // Route::get('/commission-slabs', [AdminCommissionSlabController::class, 'index']);
 
             // Withdrawals
             Route::get('/withdrawals', [\App\Http\Controllers\WithdrawalRequestController::class, 'adminIndex']);
@@ -319,9 +320,9 @@ $api->as('api.v1.')->group(function () {
             Route::put('/withdrawals/{id}/reject', [\App\Http\Controllers\WithdrawalRequestController::class, 'reject']);
             Route::put('/withdrawals/{id}/mark-paid', [\App\Http\Controllers\WithdrawalRequestController::class, 'markPaid']);
 
-            Route::post('/commission-slabs', [AdminCommissionSlabController::class, 'store']);
-            Route::put('/commission-slabs/{id}', [AdminCommissionSlabController::class, 'update']);
-            Route::delete('/commission-slabs/{id}', [AdminCommissionSlabController::class, 'destroy']);
+            // Route::post('/commission-slabs', [AdminCommissionSlabController::class, 'store']);
+            // Route::put('/commission-slabs/{id}', [AdminCommissionSlabController::class, 'update']);
+            // Route::delete('/commission-slabs/{id}', [AdminCommissionSlabController::class, 'destroy']);
 
             // Incentive Offers v2
             Route::get('/offers/redemptions', [AdminOfferController::class, 'redemptions']);
@@ -363,6 +364,27 @@ $api->as('api.v1.')->group(function () {
             Route::post('/documents', [DocumentController::class, 'store']);
             Route::patch('/documents/{document}', [DocumentController::class, 'update']);
             Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
+        });
+
+        // ==============================
+        // SUPER ADMIN ROUTES
+        // ==============================
+        Route::middleware('super_admin')->prefix('super-admin')->group(function () {
+            Route::get('/dashboard/stats', [MonitoringController::class, 'stats']);
+
+            // Admin Management
+            Route::get('/admins', [AdminManagementController::class, 'index']);
+            Route::post('/admins', [AdminManagementController::class, 'store']);
+            Route::put('/admins/{id}', [AdminManagementController::class, 'update']);
+            Route::delete('/admins/{id}', [AdminManagementController::class, 'destroy']);
+            Route::put('/admins/{id}/status', [AdminManagementController::class, 'toggleStatus']);
+
+            // Monitoring (Read-only)
+            Route::get('/monitor/super-agents', [MonitoringController::class, 'superAgents']);
+            Route::get('/monitor/agents', [MonitoringController::class, 'agents']);
+            Route::get('/monitor/enumerators', [MonitoringController::class, 'enumerators']);
+            Route::get('/monitor/leads', [MonitoringController::class, 'leads']);
+            Route::get('/monitor/commissions', [MonitoringController::class, 'commissions']);
         });
 
         // ==============================

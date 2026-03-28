@@ -3,11 +3,8 @@ import type { User, ApiResponse } from '@/types';
 
 export const authApi = {
     sendOtp: async (data: { identifier: string; password?: string; role: string }) => {
-        const res = await api.post<ApiResponse<null>>('/auth/send-otp', data);
-        return {
-            success: res.data.success,
-            message: res.data.message,
-        };
+        const res = await api.post<ApiResponse<{ skip_otp?: boolean; token?: string; user?: User } | null>>('/auth/send-otp', data);
+        return res.data;
     },
 
     loginOtp: async (identifier: string, otp: string, role: string) => {

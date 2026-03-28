@@ -162,6 +162,46 @@
     @apply bg-amber-50 text-amber-700;
   }
 
+  .badge-at_bank {
+    @apply bg-violet-50 text-violet-700;
+  }
+
+  .badge-commissioning {
+    @apply bg-emerald-50 text-emerald-700;
+  }
+
+  .badge-subsidy-req {
+    @apply bg-teal-50 text-teal-700;
+  }
+
+  .badge-subsidy {
+    @apply bg-blue-50 text-blue-700;
+  }
+
+  .badge-subsidy-paid {
+    @apply bg-green-50 text-green-700;
+  }
+
+  .badge-docs {
+    @apply bg-yellow-50 text-yellow-700;
+  }
+
+  .badge-survey {
+    @apply bg-purple-50 text-purple-700;
+  }
+
+  .badge-pending {
+    @apply bg-orange-50 text-orange-700;
+  }
+
+  .badge-invalid {
+    @apply bg-rose-50 text-rose-700;
+  }
+
+  .badge-duplicate {
+    @apply bg-slate-50 text-slate-700;
+  }
+
   /* Custom Gradients */
   .grad-primary {
     @apply bg-gradient-to-br from-primary via-primary-light to-primary-dark;

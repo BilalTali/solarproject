@@ -80,6 +80,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string|null $joining_letter_valid_until
  * @property string|null $joining_letter_revoked_at
  * @property int|null $created_by_agent_id
+ * @property array|null $permissions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Lead> $assignedLeads
  * @property-read int|null $assigned_leads_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Lead> $assignedSuperAgentLeads
@@ -193,22 +194,13 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
-    protected static function boot()
-    {
-        parent::boot();
+    const ROLE_ADMIN = 'admin';
+    const ROLE_SUPER_ADMIN = 'super_admin';
+    const ROLE_SUPER_AGENT = 'super_agent';
+    const ROLE_AGENT = 'agent';
+    const ROLE_ENUMERATOR = 'enumerator';
+    const ROLE_OPERATOR = 'operator';
 
-        static::creating(function ($user) {
-            if (! $user->qr_token) {
-                $user->qr_token = bin2hex(random_bytes(16));
-            }
-        });
-    }
-
-    /**
-     * SECURITY: Only include fields safe for mass-assignment.
-     * Do NOT add: role, status, agent_id, qr_token, approved_at, approved_by.
-     * These must be assigned explicitly to prevent privilege escalation.
-     */
     protected $fillable = [
         'name', 'father_name', 'dob', 'blood_group', 'email', 'mobile', 'password',
         'district', 'state', 'area', 'aadhaar_number', 'whatsapp_number',
@@ -221,8 +213,20 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         'aadhaar_document', 'pan_document', 'education_level', 'education_cert',
         'resume', 'mou_signed', 'super_agent_id', 'created_by_super_agent_id',
         'created_by_agent_id', 'enumerator_id', 'enumerator_creator_role',
-        'parent_id',
+        'parent_id', 'permissions',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            if (! $user->qr_token) {
+                $user->qr_token = bin2hex(random_bytes(16));
+            }
+        });
+    }
+
 
     protected $appends = ['profile_photo_url', 'profile_completion', 'code'];
 
@@ -243,6 +247,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
             'bank_account_number' => 'encrypted',
             'managed_states' => 'array',
             'languages_known' => 'array',
+            'permissions' => 'array',
         ];
     }
 
@@ -428,6 +433,11 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         return $query->where(fn ($q) => $q->where('role', 'enumerator'));
     }
 
+    public function scopeSuperAdmins(Builder $query): Builder
+    {
+        return $query->where(fn ($q) => $q->where('role', 'super_admin'));
+    }
+
     public function scopeOperators(Builder $query): Builder
     {
         return $query->where(fn ($q) => $q->where('role', 'operator'));
@@ -442,7 +452,12 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'super_admin']);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
     }
 
     public function isSuperAgent(): bool
@@ -468,6 +483,19 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
     public function hasAssignedSuperAgent(): bool
     {
         return ! is_null($this->super_agent_id);
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        if (! is_array($this->permissions)) {
+            return false;
+        }
+
+        return in_array($permission, $this->permissions) || in_array('*', $this->permissions);
     }
 
     /**
