@@ -93,10 +93,10 @@ class SuperAgentService
                     $q->whereYear('created_at', $lastMonth->year)->whereMonth('created_at', $lastMonth->month);
                 })->count(),
                 'installs_this_month' => (clone $leadsQuery)->where(function ($q) use ($now) {
-                    $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED'])->whereYear('updated_at', $now->year)->whereMonth('updated_at', $now->month);
+                    $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])->whereYear('updated_at', $now->year)->whereMonth('updated_at', $now->month);
                 })->count(),
                 'installs_last_month' => (clone $leadsQuery)->where(function ($q) use ($lastMonth) {
-                    $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED'])->whereYear('updated_at', $lastMonth->year)->whereMonth('updated_at', $lastMonth->month);
+                    $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])->whereYear('updated_at', $lastMonth->year)->whereMonth('updated_at', $lastMonth->month);
                 })->count(),
             ],
         ];

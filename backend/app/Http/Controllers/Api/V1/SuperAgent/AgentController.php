@@ -79,7 +79,7 @@ class AgentController extends Controller
 
         $stats = [
             'total_leads' => $agent->assignedLeads()->count(),
-            'installed' => $agent->assignedLeads()->where(fn ($q) => $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED']))->count(),
+            'installed' => $agent->assignedLeads()->where(fn ($q) => $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED']))->count(),
             'completed' => $agent->assignedLeads()->where(fn ($q) => $q->where('status', 'COMPLETED'))->count(),
             'commission_earned' => $agent->commissions()->where(fn ($q) => $q->where('payment_status', 'paid'))->sum('amount'),
             'commission_pending' => $agent->commissions()->where(fn ($q) => $q->where('payment_status', 'unpaid'))->sum('amount'),

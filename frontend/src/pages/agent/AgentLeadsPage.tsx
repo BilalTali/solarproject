@@ -13,7 +13,7 @@ import { RevertLeadModal } from '@/components/agent/RevertLeadModal';
 import { agentCommissionsApi } from '@/api/commissions.api';
 import CommissionInlineEntryForAgent from '@/components/super-agent/CommissionInlineEntryForAgent';
 
-const ALL_STATUSES = ['NEW', 'REGISTERED', 'AT_BANK', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED', 'COMPLETED', 'REJECTED', 'ON_HOLD'];
+const ALL_STATUSES = ['NEW', 'CONTACTED', 'DOCUMENTS_COLLECTED', 'REGISTERED', 'SITE_SURVEY', 'INSTALLATION_PENDING', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED', 'COMPLETED', 'REJECTED', 'ON_HOLD', 'AT_BANK', 'INVALID', 'DUPLICATE'];
 function label(status: string) { return status.replace(/_/g, ' '); }
 
 export default function AgentLeadsPage() {

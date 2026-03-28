@@ -13,7 +13,7 @@ class DashboardController extends Controller
 
         // Optimize counts/sums with a single pass if possible, or just fix the fields
         $totalLeads = $user->submittedLeads()->count();
-        $leadsInstalled = $user->submittedLeads()->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED'])->count();
+        $leadsInstalled = $user->submittedLeads()->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])->count();
 
         // Commissions use 'payment_status' and are grouped in our virtual attribute or direct query
         $commStats = $user->commissions()

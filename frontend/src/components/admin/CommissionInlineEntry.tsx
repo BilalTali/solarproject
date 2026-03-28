@@ -143,7 +143,7 @@ export default function CommissionInlineEntry({
                         </div>
                     ) : (
                         <div className="flex items-center gap-3">
-                            {['COMPLETED', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED'].includes(leadStatus || '') ? (
+                            {['COMPLETED', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'].includes(leadStatus || '') ? (
                                 <>
                                     <button
                                         onClick={() => setIsEditing(true)}

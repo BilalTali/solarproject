@@ -517,7 +517,7 @@ class LeadService
             }
 
             // TRIGGER OFFERS: if status just became 'INSTALLED', 'COMPLETED', or beyond.
-            if (in_array($newStatus, ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED'])) {
+            if (in_array($newStatus, ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
                 $affectedAgent = null;
 
                 // Priority 1: If submitted by an enumerator, points go to their creator/parent

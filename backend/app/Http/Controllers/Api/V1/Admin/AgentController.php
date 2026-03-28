@@ -17,7 +17,7 @@ class AgentController extends Controller
         $query = User::query()->where(fn ($q) => $q->where('role', 'agent'))
             ->withCount(['submittedLeads as total_leads',
                 'submittedLeads as installed_leads' => function ($q) {
-                    $q->where(fn ($query) => $query->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED']));
+                    $q->where(fn ($query) => $query->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED']));
                 }]);
 
         if ($request->has('status')) {

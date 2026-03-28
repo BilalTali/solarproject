@@ -23,7 +23,7 @@ class CommissionService
         float $amount,
         User $payer
     ): Commission {
-        if (! in_array($lead->status, ['COMPLETED', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED'])) {
+        if (! in_array($lead->status, ['COMPLETED', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
             throw new LeadNotCompletedException('Commission can only be entered for installed or completed leads.');
         }
 
@@ -211,7 +211,7 @@ class CommissionService
      */
     public function getCommissionStatus(Lead $lead): array
     {
-        if (! in_array($lead->status, ['COMPLETED', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED'])) {
+        if (! in_array($lead->status, ['COMPLETED', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
             return [];
         }
 

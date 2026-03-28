@@ -47,7 +47,7 @@ class ReportController extends Controller
             ->withCount('submittedLeads as total_source_leads')
             ->withCount('assignedLeads as total_assigned_leads')
             ->withCount(['assignedLeads as installed_leads' => function ($q) use ($request) {
-                $q->where(fn($q2) => $q2->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED']));
+                $q->where(fn($q2) => $q2->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED']));
                 if ($request->has('active')) {
                     // Note: 'is_active' is typically a user property, not a lead property.
                     // This filter will apply to the assigned leads, not the agent.
@@ -120,7 +120,7 @@ class ReportController extends Controller
                 ->whereYear('created_at', $date->year)
                 ->count();
 
-            $installations = Lead::query()->where(fn($q) => $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED']))
+            $installations = Lead::query()->where(fn($q) => $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED']))
                 ->whereMonth('updated_at', $date->month)
                 ->whereYear('updated_at', $date->year)
                 ->count();
@@ -156,7 +156,7 @@ class ReportController extends Controller
             });
 
             $sa->total_leads = (clone $teamLeadsQuery)->count();
-            $sa->total_installed = (clone $teamLeadsQuery)->where(fn($q) => $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED']))->count();
+            $sa->total_installed = (clone $teamLeadsQuery)->where(fn($q) => $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED']))->count();
 
             $sa->conversion_rate = $sa->total_leads > 0
                 ? round(($sa->total_installed / $sa->total_leads) * 100, 2)
@@ -168,7 +168,7 @@ class ReportController extends Controller
                 ->withCount(['submittedLeads as total_source_leads'])
                 ->withCount(['assignedLeads as total_assigned_leads'])
                 ->withCount(['assignedLeads as installed_leads' => function ($q) {
-                    $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_DISBURSED']);
+                    $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED']);
                 }])
                 ->get();
 

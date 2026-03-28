@@ -1,11 +1,32 @@
-@php 
-    /** @var \App\Models\User $user */
+@php
+    /** @var \App\Models\User|null $user */
+    /** @var string|null $companyName */
+    /** @var string|null $logoBase64 */
+    /** @var string|null $profilePhotoBase64 */
+    /** @var string|null $initials */
+    /** @var string|null $designation */
+    /** @var string|null $cardNumber */
+    /** @var string|null $dob */
+    /** @var string|null $joiningDate */
+    /** @var string|null $mobile */
+    /** @var string|null $address */
+    /** @var string|null $barcodeBase64 */
+    /** @var string|null $sigBase64 */
+    /** @var string|null $companyWebsite */
+    /** @var string|null $companyAffiliatedWith */
+    /** @var string|null $companyRegNo */
+    /** @var string|null $qrBase64 */
+    /** @var string|null $companyEmergency */
+    /** @var string|null $icardVerifiedBy */
+    /** @var string|null $companyAddress */
+    /** @var string|null $companyPhone */
+    /** @var string|null $companyEmail */
 @endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>{{ $companyName ?? 'Suryamitra' }} — {{ $user->name ?? 'User' }}</title>
+  <title>{{ $companyName ?? 'Suryamitra' }} — {{ $user?->name ?? 'User' }}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -311,7 +332,7 @@
       </div>
 
       <div class="card-body">
-        <h2 class="name-h1">{{ $user->name ?? 'User Name' }}</h2>
+        <h2 class="name-h1">{{ $user?->name ?? 'User Name' }}</h2>
         <span class="role-pill">{{ $designation ?? 'Member' }}</span>
 
         <div class="data-grid">
@@ -322,7 +343,7 @@
             </div>
             <div class="data-col">
               <span class="label-tag">Father's Name</span>
-              <span class="value-tag" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $user->father_name ?? 'N/A' }}</span>
+              <span class="value-tag" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $user?->father_name ?? 'N/A' }}</span>
             </div>
           </div>
           <div class="data-row">

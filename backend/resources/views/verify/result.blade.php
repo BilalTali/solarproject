@@ -1,5 +1,5 @@
 @php
-  /** @var \App\Models\User $user */
+  /** @var \App\Models\User|null $user */
   /** @var bool $isActive */
   /** @var bool $isSuspended */
   /** @var string $cardNumber */
@@ -242,14 +242,14 @@
   <div class="card">
     <div class="profile-row">
       <div class="avatar">
-        @if($user->profile_photo && file_exists(storage_path('app/public/' . $user->profile_photo)))
+        @if($user?->profile_photo && file_exists(storage_path('app/public/' . $user->profile_photo)))
           <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="{{ $user->name }}">
         @else
           <div class="avatar-initials">{{ $initials }}</div>
         @endif
       </div>
       <div class="profile-info">
-        <div class="profile-name">{{ $user->name }}</div>
+        <div class="profile-name">{{ $user?->name }}</div>
         <div class="profile-designation">{{ $designation }}</div>
         <div class="profile-code">{{ $cardNumber }}</div>
       </div>
@@ -260,7 +260,7 @@
         <div class="info-icon">📍</div>
         <div>
           <div class="info-label">District / State</div>
-          <div class="info-value">{{ $user->district }}, {{ $user->state }}</div>
+          <div class="info-value">{{ $user?->district }}, {{ $user?->state }}</div>
         </div>
       </div>
 
@@ -272,12 +272,12 @@
         </div>
       </div>
 
-      @if($user->territory)
+      @if($user?->territory)
       <div class="info-item">
         <div class="info-icon">🗺</div>
         <div>
           <div class="info-label">Assigned Territory</div>
-          <div class="info-value">{{ $user->territory }}</div>
+          <div class="info-value">{{ $user?->territory }}</div>
         </div>
       </div>
       @endif
@@ -319,9 +319,9 @@
         <div>
           <div class="info-label">Member Since</div>
           <div class="info-value">
-            {{ $user->joining_date
+            {{ $user?->joining_date
               ? $user->joining_date->format('d M Y')
-              : ($user->approved_at ? $user->approved_at->format('d M Y') : 'N/A') }}
+              : ($user?->approved_at ? $user->approved_at->format('d M Y') : 'N/A') }}
           </div>
         </div>
       </div>
@@ -331,7 +331,7 @@
         <div>
           <div class="info-label">Account Status</div>
           <div class="info-value" style="color: {{ $isActive ? '#1DB954' : '#EF4444' }}; font-weight:700;">
-            {{ strtoupper($user->status) }}
+            {{ strtoupper($user?->status ?? '') }}
           </div>
         </div>
       </div>
@@ -339,11 +339,11 @@
   </div>
 
   <!-- Super agent info (if agent has SA) -->
-  @if($user->isAgent() && $user->superAgent)
+  @if($user?->isAgent() && $user->superAgent)
   <div class="sa-section">
     <div class="sa-label">Reporting Manager (BDM)</div>
-    <div class="sa-name">{{ $user->superAgent->name }}</div>
-    <div class="sa-code">{{ $user->superAgent->super_agent_code }}</div>
+    <div class="sa-name">{{ $user?->superAgent?->name }}</div>
+    <div class="sa-code">{{ $user?->superAgent?->super_agent_code }}</div>
   </div>
   @endif
 

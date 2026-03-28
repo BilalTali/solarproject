@@ -16,7 +16,7 @@ class AdminSeeder extends Seeder
                 'email' => $adminEmail,
                 'name' => env('ADMIN_NAME', 'Super Admin'),
                 'mobile' => '9999999999',
-                'password' => \Illuminate\Support\Facades\Hash::make(env('ADMIN_PASSWORD', 'Admin@123456')),
+                'password' => \Illuminate\Support\Facades\Hash::make(env('ADMIN_PASSWORD', 'Sugen@9313')),
                 'role' => 'admin',
                 'status' => 'active',
                 'email_verified_at' => now(),

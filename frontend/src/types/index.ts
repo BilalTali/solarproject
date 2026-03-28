@@ -18,12 +18,12 @@ export type LeadStatus =
     | 'SUBSIDY_REQUEST'
     | 'SUBSIDY_APPLIED'
     | 'SUBSIDY_DISBURSED'
-    | 'COMPLETED'
-    | 'REJECTED'
     | 'ON_HOLD'
     | 'AT_BANK'
     | 'INVALID'
-    | 'DUPLICATE';
+    | 'DUPLICATE'
+    | 'COMPLETED'
+    | 'REJECTED';
 
 export type ExcitementState = 'dormant' | 'building' | 'close' | 'ready';
 
