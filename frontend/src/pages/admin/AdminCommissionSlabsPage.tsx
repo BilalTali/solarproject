@@ -78,6 +78,7 @@ export const AdminCommissionSlabsPage: React.FC = () => {
             label: formData.get('label') as string,
             agent_commission: Number(formData.get('agent_commission')),
             super_agent_override: Number(formData.get('super_agent_override')),
+            enumerator_commission: Number(formData.get('enumerator_commission')),
             description: formData.get('description') as string,
             is_active: formData.get('is_active') === 'on'
         };
@@ -91,8 +92,8 @@ export const AdminCommissionSlabsPage: React.FC = () => {
 
     const slabs = slabsResponse?.data || [];
     const filteredSlabs = slabs.filter(s => 
-        s.label.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        s.capacity.toLowerCase().includes(searchTerm.toLowerCase())
+        (s.label || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+        (s.capacity || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (isLoading) return <LoadingSpinner />;
@@ -140,6 +141,7 @@ export const AdminCommissionSlabsPage: React.FC = () => {
                             <tr className="bg-slate-50/50 border-b border-slate-100">
                                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Capacity & Label</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">BDE Commission</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">ENU Commission</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">SA Override</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Description</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
@@ -163,6 +165,11 @@ export const AdminCommissionSlabsPage: React.FC = () => {
                                     <td className="px-6 py-4 text-center">
                                         <div className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-black text-sm">
                                             ₹{Number(slab.agent_commission).toLocaleString('en-IN')}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <div className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-orange-50 text-orange-700 font-black text-sm">
+                                            ₹{Number(slab.enumerator_commission || 0).toLocaleString('en-IN')}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
@@ -199,13 +206,6 @@ export const AdminCommissionSlabsPage: React.FC = () => {
                                     </td>
                                 </tr>
                             ))}
-                            {filteredSlabs.length === 0 && (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-20 text-center text-slate-400 font-medium italic">
-                                        No commission slabs found matching your search.
-                                    </td>
-                                </tr>
-                            )}
                         </tbody>
                     </table>
                 </div>
@@ -237,7 +237,7 @@ export const AdminCommissionSlabsPage: React.FC = () => {
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium disabled:bg-slate-50 disabled:text-slate-400"
                                         placeholder="e.g., 3kw"
                                     />
-                                    <p className="text-[10px] text-slate-400 mt-1 ml-1 italic">Used for internal mapping (immutable after creation)</p>
+                                    <p className="text-[10px] text-slate-400 mt-1 ml-1 italic">Used for internal mapping</p>
                                 </div>
 
                                 <div>
@@ -259,6 +259,19 @@ export const AdminCommissionSlabsPage: React.FC = () => {
                                         required
                                         min="0"
                                         defaultValue={editingSlab?.agent_commission}
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ENU Payout (₹)</label>
+                                    <input 
+                                        name="enumerator_commission"
+                                        type="number"
+                                        required
+                                        min="0"
+                                        defaultValue={editingSlab?.enumerator_commission ?? 0}
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
                                         placeholder="0.00"
                                     />
@@ -296,7 +309,7 @@ export const AdminCommissionSlabsPage: React.FC = () => {
                                             defaultChecked={editingSlab?.is_active ?? true}
                                             className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                                         />
-                                        <label htmlFor="is_active_slab" className="text-sm font-bold text-slate-700">Mark as Active (Available for selection in tools)</label>
+                                        <label htmlFor="is_active_slab" className="text-sm font-bold text-slate-700">Mark as Active</label>
                                     </div>
                                 </div>
                             </div>

@@ -34,7 +34,11 @@ export default function CommissionInlineEntryForAgent({
 }: Props) {
     const queryClient = useQueryClient();
     const [isEditing, setIsEditing] = useState(!existingCommission);
-    const [amount, setAmount] = useState<string>(existingCommission?.amount?.toString() || '');
+    const [amount, setAmount] = useState<string>(
+        existingCommission?.amount?.toString() || 
+        commissionPrompt?.suggested_amount?.toString() || 
+        ''
+    );
     const [error, setError] = useState<string | null>(null);
 
     const saveMutation = useMutation({

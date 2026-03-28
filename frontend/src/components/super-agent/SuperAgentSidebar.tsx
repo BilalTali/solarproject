@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard, Users, FileText, DollarSign, Bell, UserCircle,
-    Power, PlusCircle, List, ChevronDown, Gift
+    Power, PlusCircle, List, ChevronDown, Gift, Settings
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
@@ -115,6 +115,10 @@ export default function SuperAgentSidebar({ onClose }: SuperAgentSidebarProps) {
 
                 <NavLink to="/super-agent/commissions" onClick={onClose} className={navLinkClass}>
                     <DollarSign size={18} aria-hidden="true" /> Commissions
+                </NavLink>
+
+                <NavLink to="/super-agent/commission-slabs" onClick={onClose} className={navLinkClass}>
+                    <Settings size={18} aria-hidden="true" /> Commission Settings
                 </NavLink>
 
                 <NavLink to="/super-agent/documents" onClick={onClose} className={navLinkClass}>

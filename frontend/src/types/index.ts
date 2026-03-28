@@ -311,6 +311,7 @@ export interface CommissionPrompt {
     payee_name?: string;
     payee_code?: string;
     payee_type_label?: string;
+    suggested_amount?: number;
     existing_commission?: Commission | null;
 }
 
@@ -696,9 +697,11 @@ export interface CommissionSlab {
     label: string;
     agent_commission: number;
     super_agent_override: number;
+    enumerator_commission: number;
     description: string | null;
     is_active: boolean;
     super_agent_id: number | null;
+    is_custom?: boolean;
     created_at: string;
     updated_at: string;
 }

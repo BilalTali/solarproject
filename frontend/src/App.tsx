@@ -60,6 +60,7 @@ import {
   SuperAgentLeadDetailPage,
   SuperAgentNotificationsPage,
 } from '@/pages/super-agent/SuperAgentPlaceholders';
+import { SuperAgentCommissionSlabsPage } from '@/pages/super-agent/SuperAgentCommissionSlabsPage';
 import DocumentsPage from '@/pages/shared/DocumentsPage';
 
 // Admin Pages
@@ -190,6 +191,7 @@ export default function App() {
             <Route path="leads/new" element={<SuperAgentCreateLeadPage />} />
             <Route path="leads/:ulid" element={<SuperAgentLeadDetailPage />} />
             <Route path="commissions" element={<SuperAgentCommissionsPage />} />
+            <Route path="commission-slabs" element={<SuperAgentCommissionSlabsPage />} />
             <Route path="offers" element={<SuperAgentTeamOffersPage />} />
             <Route path="notifications" element={<SuperAgentNotificationsPage />} />
             <Route path="documents" element={<DocumentsPage />} />
