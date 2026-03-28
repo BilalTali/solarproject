@@ -34,6 +34,7 @@ class CommissionSlabController extends Controller
                 'label' => $custom->label ?? $default->label ?? $cap,
                 'agent_commission' => (float) ($custom->agent_commission ?? $default->agent_commission ?? 0),
                 'super_agent_override' => (float) ($custom->super_agent_override ?? $default->super_agent_override ?? 0),
+                'enumerator_commission' => (float) ($custom->enumerator_commission ?? $default->enumerator_commission ?? 0),
                 'is_custom' => !is_null($custom),
                 'id' => $custom->id ?? null,
                 'default_id' => $default->id ?? null,
@@ -54,6 +55,7 @@ class CommissionSlabController extends Controller
             'capacity' => 'required|string|max:50',
             'agent_commission' => 'required|numeric|min:0',
             'super_agent_override' => 'required|numeric|min:0',
+            'enumerator_commission' => 'sometimes|numeric|min:0',
             'label' => 'sometimes|string|max:255',
         ]);
 
@@ -63,6 +65,7 @@ class CommissionSlabController extends Controller
                 'label' => $data['label'] ?? "Custom Slab ({$data['capacity']})",
                 'agent_commission' => $data['agent_commission'],
                 'super_agent_override' => $data['super_agent_override'],
+                'enumerator_commission' => $data['enumerator_commission'] ?? 0,
                 'is_active' => true,
             ]
         );

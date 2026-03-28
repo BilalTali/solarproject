@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $label
  * @property numeric $agent_commission
  * @property numeric $super_agent_override
+ * @property numeric $enumerator_commission
  * @property numeric $reward_value
  * @property string|null $description
  * @property bool $is_active
@@ -37,7 +38,7 @@ class CommissionSlab extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['capacity', 'label', 'agent_commission', 'super_agent_override', 'description', 'is_active', 'super_agent_id'];
+    protected $fillable = ['capacity', 'label', 'agent_commission', 'super_agent_override', 'enumerator_commission', 'description', 'is_active', 'super_agent_id'];
 
     public function superAgent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
@@ -49,6 +50,7 @@ class CommissionSlab extends Model
         return [
             'agent_commission' => 'decimal:2',
             'super_agent_override' => 'decimal:2',
+            'enumerator_commission' => 'decimal:2',
             'reward_value' => 'decimal:2',
             'is_active' => 'boolean',
         ];

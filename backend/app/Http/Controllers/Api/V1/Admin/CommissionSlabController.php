@@ -33,6 +33,7 @@ class CommissionSlabController extends Controller
             'label' => 'required|string|max:255',
             'agent_commission' => 'required|numeric|min:0',
             'super_agent_override' => 'sometimes|numeric|min:0',
+            'enumerator_commission' => 'sometimes|numeric|min:0',
             'description' => 'nullable|string',
             'is_active' => 'sometimes|boolean',
         ]);
@@ -60,6 +61,7 @@ class CommissionSlabController extends Controller
             'label' => 'sometimes|string|max:255',
             'agent_commission' => 'sometimes|numeric|min:0',
             'super_agent_override' => 'sometimes|numeric|min:0',
+            'enumerator_commission' => 'sometimes|numeric|min:0',
             'description' => 'nullable|string',
             'is_active' => 'sometimes|boolean',
         ]);

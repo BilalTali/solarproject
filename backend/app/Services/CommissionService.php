@@ -275,12 +275,13 @@ class CommissionService
             $slab = (clone $slabQuery)->whereNull('super_agent_id')->first();
         }
 
-        if (!$slab) return 0;
+        if (!$slab) return 0.0;
 
         return match($payee->role) {
-            'super_agent' => (float) $slab->super_agent_override,
-            'agent' => (float) $slab->agent_commission,
-            default => 0,
+            'agent' => (float)$slab->agent_commission,
+            'super_agent' => (float)$slab->super_agent_override,
+            'enumerator' => (float)$slab->enumerator_commission,
+            default => 0.0
         };
     }
 
