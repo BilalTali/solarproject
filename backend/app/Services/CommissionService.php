@@ -262,10 +262,10 @@ class CommissionService
         $payerId = $payee->parent_id;
 
         // 1. Try to find slab owned by the Payer
-        $slabQuery = \App\Models\CommissionSlab::query()->where('capacity', $capacity);
+        $slabQuery = \App\Models\CommissionSlab::query()->where(fn($q) => $q->where('capacity', $capacity));
         
         if ($payerId) {
-            $slab = (clone $slabQuery)->where('super_agent_id', $payerId)->first();
+            $slab = (clone $slabQuery)->where(fn($q) => $q->where('super_agent_id', $payerId))->first();
         } else {
             $slab = (clone $slabQuery)->whereNull('super_agent_id')->first();
         }

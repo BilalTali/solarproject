@@ -21,7 +21,7 @@ class CommissionSlabController extends Controller
         $defaults = CommissionSlab::query()->whereNull('super_agent_id')->get()->keyBy('capacity');
         
         // 2. Get SuperAgent custom slabs
-        $customs = CommissionSlab::query()->where('super_agent_id', $user->id)->get()->keyBy('capacity');
+        $customs = CommissionSlab::query()->where(fn($q) => $q->where('super_agent_id', $user->id))->get()->keyBy('capacity');
         
         $capacities = $defaults->keys()->merge($customs->keys())->unique();
         

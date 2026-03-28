@@ -15,7 +15,7 @@ class CommissionSlabController extends Controller
         $query = CommissionSlab::query();
         
         if ($saId) {
-            $query->where('super_agent_id', $saId);
+            $query->where(fn($q) => $q->where('super_agent_id', $saId));
         } else {
             $query->whereNull('super_agent_id');
         }
@@ -39,8 +39,8 @@ class CommissionSlabController extends Controller
 
         // Ensure unique capacity per SA
         $exists = CommissionSlab::query()
-            ->where('super_agent_id', $data['super_agent_id'] ?? null)
-            ->where('capacity', $data['capacity'])
+            ->where(fn($q) => $q->where('super_agent_id', $data['super_agent_id'] ?? null))
+            ->where(fn($q) => $q->where('capacity', $data['capacity']))
             ->exists();
 
         if ($exists) {
