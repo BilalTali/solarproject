@@ -23,12 +23,15 @@ class CommissionService
         float $amount,
         User $payer
     ): Commission {
-        if (! in_array($lead->status, ['COMPLETED', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
-            throw new LeadNotCompletedException('Commission can only be entered for installed or completed leads.');
+        if ($lead->status !== 'COMPLETED') {
+            throw new LeadNotCompletedException('Commission can only be entered for completed leads.');
         }
 
         // Authorization logic based on parentage
-        if (! $payer->isAdmin() && (int) $payee->parent_id !== (int) $payer->id) {
+        $hierarchyService = app(HierarchyService::class);
+        $logicalParentId = $hierarchyService->getLogicalParentId($payee, $lead);
+
+        if (! $payer->isAdmin() && (int) $logicalParentId !== (int) $payer->id) {
             throw new CommissionAccessDeniedException('You can only enter commissions for your direct subordinates.');
         }
 
@@ -84,7 +87,9 @@ class CommissionService
             throw new CommissionLockedException('Paid commissions cannot be edited.');
         }
 
-        $isParent = (int) $commission->payee?->parent_id === (int) $editor->id;
+        $hierarchyService = app(HierarchyService::class);
+        $logicalParentId = $hierarchyService->getLogicalParentId($commission->payee, $commission->lead);
+        $isParent = (int) $logicalParentId === (int) $editor->id;
         $isEnterer = (int) $commission->entered_by === (int) $editor->id;
 
         if (!$isParent && !$isEnterer && !$editor->isAdmin()) {
@@ -114,22 +119,11 @@ class CommissionService
     ): Commission {
         $payee = $commission->payee;
 
-        if (! $payer->isAdmin() && (int) $payee->parent_id !== (int) $payer->id) {
-            // Legacy fallbacks for safety if parent_id is somehow missing
-            $isAuthorized = false;
-            
-            if ($commission->isForSuperAgent()) {
-                $isAuthorized = false; // Admin only
-            } elseif ($commission->isForAgent()) {
-                $isAuthorized = (int) $payee->super_agent_id === (int) $payer->id;
-            } elseif ($payee->role === 'enumerator') {
-                $isAuthorized = ((int)$payee->created_by_agent_id === (int)$payer->id) || 
-                                ((int)$payee->created_by_super_agent_id === (int)$payer->id);
-            }
+        $hierarchyService = app(HierarchyService::class);
+        $logicalParentId = $hierarchyService->getLogicalParentId($payee, $commission->lead);
 
-            if (! $isAuthorized) {
-                throw new CommissionAccessDeniedException('You can only mark payments for your direct subordinates.');
-            }
+        if (! $payer->isAdmin() && (int) $logicalParentId !== (int) $payer->id) {
+            throw new CommissionAccessDeniedException('You can only mark payments for your direct subordinates.');
         }
 
         if ($commission->isPaid()) {
@@ -156,6 +150,7 @@ class CommissionService
      */
     public function revokeUnpaidCommissions(Lead $lead, ?User $revokedBy = null): void
     {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Commission> $commissions */
         $commissions = Commission::query()->where(fn ($q) => $q->where('lead_id', $lead->id))->unpaid()->get();
 
         foreach ($commissions as $commission) {
@@ -183,7 +178,7 @@ class CommissionService
         }
 
         $hierarchyService = app(HierarchyService::class);
-        $chain = $hierarchyService->getCommissionChain($submitter);
+        $chain = $hierarchyService->getCommissionChain($submitter, $lead);
         
         // Subject (Submitter) often gets commission too (if Enum)
         $requiredPayees = [];
@@ -211,7 +206,7 @@ class CommissionService
      */
     public function getCommissionStatus(Lead $lead): array
     {
-        if (! in_array($lead->status, ['COMPLETED', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
+        if ($lead->status !== 'COMPLETED') {
             return [];
         }
 
@@ -219,16 +214,25 @@ class CommissionService
         if (! $submitter) return [];
 
         $hierarchyService = app(HierarchyService::class);
-        $chain = $hierarchyService->getCommissionChain($submitter);
+        $chain = $hierarchyService->getCommissionChain($submitter, $lead);
         
         $prompts = [];
         
-        // 1. Submitter Commission (Enumerator or Agent acting as submitter)
-        if ($submitter->isEnumerator() || $submitter->isAgent()) {
-            $prompts[] = $this->buildPrompt($lead, $submitter, $submitter->role);
+        // 1. Submitter Commission
+        if ($submitter->isSuperAgent()) {
+            // Super Agent submitted the lead directly
+            $prompts[] = $this->buildPrompt($lead, $submitter, 'super_agent');
+        } elseif ($submitter->isEnumerator() || $submitter->isAgent()) {
+            $parentId = $hierarchyService->getLogicalParentId($submitter, $lead);
+            $parent = $parentId ? User::find($parentId) : null;
+            // Only add if a non-admin payer (BDM or Agent above) exists in the chain
+            // Exception: Enumerators CAN be paid directly by Admin if they were created by Admin.
+            if ($parent && (!$parent->isAdmin() || $submitter->isEnumerator())) {
+                $prompts[] = $this->buildPrompt($lead, $submitter, $submitter->role);
+            }
         }
 
-        // 2. Upstream Hierarchy (Agent, Super Agent)
+        // 2. Upstream Hierarchy (BDM/Super Agent level and above — excluding Admin who is the terminal payer)
         foreach ($chain as $user) {
             $prompts[] = $this->buildPrompt($lead, $user, $user->role);
         }
@@ -238,6 +242,10 @@ class CommissionService
 
     private function buildPrompt(Lead $lead, User $payee, string $role): array
     {
+        $hierarchyService = app(HierarchyService::class);
+        $payerId = $hierarchyService->getLogicalParentId($payee, $lead);
+        $payer = $payerId ? User::find($payerId) : null;
+
         $comm = Commission::query()->where(fn($q) => $q->where('lead_id', $lead->id))->where(fn($q) => $q->where('payee_id', $payee->id))->first();
         
         return [
@@ -245,21 +253,27 @@ class CommissionService
             'payee_name' => $payee->name,
             'payee_role' => $role,
             'payee_code' => $payee->role === 'super_agent' ? $payee->super_agent_code : ($payee->role === 'agent' ? $payee->agent_id : $payee->enumerator_id),
-            'payer_id' => $payee->parent_id,
-            'payer_name' => $payee->parent?->name ?? 'Admin',
+            'payee_type_label' => match($role) {
+                'super_agent' => 'Business Development Manager',
+                'agent' => 'Business Development Executive',
+                'enumerator' => 'Enumerator',
+                default => 'Executive',
+            },
+            'payer_id' => $payerId,
+            'payer_name' => $payer?->name ?? 'Admin',
             'status' => $comm ? 'entered' : 'pending',
             'amount' => $comm ? (float)$comm->amount : null,
-            'suggested_amount' => $this->getSuggestedAmount($lead, $payee),
+            'suggested_amount' => $this->getSuggestedAmount($lead, $payee, $payerId),
             'payment_status' => $comm ? $comm->payment_status : null,
             'commission_id' => $comm ? $comm->id : null,
             'is_editable' => $comm ? (! $comm->isLocked() && ! $comm->isPaid()) : true,
         ];
     }
 
-    private function getSuggestedAmount(Lead $lead, User $payee): float
+    private function getSuggestedAmount(Lead $lead, User $payee, ?int $payerId = null): float
     {
         $capacity = $lead->system_capacity ?: '1kw';
-        $payerId = $payee->parent_id;
+        $payerId = $payerId ?? $payee->parent_id;
 
         // 1. Try to find slab owned by the Payer
         $slabQuery = \App\Models\CommissionSlab::query()->where(fn($q) => $q->where('capacity', $capacity));
@@ -291,6 +305,7 @@ class CommissionService
      */
     public function getLeadCommissions(Lead $lead): array
     {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Commission> $commissions */
         $commissions = Commission::query()
             ->where(fn ($q) => $q->where('lead_id', $lead->id))
             ->with(['payee', 'enteredBy'])

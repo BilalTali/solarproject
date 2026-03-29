@@ -12,14 +12,20 @@ class HierarchyService
      * Returns: Array of Users who should receive a commission for this lead.
      * Order: [Immediate Parent, Grandparent, ...] (up to, but not including, Admin)
      */
-    public function getCommissionChain(User $submitter): array
+    public function getCommissionChain(User $submitter, ?Lead $lead = null): array
     {
         $chain = [];
         $current = $submitter;
 
         // Traverse up the parent chain
-        while ($current->parent_id && $current->id !== $current->parent_id) {
-            $parent = User::find($current->parent_id);
+        while (true) {
+            $parentId = $this->getLogicalParentId($current, $lead);
+            
+            if (!$parentId || $current->id === $parentId) {
+                break;
+            }
+
+            $parent = User::find($parentId);
             if (! $parent) {
                 break;
             }
@@ -40,6 +46,48 @@ class HierarchyService
     }
 
     /**
+     * Resolves the logical parent ID of a user in the context of a specific lead.
+     * If a lead has an explicitly assigned Super Agent, that overrides the Agent's default parent.
+     */
+    public function getLogicalParentId(User $user, ?Lead $lead = null): ?int
+    {
+        if ($lead && $lead->assigned_super_agent_id) {
+            if ($user->isAgent() && $user->parent_id !== $lead->assigned_super_agent_id) {
+                return $lead->assigned_super_agent_id;
+            } elseif ($user->isEnumerator()) {
+                $originalParent = User::find($user->parent_id);
+                if ($originalParent && $originalParent->isAdmin() && $user->parent_id !== $lead->assigned_super_agent_id) {
+                    return $lead->assigned_super_agent_id;
+                }
+            }
+        }
+        
+        return $user->parent_id;
+    }
+
+    /**
+     * Finds the nearest ascendant Super Agent ID for a given user.
+     */
+    public function findAscendantSuperAgentId(User $user): ?int
+    {
+        $currentId = $user->parent_id;
+        $visited = [$user->id];
+
+        while ($currentId) {
+            if (in_array($currentId, $visited)) break;
+            $visited[] = $currentId;
+
+            $parent = User::find($currentId);
+            if (!$parent || $parent->isAdmin()) break;
+            if ($parent->isSuperAgent()) return $parent->id;
+
+            $currentId = $parent->parent_id;
+        }
+
+        return null;
+    }
+
+    /**
      * Resolve the initial owner, pool, and verification status for a new lead.
      * Implement Case 1-5 logic dynamically.
      */
@@ -54,9 +102,9 @@ class HierarchyService
             ];
         }
 
-        // CASE 4 fallback: Agent created directly (usually under an SA)
+        // CASE 4 fallback: Agent created directly
         if ($submitter->isAgent()) {
-            $saId = $submitter->parent_id; 
+            $saId = $this->findAscendantSuperAgentId($submitter);
             return [
                 'owner_type' => $saId ? 'super_agent_pool' : 'admin_pool',
                 'verification_status' => $saId ? 'pending_super_agent_verification' : 'not_required',
@@ -74,7 +122,7 @@ class HierarchyService
                 return [
                     'owner_type' => 'admin_pool',
                     'verification_status' => 'not_required',
-                    'assigned_super_agent_id' => $parent?->id, // Admin id if exists
+                    'assigned_super_agent_id' => null, // Assured no Super Agent
                 ];
             }
 
@@ -89,11 +137,12 @@ class HierarchyService
 
             if ($parent->isAgent()) {
                 // Case 3: Enum under Agent
+                $saId = $this->findAscendantSuperAgentId($parent);
                 return [
                     'owner_type' => 'agent_pool',
                     'verification_status' => 'pending_agent_verification',
                     'assigned_agent_id' => $parent->id,
-                    'assigned_super_agent_id' => $parent->parent_id,
+                    'assigned_super_agent_id' => $saId,
                 ];
             }
         }
