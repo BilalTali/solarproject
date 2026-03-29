@@ -105,6 +105,34 @@ class CommissionController extends Controller
         ]);
     }
 
+    /**
+     * UNIFIED commission entry endpoint.
+     * Accepts payee_id + amount. Validates payee is a direct subordinate of payer for this lead.
+     */
+    public function enterCommission(Request $request, string $ulid): JsonResponse
+    {
+        $request->validate([
+            'payee_id' => 'required|integer|exists:users,id',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
+        $payee = \App\Models\User::findOrFail($request->payee_id);
+
+        $commission = $this->commissionService->enterCommission($lead, $payee, (float)$request->amount, $request->user());
+
+        $lead->refresh();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Commission saved for ' . $payee->name . '.',
+            'data' => [
+                'commission' => $commission,
+                'lead_commission_status' => $lead->commission_entry_status,
+            ],
+        ]);
+    }
+
     public function enterDirectAgentCommission(EnterAgentCommissionRequest $request, string $ulid): JsonResponse
     {
         $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();

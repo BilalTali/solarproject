@@ -25,8 +25,30 @@ export default function SuperAdminAdminsPage() {
         }
     });
 
-    // Mark as used to avoid lints if they are not yet fully implemented in UI
-    console.log(isCreateModalOpen, editingAdmin);
+    const createMutation = useMutation({
+        mutationFn: (data: any) => api.post('/super-admin/admins', data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['super-admin', 'admins'] });
+            toast.success('Admin created successfully');
+            setIsCreateModalOpen(false);
+        },
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || 'Failed to create admin');
+        }
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }: { id: number, data: any }) => api.put(`/super-admin/admins/${id}`, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['super-admin', 'admins'] });
+            toast.success('Admin updated successfully');
+            setEditingAdmin(null);
+            setIsCreateModalOpen(false);
+        },
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || 'Failed to update admin');
+        }
+    });
 
     const deleteMutation = useMutation({
         mutationFn: (id: number) => api.delete(`/super-admin/admins/${id}`),
@@ -120,7 +142,7 @@ export default function SuperAdminAdminsPage() {
                                             </div>
                                             <div>
                                                 <p className="font-bold text-slate-900 leading-tight">{admin.name}</p>
-                                                <p className="text-xs text-slate-400 font-medium">Added {new Date(admin.created_at).toLocaleDateString()}</p>
+                                                <p className="text-xs text-slate-400 font-medium">Added {new Date(admin.created_at || '').toLocaleDateString()}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -154,7 +176,7 @@ export default function SuperAdminAdminsPage() {
                                             {admin.permissions?.includes('*') ? (
                                                 <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-md text-[10px] font-black uppercase border border-primary/10">Full Access</span>
                                             ) : (
-                                                admin.permissions?.slice(0, 2).map((p, idx) => (
+                                                admin.permissions?.slice(0, 2).map((p: string, idx: number) => (
                                                     <span key={idx} className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md text-[10px] font-bold uppercase">{p.replace('_', ' ')}</span>
                                                 ))
                                             )}
@@ -166,6 +188,7 @@ export default function SuperAdminAdminsPage() {
                                     <td className="px-6 py-5 text-right">
                                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button 
+                                                onClick={() => { setEditingAdmin(admin); setIsCreateModalOpen(true); }}
                                                 className="p-2 bg-white border border-slate-200 text-slate-600 rounded-xl hover:text-primary hover:border-primary transition-all"
                                                 title="Edit Admin"
                                             >
@@ -186,17 +209,69 @@ export default function SuperAdminAdminsPage() {
                     </table>
                 </div>
 
-                {/* Pagination Placeholder */}
+                {/* Pagination */}
                 <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
                     <p className="text-xs font-bold text-slate-500">Showing {admins.length} administrators</p>
-                    <div className="flex items-center gap-2">
-                        <button disabled className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-400 disabled:opacity-50">Prev</button>
-                        <button disabled className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-400 disabled:opacity-50">Next</button>
-                    </div>
                 </div>
             </div>
 
-            {/* Note about placeholders */}
+            {/* Create/Edit Modal */}
+            {isCreateModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-lg rounded-[32px] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-300">
+                        <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+                            <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                                {editingAdmin ? 'Edit Administrator' : 'Create New Administrator'}
+                            </h3>
+                            <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+                                <XCircle className="w-5 h-5 text-slate-400" />
+                            </button>
+                        </div>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            const data = Object.fromEntries(formData.entries());
+                            if (editingAdmin) {
+                                updateMutation.mutate({ id: editingAdmin.id, data });
+                            } else {
+                                createMutation.mutate(data);
+                            }
+                        }} className="p-8 space-y-4">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</label>
+                                <input name="name" defaultValue={editingAdmin?.name} required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium" />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Email Address</label>
+                                    <input name="email" type="email" defaultValue={editingAdmin?.email} required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Mobile Number</label>
+                                    <input name="mobile" type="tel" defaultValue={editingAdmin?.mobile} required maxLength={10} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium" />
+                                </div>
+                            </div>
+                            {!editingAdmin && (
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Initial Password</label>
+                                    <input name="password" type="password" required minLength={8} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium" />
+                                </div>
+                            )}
+                            <div className="pt-4 flex items-center gap-3">
+                                <button type="button" onClick={() => setIsCreateModalOpen(false)} className="flex-1 px-6 py-3 border border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition-all">Cancel</button>
+                                <button 
+                                    type="submit" 
+                                    disabled={createMutation.isPending || updateMutation.isPending}
+                                    className="flex-1 px-6 py-3 bg-primary text-white rounded-2xl font-bold hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+                                >
+                                    {createMutation.isPending || updateMutation.isPending ? 'Processing...' : editingAdmin ? 'Update Settings' : 'Create Account'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-start gap-3">
                 <Settings2 className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                 <p className="text-sm text-blue-700 font-medium">

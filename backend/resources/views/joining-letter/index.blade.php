@@ -1,5 +1,5 @@
 @php
-    /** @var \App\Models\User|null $user */
+    /** @var \App\Models\User $user */
     /** @var string $companyName */
     /** @var string $companyTagline */
     /** @var string $companyAddress */
@@ -23,7 +23,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Appointment Letter - {{ $user?->name ?? 'User' }}</title>
+    <title>Appointment Letter - {{ isset($user) ? $user->name : 'User' }}</title>
     <style>
         @font-face {
             font-family: 'Cinzel';
@@ -276,7 +276,7 @@
                 @endif
             </td>
             <td width="40%" align="right" valign="top">
-                <span class="meta-label">Date:</span> <strong>{{ (isset($user) && $user->approved_at) ? \Carbon\Carbon::parse($user->approved_at)->format('d F, Y') : date('d F, Y') }}</strong>
+                <span class="meta-label">Date:</span> <strong>{{ ($user->approved_at ?? null) ? $user->approved_at->format('d F, Y') : date('d F, Y') }}</strong>
                 @if($qrBase64)
                     <div class="qr-section" style="margin-top: 10px;">
                         <img src="{{ $qrBase64 }}" class="qr-img">
@@ -290,9 +290,9 @@
 
     <div class="salutation">
         To,<br>
-        <strong>{{ $user?->name ?? 'N/A' }}</strong><br>
-        {{ ($user?->current_address ?? $user?->area ?? 'N/A') }}<br>
-        Contact: {{ $user?->mobile ?? 'N/A' }}
+        <strong>{{ $user->name ?? 'N/A' }}</strong><br>
+        {{ ($user->current_address ?? $user->area ?? 'N/A') }}<br>
+        Contact: {{ $user->mobile ?? 'N/A' }}
     </div>
 
     <div class="subject">
@@ -300,7 +300,7 @@
     </div>
 
     <div class="content">
-        Dear {{ explode(' ', $user?->name ?? 'User')[0] }},<br><br>
+        Dear {{ explode(' ', $user->name ?? 'User')[0] }},<br><br>
         Following your successful application and subsequent evaluation, we are pleased to appoint you as <strong>{{ $designation }}</strong> at <strong>{{ $companyName }}</strong>.
     </div>
 

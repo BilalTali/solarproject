@@ -24,12 +24,6 @@ class SuperAgentController extends Controller
     /** List all super agents with team stats */
     public function index(Request $request): JsonResponse
     {
-        $query = User::query()->superAgents()
-            ->withCount(['managedAgents as agent_count'])
-            ->withSum(['managedAgents as total_leads' => function ($q) {
-                // sub-query is not directly supported for relations like this
-            }], 'id');
-
         $query = User::query()->superAgents()->withCount('managedAgents as agent_count');
 
         if ($request->status) {

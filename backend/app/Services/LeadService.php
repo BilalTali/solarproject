@@ -45,7 +45,7 @@ class LeadService
                 ...$leadData,
                 'source' => 'public_form',
                 'referral_agent_id' => $referralCode,
-                'status' => 'new',
+                'status' => 'NEW',
             ];
 
             if ($referringAgent) {
@@ -61,7 +61,7 @@ class LeadService
             /** @var Lead $lead */
             $lead = Lead::forceCreate($createData);
 
-            $this->logStatusChange($lead, null, null, 'new', 'Lead received from public form'.($referralCode ? " (Ref: {$referralCode})" : ''));
+            $this->logStatusChange($lead, null, null, 'NEW', 'Lead received from public form'.($referralCode ? " (Ref: {$referralCode})" : ''));
 
             if ($referringAgent) {
                 /** @var User $referringAgent */
@@ -94,10 +94,10 @@ class LeadService
                 'source' => 'agent_submission',
                 'submitted_by_agent_id' => $agent->id,
                 ...$routing,
-                'status' => 'new',
+                'status' => 'NEW',
             ]);
 
-            $this->logStatusChange($lead, $agent->id, null, 'new', 'Lead submitted by agent');
+            $this->logStatusChange($lead, $agent->id, null, 'NEW', 'Lead submitted by agent');
 
             if ($lead->assigned_super_agent_id) {
                 $this->notifySuperAgentLeadPendingVerification($lead, $agent);
@@ -124,10 +124,10 @@ class LeadService
                 'source' => 'enumerator_submission',
                 'submitted_by_enumerator_id' => $enumerator->id,
                 ...$routing,
-                'status' => 'new',
+                'status' => 'NEW',
             ]);
 
-            $this->logStatusChange($lead, $enumerator->id, null, 'new', "Lead submitted by enumerator {$enumerator->name}");
+            $this->logStatusChange($lead, $enumerator->id, null, 'NEW', "Lead submitted by enumerator {$enumerator->name}");
             
             // Notification logic
             if ($lead->verification_status === 'pending_agent_verification') {
@@ -159,10 +159,10 @@ class LeadService
                 'source' => 'super_agent_submission',
                 'created_by_super_agent_id' => $sa->id,
                 ...$routing,
-                'status' => 'new',
+                'status' => 'NEW',
             ]);
 
-            $this->logStatusChange($lead, $sa->id, null, 'new', "Lead created by Super Agent {$sa->name}");
+            $this->logStatusChange($lead, $sa->id, null, 'NEW', "Lead created by Super Agent {$sa->name}");
             
             if ($lead->assigned_super_agent_id && (int)$lead->assigned_super_agent_id !== (int)$sa->id) {
                 // If SA routed to ANOTHER SA (unlikely but possible in deeper hierarchy)
@@ -575,7 +575,7 @@ class LeadService
         LeadStatusLog::create([
             'lead_id' => $lead->id,
             'changed_by' => $changedById,
-            'from_status' => $fromStatus ?? $lead->status ?? 'new',
+            'from_status' => $fromStatus ?? $lead->status ?? 'NEW',
             'to_status' => $toStatus,
             'notes' => $notes,
         ]);

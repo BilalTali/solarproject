@@ -35,15 +35,8 @@ return new class extends Migration
             $table->enum('system_capacity', ['1kw', '2kw', '3kw', 'above_3kw'])->nullable();
             $table->decimal('monthly_bill_amount', 10, 2)->nullable();
 
-            // Status pipeline
-            $table->enum('status', [
-                'new',
-                'registered',
-                'installed',
-                'rejected',
-                'on_hold',
-                'completed',
-            ])->default('new');
+            // Status pipeline — full set of uppercase statuses
+            $table->string('status')->default('NEW');
 
             // Notes & tracking
             $table->text('query_message')->nullable();

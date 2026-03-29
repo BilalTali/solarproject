@@ -301,6 +301,7 @@ $api->as('api.v1.')->group(function () {
             Route::post('/leads/{ulid}/commission/super-agent', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'enterSuperAgentCommission']);
             Route::post('/leads/{ulid}/commission/agent-direct', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'enterDirectAgentCommission']);
             Route::post('/leads/{ulid}/commission/enumerator', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'enterEnumeratorCommission']);
+            Route::post('/leads/{ulid}/commission/enter', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'enterCommission']);
             Route::put('/commissions/{id}', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'update']);
             Route::put('/commissions/{id}/mark-paid', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'markPaid']);
             Route::get('/leads/{ulid}/commissions', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'getLeadCommissions']);

@@ -27,7 +27,7 @@ export default function CommissionInlineEntry({
     const [amount, setAmount] = useState<string>(existingCommission?.amount?.toString() || '');
     const [error, setError] = useState<string | null>(null);
 
-    const { payee_role, payee_name, payee_code, payee_type_label } = commissionPrompt;
+    const { payee_name, payee_code, payee_type_label } = commissionPrompt;
 
     const saveMutation = useMutation({
         mutationFn: async (val: string) => {
@@ -36,12 +36,11 @@ export default function CommissionInlineEntry({
                 const res = await adminCommissionsApi.updateCommission(existingCommission.id, payload);
                 return res.data.data;
             } else {
-                const apiCall = payee_role === 'super_agent'
-                    ? adminCommissionsApi.enterSuperAgentCommission
-                    : payee_role === 'enumerator'
-                        ? adminCommissionsApi.enterEnumeratorCommission
-                        : adminCommissionsApi.enterDirectAgentCommission;
-                const res = await apiCall(leadUlid, payload);
+                // Use unified endpoint with explicit payee_id — hierarchy enforced on backend
+                const res = await adminCommissionsApi.enterCommission(leadUlid, {
+                    payee_id: commissionPrompt.payee_id!,
+                    amount: parseFloat(val),
+                });
                 return (res.data.data as any).commission as Commission;
             }
         },
@@ -143,12 +142,12 @@ export default function CommissionInlineEntry({
                         </div>
                     ) : (
                         <div className="flex items-center gap-3">
-                            {['COMPLETED', 'INSTALLED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'].includes(leadStatus || '') ? (
+                            {leadStatus === 'COMPLETED' ? (
                                 <>
                                     <button
                                         onClick={() => setIsEditing(true)}
                                         className="text-orange-600 hover:text-orange-700 hover:bg-orange-100 p-1.5 rounded transition-colors"
-                                        title="Edit Commission (within 24h)"
+                                        title="Edit Commission"
                                     >
                                         <Edit2 className="w-4 h-4" />
                                     </button>

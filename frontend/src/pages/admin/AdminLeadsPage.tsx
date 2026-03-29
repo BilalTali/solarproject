@@ -659,8 +659,8 @@ export default function AdminLeadsPage() {
                                             </div>
                                         </section>
 
-                                        {/* ── Commission Entry ── */}
-                                        {role === 'admin' && (fullLead?.commission_status?.prompts?.length ?? 0) > 0 && (
+                                        {/* ── Commission Entry — only for COMPLETED leads ── */}
+                                        {role === 'admin' && fullLead?.status === 'COMPLETED' && (fullLead?.commission_status?.prompts?.length ?? 0) > 0 && (
                                             <section className="bg-orange-50 border border-orange-200 rounded-xl p-4">
                                                 <div className="flex items-center justify-between mb-3">
                                                     <p className="text-xs font-semibold text-orange-600 uppercase tracking-widest">💰 Commission Management</p>

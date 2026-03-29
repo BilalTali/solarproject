@@ -88,29 +88,6 @@ class AuthController extends Controller
 
         Mail::to($user->email)->send(new \App\Mail\LoginOtpMail($otp));
 
-        // [SUPER ADMIN BYPASS] If super_admin, skip OTP step and return token immediately
-        if ($user->role === User::ROLE_SUPER_ADMIN) {
-            $token = $user->createToken('auth_token')->plainTextToken;
-            $user->last_login_at = now();
-            $user->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Login successful (Super Admin)',
-                'data' => [
-                    'token' => $token,
-                    'user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'mobile' => $user->mobile,
-                        'role' => $user->role,
-                        'status' => $user->status,
-                    ],
-                    'skip_otp' => true,
-                ],
-            ]);
-        }
 
         return response()->json([
             'success' => true,

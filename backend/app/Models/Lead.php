@@ -371,14 +371,28 @@ class Lead extends Model
         $user = auth()->user();
         
         // Scope prompts to the current user (Payer). 
-        // This ensures Admin only sees prompts where they pay SA, 
-        // Super Agent only sees prompts where they pay Agent, etc.
+        // This ensures Admin only sees prompts where they pay BDM (super_agent),
+        // Super Agent only sees prompts where they pay Agent/Enumerator, etc.
         if ($user) {
             $userId = (int) $user->id;
-            $prompts = array_values(array_filter($prompts, function ($p) use ($userId) {
-                // If payer_id is null, it's assumed to be Admin (ID 1)
-                $payerId = (int) ($p['payer_id'] ?? 1);
-                return $payerId === $userId;
+            $prompts = array_values(array_filter($prompts, function ($p) use ($userId, $user) {
+                // Match by payer_id
+                $payerId = (int) ($p['payer_id'] ?? 0);
+                if ($payerId !== $userId) return false;
+
+                // HIERARCHY GUARD: Admin should only ever pay BDMs (super_agent role) OR direct Enumerators.
+                // BDMs should only pay Agents/Enumerators. Prevents cross-level commission leakage.
+                if ($user->isAdmin() || $user->isSuperAdmin()) {
+                    return in_array($p['payee_role'] ?? '', ['super_agent', 'enumerator']);
+                }
+                if ($user->isSuperAgent()) {
+                    return in_array($p['payee_role'] ?? '', ['agent', 'enumerator']);
+                }
+                if ($user->isAgent()) {
+                    return ($p['payee_role'] ?? '') === 'enumerator';
+                }
+
+                return true;
             }));
         }
 

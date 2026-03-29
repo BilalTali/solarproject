@@ -1,5 +1,5 @@
 @php
-    /** @var \App\Models\User|null $user */
+    /** @var \App\Models\User $user */
     /** @var string|null $companyName */
     /** @var string|null $logoBase64 */
     /** @var string|null $profilePhotoBase64 */
@@ -26,7 +26,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>{{ $companyName ?? 'Suryamitra' }} — {{ $user?->name ?? 'User' }}</title>
+  <title>{{ $companyName ?? 'Suryamitra' }} — {{ isset($user) ? $user->name : 'User' }}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -332,7 +332,7 @@
       </div>
 
       <div class="card-body">
-        <h2 class="name-h1">{{ $user?->name ?? 'User Name' }}</h2>
+        <h2 class="name-h1">{{ $user->name ?? 'User Name' }}</h2>
         <span class="role-pill">{{ $designation ?? 'Member' }}</span>
 
         <div class="data-grid">
@@ -343,7 +343,7 @@
             </div>
             <div class="data-col">
               <span class="label-tag">Father's Name</span>
-              <span class="value-tag" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $user?->father_name ?? 'N/A' }}</span>
+              <span class="value-tag" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $user->father_name ?? 'N/A' }}</span>
             </div>
           </div>
           <div class="data-row">

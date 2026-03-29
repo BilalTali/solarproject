@@ -22,6 +22,10 @@ export const adminCommissionsApi = {
     enterEnumeratorCommission: (leadUlid: string, payload: EnterCommissionPayload) =>
         axiosInstance.post(`/admin/leads/${leadUlid}/commission/enumerator`, payload),
 
+    // Unified commission entry: sends payee_id + amount, backend handles routing
+    enterCommission: (leadUlid: string, payload: { payee_id: number; amount: number }) =>
+        axiosInstance.post(`/admin/leads/${leadUlid}/commission/enter`, payload),
+
     updateCommission: (id: number, payload: EnterCommissionPayload) =>
         axiosInstance.put(`/admin/commissions/${id}`, payload),
 

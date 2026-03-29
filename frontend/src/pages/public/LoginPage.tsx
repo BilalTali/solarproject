@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 
 function dashboardForRole(role: string): string {
     switch (role) {
+        case 'super_admin': return '/super-admin/dashboard';
         case 'admin':       return '/admin/dashboard';
         case 'super_agent': return '/super-agent/dashboard';
         case 'agent':       return '/agent/dashboard';

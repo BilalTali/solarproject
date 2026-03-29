@@ -58,13 +58,6 @@ export default function UnifiedLoginForm() {
             authApi.sendOtp({ identifier: data.email, password: data.password, role: 'any' }),
         onSuccess: (res, variables) => {
             if (res.success) {
-                // [SUPER ADMIN BYPASS] If skip_otp is returned, log in immediately
-                if (res.data?.skip_otp && res.data?.token && res.data?.user) {
-                    setAuth(res.data.token, res.data.user);
-                    toast.success(`Welcome back, ${res.data.user.name}!`);
-                    navigate(dashboardForRole(res.data.user.role));
-                    return;
-                }
 
                 setCredentials(variables);
                 setStep(2);

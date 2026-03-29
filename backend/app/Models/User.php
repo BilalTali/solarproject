@@ -213,7 +213,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         'aadhaar_document', 'pan_document', 'education_level', 'education_cert',
         'resume', 'mou_signed', 'super_agent_id', 'created_by_super_agent_id',
         'created_by_agent_id', 'enumerator_id', 'enumerator_creator_role',
-        'parent_id', 'permissions',
+        'parent_id', 'permissions', 'role', 'status',
     ];
 
     protected static function boot()
@@ -441,6 +441,31 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
     public function scopeOperators(Builder $query): Builder
     {
         return $query->where(fn ($q) => $q->where('role', 'operator'));
+    }
+
+    public function scopeAdmins(Builder $query): Builder
+    {
+        return $this->scopeRoleAdmin($query);
+    }
+
+    public function scopeSuperAgents(Builder $query): Builder
+    {
+        return $this->scopeRoleSuperAgent($query);
+    }
+
+    public function scopeAgents(Builder $query): Builder
+    {
+        return $this->scopeRoleAgent($query);
+    }
+
+    public function scopeEnumerators(Builder $query): Builder
+    {
+        return $this->scopeRoleEnumerator($query);
+    }
+
+    public function scopeSuperAdmins(Builder $query): Builder
+    {
+        return $this->scopeRoleSuperAdmin($query);
     }
 
     public function scopeActive(Builder $query): Builder
