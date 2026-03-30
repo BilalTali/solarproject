@@ -8,6 +8,7 @@ use App\Http\Controllers\Solar\FeedbackController;
 use App\Http\Controllers\Admin\MediaController;
 // Agent
 use App\Http\Controllers\Solar\PublicController;
+use App\Http\Controllers\Admin\FAQController as AdminFAQController;
 use App\Http\Controllers\Admin\AdminAgentController as AdminAgentController;
 use App\Http\Controllers\Api\V1\Admin\CommissionSlabController as AdminCommissionSlabController;
 use App\Http\Controllers\Admin\AdminDashboardController as AdminDashboardController;
@@ -83,6 +84,7 @@ $api->as('api.v1.')->group(function () {
     Route::get('/public/feedback', [FeedbackController::class, 'store'])->middleware('throttle:forms');
     Route::get('/public/documents', [DocumentController::class, 'publicIndex'])->middleware(\App\Http\Middleware\CacheResponse::class);
     Route::get('/public/verify-agent/{token}', [PublicController::class, 'verifyAgent']);
+    Route::get('/public/help', [PublicController::class, 'help']);
 
     // Signed View for Lead Documents (No auth header needed, secured by signature)
     Route::get('/signed/leads/{ulid}/documents/{id}/view', [LeadDocumentController::class, 'viewSigned'])
@@ -278,6 +280,7 @@ $api->as('api.v1.')->group(function () {
             Route::put('/super-agents/{id}/status', [AdminSuperAgentController::class, 'updateStatus']);
             Route::delete('/super-agents/{id}', [AdminSuperAgentController::class, 'destroy']);
             Route::post('/super-agents/{id}/regenerate-qr', [AdminSuperAgentController::class, 'regenerateQr']);
+            Route::put('/super-agents/{id}/toggle-public-contact', [AdminSuperAgentController::class, 'togglePublicContact']);
             Route::get('/super-agents/{id}/qr-scans', [AdminSuperAgentController::class, 'getQrScans']);
 
             // Super Agent Team Assignment
@@ -365,6 +368,10 @@ $api->as('api.v1.')->group(function () {
             Route::post('/documents', [DocumentController::class, 'store']);
             Route::patch('/documents/{document}', [DocumentController::class, 'update']);
             Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
+
+            // FAQs (admin)
+            Route::apiResource('faqs', AdminFAQController::class);
+            Route::patch('/faqs/{faq}/toggle-status', [AdminFAQController::class, 'toggleStatus']);
         });
 
         // ==============================

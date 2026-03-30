@@ -107,6 +107,23 @@ export interface PublicDocument {
     created_at: string;
 }
 
+export interface HelpCenterData {
+    faqs: {
+        id: number;
+        question: string;
+        answer: string;
+        category: string | null;
+    }[];
+    contacts: {
+        id: number;
+        name: string;
+        district: string | null;
+        state: string | null;
+        whatsapp: string | null;
+        role: string;
+    }[];
+}
+
 export const publicApi = {
     getSettings: async (): Promise<PublicSettingsData> => {
         const res = await api.get<ApiResponse<PublicSettingsData>>('/public/settings');
@@ -135,5 +152,9 @@ export const publicApi = {
     getDocuments: async (): Promise<PublicDocument[]> => {
         const res = await api.get<ApiResponse<PublicDocument[]>>('/public/documents');
         return res.data.data ?? [];
+    },
+    getHelpData: async (): Promise<HelpCenterData> => {
+        const res = await api.get<ApiResponse<HelpCenterData>>('/public/help');
+        return res.data.data as HelpCenterData;
     },
 };

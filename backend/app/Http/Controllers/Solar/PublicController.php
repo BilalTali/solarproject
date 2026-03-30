@@ -152,4 +152,30 @@ class PublicController extends Controller
             default => 'MEMBER',
         };
     }
+
+    public function help()
+    {
+        $faqs = \App\Models\FAQ::published()->orderBy('sort_order')->get();
+        
+        $contacts = \App\Models\User::where('is_public_contact', true)
+            ->where('status', 'active')
+            ->select('id', 'name', 'district', 'state', 'whatsapp_number', 'role')
+            ->orderBy('public_contact_order')
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'district' => $user->district,
+                    'state' => $user->state,
+                    'whatsapp' => $user->whatsapp_number,
+                    'role' => strtoupper(str_replace('_', ' ', $user->role)),
+                ];
+            });
+
+        return response()->json([
+            'faqs' => $faqs,
+            'contacts' => $contacts
+        ]);
+    }
 }

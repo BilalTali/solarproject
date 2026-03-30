@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, Star, Users } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { adminSuperAgentApi } from '@/services/adminSuperAgent.api';
 import type { User } from '@/types';
 import { Link } from 'react-router-dom';
@@ -33,21 +34,33 @@ export default function AdminSuperAgentsPage() {
         }),
     });
 
+    const togglePublicContactMutation = useMutation({
+        mutationFn: (id: number) => adminSuperAgentApi.togglePublicContact(id),
+        onSuccess: (res) => {
+            queryClient.invalidateQueries({ queryKey: ['admin-super-agents'] });
+            toast.success(res.message);
+        },
+        onError: () => toast.error('Failed to update public contact status.'),
+    });
+
     const createMutation = useMutation({
         mutationFn: (formData: Record<string, unknown>) => adminSuperAgentApi.createSuperAgent(formData),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-super-agents'] });
+            toast.success('Business Development Manager created successfully');
             setShowCreate(false);
-            setCreateForm({ name: '', mobile: '', email: '', password: '', whatsapp_number: '', district: '', state: '', area: '' });
+            setCreateForm({
+                name: '', mobile: '', email: '', password: '',
+                whatsapp_number: '', district: '', state: '', area: '',
+            });
             setCreateError(null);
         },
-        onError: (err: unknown) => {
-            const e = err as { response?: { data?: { message?: string } } };
-            setCreateError(e.response?.data?.message ?? 'Failed to create super agent.');
-        },
+        onError: (err: any) => {
+            setCreateError(err.response?.data?.message || 'Failed to create BDM');
+        }
     });
 
-    const superAgents: User[] = data?.data?.data ?? [];
+    const superAgents: (User & { is_public_contact?: boolean })[] = data?.data?.data ?? [];
 
     return (
         <div className="space-y-5">
@@ -93,7 +106,7 @@ export default function AdminSuperAgentsPage() {
                     <table className="min-w-full text-sm">
                         <thead className="bg-slate-50 border-b border-slate-200">
                             <tr>
-                                {['SSM Code', 'Name', 'Mobile', 'State', 'Business Development Executives', 'Status', 'Actions'].map(h => (
+                                {['SSM Code', 'Name', 'Mobile', 'State', 'Executives', 'Status', 'Public Support', 'Actions'].map(h => (
                                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{h}</th>
                                 ))}
                             </tr>
@@ -127,6 +140,21 @@ export default function AdminSuperAgentsPage() {
                                             <span className={`px-2 py-0.5 rounded text-xs font-medium ${STATUS_BADGE[sa.status]}`}>
                                                 {sa.status}
                                             </span>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center gap-2">
+                                                <label className="relative inline-flex items-center cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="sr-only peer"
+                                                        checked={sa.is_public_contact || false}
+                                                        onChange={() => togglePublicContactMutation.mutate(sa.id)}
+                                                        disabled={togglePublicContactMutation.isPending}
+                                                    />
+                                                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
+                                                </label>
+                                                {sa.is_public_contact && <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Visible</span>}
+                                            </div>
                                         </td>
                                         <td className="px-4 py-3">
                                             <Link

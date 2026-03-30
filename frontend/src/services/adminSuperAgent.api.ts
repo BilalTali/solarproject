@@ -35,6 +35,10 @@ export const adminSuperAgentApi = {
         const res = await api.get<{ success: boolean; data: PaginatedResponse<any> }>(`/admin/super-agents/${id}/qr-scans`, { params });
         return res.data;
     },
+    togglePublicContact: async (id: number) => {
+        const res = await api.put<{ success: boolean; message: string; data: User }>(`/admin/super-agents/${id}/toggle-public-contact`);
+        return res.data;
+    },
 
     // Team Assignment
     getSuperAgentTeam: async (id: number) => {

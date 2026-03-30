@@ -256,4 +256,19 @@ class AdminSuperAgentController extends Controller
             'data' => $sa->fresh(),
         ]);
     }
+
+    public function togglePublicContact(Request $request, $id)
+    {
+        $sa = User::query()->superAgents()->findOrFail($id);
+        
+        $sa->update([
+            'is_public_contact' => !$sa->is_public_contact
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $sa->is_public_contact ? 'Marked as public contact' : 'Removed from public contacts',
+            'data' => $sa->fresh()
+        ]);
+    }
 }
