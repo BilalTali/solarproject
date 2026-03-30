@@ -89,3 +89,16 @@ export function getLeadStatusColor(status: string): string {
 export function getLeadStatusBadgeClass(status: string): string {
     return LEAD_STATUS_CONFIG[status]?.badgeClass || 'badge-new';
 }
+
+export const MILESTONE_STATUSES = [
+    'REGISTERED',
+    'SITE_SURVEY',
+    'AT_BANK',
+    'COMPLETED',
+    'PROJECT_COMMISSIONING',
+    'SUBSIDY_REQUEST',
+    'SUBSIDY_APPLIED',
+    'SUBSIDY_DISBURSED'
+];
+
+export const COMMISSIONABLE_STATUSES = MILESTONE_STATUSES;

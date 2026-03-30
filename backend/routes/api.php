@@ -1,43 +1,43 @@
 <?php
 
-use App\Http\Controllers\Api\AchievementController;
+use App\Http\Controllers\Solar\AchievementController;
 // Auth
-use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Solar\DocumentController;
 // Public
-use App\Http\Controllers\Api\FeedbackController;
-use App\Http\Controllers\Api\MediaController;
+use App\Http\Controllers\Solar\FeedbackController;
+use App\Http\Controllers\Admin\MediaController;
 // Agent
-use App\Http\Controllers\Api\PublicController;
-use App\Http\Controllers\Api\V1\Admin\AgentController as AdminAgentController;
+use App\Http\Controllers\Solar\PublicController;
+use App\Http\Controllers\Admin\AdminAgentController as AdminAgentController;
 use App\Http\Controllers\Api\V1\Admin\CommissionSlabController as AdminCommissionSlabController;
-use App\Http\Controllers\Api\V1\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\AdminDashboardController as AdminDashboardController;
 // Super Agent
-use App\Http\Controllers\Api\V1\Admin\LeadController as AdminLeadController;
-use App\Http\Controllers\Api\V1\Admin\OfferController as AdminOfferController;
-use App\Http\Controllers\Api\V1\Admin\OperatorController as AdminOperatorController;
-use App\Http\Controllers\Api\V1\Admin\ReportController as AdminReportController;
-use App\Http\Controllers\Api\V1\Admin\SettingController as AdminSettingController;
-use App\Http\Controllers\Api\V1\Admin\SuperAgentController as AdminSuperAgentController;
+use App\Http\Controllers\Admin\AdminLeadController as AdminLeadController;
+use App\Http\Controllers\Admin\AdminOfferController as AdminOfferController;
+use App\Http\Controllers\Admin\OperatorController as AdminOperatorController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\SettingController as AdminSettingController;
+use App\Http\Controllers\Admin\AdminSuperAgentController as AdminSuperAgentController;
 // Super Admin
-use App\Http\Controllers\Api\V1\SuperAdmin\AdminManagementController;
-use App\Http\Controllers\Api\V1\SuperAdmin\MonitoringController;
+use App\Http\Controllers\Admin\AdminManagementController;
+use App\Http\Controllers\Admin\MonitoringController;
 // Admin
-use App\Http\Controllers\Api\V1\Agent\DashboardController as AgentDashboardController;
-use App\Http\Controllers\Api\V1\Agent\LeadController as AgentLeadController;
-use App\Http\Controllers\Api\V1\Agent\NotificationController as AgentNotificationController;
-use App\Http\Controllers\Api\V1\Agent\OfferController as AgentOfferController;
-use App\Http\Controllers\Api\V1\Auth\AuthController;
-use App\Http\Controllers\Api\V1\ICardController;
-use App\Http\Controllers\Api\V1\JoiningLetterController;
-use App\Http\Controllers\Api\V1\LeadDocumentController;
-use App\Http\Controllers\Api\V1\Portal\EligibilityController;
-use App\Http\Controllers\Api\V1\Portal\LeadController as PublicLeadController;
+use App\Http\Controllers\Admin\AgentDashboardController as AgentDashboardController;
+use App\Http\Controllers\Admin\AgentLeadController as AgentLeadController;
+use App\Http\Controllers\Admin\AgentNotificationController as AgentNotificationController;
+use App\Http\Controllers\Admin\AgentOfferController as AgentOfferController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Admin\ICardController;
+use App\Http\Controllers\Admin\JoiningLetterController;
+use App\Http\Controllers\Solar\LeadDocumentController;
+use App\Http\Controllers\Solar\EligibilityController;
+use App\Http\Controllers\Solar\PortalLeadController as PublicLeadController;
 // CMS
-use App\Http\Controllers\Api\V1\SuperAgent\AgentController as SAAgentController;
-use App\Http\Controllers\Api\V1\SuperAgent\DashboardController as SADashboardController;
-use App\Http\Controllers\Api\V1\SuperAgent\LeadController as SALeadController;
-use App\Http\Controllers\Api\V1\SuperAgent\NotificationController as SANotificationController;
-use App\Http\Controllers\Api\V1\SuperAgent\OfferController as SAOfferController;
+use App\Http\Controllers\Admin\SuperAgentAgentController as SAAgentController;
+use App\Http\Controllers\Admin\SuperAgentDashboardController as SADashboardController;
+use App\Http\Controllers\Admin\SuperAgentLeadController as SALeadController;
+use App\Http\Controllers\Admin\SuperAgentNotificationController as SANotificationController;
+use App\Http\Controllers\Admin\SuperAgentOfferController as SAOfferController;
 use Illuminate\Support\Facades\Route;
 
 // Health check — no auth required — used by uptime monitoring
@@ -115,7 +115,7 @@ $api->as('api.v1.')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/set-password', [AuthController::class, 'setPassword']);
         Route::post('/auth/profile-photo', [AuthController::class, 'uploadProfilePhoto']);
-        Route::put('/profile/change-password', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'changePassword']);
+        Route::put('/profile/change-password', [\App\Http\Controllers\Auth\SharedProfileController::class, 'changePassword']);
         Route::get('/icard/download-url', [ICardController::class, 'getDownloadUrl']);
         Route::get('/joining-letter/download-url', [JoiningLetterController::class, 'getDownloadUrl']);
         Route::get('/documents', [DocumentController::class, 'index']); // Auth-only resources
@@ -129,22 +129,22 @@ $api->as('api.v1.')->group(function () {
         // ENUMERATOR ROUTES
         // ==============================
         Route::middleware('enumerator')->prefix('enumerator')->group(function () {
-            Route::get('/dashboard/stats', [\App\Http\Controllers\Api\V1\Enumerator\DashboardController::class, 'stats']);
+            Route::get('/dashboard/stats', [\App\Http\Controllers\Admin\EnumeratorDashboardController::class, 'stats']);
             Route::get('/profile', [AuthController::class, 'me']);
-            Route::put('/profile', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'update']);
+            Route::put('/profile', [\App\Http\Controllers\Auth\SharedProfileController::class, 'update']);
             
-            Route::get('/leads', [\App\Http\Controllers\Api\V1\Enumerator\LeadController::class, 'index']);
-            Route::post('/leads', [\App\Http\Controllers\Api\V1\Enumerator\LeadController::class, 'store']);
-            Route::get('/leads/{ulid}', [\App\Http\Controllers\Api\V1\Enumerator\LeadController::class, 'show']);
-            Route::post('/leads/{ulid}/documents', [\App\Http\Controllers\Api\V1\Enumerator\LeadController::class, 'uploadDocument']);
+            Route::get('/leads', [\App\Http\Controllers\Admin\EnumeratorLeadController::class, 'index']);
+            Route::post('/leads', [\App\Http\Controllers\Admin\EnumeratorLeadController::class, 'store']);
+            Route::get('/leads/{ulid}', [\App\Http\Controllers\Admin\EnumeratorLeadController::class, 'show']);
+            Route::post('/leads/{ulid}/documents', [\App\Http\Controllers\Admin\EnumeratorLeadController::class, 'uploadDocument']);
             
-            Route::get('/commissions', [\App\Http\Controllers\Api\V1\Enumerator\CommissionController::class, 'index']);
+            Route::get('/commissions', [\App\Http\Controllers\Admin\EnumeratorCommissionController::class, 'index']);
             
-            Route::get('/notifications', [\App\Http\Controllers\Api\V1\Enumerator\NotificationController::class, 'index']);
-            Route::put('/notifications/{id}/read', [\App\Http\Controllers\Api\V1\Enumerator\NotificationController::class, 'markAsRead']);
+            Route::get('/notifications', [\App\Http\Controllers\Admin\EnumeratorNotificationController::class, 'index']);
+            Route::put('/notifications/{id}/read', [\App\Http\Controllers\Admin\EnumeratorNotificationController::class, 'markAsRead']);
             
-            Route::get('/withdrawals', [\App\Http\Controllers\WithdrawalRequestController::class, 'index']);
-            Route::post('/withdrawals', [\App\Http\Controllers\WithdrawalRequestController::class, 'store']);
+            Route::get('/withdrawals', [\App\Http\Controllers\Admin\WithdrawalRequestController::class, 'index']);
+            Route::post('/withdrawals', [\App\Http\Controllers\Admin\WithdrawalRequestController::class, 'store']);
         });
 
         // ==============================
@@ -165,11 +165,11 @@ $api->as('api.v1.')->group(function () {
             Route::get('/leads/{ulid}/verification-history', [AgentLeadController::class, 'verificationHistory']);
             Route::post('/leads/{ulid}/documents', [AgentLeadController::class, 'uploadDocument']);
 
-            Route::get('/commissions', [\App\Http\Controllers\Api\V1\Agent\CommissionController::class, 'index']);
-            Route::get('/commissions/summary', [\App\Http\Controllers\Api\V1\Agent\CommissionController::class, 'summary']);
-            Route::post('/leads/{ulid}/commission/enumerator', [\App\Http\Controllers\Api\V1\Agent\CommissionController::class, 'enterEnumeratorCommission']);
-            Route::put('/commissions/{id}', [\App\Http\Controllers\Api\V1\Agent\CommissionController::class, 'update']);
-            Route::put('/commissions/{id}/mark-paid', [\App\Http\Controllers\Api\V1\Agent\CommissionController::class, 'markPaid']);
+            Route::get('/commissions', [\App\Http\Controllers\Admin\AgentCommissionController::class, 'index']);
+            Route::get('/commissions/summary', [\App\Http\Controllers\Admin\AgentCommissionController::class, 'summary']);
+            Route::post('/leads/{ulid}/commission/enumerator', [\App\Http\Controllers\Admin\AgentCommissionController::class, 'enterEnumeratorCommission']);
+            Route::put('/commissions/{id}', [\App\Http\Controllers\Admin\AgentCommissionController::class, 'update']);
+            Route::put('/commissions/{id}/mark-paid', [\App\Http\Controllers\Admin\AgentCommissionController::class, 'markPaid']);
 
             Route::get('/notifications', [AgentNotificationController::class, 'index']);
             Route::put('/notifications/{id}/read', [AgentNotificationController::class, 'markAsRead']);
@@ -185,14 +185,14 @@ $api->as('api.v1.')->group(function () {
             Route::post('/offers/{id}/redeem', [AgentOfferController::class, 'redeem']);
             Route::get('/offers/redemptions', [AgentOfferController::class, 'redemptions']);
 
-            Route::put('/profile', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'update']);
+            Route::put('/profile', [\App\Http\Controllers\Auth\SharedProfileController::class, 'update']);
 
             // Enumerators
-            Route::apiResource('enumerators', \App\Http\Controllers\Api\V1\Agent\EnumeratorController::class)->names('agent.enumerators');
-            Route::put('/enumerators/{id}/status', [\App\Http\Controllers\Api\V1\Agent\EnumeratorController::class, 'updateStatus']);
+            Route::apiResource('enumerators', \App\Http\Controllers\Admin\AgentEnumeratorController::class)->names('agent.enumerators');
+            Route::put('/enumerators/{id}/status', [\App\Http\Controllers\Admin\AgentEnumeratorController::class, 'updateStatus']);
 
-            Route::get('/withdrawals', [\App\Http\Controllers\WithdrawalRequestController::class, 'index']);
-            Route::post('/withdrawals', [\App\Http\Controllers\WithdrawalRequestController::class, 'store']);
+            Route::get('/withdrawals', [\App\Http\Controllers\Admin\WithdrawalRequestController::class, 'index']);
+            Route::post('/withdrawals', [\App\Http\Controllers\Admin\WithdrawalRequestController::class, 'store']);
         });
 
         // ==============================
@@ -216,13 +216,13 @@ $api->as('api.v1.')->group(function () {
             Route::get('/leads/{ulid}/verification-history', [SALeadController::class, 'verificationHistory']);
             Route::post('/leads/{ulid}/documents', [SALeadController::class, 'uploadDocument']);
 
-            Route::get('/commissions', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'index']);
-            Route::get('/commissions/summary', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'summary']);
-            Route::post('/leads/{ulid}/commission/agent', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'enterAgentCommission']);
-            Route::post('/leads/{ulid}/commission/enumerator', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'enterEnumeratorCommission']);
-            Route::put('/commissions/{id}', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'update']);
-            Route::put('/commissions/{id}/mark-paid', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'markPaid']);
-            Route::get('/leads/{ulid}/commissions', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionController::class, 'getLeadCommissions']);
+            Route::get('/commissions', [\App\Http\Controllers\Admin\SuperAgentCommissionController::class, 'index']);
+            Route::get('/commissions/summary', [\App\Http\Controllers\Admin\SuperAgentCommissionController::class, 'summary']);
+            Route::post('/leads/{ulid}/commission/agent', [\App\Http\Controllers\Admin\SuperAgentCommissionController::class, 'enterAgentCommission']);
+            Route::post('/leads/{ulid}/commission/enumerator', [\App\Http\Controllers\Admin\SuperAgentCommissionController::class, 'enterEnumeratorCommission']);
+            Route::put('/commissions/{id}', [\App\Http\Controllers\Admin\SuperAgentCommissionController::class, 'update']);
+            Route::put('/commissions/{id}/mark-paid', [\App\Http\Controllers\Admin\SuperAgentCommissionController::class, 'markPaid']);
+            Route::get('/leads/{ulid}/commissions', [\App\Http\Controllers\Admin\SuperAgentCommissionController::class, 'getLeadCommissions']);
 
             Route::get('/notifications', [SANotificationController::class, 'index']);
             Route::put('/notifications/{id}/read', [SANotificationController::class, 'markRead']);
@@ -237,15 +237,15 @@ $api->as('api.v1.')->group(function () {
 
             Route::get('/profile', [AuthController::class, 'me']);
             Route::get('/profile/qr-scans', [SADashboardController::class, 'getQrScans']);
-            Route::put('/profile', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'update']);
-            Route::put('/change-password', [\App\Http\Controllers\Api\V1\Shared\ProfileController::class, 'changePassword']);
+            Route::put('/profile', [\App\Http\Controllers\Auth\SharedProfileController::class, 'update']);
+            Route::put('/change-password', [\App\Http\Controllers\Auth\SharedProfileController::class, 'changePassword']);
 
             // Route::get('/commission-slabs', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionSlabController::class, 'index']);
             // Route::post('/commission-slabs', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionSlabController::class, 'store']);
 
             // Enumerators
-            Route::apiResource('enumerators', \App\Http\Controllers\Api\V1\SuperAgent\EnumeratorController::class)->names('super-agent.enumerators');
-            Route::put('/enumerators/{id}/status', [\App\Http\Controllers\Api\V1\SuperAgent\EnumeratorController::class, 'updateStatus']);
+            Route::apiResource('enumerators', \App\Http\Controllers\Admin\SuperAgentEnumeratorController::class)->names('super-agent.enumerators');
+            Route::put('/enumerators/{id}/status', [\App\Http\Controllers\Admin\SuperAgentEnumeratorController::class, 'updateStatus']);
         });
 
         // ADMIN ROUTES
@@ -261,8 +261,8 @@ $api->as('api.v1.')->group(function () {
             Route::get('/agents/{id}/qr-scans', [AdminAgentController::class, 'getQrScans']);
 
             // Enumerators
-            Route::apiResource('enumerators', \App\Http\Controllers\Api\V1\Admin\EnumeratorController::class)->names('admin.enumerators');
-            Route::put('/enumerators/{id}/status', [\App\Http\Controllers\Api\V1\Admin\EnumeratorController::class, 'updateStatus']);
+            Route::apiResource('enumerators', \App\Http\Controllers\Admin\AdminEnumeratorController::class)->names('admin.enumerators');
+            Route::put('/enumerators/{id}/status', [\App\Http\Controllers\Admin\AdminEnumeratorController::class, 'updateStatus']);
 
             // Operators (Admin-only management)
             Route::get('/operators', [AdminOperatorController::class, 'index']);
@@ -296,15 +296,15 @@ $api->as('api.v1.')->group(function () {
             Route::post('/leads/{ulid}/documents', [AdminLeadController::class, 'uploadDocument']);
 
             // Commissions
-            Route::get('/commissions', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'index']);
-            Route::get('/commissions/summary', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'summary']);
-            Route::post('/leads/{ulid}/commission/super-agent', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'enterSuperAgentCommission']);
-            Route::post('/leads/{ulid}/commission/agent-direct', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'enterDirectAgentCommission']);
-            Route::post('/leads/{ulid}/commission/enumerator', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'enterEnumeratorCommission']);
-            Route::post('/leads/{ulid}/commission/enter', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'enterCommission']);
-            Route::put('/commissions/{id}', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'update']);
-            Route::put('/commissions/{id}/mark-paid', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'markPaid']);
-            Route::get('/leads/{ulid}/commissions', [\App\Http\Controllers\Api\V1\Admin\CommissionController::class, 'getLeadCommissions']);
+            Route::get('/commissions', [\App\Http\Controllers\Admin\AdminCommissionController::class, 'index']);
+            Route::get('/commissions/summary', [\App\Http\Controllers\Admin\AdminCommissionController::class, 'summary']);
+            Route::post('/leads/{ulid}/commission/super-agent', [\App\Http\Controllers\Admin\AdminCommissionController::class, 'enterSuperAgentCommission']);
+            Route::post('/leads/{ulid}/commission/agent-direct', [\App\Http\Controllers\Admin\AdminCommissionController::class, 'enterDirectAgentCommission']);
+            Route::post('/leads/{ulid}/commission/enumerator', [\App\Http\Controllers\Admin\AdminCommissionController::class, 'enterEnumeratorCommission']);
+            Route::post('/leads/{ulid}/commission/enter', [\App\Http\Controllers\Admin\AdminCommissionController::class, 'enterCommission']);
+            Route::put('/commissions/{id}', [\App\Http\Controllers\Admin\AdminCommissionController::class, 'update']);
+            Route::put('/commissions/{id}/mark-paid', [\App\Http\Controllers\Admin\AdminCommissionController::class, 'markPaid']);
+            Route::get('/leads/{ulid}/commissions', [\App\Http\Controllers\Admin\AdminCommissionController::class, 'getLeadCommissions']);
 
             // Reports
             Route::get('/reports/pipeline', [AdminReportController::class, 'pipelineSummary']);
@@ -316,10 +316,10 @@ $api->as('api.v1.')->group(function () {
             // Route::get('/commission-slabs', [AdminCommissionSlabController::class, 'index']);
 
             // Withdrawals
-            Route::get('/withdrawals', [\App\Http\Controllers\WithdrawalRequestController::class, 'adminIndex']);
-            Route::put('/withdrawals/{id}/approve', [\App\Http\Controllers\WithdrawalRequestController::class, 'approve']);
-            Route::put('/withdrawals/{id}/reject', [\App\Http\Controllers\WithdrawalRequestController::class, 'reject']);
-            Route::put('/withdrawals/{id}/mark-paid', [\App\Http\Controllers\WithdrawalRequestController::class, 'markPaid']);
+            Route::get('/withdrawals', [\App\Http\Controllers\Admin\WithdrawalRequestController::class, 'adminIndex']);
+            Route::put('/withdrawals/{id}/approve', [\App\Http\Controllers\Admin\WithdrawalRequestController::class, 'approve']);
+            Route::put('/withdrawals/{id}/reject', [\App\Http\Controllers\Admin\WithdrawalRequestController::class, 'reject']);
+            Route::put('/withdrawals/{id}/mark-paid', [\App\Http\Controllers\Admin\WithdrawalRequestController::class, 'markPaid']);
 
             // Route::post('/commission-slabs', [AdminCommissionSlabController::class, 'store']);
             // Route::put('/commission-slabs/{id}', [AdminCommissionSlabController::class, 'update']);

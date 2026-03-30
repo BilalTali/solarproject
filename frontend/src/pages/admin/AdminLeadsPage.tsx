@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import type { Lead, ApiResponse, PaginatedResponse, CommissionPrompt } from '@/types';
 import CommissionInlineEntry from '@/components/admin/CommissionInlineEntry';
 import { useAuthStore } from '@/store/authStore';
-import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor } from '@/constants/leadStatuses';
+import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor, MILESTONE_STATUSES } from '@/constants/leadStatuses';
 
 // ── constants ─────────────────────────────────────────────────────────────────
 const CAPACITY_LABEL: Record<string, string> = {
@@ -680,8 +680,8 @@ export default function AdminLeadsPage() {
                                             </div>
                                         </section>
 
-                                        {/* ── Commission Entry — only for COMPLETED leads ── */}
-                                        {role === 'admin' && fullLead?.status === 'COMPLETED' && (fullLead?.commission_status?.prompts?.length ?? 0) > 0 && (
+                                        {/* ── Commission Entry — only for terminal milestone leads ── */}
+                                        {role === 'admin' && MILESTONE_STATUSES.includes(fullLead?.status as any) && (fullLead?.commission_status?.prompts?.length ?? 0) > 0 && (
                                             <section className="bg-orange-50 border border-orange-200 rounded-xl p-4">
                                                 <div className="flex items-center justify-between mb-3">
                                                     <p className="text-xs font-semibold text-orange-600 uppercase tracking-widest">💰 Commission Management</p>

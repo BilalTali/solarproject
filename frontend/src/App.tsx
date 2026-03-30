@@ -12,7 +12,6 @@ import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
 
 // Public Pages
-import HomePage from '@/pages/public/HomePage';
 import MediaPage from '@/pages/public/MediaPage';
 import PublicDocumentsPage from '@/pages/public/DocumentsPage';
 import VerifyAgentPage from '@/pages/public/VerifyAgentPage';
@@ -24,6 +23,7 @@ import FaqPage from '@/pages/public/FaqPage';
 import SchemeInfoPage from '@/pages/public/SchemeInfoPage';
 import RefundPolicyPage from '@/pages/public/RefundPolicyPage';
 import TrackStatusPage from '@/pages/public/TrackStatusPage';
+import HomePage from '@/pages/public/HomePage';
 import UserManualPage from '@/pages/public/UserManualPage';
 
 // Auth Pages
@@ -53,13 +53,11 @@ import SuperAgentAgentDetailPage from '@/pages/super-agent/SuperAgentAgentDetail
 import SuperAgentLeadsPage from '@/pages/super-agent/SuperAgentLeadsPage';
 import SuperAgentCommissionsPage from '@/pages/super-agent/SuperAgentCommissionsPage';
 import SuperAgentCreateLeadPage from '@/pages/super-agent/SuperAgentCreateLeadPage';
-import SuperAgentProfilePage from '@/pages/super-agent/SuperAgentProfilePage';
 import SuperAgentEnumeratorsPage from '@/pages/super-agent/SuperAgentEnumeratorsPage';
 import { SuperAgentTeamOffersPage } from '@/pages/super-agent/SuperAgentTeamOffersPage';
-import {
-  SuperAgentLeadDetailPage,
-  SuperAgentNotificationsPage,
-} from '@/pages/super-agent/SuperAgentPlaceholders';
+import { SuperAgentLeadDetailPage } from '@/pages/super-agent/SuperAgentLeadDetailPage';
+import { SuperAgentNotificationsPage } from '@/pages/super-agent/SuperAgentNotificationsPage';
+import { SuperAgentProfilePage } from '@/pages/super-agent/SuperAgentProfilePage';
 import DocumentsPage from '@/pages/shared/DocumentsPage';
 
 // Admin Pages

@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\V1\ICardController;
-use App\Http\Controllers\Api\V1\JoiningLetterController;
+use App\Http\Controllers\Admin\ICardController;
+use App\Http\Controllers\Admin\JoiningLetterController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -51,8 +51,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-require __DIR__.'/auth.php';
 
 // ── Admin Preview Routes (Keep in web for easier preview) ────────────
 Route::middleware(['web', 'auth:sanctum', 'admin'])->group(function () {

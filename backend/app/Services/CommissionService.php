@@ -23,8 +23,8 @@ class CommissionService
         float $amount,
         User $payer
     ): Commission {
-        if ($lead->status !== 'COMPLETED') {
-            throw new LeadNotCompletedException('Commission can only be entered for completed leads.');
+        if (! in_array($lead->status, ['COMPLETED', 'REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
+            throw new LeadNotCompletedException('Commission can only be entered for leads that have reached the registration milestone.');
         }
 
         // Authorization logic based on parentage
@@ -206,7 +206,7 @@ class CommissionService
      */
     public function getCommissionStatus(Lead $lead): array
     {
-        if ($lead->status !== 'COMPLETED') {
+        if (! in_array($lead->status, ['COMPLETED', 'REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
             return [];
         }
 
