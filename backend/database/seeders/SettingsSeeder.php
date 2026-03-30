@@ -90,6 +90,11 @@ class SettingsSeeder extends Seeder
             ['key' => 'footer_copyright', 'value' => '© 2026 SuryaMitra. All rights reserved.', 'group' => 'company'],
             ['key' => 'footer_disclaimer', 'value' => '⚠️ SuryaMitra is an independent facilitation agency. Not a government body. PM Surya Ghar Muft Bijli Yojana is a Government of India scheme.', 'group' => 'company'],
 
+            // Navigation Labels
+            ['key' => 'nav_calculator', 'value' => 'Calculator', 'group' => 'homepage'],
+            ['key' => 'nav_track_status', 'value' => 'Track Status', 'group' => 'homepage'],
+            ['key' => 'nav_guide', 'value' => 'Guide', 'group' => 'homepage'],
+
             // ── Offers & Points ────────────────────────────────────────────────
             ['key' => 'capacity_points_json', 'value' => '{"1kw":0,"2kw":0,"3kw":1,"3.3kw":1.1,"4kw":1.5,"5kw":2,"5.5kw":2.2,"6kw":2.5,"7kw":3,"8kw":3.5,"9kw":4,"10kw":5,"above_10kw":6,"above_3kw":1.5}', 'group' => 'offer'],
             ['key' => 'offer_grace_period_days', 'value' => '7', 'group' => 'offer'],
