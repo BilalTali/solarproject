@@ -38,6 +38,9 @@ export const DEFAULT_SETTINGS: PublicSettingsData = {
 
     nav_home: 'Home',
     nav_rewards: 'Rewards',
+    nav_calculator: 'Calculator',
+    nav_track_status: 'Track Status',
+    nav_guide: 'Guide',
     nav_portal_login: 'Portal Login',
     nav_cta_electricity: 'Get Free Electricity',
 
