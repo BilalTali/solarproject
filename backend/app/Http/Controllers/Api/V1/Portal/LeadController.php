@@ -95,39 +95,46 @@ class LeadController extends Controller
             $stepIndex = 4;
         }
 
-        if ($lead->status === 'INSTALLED') {
-            $status = 'Installed';
-            $meaning = 'Your solar panels have been successfully installed';
-            $nextStep = 'Pending joint inspection and testing';
+        if ($lead->status === 'REGISTERED') {
+            $status = 'Registered';
+            $meaning = 'Your application has been registered on the PM Surya Ghar portal';
+            $nextStep = 'Site survey will be arranged soon';
             $stepIndex = 5;
+        }
+
+        if ($lead->status === 'SITE_SURVEY') {
+            $status = 'Site Survey Done';
+            $meaning = 'Technical team has inspected your site for solar installation';
+            $nextStep = 'Installation work will begin shortly';
+            $stepIndex = 6;
         }
 
         if ($lead->status === 'PROJECT_COMMISSIONING') {
             $status = 'Project Commissioned';
             $meaning = 'System successfully tested and commissioned';
             $nextStep = 'We are filing your MNRE subsidy application';
-            $stepIndex = 6;
+            $stepIndex = 7;
         }
 
         if ($lead->status === 'SUBSIDY_REQUEST') {
             $status = 'Subsidy Requested';
             $meaning = 'Your MNRE subsidy claim has been submitted';
             $nextStep = 'Waiting for MNRE approval';
-            $stepIndex = 7;
+            $stepIndex = 8;
         }
 
         if ($lead->status === 'SUBSIDY_DISBURSED') {
             $status = 'Subsidy Disbursed';
             $meaning = 'MNRE has approved and disbursed your subsidy';
             $nextStep = 'Subsidy will reflect in your bank account shortly';
-            $stepIndex = 8;
+            $stepIndex = 9;
         }
 
         if ($lead->status === 'COMPLETED') {
             $status = 'Completed';
             $meaning = 'Your entire solar journey is officially complete';
             $nextStep = 'Enjoy free solar electricity!';
-            $stepIndex = 9;
+            $stepIndex = 10;
         }
 
         if ($lead->verification_status === 'reverted_to_agent') {

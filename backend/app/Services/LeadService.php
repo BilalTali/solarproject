@@ -475,8 +475,9 @@ class LeadService
     public function updateStatus(Lead $lead, string $newStatus, int $changedById, ?string $notes = null): void
     {
         $allStatuses = [
-            'NEW', 'CONTACTED', 'DOCUMENTS_COLLECTED', 'REGISTERED', 'SITE_SURVEY', 'INSTALLATION_PENDING', 'INSTALLED', 
-            'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED', 'REJECTED', 'ON_HOLD', 'COMPLETED', 'INVALID', 'DUPLICATE', 'AT_BANK',
+            'NEW', 'ON_HOLD', 'INVALID', 'DUPLICATE', 'REJECTED',
+            'REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'COMPLETED',
+            'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED',
         ];
 
         if (! in_array($newStatus, $allStatuses)) {
@@ -516,8 +517,8 @@ class LeadService
                 }
             }
 
-            // TRIGGER OFFERS: if status just became 'INSTALLED', 'COMPLETED', or beyond.
-            if (in_array($newStatus, ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
+            // TRIGGER OFFERS: if status just became 'REGISTERED' (installation confirmed) or beyond.
+            if (in_array($newStatus, ['REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
                 $affectedAgent = null;
 
                 // Priority 1: If submitted by an enumerator, points go to their creator/parent

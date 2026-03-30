@@ -13,7 +13,7 @@ class DashboardController extends Controller
         
         $totalLeads = \App\Models\Lead::query()->where(fn($q) => $q->where('submitted_by_enumerator_id', $user->id))->count();
         $leadsInstalled = \App\Models\Lead::query()->where(fn($q) => $q->where('submitted_by_enumerator_id', $user->id))
-            ->where(fn($q) => $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED']))->count();
+            ->where(fn($q) => $q->whereIn('status', ['REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED']))->count();
         
         $approvedLeads = \App\Models\Lead::query()->where(fn($q) => $q->where('submitted_by_enumerator_id', $user->id))
             ->where(fn($q) => $q->whereIn('verification_status', ['super_agent_verified', 'admin_override', 'not_required']))->count();

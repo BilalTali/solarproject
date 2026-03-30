@@ -14,7 +14,7 @@ class UpdateSuperAgentLeadRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['sometimes', 'string', 'in:NEW,CONTACTED,DOCUMENTS_COLLECTED,REGISTERED,SITE_SURVEY,INSTALLATION_PENDING,INSTALLED,SUBSIDY_APPLIED,ON_HOLD'],
+            'status' => ['sometimes', 'string', 'in:NEW,ON_HOLD,REGISTERED,SITE_SURVEY,AT_BANK,PROJECT_COMMISSIONING,SUBSIDY_REQUEST,SUBSIDY_APPLIED,SUBSIDY_DISBURSED,COMPLETED'],
             'notes' => ['sometimes', 'nullable', 'string', 'max:2000'],
             'follow_up_date' => ['sometimes', 'nullable', 'date'],
         ];

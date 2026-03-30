@@ -20,7 +20,7 @@ class DashboardController extends Controller
         $newLeadsToday = Lead::query()->where(fn ($q) => $q->where('created_at', '>=', $today))->count();
         $leadsThisMonth = Lead::query()->where(fn ($q) => $q->where('created_at', '>=', $thisMonth))->count();
 
-        $installedStatuses = ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'];
+        $installedStatuses = ['REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'];
         $totalInstallations = Lead::query()->where(fn ($q) => $q->whereIn('status', $installedStatuses))->count();
         $installationsThisMonth = Lead::query()->where(fn ($q) => $q->whereIn('status', $installedStatuses))
             ->where(fn ($q) => $q->where('updated_at', '>=', $thisMonth))->count();

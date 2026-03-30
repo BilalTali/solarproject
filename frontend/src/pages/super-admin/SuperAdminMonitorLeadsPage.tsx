@@ -53,9 +53,18 @@ export default function SuperAdminMonitorLeadsPage() {
                    >
                        <option value="">All Statuses</option>
                        <option value="NEW">New</option>
-                       <option value="CONTACTED">Contacted</option>
+                       <option value="ON_HOLD">On Hold</option>
+                       <option value="INVALID">Invalid</option>
+                       <option value="DUPLICATE">Duplicate</option>
+                       <option value="REJECTED">Rejected</option>
                        <option value="REGISTERED">Registered</option>
-                       <option value="INSTALLED">Installed</option>
+                       <option value="SITE_SURVEY">Site Survey</option>
+                       <option value="AT_BANK">At Bank</option>
+                       <option value="COMPLETED">Completed</option>
+                       <option value="PROJECT_COMMISSIONING">Project Commissioning</option>
+                       <option value="SUBSIDY_REQUEST">Subsidy Request</option>
+                       <option value="SUBSIDY_APPLIED">Subsidy Applied</option>
+                       <option value="SUBSIDY_DISBURSED">Subsidy Disbursed</option>
                    </select>
                 </div>
             </div>

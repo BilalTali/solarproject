@@ -73,8 +73,8 @@ class SuperAgentService
             'leads' => [
                 'total' => $totalLeads,
                 'new' => $statusCounts->get('new', 0),
-                'in_progress' => $totalLeads - $statusCounts->get('NEW', 0) - $statusCounts->get('INSTALLED', 0) - $statusCounts->get('COMPLETED', 0) - $statusCounts->get('REJECTED', 0),
-                'installed' => $statusCounts->get('INSTALLED', 0),
+                'in_progress' => $totalLeads - $statusCounts->get('NEW', 0) - $statusCounts->get('COMPLETED', 0) - $statusCounts->get('REJECTED', 0) - $statusCounts->get('INVALID', 0) - $statusCounts->get('DUPLICATE', 0),
+                'installed' => $statusCounts->get('REGISTERED', 0) + $statusCounts->get('SITE_SURVEY', 0) + $statusCounts->get('AT_BANK', 0) + $statusCounts->get('PROJECT_COMMISSIONING', 0) + $statusCounts->get('SUBSIDY_REQUEST', 0) + $statusCounts->get('SUBSIDY_APPLIED', 0) + $statusCounts->get('SUBSIDY_DISBURSED', 0),
                 'completed' => $statusCounts->get('COMPLETED', 0),
                 'rejected' => $statusCounts->get('rejected', 0),
             ],
@@ -93,10 +93,10 @@ class SuperAgentService
                     $q->whereYear('created_at', $lastMonth->year)->whereMonth('created_at', $lastMonth->month);
                 })->count(),
                 'installs_this_month' => (clone $leadsQuery)->where(function ($q) use ($now) {
-                    $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])->whereYear('updated_at', $now->year)->whereMonth('updated_at', $now->month);
+                    $q->whereIn('status', ['REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])->whereYear('updated_at', $now->year)->whereMonth('updated_at', $now->month);
                 })->count(),
                 'installs_last_month' => (clone $leadsQuery)->where(function ($q) use ($lastMonth) {
-                    $q->whereIn('status', ['INSTALLED', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])->whereYear('updated_at', $lastMonth->year)->whereMonth('updated_at', $lastMonth->month);
+                    $q->whereIn('status', ['REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])->whereYear('updated_at', $lastMonth->year)->whereMonth('updated_at', $lastMonth->month);
                 })->count(),
             ],
         ];

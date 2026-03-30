@@ -8,22 +8,18 @@ export type OverrideStatus = 'pending' | 'approved' | 'paid';
 
 export type LeadStatus =
     | 'NEW'
-    | 'CONTACTED'
-    | 'DOCUMENTS_COLLECTED'
+    | 'ON_HOLD'
+    | 'INVALID'
+    | 'DUPLICATE'
+    | 'REJECTED'
     | 'REGISTERED'
     | 'SITE_SURVEY'
-    | 'INSTALLATION_PENDING'
-    | 'INSTALLED'
+    | 'AT_BANK'
+    | 'COMPLETED'
     | 'PROJECT_COMMISSIONING'
     | 'SUBSIDY_REQUEST'
     | 'SUBSIDY_APPLIED'
-    | 'SUBSIDY_DISBURSED'
-    | 'ON_HOLD'
-    | 'AT_BANK'
-    | 'INVALID'
-    | 'DUPLICATE'
-    | 'COMPLETED'
-    | 'REJECTED';
+    | 'SUBSIDY_DISBURSED';
 
 export type ExcitementState = 'dormant' | 'building' | 'close' | 'ready';
 
