@@ -62,10 +62,16 @@ export default function Navbar() {
                             {settings?.nav_rewards || t('nav.benefits')}
                         </Link>
                         <Link
-                            to="/track-status"
+                            to="/solar-subsidy-calculator"
                             className="text-sm font-bold text-neutral-600 px-6 py-2.5 rounded-xl hover:bg-neutral-50 hover:text-primary transition-all duration-300"
                         >
                             {t('nav.calculator')}
+                        </Link>
+                        <Link
+                            to="/track-status"
+                            className="text-sm font-bold text-neutral-600 px-6 py-2.5 rounded-xl hover:bg-neutral-50 hover:text-primary transition-all duration-300"
+                        >
+                            {t('nav.track_status')}
                         </Link>
                         <Link
                             to="/user-manual"
@@ -95,7 +101,8 @@ export default function Navbar() {
                     <div className="md:hidden py-4 border-t border-gray-100 flex flex-col gap-2 animate-in slide-in-from-top-2">
                         <Link to="/" className="text-base font-bold text-neutral-600 hover:text-primary py-3 px-4 rounded-xl hover:bg-neutral-50 transition-all" onClick={() => setIsOpen(false)}>{settings?.nav_home || t('nav.home')}</Link>
                         <Link to="/media" className="text-base font-bold text-neutral-600 hover:text-primary py-3 px-4 rounded-xl hover:bg-neutral-50 transition-all" onClick={() => setIsOpen(false)}>{settings?.nav_rewards || t('nav.benefits')}</Link>
-                        <Link to="/track-status" className="text-base font-bold text-neutral-600 hover:text-primary py-3 px-4 rounded-xl hover:bg-neutral-50 transition-all" onClick={() => setIsOpen(false)}>{t('nav.calculator')}</Link>
+                        <Link to="/solar-subsidy-calculator" className="text-base font-bold text-neutral-600 hover:text-primary py-3 px-4 rounded-xl hover:bg-neutral-50 transition-all" onClick={() => setIsOpen(false)}>{t('nav.calculator')}</Link>
+                        <Link to="/track-status" className="text-base font-bold text-neutral-600 hover:text-primary py-3 px-4 rounded-xl hover:bg-neutral-50 transition-all" onClick={() => setIsOpen(false)}>{t('nav.track_status')}</Link>
                         <Link to="/user-manual" className="text-base font-bold text-neutral-600 hover:text-primary py-3 px-4 rounded-xl hover:bg-neutral-50 transition-all" onClick={() => setIsOpen(false)}>{t('nav.guide')}</Link>
                         <div className="flex flex-col gap-2 pt-2">
                             <a href="/#lead-form" className="btn-accent text-sm text-center" onClick={() => setIsOpen(false)}>{settings?.nav_cta_electricity || t('home.hero_cta_primary')}</a>
