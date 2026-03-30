@@ -82,6 +82,7 @@ const AdminRedemptionsPage = lazy(() => import('@/pages/admin/AdminRedemptionsPa
 const AdminAbsorptionsPage = lazy(() => import('@/pages/admin/AdminAbsorptionsPage').then(module => ({ default: module.AdminAbsorptionsPage })));
 const AdminWithdrawalsPage = lazy(() => import('@/pages/admin/AdminWithdrawalsPage').then(module => ({ default: module.AdminWithdrawalsPage })));
 const AdminOperatorsPage = lazy(() => import('@/pages/admin/AdminOperatorsPage'));
+const AdminFAQPage = lazy(() => import('@/pages/admin/AdminFAQPage'));
 
 // Enumerator Pages
 import EnumeratorLayout from '@/components/layouts/EnumeratorLayout';
@@ -222,7 +223,7 @@ export default function App() {
           <Route
             path="/admin"
             element={
-          <ProtectedRoute requiredRole={['admin', 'operator']} loginPath="/admin/login">
+          <ProtectedRoute requiredRole={['admin', 'operator', 'super_admin']} loginPath="/admin/login">
                 <AdminLayout />
               </ProtectedRoute>
             }
@@ -245,6 +246,7 @@ export default function App() {
             <Route path="settings" element={<AdminSettingsPage />} />
             <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
             <Route path="operators" element={<AdminOperatorsPage />} />
+            <Route path="help-center" element={<AdminFAQPage />} />
             <Route index element={<AdminIndexRedirect />} />
           </Route>
 
@@ -289,6 +291,7 @@ export default function App() {
             <Route path="monitor/agents" element={<SuperAdminMonitorAgentsPage />} />
             <Route path="monitor/enumerators" element={<SuperAdminMonitorEnumeratorsPage />} />
             <Route path="monitor/leads" element={<SuperAdminMonitorLeadsPage />} />
+            <Route path="help-center" element={<AdminFAQPage />} />
             <Route path="reports" element={<SuperAdminReportsPage />} />
             <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
           </Route>
