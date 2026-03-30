@@ -40,6 +40,9 @@ export interface PublicSettingsData {
     // Navigation Labels
     nav_home: string | null;
     nav_rewards: string | null;
+    nav_calculator: string | null;
+    nav_track_status: string | null;
+    nav_guide: string | null;
     nav_portal_login: string | null;
     nav_cta_electricity: string | null;
 
