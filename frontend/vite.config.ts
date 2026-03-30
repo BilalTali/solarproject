@@ -12,11 +12,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       manifest: {
-        name: 'Andleeb Surya',
+        name: 'Andleeb Surya — PM Surya Ghar',
         short_name: 'AndleebSurya',
-        description: 'AndleebSurya Registration Help — J&K and Ladakh',
-        theme_color: '#edca98ff',
-        background_color: '#04111F',
+        description: 'Official Help Desk for PM Surya Ghar Muft Bijli Yojana — J&K and Ladakh',
+        theme_color: '#edca98',
+        background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
@@ -36,7 +36,20 @@ export default defineConfig({
         ],
       },
       workbox: {
-        navigateFallbackDenylist: [/^\/api/, /^\/storage/],
+        navigateFallbackDenylist: [/^\/api/, /^\/storage/, /^\/admin/, /^\/agent/],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+              }
+            }
+          }
+        ]
       }
     }),
     visualizer({

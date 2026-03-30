@@ -1,5 +1,5 @@
 import { User } from './user.types';
-import { Lead, LeadStatus } from './lead.types';
+import { Lead } from './lead.types';
 // ====== Dashboard Stats ======
 export interface AdminDashboardStats {
     kpis: {
@@ -16,7 +16,9 @@ export interface AdminDashboardStats {
         active_super_agents: number;
         unassigned_agents_count: number;
     };
-    pipeline: Record<LeadStatus, number>;
+    pipeline: Record<string, number>;
+    trends: { date: string; count: number }[];
+    district_distribution: { beneficiary_district: string; total: number }[];
     recent_leads: Lead[];
     pending_approvals: User[];
     unassigned_agents?: User[];

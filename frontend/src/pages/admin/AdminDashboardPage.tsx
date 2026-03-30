@@ -9,11 +9,13 @@ import { ArrowRight, Users, TrendingUp, CheckCircle2, Clock, IndianRupee } from 
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import DownloadJoiningLetterButton from '@/components/shared/DownloadJoiningLetterButton';
 import { useAuthStore } from '@/hooks/store/authStore';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 
 const PIPELINE_COLORS: Record<string, string> = {
     new: '#94A3B8',
     registered: '#818CF8',
+    site_survey: '#60A5FA',
+    at_bank: '#A78BFA',
     installed: '#34D399',
     completed: '#4ADE80',
     rejected: '#F87171',
@@ -50,86 +52,140 @@ export default function AdminDashboardPage() {
         ? Object.entries(data.pipeline)
             .filter(([, count]) => Number(count) > 0)
             .map(([status, count]) => ({
-                status: STATUS_LABELS[status as keyof typeof STATUS_LABELS] || status,
-                rawStatus: status,
+                status: STATUS_LABELS[status as keyof typeof STATUS_LABELS] || status.replace(/_/g, ' '),
+                rawStatus: status.toLowerCase(),
                 count: Number(count),
             }))
         : [];
 
+    // Trend data formatting
+    const trendData = data?.trends?.map(t => ({
+        ...t,
+        formattedDate: new Date(t.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+    })) || [];
+
+    // District data formatting
+    const districtData = data?.district_distribution?.map(d => ({
+        name: d.beneficiary_district,
+        value: d.total
+    })) || [];
+
     return (
-        <div>
-            <div className="mb-6 flex items-center justify-between">
+        <div className="pb-24">
+            <div className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="font-display font-bold text-2xl text-dark">Admin Dashboard</h1>
-                    <p className="text-neutral-600 text-sm mt-1">Overview of all portal activity</p>
+                    <h1 className="font-display font-black text-3xl text-slate-800 tracking-tight">Enterprise Overview</h1>
+                    <p className="text-slate-500 text-sm mt-1 font-medium">Real-time performance monitoring & scale analytics</p>
                 </div>
                 <div className="hidden md:flex gap-3">
                     <DownloadIdCardButton />
                     <DownloadJoiningLetterButton user={user!} variant="button" />
-                    <Link to="/admin/leads" className="btn-primary text-sm py-2 px-4">View All Leads</Link>
+                    <Link to="/admin/leads" className="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 px-5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95">View All Leads</Link>
                 </div>
             </div>
 
-            {/* Mobile Sticky Action Bar */}
-            <div
-                className="fixed bottom-0 left-0 right-0 z-50 flex gap-3 px-4 md:hidden"
-                style={{
-                    background: '#04111F',
-                    borderTop: '2px solid #FF9500',
-                    paddingTop: '12px',
-                    paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
-                }}
-            >
-                <DownloadIdCardButton
-                    variant="button"
-                    className="flex-1 h-[52px] !bg-[#FF9500] !text-[#04111F] !rounded-xl !shadow-none border-none font-bold text-sm"
-                />
-                <DownloadJoiningLetterButton
-                    user={user!}
-                    variant="outline"
-                    className="flex-1 h-[52px] !border-[#FF9500] !text-white !bg-transparent !rounded-xl font-bold text-sm"
-                />
-            </div>
-
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
                 {stats.map((stat) => (
-                    <div key={stat.label} className={`stat-card group ${stat.color}`}>
-                        {/* Decorative Background Pattern */}
-                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-current opacity-[0.03] rounded-full group-hover:scale-125 transition-transform duration-500" />
-                        
-                        <div className="relative z-10">
-                            <p className="text-xs text-neutral-600 font-medium mb-1">{stat.label}</p>
-                            <p className="font-display font-bold text-2xl text-dark">{stat.value}</p>
-                            <p className="text-xs text-neutral-600 mt-1">{stat.sub}</p>
+                    <div key={stat.label} className={`stat-card group relative overflow-hidden bg-white p-6 rounded-2xl border-l-4 shadow-sm hover:shadow-md transition-all duration-300 ${stat.color}`}>
+                        <div className="relative z-10 flex flex-col gap-1">
+                            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{stat.label}</p>
+                            <div className="flex items-center gap-3">
+                                <p className="font-display font-black text-3xl text-slate-800 tracking-tight">{stat.value}</p>
+                                <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-black tracking-tight">{stat.sub}</span>
+                            </div>
                         </div>
-                        <div className={`relative z-10 p-2 rounded-xl bg-current/10 ${stat.color} group-hover:scale-110 transition-transform duration-300`}>
+                        <div className={`absolute top-6 right-6 p-2 rounded-xl bg-current/5 ${stat.color} group-hover:scale-110 transition-transform duration-300`}>
                             {stat.icon}
                         </div>
                     </div>
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-                {/* Pipeline Chart */}
-                <div className="xl:col-span-2 card">
-                    <h2 className="font-display font-bold text-lg text-dark mb-4">Lead Pipeline Distribution</h2>
-                    {pipelineData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={pipelineData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                                <XAxis dataKey="status" tick={{ fontSize: 10 }} />
-                                <YAxis tick={{ fontSize: 10 }} />
-                                <Tooltip formatter={(v: unknown) => [(v as number), 'Leads']} />
-                                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                                    {pipelineData.map((entry) => (
-                                        <Cell key={entry.rawStatus} fill={PIPELINE_COLORS[entry.rawStatus] || '#6B7280'} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <p className="text-sm text-neutral-600 text-center py-12">No lead data yet.</p>
-                    )}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+                {/* Growth Trends */}
+                <div className="xl:col-span-2 card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Weekly Growth Trends</h2>
+                        <div className="flex gap-2">
+                             <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold"><span className="w-2 h-2 rounded-full bg-primary" /> Leads</div>
+                        </div>
+                    </div>
+                    <div className="h-[280px]">
+                        {trendData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#FF9500" stopOpacity={0.1}/>
+                                            <stop offset="95%" stopColor="#FF9500" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                    <XAxis dataKey="formattedDate" tick={{ fontSize: 10, fontWeight: 700, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fontSize: 10, fontWeight: 700, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                                    <Tooltip 
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', background: '#fff', fontSize: '12px', color: '#1E293B', fontWeight: 'bold' }}
+                                    />
+                                    <Area type="monotone" dataKey="count" stroke="#FF9500" strokeWidth={3} fillOpacity={1} fill="url(#colorLeads)" dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#FF9500' }} activeDot={{ r: 6, strokeWidth: 0 }} />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-full flex items-center justify-center text-slate-400 font-medium">Insufficient data for trends</div>
+                        )}
+                    </div>
+                </div>
+
+                {/* District Distribution */}
+                <div className="card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <h2 className="font-display font-black text-xl text-slate-800 tracking-tight mb-6">Top Districts</h2>
+                    <div className="h-[280px]">
+                        {districtData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={districtData} layout="vertical" margin={{ top: 0, right: 20, left: 40, bottom: 0 }}>
+                                    <XAxis type="number" hide />
+                                    <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fontWeight: 800, fill: '#1E293B' }} axisLine={false} tickLine={false} width={80} />
+                                    <Tooltip 
+                                         cursor={{fill: 'transparent'}}
+                                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', background: '#1E293B', fontSize: '12px', color: '#fff', fontWeight: 'bold' }}
+                                         itemStyle={{color: '#fff'}}
+                                    />
+                                    <Bar dataKey="value" fill="#6366F1" radius={[0, 4, 4, 0]} barSize={20}>
+                                        {districtData.map((_, index) => (
+                                            <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#6366F1' : '#818CF8'} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-full flex items-center justify-center text-slate-400 font-medium">No district data yet</div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+                {/* Status distribution */}
+                <div className="card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                 <h2 className="font-display font-black text-xl text-slate-800 tracking-tight mb-6">Pipeline Funnel</h2>
+                    <div className="h-[240px]">
+                        {pipelineData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={pipelineData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                                    <XAxis dataKey="status" tick={{ fontSize: 9, fontWeight: 700, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                                    <Tooltip cursor={{fill: 'rgba(0,0,0,0.02)'}} />
+                                    <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={32}>
+                                        {pipelineData.map((entry) => (
+                                            <Cell key={entry.rawStatus} fill={PIPELINE_COLORS[entry.rawStatus] || '#6B7280'} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <p className="text-sm text-neutral-600 text-center py-12">No lead data yet.</p>
+                        )}
+                    </div>
                 </div>
 
                 {/* Pending Business Development Executive Approvals */}

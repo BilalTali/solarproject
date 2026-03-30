@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Search, Users, CheckCircle, XCircle, Clock, Phone, MapPin,
-    ChevronLeft, ChevronRight, Eye, X, UserCheck, UserX, Link2, Unlink,
+    ChevronLeft, ChevronRight, X, UserCheck, UserX, Link2, Unlink,
     Edit2, Save, QrCode
 } from 'lucide-react';
 import { agentsApi } from '@/services/agents.api';
@@ -14,6 +14,7 @@ import QrCodePreview from '@/components/shared/QrCodePreview';
 import QrScanHistory from '@/components/shared/QrScanHistory';
 import MobileInput from '@/components/shared/MobileInput';
 import { INDIAN_STATES, STATE_DISTRICTS } from '@/constants/locationData';
+import { List } from 'react-window';
 
 // ── helpers ──────────────────────────────────────────────────────────────
 const STATUS_BADGE: Record<string, string> = {
@@ -52,7 +53,7 @@ export default function AdminAgentsPage() {
             search: search || undefined,
             status: statusFilter || undefined,
             page,
-            per_page: 15,
+            per_page: 100, // Higher per-page for virtualization
         }),
     });
 
@@ -192,105 +193,75 @@ export default function AdminAgentsPage() {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {isLoading ? (
-                                <tr><td colSpan={8} className="text-center py-12 text-slate-400">Loading…</td></tr>
+                                <tr><td colSpan={8} className="text-center py-12 text-slate-400">Loading Business Development Executives…</td></tr>
                             ) : agents.length === 0 ? (
                                 <tr>
                                     <td colSpan={8} className="text-center py-12">
                                         <Users size={32} className="mx-auto text-slate-300 mb-2" />
-                                        <p className="text-slate-400 text-sm">No agents found{search || statusFilter ? ' matching your filters' : ''}.</p>
+                                        <p className="text-slate-400 text-sm">No Business Development Executives found{search || statusFilter ? ' matching your filters' : ''}.</p>
                                     </td>
                                 </tr>
                             ) : (
-                                agents.map((agent) => (
-                                    <tr key={agent.id} className="hover:bg-slate-50 transition-colors">
-                                        {/* Business Development Executive ID */}
-                                        <td className="px-4 py-3">
-                                            {agent.agent_id
-                                                ? <span className="font-mono text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{agent.agent_id}</span>
-                                                : <span className="text-xs text-slate-400 italic">Pending</span>
-                                            }
-                                        </td>
-                                        {/* Name */}
-                                        <td className="px-4 py-3 font-medium text-slate-800 whitespace-nowrap">{agent.name}</td>
-                                        {/* Mobile */}
-                                        <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
-                                            <div className="flex items-center gap-1">
-                                                <Phone size={12} className="text-slate-400" />
-                                                {agent.mobile}
-                                            </div>
-                                        </td>
-                                        {/* Location */}
-                                        <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
-                                            <div className="flex items-center gap-1">
-                                                <MapPin size={12} className="text-slate-400" />
-                                                {[agent.district, agent.state].filter(Boolean).join(', ') || '—'}
-                                            </div>
-                                        </td>
-                                        {/* Business Development Manager */}
-                                        <td className="px-4 py-3 whitespace-nowrap">
-                                            {agent.super_agent
-                                                ? (
-                                                    <span className="inline-flex items-center gap-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded-full px-2 py-0.5 font-medium">
-                                                        <UserCheck size={11} />
-                                                        {agent.super_agent.name}
-                                                    </span>
-                                                )
-                                                : (
-                                                    <span className="text-xs text-slate-400 italic">Unassigned</span>
-                                                )
-                                            }
-                                        </td>
-                                        {/* Status */}
-                                        <td className="px-4 py-3">
-                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold capitalize ${STATUS_BADGE[agent.status]}`}>
-                                                {STATUS_ICON[agent.status]}
-                                                {agent.status}
-                                            </span>
-                                        </td>
-                                        {/* Date */}
-                                        <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">
-                                            {fmt(agent.created_at)}
-                                        </td>
-                                        {/* Actions */}
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center gap-2 whitespace-nowrap">
-                                                <button
-                                                    onClick={() => { setDetailAgent(agent); setSelectedSA(''); }}
-                                                    className="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-800 border border-slate-200 hover:border-slate-300 rounded-lg px-2 py-1 transition-colors"
-                                                >
-                                                    <Eye size={12} /> View
-                                                </button>
-                                                {agent.status === 'pending' && (
-                                                    <button
-                                                        onClick={() => statusMut.mutate({ id: agent.id, status: 'active' })}
-                                                        disabled={isMutating}
-                                                        className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg px-2 py-1 transition-colors disabled:opacity-50"
+                                <tr className="contents">
+                                    <td colSpan={8} className="p-0">
+                                        <List<object>
+                                            style={{ height: 600, width: '100%' }}
+                                            rowCount={agents.length}
+                                            rowHeight={60}
+                                            rowProps={{}}
+                                            rowComponent={({ index, style }: { index: number, style: React.CSSProperties }) => {
+                                                const agent = agents[index];
+                                                return (
+                                                    <div 
+                                                        style={{...style, display: 'flex', borderBottom: '1px solid #f1f5f9'}}
+                                                        className="hover:bg-slate-50 transition-colors group px-4 py-3 items-center"
+                                                        onClick={() => { setDetailAgent(agent); setSelectedSA(''); }}
                                                     >
-                                                        <CheckCircle size={12} /> Approve
-                                                    </button>
-                                                )}
-                                                {agent.status === 'active' && (
-                                                    <button
-                                                        onClick={() => statusMut.mutate({ id: agent.id, status: 'inactive' })}
-                                                        disabled={isMutating}
-                                                        className="inline-flex items-center gap-1 text-xs text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg px-2 py-1 transition-colors disabled:opacity-50"
-                                                    >
-                                                        <XCircle size={12} /> Deactivate
-                                                    </button>
-                                                )}
-                                                {agent.status === 'inactive' && (
-                                                    <button
-                                                        onClick={() => statusMut.mutate({ id: agent.id, status: 'active' })}
-                                                        disabled={isMutating}
-                                                        className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg px-2 py-1 transition-colors disabled:opacity-50"
-                                                    >
-                                                        <CheckCircle size={12} /> Reactivate
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
+                                                        <div className="w-[150px] shrink-0">
+                                                            {agent.agent_id
+                                                                ? <span className="font-mono text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{agent.agent_id}</span>
+                                                                : <span className="text-xs text-slate-400 italic">Pending</span>
+                                                            }
+                                                        </div>
+                                                        <div className="w-[200px] shrink-0 font-medium text-slate-800 truncate">{agent.name}</div>
+                                                        <div className="w-[150px] shrink-0 text-slate-600 truncate flex items-center gap-1">
+                                                            <Phone size={12} className="text-slate-400" />
+                                                            {agent.mobile}
+                                                        </div>
+                                                        <div className="w-[250px] shrink-0 text-slate-600 truncate flex items-center gap-1">
+                                                            <MapPin size={12} className="text-slate-400" />
+                                                            {[agent.district, agent.state].filter(Boolean).join(', ') || '—'}
+                                                        </div>
+                                                        <div className="w-[200px] shrink-0">
+                                                            {agent.super_agent ? (
+                                                                <span className="inline-flex items-center gap-1 text-[10px] text-orange-700 bg-orange-50 border border-orange-200 rounded-full px-2 py-0.5 font-bold uppercase tracking-tight">
+                                                                    {agent.super_agent.name}
+                                                                </span>
+                                                            ) : <span className="text-xs text-slate-400 italic">Unassigned</span>}
+                                                        </div>
+                                                        <div className="w-[120px] shrink-0">
+                                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${STATUS_BADGE[agent.status]}`}>
+                                                                {STATUS_ICON[agent.status]}
+                                                                {agent.status}
+                                                            </span>
+                                                        </div>
+                                                        <div className="w-[120px] shrink-0 text-slate-500 text-[10px] whitespace-nowrap">
+                                                            {fmt(agent.created_at)}
+                                                        </div>
+                                                        <div className="flex-1 flex justify-end gap-2">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); setDetailAgent(agent); setSelectedSA(''); }}
+                                                                className="text-xs text-slate-600 hover:text-slate-800 border border-slate-200 hover:border-slate-300 rounded-lg px-2 py-1 transition-colors"
+                                                            >
+                                                                VIEW
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }}
+                                        />
+                                    </td>
+                                </tr>
                             )}
                         </tbody>
                     </table>

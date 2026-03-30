@@ -44,11 +44,26 @@ class AdminDashboardController extends Controller
             ->where(fn ($q) => $q->where('status', 'active'))
             ->where(fn ($q) => $q->whereNull('super_agent_id'))->count();
 
-        // 4. Pipeline Funnel Counts
+        // 3. Pipeline Funnel Counts
         $statusCounts = Lead::select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
+
+        // 4. District Distribution
+        $districtDistribution = Lead::select('beneficiary_district', DB::raw('count(*) as total'))
+            ->whereNotNull('beneficiary_district')
+            ->groupBy('beneficiary_district')
+            ->orderBy('total', 'desc')
+            ->take(8)
+            ->get();
+
+        // 5. Daily Lead Trends (Last 14 Days)
+        $trends = Lead::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->where('created_at', '>=', now()->subDays(14))
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
 
         return response()->json([
             'success' => true,
@@ -67,6 +82,8 @@ class AdminDashboardController extends Controller
                     'unassigned_agents_count' => $unassignedAgentsCount,
                 ],
                 'pipeline' => $statusCounts,
+                'trends' => $trends,
+                'district_distribution' => $districtDistribution,
                 'recent_leads' => Lead::query()->with(['assignedAgent'])
                     ->orderBy('created_at', 'desc')
                     ->take(10)

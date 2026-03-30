@@ -22,13 +22,17 @@
     <meta name="description" content="AndleebSurya — Get up to 300 units free electricity every month under PM Surya Ghar Muft Bijli Yojana. Expert guidance, free service, zero hassle." />
     <title>AndleebSurya — PM Surya Ghar Muft Bijli Yojana</title>
 
-    <!-- Google Analytics (GA4) - Placeholder ID G-XXXXXXXXXX -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <!-- Google Analytics (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=VITE_GA_MEASUREMENT_ID"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-XXXXXXXXXX');
+      // Configuration is handled via environment variables where possible.
+      // Defaulting to placeholder for safety. 
+      if (typeof VITE_GA_MEASUREMENT_ID !== 'undefined' && VITE_GA_MEASUREMENT_ID !== 'VITE_GA_MEASUREMENT_ID') {
+        gtag('config', 'VITE_GA_MEASUREMENT_ID');
+      }
     </script>
 
     <!-- Google Search Console Verification -->

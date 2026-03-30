@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { publicApi } from '@/services/public.api';
 import { DEFAULT_SETTINGS } from '@/hooks/useSettings';
 import { ArrowRight, Play } from 'lucide-react';
 
 export default function HeroSection() {
+    const { t } = useTranslation();
     const { data: settings = DEFAULT_SETTINGS } = useQuery({
         queryKey: ['public-settings'],
         queryFn: publicApi.getSettings,
@@ -44,7 +46,7 @@ export default function HeroSection() {
                         </div>
 
                         <h1 className="font-display font-black text-4xl sm:text-5xl md:text-7xl text-white leading-[1.1] mb-8">
-                            {((settings?.hero_headline ?? DEFAULT_SETTINGS.hero_headline) || '').split(' ').map((word: string, i: number) => (
+                            {((settings?.hero_headline ?? t('home.hero_title')) || '').split(' ').map((word: string, i: number) => (
                                 <span key={i} className={word.toLowerCase() === 'free' || word.toLowerCase() === 'units' ? 'text-accent text-glow' : ''}>
                                     {word}{' '}
                                 </span>
@@ -52,17 +54,17 @@ export default function HeroSection() {
                         </h1>
 
                         <p className="text-white/70 text-lg md:text-xl mb-10 max-w-xl leading-relaxed font-body">
-                            {settings.hero_subheadline}
+                            {settings.hero_subheadline || t('home.hero_subtitle')}
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-5">
                             <a href="#lead-form" className="btn-accent group relative overflow-hidden">
                                 <span className="relative z-10 flex items-center justify-center gap-3">
-                                    Get Free Electricity <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    {t('home.hero_cta_primary')} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </span>
                             </a>
                             <a href="/agent/register" className="glass-card px-8 py-3 flex items-center justify-center gap-3 text-white font-bold hover:bg-white/20 transition-all border-white/10">
-                                <Play className="w-5 h-5 text-accent" /> Become a Partner
+                                <Play className="w-5 h-5 text-accent" /> {t('home.hero_cta_secondary')}
                             </a>
                         </div>
                     </div>
