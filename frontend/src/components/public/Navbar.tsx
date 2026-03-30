@@ -44,7 +44,9 @@ export default function Navbar() {
                                 {settings?.company_name || 'AndleebSurya'}
                             </span>
                         </Link>
-                        <LanguageSwitcher className="ml-2" variant="light" />
+                        <div className="hidden md:block">
+                            <LanguageSwitcher className="ml-2" variant="light" />
+                        </div>
                     </div>
 
                     {/* Desktop Nav */}
