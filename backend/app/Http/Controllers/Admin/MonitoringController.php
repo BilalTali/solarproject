@@ -9,21 +9,27 @@ use App\Models\Commission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Cache;
+
 class MonitoringController extends Controller
 {
     /** Global stats for Super Admin */
     public function stats(): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'data' => [
+        $stats = Cache::remember('super_admin_dashboard_stats', 300, function () {
+            return [
                 'total_admins' => User::roleAdmin()->count(),
                 'total_super_agents' => User::roleSuperAgent()->count(),
                 'total_agents' => User::roleAgent()->count(),
                 'total_enumerators' => User::roleEnumerator()->count(),
                 'total_leads' => Lead::count(),
-                'total_commissions' => Commission::sum('amount'),
-            ]
+                'total_commissions' => Commission::sum('amount') ?? 0,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $stats
         ]);
     }
 

@@ -7,13 +7,19 @@ use App\Services\SuperAgentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Cache;
+
 class SuperAgentDashboardController extends Controller
 {
     public function __construct(private SuperAgentService $superAgentService) {}
 
     public function stats(Request $request): JsonResponse
     {
-        $stats = $this->superAgentService->getTeamStats($request->user());
+        $user = $request->user();
+        
+        $stats = Cache::remember('sq_dashboard_stats_' . $user->id, 60, function () use ($user) {
+            return $this->superAgentService->getTeamStats($user);
+        });
 
         return response()->json([
             'success' => true,

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Support\Facades\Cache;
+
 /**
  * @property int $id
  * @property string $key
@@ -28,11 +30,24 @@ class Setting extends Model
 
     protected $fillable = ['group', 'key', 'value'];
 
+    protected static function booted()
+    {
+        static::saved(function ($setting) {
+            Cache::forget('settings.' . $setting->key);
+        });
+
+        static::deleted(function ($setting) {
+            Cache::forget('settings.' . $setting->key);
+        });
+    }
+
     public static function getValue(string $key, $default = null): mixed
     {
-        /** @var Setting|null $setting */
-        $setting = static::query()->where(fn ($q) => $q->where('key', $key))->first();
- 
-        return $setting ? (string)$setting->value : $default;
+        $value = Cache::rememberForever('settings.' . $key, function () use ($key) {
+            $setting = static::query()->where('key', $key)->first();
+            return $setting ? (string)$setting->value : null;
+        });
+
+        return $value !== null ? $value : $default;
     }
 }

@@ -10,9 +10,11 @@
         "barryvdh/laravel-dompdf": "^3.1",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.0",
+        "laravel/octane": "^2.17",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "picqer/php-barcode-generator": "^3.2",
+        "predis/predis": "^3.4",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "tightenco/ziggy": "^2.0"
     },
