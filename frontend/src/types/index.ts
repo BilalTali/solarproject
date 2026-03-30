@@ -313,6 +313,8 @@ export interface CommissionPrompt {
     payee_name?: string;
     payee_code?: string;
     payee_type_label?: string;
+    payer_id?: number;
+    payer_role?: string;
     suggested_amount?: number;
     existing_commission?: Commission | null;
 }

@@ -101,8 +101,12 @@ export default function AdminLeadsPage() {
         onSuccess: (res: any) => {
             const returnedData = res?.data;
             if (returnedData?.commission_prompts?.length > 0 && role === 'admin') {
-                // also track for the table row
-                setActivePrompts(p => ({ ...p, [detail?.ulid || '']: returnedData.commission_prompts[0] }));
+                const adminPrompts = returnedData.commission_prompts.filter((p: any) => p.payer_role === 'admin' || p.payer_role === 'super_admin');
+                if (adminPrompts.length > 0) {
+                    setActivePrompts(p => ({ ...p, [detail?.ulid || '']: adminPrompts[0] }));
+                } else {
+                    setActivePrompts(p => { const newPrompts = { ...p }; delete newPrompts[detail?.ulid || '']; return newPrompts; });
+                }
             } else {
                 setActivePrompts(p => {
                     const newPrompts = { ...p };
@@ -161,8 +165,8 @@ export default function AdminLeadsPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap gap-3">
-                <div className="relative">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+                <div className="relative w-full sm:w-auto">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                         type="text"
@@ -170,14 +174,14 @@ export default function AdminLeadsPage() {
                         value={search}
                         onChange={e => { setSearch(e.target.value); setPage(1); }}
                         aria-label="Search leads"
-                        className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 w-80"
+                        className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 w-full sm:w-80"
                     />
                 </div>
                 <select
                     value={status}
                     onChange={e => { setStatus(e.target.value); setPage(1); }}
                     aria-label="Filter by status"
-                    className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full sm:w-auto px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                     <option value="">All Statuses</option>
                     {LEAD_STATUS_OPTIONS.map(opt => (
@@ -188,7 +192,7 @@ export default function AdminLeadsPage() {
                     value={source}
                     onChange={e => { setSource(e.target.value); setPage(1); }}
                     aria-label="Filter by source"
-                    className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full sm:w-auto px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                     <option value="">All Sources</option>
                     <option value="public_form">Public Form</option>
@@ -406,6 +410,23 @@ export default function AdminLeadsPage() {
                                     Manage
                                 </button>
                             </div>
+
+                            {role === 'admin' && activePrompts[lead.ulid] && (
+                                <div className="p-3 bg-orange-50 mt-2 rounded-lg border border-orange-100 w-full" onClick={e => e.stopPropagation()}>
+                                    <CommissionInlineEntry
+                                        leadUlid={lead.ulid}
+                                        leadStatus={lead.status}
+                                        commissionPrompt={activePrompts[lead.ulid]}
+                                        existingCommission={lead.formatted_commissions?.super_agent_commission || lead.formatted_commissions?.agent_commission || null}
+                                        onSaved={() => {
+                                            setActivePrompts(p => { const o = { ...p }; delete o[lead.ulid]; return o; });
+                                        }}
+                                        onSkip={() => {
+                                            setActivePrompts(p => { const o = { ...p }; delete o[lead.ulid]; return o; });
+                                        }}
+                                    />
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -667,7 +688,7 @@ export default function AdminLeadsPage() {
                                                 </div>
 
                                                 <div className="space-y-4">
-                                                    {fullLead!.commission_status!.prompts!.map((p: any, idx: number) => {
+                                                    {fullLead!.commission_status!.prompts!.filter((p: any) => p.payer_role === 'admin' || p.payer_role === 'super_admin').map((p: any, idx: number) => {
                                                         const existing = fullLead?.formatted_commissions?.all?.find((c: any) => 
                                                             (c.payee_id === p.payee_id || c.payee_role === p.payee_role)
                                                         );

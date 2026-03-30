@@ -261,6 +261,7 @@ class CommissionService
             },
             'payer_id' => $payerId,
             'payer_name' => $payer?->name ?? 'Admin',
+            'payer_role' => $payer ? $payer->role : 'admin',
             'status' => $comm ? 'entered' : 'pending',
             'amount' => $comm ? (float)$comm->amount : null,
             'suggested_amount' => $this->getSuggestedAmount($lead, $payee, $payerId),

@@ -12,7 +12,7 @@ import { superAgentCommissionsApi } from '@/api/commissions.api';
 import CommissionInlineEntryForAgent from '@/components/super-agent/CommissionInlineEntryForAgent';
 import React from 'react';
 import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor } from '@/constants/leadStatuses';
-
+import { useAuthStore } from '@/store/authStore';
 
 type TabType = 'needs_verification' | 'my_leads' | 'team_leads' | 'all';
 
@@ -24,6 +24,7 @@ export default function SuperAgentLeadsPage() {
     const [verifyLead, setVerifyLead] = useState<Lead | null>(null);
     const [revertLead, setRevertLead] = useState<Lead | null>(null);
     const [hiddenPrompts, setHiddenPrompts] = useState<Record<string, boolean>>({});
+    const { user } = useAuthStore();
 
     const verificationParam: Record<TabType, Record<string, string | undefined>> = {
         needs_verification: { verification_status: 'pending_super_agent_verification' },
@@ -220,10 +221,10 @@ export default function SuperAgentLeadsPage() {
                                                 </td>
                                             </tr>
                                             {(() => {
-                                                const prompts = lead.commission_status?.prompts || [];
+                                                const prompts = (lead.commission_status?.prompts || []).filter((p: any) => p.payer_id === user?.id);
                                                 if (prompts.length === 0 || hiddenPrompts[lead.ulid]) return null;
 
-                                                return prompts.map((p, idx) => {
+                                                return prompts.map((p: any, idx: number) => {
                                                     const existing = lead.formatted_commissions?.all?.find(c => 
                                                         (c.payee_id === p.payee_id || c.payee_role === p.payee_role)
                                                     );
@@ -241,7 +242,6 @@ export default function SuperAgentLeadsPage() {
                                                                     commissionsApi={superAgentCommissionsApi}
                                                                     onSaved={() => {
                                                                         refetch();
-                                                                        // If it was the only prompt, hide it
                                                                         if (prompts.length === 1) {
                                                                             setHiddenPrompts(prev => ({ ...prev, [lead.ulid]: true }));
                                                                         }
@@ -299,7 +299,7 @@ export default function SuperAgentLeadsPage() {
                                         </div>
                                     )}
                                     {(() => {
-                                        const prompts = lead.commission_status?.prompts || [];
+                                        const prompts = (lead.commission_status?.prompts || []).filter(p => p.payer_id === user?.id);
                                         if (prompts.length === 0 || hiddenPrompts[lead.ulid]) return null;
 
                                         return prompts.map((p, idx) => {
