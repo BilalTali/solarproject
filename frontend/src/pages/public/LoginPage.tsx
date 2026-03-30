@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import LoginLayout from '@/components/auth/LoginLayout';
 import UnifiedLoginForm from '@/components/auth/UnifiedLoginForm';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@/hooks/store/authStore';
 
 function dashboardForRole(role: string): string {
     switch (role) {

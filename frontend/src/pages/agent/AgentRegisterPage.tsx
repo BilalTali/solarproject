@@ -9,7 +9,7 @@ import {
     Sun, CheckCircle, User, Mail, MapPin, CreditCard,
     Briefcase, FileText, Upload, X, Hash, Image as ImageIcon,
 } from 'lucide-react';
-import { agentsApi } from '@/api/agents.api';
+import { agentsApi } from '@/services/agents.api';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
 import SEOHead from '@/components/shared/SEOHead';
 import MobileInput from '@/components/shared/MobileInput';

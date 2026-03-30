@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, CheckCircle2, Clock } from 'lucide-react';
-import { enumeratorApi } from '@/api/enumerator.api';
+import { enumeratorApi } from '@/services/enumerator.api';
 import toast from 'react-hot-toast';
 
 export default function EnumeratorNotificationsPage() {

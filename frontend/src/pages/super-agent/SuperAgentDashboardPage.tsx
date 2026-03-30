@@ -4,19 +4,19 @@ import {
     TrendingUp, TrendingDown, ArrowRight, AlertCircle, QrCode
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { superAgentApi } from '@/api/superAgent.api';
-import { leadsApi } from '@/api/leads.api';
-import { useAuthStore } from '@/store/authStore';
+import { superAgentApi } from '@/services/superAgent.api';
+import { leadsApi } from '@/services/leads.api';
+import { useAuthStore } from '@/hooks/store/authStore';
 import type { SuperAgentDashboardStats } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
-import { superAgentCommissionsApi } from '@/api/commissions.api';
+import { superAgentCommissionsApi } from '@/services/commissions.api';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import DownloadJoiningLetterButton from '@/components/shared/DownloadJoiningLetterButton';
 import QrCodePreview from '@/components/shared/QrCodePreview';
 import QrScanHistory from '@/components/shared/QrScanHistory';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import api from '@/api/axios';
+import api from '@/services/axios';
 import { OffersDashboardSection } from '@/components/offers/OffersDashboardSection';
 import { ReferralShareWidget } from '@/components/shared/ReferralShareWidget';
 import DashboardSkeleton from '@/components/shared/DashboardSkeleton';

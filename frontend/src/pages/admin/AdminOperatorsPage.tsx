@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Shield, Plus, UserX, UserCheck, Loader2, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api from '@/api/axios';
+import api from '@/services/axios';
 
 interface Operator {
     id: number;

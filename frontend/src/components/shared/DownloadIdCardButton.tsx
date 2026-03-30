@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Download, CreditCard, Loader2, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api from '@/api/axios';
-import { useAuthStore } from '@/store/authStore';
+import api from '@/services/axios';
+import { useAuthStore } from '@/hooks/store/authStore';
 import { useSettings } from '@/hooks/useSettings';
 
 interface Props {

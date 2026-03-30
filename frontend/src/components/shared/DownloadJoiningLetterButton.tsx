@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FileDown, Lock, Loader2 } from 'lucide-react';
 import { User } from '@/types';
-import { joiningLetterApi } from '@/api/joiningLetter.api';
+import { joiningLetterApi } from '@/services/joiningLetter.api';
 import { toast } from 'react-hot-toast';
 import { useSettings } from '@/hooks/useSettings';
 

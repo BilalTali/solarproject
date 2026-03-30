@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { 
     Search, LayoutList, MapPin, Tag
 } from 'lucide-react';
-import api from '@/api/axios';
+import api from '@/services/axios';
 import { ApiResponse, Lead, PaginatedResponse } from '@/types';
 
 export default function SuperAdminMonitorLeadsPage() {

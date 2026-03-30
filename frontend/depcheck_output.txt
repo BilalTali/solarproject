@@ -1,0 +1,6 @@
+Unused dependencies
+* @sentry/react
+Unused devDependencies
+* autoprefixer
+* postcss
+* tailwindcss

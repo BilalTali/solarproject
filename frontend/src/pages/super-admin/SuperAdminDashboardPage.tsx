@@ -3,7 +3,7 @@ import {
     Users, Shield, Star, FileText, DollarSign, Activity, 
     TrendingUp, ArrowUpRight, MonitorCheck
 } from 'lucide-react';
-import api from '@/api/axios';
+import api from '@/services/axios';
 import { ApiResponse } from '@/types';
 
 interface DashboardStats {

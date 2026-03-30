@@ -5,8 +5,8 @@ import {
 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { authApi } from '@/api/auth.api';
-import { useAuthStore } from '@/store/authStore';
+import { authApi } from '@/services/auth.api';
+import { useAuthStore } from '@/hooks/store/authStore';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import { useSettings } from '@/hooks/useSettings';
 

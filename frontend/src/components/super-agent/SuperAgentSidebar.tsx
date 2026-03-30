@@ -4,7 +4,7 @@ import {
     LayoutDashboard, Users, FileText, DollarSign, Bell, UserCircle,
     Power, PlusCircle, List, ChevronDown, Gift
 } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@/hooks/store/authStore';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import { useSettings } from '@/hooks/useSettings';
 

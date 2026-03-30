@@ -1,24 +1,25 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { offersApi } from '../../api/offers.api';
-import { OfferCard } from '../../components/shared/OfferCard';
-import SEOHead from '../../components/shared/SEOHead';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import { offersApi } from '@/services/offers.api';
+import { OfferCard } from '@/components/shared/OfferCard';
+import SEOHead from '@/components/shared/SEOHead';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { Gift, Award, TrendingUp, History, Info } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
+import { UserOfferProgress, OfferRedemption } from '@/types';
 
 export const AgentOffersPage: React.FC = () => {
     const queryClient = useQueryClient();
 
     const { data: offersResp, isLoading } = useQuery({
         queryKey: ['agent-offers'],
-        queryFn: offersApi.agent.getOffers
+        queryFn: () => offersApi.agent.getOffers()
     });
 
     const { data: redemptionsResp } = useQuery({
         queryKey: ['agent-redemptions'],
-        queryFn: offersApi.agent.getMyRedemptions
+        queryFn: () => offersApi.agent.getMyRedemptions()
     });
 
     const redeemMutation = useMutation({
@@ -38,8 +39,8 @@ export const AgentOffersPage: React.FC = () => {
 
     if (isLoading) return <LoadingSpinner />;
 
-    const offers = offersResp?.data || [];
-    const redemptions = redemptionsResp?.data || [];
+    const offers = (offersResp?.data as UserOfferProgress[]) || [];
+    const redemptions = (redemptionsResp?.data as OfferRedemption[]) || [];
 
     return (
         <div className="p-6">
@@ -82,7 +83,7 @@ export const AgentOffersPage: React.FC = () => {
 
                     {offers.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {offers.map(offer => (
+                            {offers.map((offer: UserOfferProgress) => (
                                 <OfferCard
                                     key={offer.id}
                                     offer={offer}
@@ -108,7 +109,7 @@ export const AgentOffersPage: React.FC = () => {
 
                     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-4 space-y-4">
                         {redemptions.length > 0 ? (
-                            redemptions.map(r => (
+                            redemptions.map((r: OfferRedemption) => (
                                 <div key={r.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col gap-3">
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center gap-2">

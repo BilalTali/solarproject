@@ -6,8 +6,8 @@ import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Mail, Lock, KeyRound, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
-import { authApi } from '@/api/auth.api';
-import { useAuthStore } from '@/store/authStore';
+import { authApi } from '@/services/auth.api';
+import { useAuthStore } from '@/hooks/store/authStore';
 import ForgotPasswordForm from './ForgotPasswordForm';
 
 const step1Schema = z.object({

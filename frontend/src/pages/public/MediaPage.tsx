@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { publicApi, type PublicMedia, type PublicSettingsData } from '@/api/public.api';
+import { publicApi, type PublicMedia, type PublicSettingsData } from '@/services/public.api';
 import { Award, Calendar, RefreshCcw, Search } from 'lucide-react';
 import { useState } from 'react';
 import SEOHead from '@/components/shared/SEOHead';
@@ -27,8 +27,12 @@ export default function MediaPage() {
     return (
         <div className="min-h-screen bg-white">
             <SEOHead
-                title="Reward Winners & Announcements"
-                description={`Celebrating the milestones and achievements of our dedicated ${settings?.company_name || 'SuryaMitra'} partners across India.`}
+                title="Reward Winners & Announcements - PM Surya Ghar"
+                description={`Celebrating the milestones and achievements of our dedicated ${settings?.company_name || 'AndleebSurya'} partners across India.`}
+                breadcrumbs={[
+                    { name: 'Home', url: window.location.origin },
+                    { name: 'Media', url: window.location.origin + '/media' }
+                ]}
             />
             <Navbar />
 

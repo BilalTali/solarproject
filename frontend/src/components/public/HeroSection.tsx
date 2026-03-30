@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { publicApi } from '@/api/public.api';
+import { publicApi } from '@/services/public.api';
 import { DEFAULT_SETTINGS } from '@/hooks/useSettings';
 import { ArrowRight, Play } from 'lucide-react';
 

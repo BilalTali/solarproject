@@ -7,12 +7,12 @@ import { VerificationStatusBadge } from '@/components/shared/VerificationStatusB
 import { LeadSourceBadge } from '@/components/shared/LeadSourceBadge';
 import { VerifyLeadModal } from '@/components/super-agent/VerifyLeadModal';
 import { RevertLeadModal } from '@/components/super-agent/RevertLeadModal';
-import { leadsApi } from '@/api/leads.api';
-import { superAgentCommissionsApi } from '@/api/commissions.api';
+import { leadsApi } from '@/services/leads.api';
+import { superAgentCommissionsApi } from '@/services/commissions.api';
 import CommissionInlineEntryForAgent from '@/components/super-agent/CommissionInlineEntryForAgent';
 import React from 'react';
 import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor } from '@/constants/leadStatuses';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@/hooks/store/authStore';
 
 type TabType = 'needs_verification' | 'my_leads' | 'team_leads' | 'all';
 

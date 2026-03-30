@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { superAgentApi } from '@/api/superAgent.api';
+import { superAgentApi } from '@/services/superAgent.api';
 import { useSettings } from '@/hooks/useSettings';
 
 interface Props {

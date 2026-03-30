@@ -9,9 +9,9 @@ import {
     Link as LinkIcon
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { leadsApi } from '@/api/leads.api';
-import { superAgentApi } from '@/api/superAgent.api';
-import { enumeratorApi } from '@/api/enumerator.api';
+import { leadsApi } from '@/services/leads.api';
+import { superAgentApi } from '@/services/superAgent.api';
+import { enumeratorApi } from '@/services/enumerator.api';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
 import MobileInput from '@/components/shared/MobileInput';
 import { compressImage } from '@/utils/imageUtils';

@@ -6,12 +6,12 @@ import {
     Image as ImageIcon, CreditCard, FileBadge, Download, CheckCircle
 } from 'lucide-react';
 import { openAuthenticatedFile } from '@/utils/documentUtils';
-import { leadsApi } from '@/api/leads.api';
-import { adminSuperAgentApi } from '@/api/adminSuperAgent.api';
+import { leadsApi } from '@/services/leads.api';
+import { adminSuperAgentApi } from '@/services/adminSuperAgent.api';
 import toast from 'react-hot-toast';
 import type { Lead, ApiResponse, PaginatedResponse, CommissionPrompt } from '@/types';
 import CommissionInlineEntry from '@/components/admin/CommissionInlineEntry';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@/hooks/store/authStore';
 import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor, MILESTONE_STATUSES } from '@/constants/leadStatuses';
 
 // ── constants ─────────────────────────────────────────────────────────────────

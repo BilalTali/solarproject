@@ -3,21 +3,34 @@ import Footer from '@/components/public/Footer';
 import SEOHead from '@/components/shared/SEOHead';
 import { Shield, Target, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { publicApi } from '@/api/public.api';
-
-const getSetting = (s: any, k: string, fb: string) => s?.[k] || fb;
+import { publicApi, type PublicSettingsData } from '@/services/public.api';
 
 export default function AboutPage() {
-    const { data: settings = {} } = useQuery({
+    const { data: settings } = useQuery<PublicSettingsData>({
         queryKey: ['public-settings'],
         queryFn: publicApi.getSettings,
     });
 
-    const companyName = getSetting(settings, 'company_name', 'SuryaMitra');
+    const companyName = settings?.company_name || 'AndleebSurya';
 
     return (
         <div className="min-h-screen bg-neutral-50 flex flex-col">
-            <SEOHead />
+            <SEOHead 
+                title={`About ${companyName} - Our Solar Mission`} 
+                description={`Learn more about ${companyName}'s mission to accelerate India's transition to renewable energy through the PM Surya Ghar Muft Bijli Yojana.`} 
+                breadcrumbs={[
+                    { name: 'Home', url: window.location.origin },
+                    { name: 'About', url: window.location.origin + '/about' }
+                ]}
+                schemas={[
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "AboutPage",
+                        "name": `About ${companyName}`,
+                        "description": `Empowering India with Solar Energy by acting as the bridge for the PM Surya Ghar Muft Bijli Yojana.`
+                    }
+                ]}
+            />
             <Navbar />
             <main className="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
                 <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100">

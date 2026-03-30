@@ -1,7 +1,8 @@
-import { Sun, Phone, MessageCircle, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Mail, Phone, MapPin, Sun, ExternalLink } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { publicApi } from '@/api/public.api';
+import { publicApi } from '@/services/public.api';
+import WhatsAppButton from '@/components/shared/WhatsAppButton';
 
 const getSetting = (settingsObj: any, key: string, fallback: string) => {
     return settingsObj?.[key] || fallback;
@@ -13,6 +14,11 @@ export default function Footer() {
         queryFn: publicApi.getSettings,
     });
 
+    const companyName = getSetting(settings, 'company_name', 'AndleebSurya');
+    const email = getSetting(settings, 'company_email', 'info@andleebsurya.com');
+    const phone = getSetting(settings, 'company_mobile', '+91 9419012345');
+    const address = getSetting(settings, 'company_address', 'Srinagar, Jammu & Kashmir');
+
     return (
         <footer className="bg-gradient-to-b from-slate-900 to-[#020617] text-white pt-12 pb-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,7 +29,7 @@ export default function Footer() {
                             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center">
                                 <Sun className="w-5 h-5 text-white" />
                             </div>
-                            <span className="font-display font-bold text-xl">{getSetting(settings, 'company_name', 'AndleebSurya')}</span>
+                            <span className="font-display font-bold text-xl">{companyName}</span>
                         </div>
                         <p className="text-sm text-neutral-600 leading-relaxed">
                             {getSetting(settings, 'footer_about_text', 'Facilitating solar rooftop installations under PM Surya Ghar Muft Bijli Yojana across Jammu & Kashmir and Ladakh.')}
@@ -34,55 +40,56 @@ export default function Footer() {
                     <div>
                         <h4 className="font-display font-semibold mb-3">Contact Us</h4>
                         <div className="flex flex-col gap-2">
-                            <a href={`tel:${getSetting(settings, 'company_mobile', '+919876543210')}`} className="flex items-center gap-2 text-sm text-neutral-600 hover:text-accent transition-colors">
-                                <Phone className="w-4 h-4" /> {getSetting(settings, 'company_mobile', '+91-98765 43210')}
+                            <a href={`tel:${phone}`} className="flex items-center gap-2 text-sm text-neutral-600 hover:text-accent transition-colors">
+                                <Phone className="w-4 h-4" /> {phone}
                             </a>
-                            <a href={`https://wa.me/${getSetting(settings, 'company_whatsapp', '919876543210').replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-neutral-600 hover:text-accent transition-colors">
-                                <MessageCircle className="w-4 h-4" /> {getSetting(settings, 'label_whatsapp_text', 'WhatsApp Us')}
+                            <a href={`mailto:${email}`} className="flex items-center gap-2 text-sm text-neutral-600 hover:text-accent transition-colors">
+                                <Mail className="w-4 h-4" /> {email}
                             </a>
-                            <a href={getSetting(settings, 'external_pmsuryaghar_url', 'https://pmsuryaghar.gov.in')} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-neutral-600 hover:text-accent transition-colors">
-                                <ExternalLink className="w-4 h-4" /> {getSetting(settings, 'external_pmsuryaghar_label', 'pmsuryaghar.gov.in')}
-                            </a>
+                            <div className="flex items-start gap-2 text-sm text-neutral-600 mt-1">
+                                <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+                                <span>{address}</span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Links */}
+                    {/* Quick Links */}
                     <div>
-                        <h4 className="font-display font-semibold mb-3">{getSetting(settings, 'footer_section_quick_links', 'Quick Links')}</h4>
-                        <div className="flex flex-col gap-2">
-                            <Link to="/#how-it-works" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'label_how_it_works', 'How It Works')}</Link>
-                            <Link to="/#eligibility" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'label_eligibility_checker', 'Eligibility Checker')}</Link>
-                            <Link to="/#calculator" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'label_subsidy_calculator', 'Subsidy Calculator')}</Link>
-                            <Link to="/agent/register" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'label_become_executive', 'Become a Biz Dev Executive')}</Link>
-                            <Link to="/agent/login" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'label_executive_login', 'Biz Dev Executive Login')}</Link>
-                        </div>
+                        <h4 className="font-display font-semibold mb-3">Quick Links</h4>
+                        <ul className="flex flex-col gap-2">
+                            <li><Link to="/about" className="text-sm text-neutral-600 hover:text-accent transition-colors">About Us</Link></li>
+                            <li><Link to="/documents" className="text-sm text-neutral-600 hover:text-accent transition-colors">Public Documents</Link></li>
+                            <li><Link to="/contact" className="text-sm text-neutral-600 hover:text-accent transition-colors">Contact Support</Link></li>
+                            <li><Link to="/scheme" className="text-sm text-neutral-600 hover:text-accent transition-colors">Scheme Details</Link></li>
+                            <li><Link to="/faq" className="text-sm text-neutral-600 hover:text-accent transition-colors">FAQs</Link></li>
+                            <li><Link to="/solar-subsidy-calculator" className="text-sm text-neutral-600 hover:text-accent transition-colors">Subsidy Calculator</Link></li>
+                            <li><Link to="/state-wise-subsidy" className="text-sm text-neutral-600 hover:text-accent transition-colors">State Subsidies</Link></li>
+                        </ul>
                     </div>
 
-                    {/* Legal & Support */}
+                    {/* Legal */}
                     <div>
-                        <h4 className="font-display font-semibold mb-3">{getSetting(settings, 'footer_section_legal', 'Legal & Support')}</h4>
-                        <div className="flex flex-col gap-2">
-                            <Link to="/about" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'footer_link_about', 'About Us')}</Link>
-                            <Link to="/scheme" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'footer_link_scheme', 'PM Surya Ghar Scheme')}</Link>
-                            <Link to="/contact" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'footer_link_contact', 'Contact')}</Link>
-                            <Link to="/faq" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'footer_link_faq', 'FAQ')}</Link>
-                            <Link to="/privacy-policy" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'footer_link_privacy', 'Privacy Policy')}</Link>
-                            <Link to="/terms-conditions" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'footer_link_terms', 'Terms & Conditions')}</Link>
-                            <Link to="/refund-policy" className="text-sm text-neutral-600 hover:text-accent transition-colors">{getSetting(settings, 'footer_link_refund', 'Refund Policy')}</Link>
-                            <Link to="/user-manual" className="text-sm text-neutral-600 hover:text-accent transition-colors">User Manual Guide</Link>
-                        </div>
+                        <h4 className="font-display font-semibold mb-3">Legal & Portals</h4>
+                        <ul className="flex flex-col gap-2">
+                            <li><Link to="/privacy-policy" className="text-sm text-neutral-600 hover:text-accent transition-colors">Privacy Policy</Link></li>
+                            <li><Link to="/terms-conditions" className="text-sm text-neutral-600 hover:text-accent transition-colors">Terms & Conditions</Link></li>
+                            <li><Link to="/refund-policy" className="text-sm text-neutral-600 hover:text-accent transition-colors">Refund Policy</Link></li>
+                            <li><Link to="/agent/login" className="text-sm text-neutral-600 hover:text-accent transition-colors flex items-center gap-1 mt-2">Agent Portal <ExternalLink className="w-3 h-3" /></Link></li>
+                            <li><a href="https://pmsuryaghar.gov.in" target="_blank" rel="noopener noreferrer" className="text-sm text-neutral-600 hover:text-accent transition-colors flex items-center gap-1">National Portal <ExternalLink className="w-3 h-3" /></a></li>
+                        </ul>
                     </div>
                 </div>
 
-                <div className="pt-6 flex flex-col md:flex-row gap-2 justify-between items-start">
-                    <p className="text-xs text-neutral-600">
-                        {getSetting(settings, 'footer_copyright', '© 2026 AndleebSurya. All rights reserved.')}
-                    </p>
-                    <p className="text-xs text-neutral-600 max-w-md">
-                        {getSetting(settings, 'footer_disclaimer', '⚠️ AndleebSurya is an independent facilitation agency. Not a government body. PM Surya Ghar Muft Bijli Yojana is a Government of India scheme.')}
+                <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p className="text-xs text-neutral-600 text-center md:text-left">
+                        &copy; {new Date().getFullYear()} {companyName}. All rights reserved.<br />
+                        Not an official government website. We are a registered facilitator for the PM Surya Ghar scheme.
                     </p>
                 </div>
             </div>
+            
+            {/* INJECT WHATSAPP BUTTON HERE */}
+            <WhatsAppButton />
         </footer>
     );
 }

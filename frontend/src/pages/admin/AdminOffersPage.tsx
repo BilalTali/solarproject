@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Offer } from '../../types';
-import { offersApi } from '../../api/offers.api';
+import { Offer } from '@/types';
+import { offersApi } from '@/services/offers.api';
 
 import {
     Plus, Search, Edit2, Trash2, Target,
@@ -9,8 +9,19 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
-import SEOHead from '../../components/shared/SEOHead';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import SEOHead from '@/components/shared/SEOHead';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
+
+interface Participant {
+    user_id: number;
+    name: string;
+    agent_id: string;
+    role: string;
+    total_points: number;
+    unredeemed: number;
+    redemptions: number;
+    last_activity: string | null;
+}
 
 export const AdminOffersPage: React.FC = () => {
     const queryClient = useQueryClient();
@@ -28,7 +39,7 @@ export const AdminOffersPage: React.FC = () => {
     });
 
     const createMutation = useMutation({
-        mutationFn: (fd: FormData) => offersApi.admin.create(fd as unknown as Partial<Offer>),
+        mutationFn: (fd: FormData) => offersApi.admin.create(fd as any),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-offers'] });
             toast.success('Offer created successfully');
@@ -38,7 +49,7 @@ export const AdminOffersPage: React.FC = () => {
 
     const updateMutation = useMutation({
         mutationFn: ({ id, payload }: { id: number, payload: FormData }) =>
-            offersApi.admin.update(id, payload as unknown as Partial<Offer>),
+            offersApi.admin.update(id, payload as any),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-offers'] });
             toast.success('Offer updated successfully');
@@ -47,7 +58,7 @@ export const AdminOffersPage: React.FC = () => {
     });
 
     const deleteMutation = useMutation({
-        mutationFn: offersApi.admin.delete,
+        mutationFn: (id: number) => offersApi.admin.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-offers'] });
             toast.success('Offer deleted');
@@ -100,8 +111,8 @@ export const AdminOffersPage: React.FC = () => {
         }
     };
 
-    const offers = offersResponse?.data || [];
-    const filteredOffers = offers.filter(o =>
+    const offers = (offersResponse?.data as Offer[]) || [];
+    const filteredOffers = offers.filter((o: Offer) =>
         o.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         o.prize_label.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -156,7 +167,7 @@ export const AdminOffersPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {filteredOffers.map((offer) => (
+                            {filteredOffers.map((offer: Offer) => (
                                 <tr key={offer.id} className="hover:bg-slate-50/30 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
@@ -481,7 +492,7 @@ const ParticipantsModal: React.FC<{ offerId: number, onClose: () => void }> = ({
         queryFn: () => offersApi.admin.getParticipants(offerId)
     });
 
-    const participants = participantsResp?.data || [];
+    const participants = (participantsResp?.data as Participant[]) || [];
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -516,7 +527,7 @@ const ParticipantsModal: React.FC<{ offerId: number, onClose: () => void }> = ({
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {participants.map((p) => (
+                                    {participants.map((p: Participant) => (
                                         <tr key={p.user_id} className="hover:bg-slate-50/50">
                                             <td className="px-4 py-3">
                                                 <p className="text-sm font-bold text-slate-900">{p.name}</p>

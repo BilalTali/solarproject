@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { PlusCircle, CheckCircle, CornerUpLeft, DollarSign, Search, Filter } from 'lucide-react';
-import { leadsApi } from '@/api/leads.api';
+import { leadsApi } from '@/services/leads.api';
 import type { Lead } from '@/types';
 import LeadStatusBadge from '@/components/shared/LeadStatusBadge';
 import { VerificationStatusBadge } from '@/components/shared/VerificationStatusBadge';
@@ -10,7 +10,7 @@ import { RevertedLeadBanner } from '@/components/agent/RevertedLeadBanner';
 import { formatDate } from '@/utils/formatters';
 import { VerifyLeadModal } from '@/components/agent/VerifyLeadModal';
 import { RevertLeadModal } from '@/components/agent/RevertLeadModal';
-import { agentCommissionsApi } from '@/api/commissions.api';
+import { agentCommissionsApi } from '@/services/commissions.api';
 import CommissionInlineEntryForAgent from '@/components/super-agent/CommissionInlineEntryForAgent';
 import { LEAD_STATUS_OPTIONS } from '@/constants/leadStatuses';
 

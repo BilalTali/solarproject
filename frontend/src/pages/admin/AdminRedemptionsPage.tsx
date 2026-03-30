@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { offersApi } from '../../api/offers.api';
-import { OfferRedemption, RedemptionStatus } from '../../types';
+import { offersApi } from '@/services/offers.api';
+import { OfferRedemption, RedemptionStatus } from '@/types';
 import {
     CheckCircle2, Package, Clock, Filter, Search,
     User, Gift, ChevronRight, Info, XCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
-import SEOHead from '../../components/shared/SEOHead';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import SEOHead from '@/components/shared/SEOHead';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 export const AdminRedemptionsPage: React.FC = () => {
     const queryClient = useQueryClient();
@@ -56,11 +56,11 @@ export const AdminRedemptionsPage: React.FC = () => {
         }
     });
 
-    const redemptions = redemptionsResp?.data || [];
-    const filtered = redemptions.filter(r =>
+    const redemptions = (redemptionsResp?.data as OfferRedemption[]) || [];
+    const filtered = redemptions.filter((r: OfferRedemption) =>
         r.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.offer?.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.user?.agent_id?.toLowerCase().includes(searchTerm.toLowerCase())
+        (r.user as any)?.agent_id?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const getStatusStyle = (status: RedemptionStatus) => {
@@ -115,7 +115,7 @@ export const AdminRedemptionsPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* List */}
                 <div className="lg:col-span-2 space-y-4">
-                    {filtered.map(r => (
+                    {filtered.map((r: OfferRedemption) => (
                         <div
                             key={r.id}
                             onClick={() => { setSelectedRedemption(r); setActionNotes(r.notes || ''); }}

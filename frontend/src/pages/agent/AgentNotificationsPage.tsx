@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, CheckCircle2, Clock } from 'lucide-react';
-import { agentsApi } from '@/api/agents.api';
+import { agentsApi } from '@/services/agents.api';
 import toast from 'react-hot-toast';
 
 export default function AgentNotificationsPage() {

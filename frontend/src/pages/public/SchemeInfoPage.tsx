@@ -1,12 +1,11 @@
-import { Helmet } from 'react-helmet-async';
 import { Sun, CheckCircle, FileText, ExternalLink, AlertTriangle, Zap, IndianRupee } from 'lucide-react';
 import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
+import SEOHead from '@/components/shared/SEOHead';
 import { useQuery } from '@tanstack/react-query';
-import { publicApi } from '@/api/public.api';
+import { publicApi, type PublicSettingsData } from '@/services/public.api';
 
-const getSetting = (s: any, k: string, fb: string) => s?.[k] || fb;
-
+ 
 const subsidyData = [
     { capacity: 'Up to 2 kW', subsidy: '₹30,000', monthly: 'Up to 150 units free', tag: 'Most Popular' },
     { capacity: '2 kW – 3 kW', subsidy: '₹60,000', monthly: 'Up to 200 units free', tag: 'Best Value' },
@@ -23,12 +22,12 @@ const documents = [
 ];
 
 export default function SchemeInfoPage() {
-    const { data: settings = {} } = useQuery({
+    const { data: settings } = useQuery<PublicSettingsData>({
         queryKey: ['public-settings'],
         queryFn: publicApi.getSettings,
     });
 
-    const companyName = getSetting(settings, 'company_name', 'SuryaMitra');
+    const companyName = settings?.company_name || 'AndleebSurya';
 
     const steps = [
         { step: '01', title: 'Submit Your Query', desc: 'Fill the form on our website with your name, mobile, and district. Zero cost, takes 2 minutes.' },
@@ -42,13 +41,27 @@ export default function SchemeInfoPage() {
 
     return (
         <div className="min-h-screen bg-neutral-50 flex flex-col">
-            <Helmet>
-                <title>PM Surya Ghar Muft Bijli Yojana — Free Solar Scheme Info | {companyName} J&K</title>
-                <meta name="description" content={`Everything about PM Surya Ghar Muft Bijli Yojana — free solar panels, ₹78,000 government subsidy, eligibility for J&K and Ladakh residents. Documents, process, benefits explained via ${companyName}.`} />
-                <meta name="keywords" content="PM Surya Ghar, Muft Bijli Yojana, free solar panels J&K, solar subsidy Jammu Kashmir, MNRE scheme, rooftop solar Ladakh" />
-                <meta property="og:title" content={`PM Surya Ghar Muft Bijli Yojana — Free Solar Scheme for J&K & Ladakh via ${companyName}`} />
-                <meta property="og:description" content={`Get free solar panels with up to ₹78,000 government subsidy under PM Surya Ghar Muft Bijli Yojana. ${companyName} helps J&K and Ladakh residents register. Zero cost to you.`} />
-            </Helmet>
+            <SEOHead 
+                title={`PM Surya Ghar Muft Bijli Yojana — Free Solar Scheme Info`} 
+                description={`Everything about PM Surya Ghar Muft Bijli Yojana — free solar panels, ₹78,000 government subsidy, eligibility for J&K and Ladakh residents. Documents, process, benefits explained via ${companyName}.`}
+                keywords="PM Surya Ghar, Muft Bijli Yojana, free solar panels J&K, solar subsidy Jammu Kashmir, MNRE scheme, rooftop solar Ladakh"
+                breadcrumbs={[
+                    { name: 'Home', url: window.location.origin },
+                    { name: 'Scheme Info', url: window.location.origin + '/scheme' }
+                ]}
+                schemas={[
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "Article",
+                        "headline": "PM Surya Ghar Muft Bijli Yojana — Free Solar Scheme Info",
+                        "description": `Get free solar panels with up to ₹78,000 government subsidy under PM Surya Ghar Muft Bijli Yojana. ${companyName} helps J&K and Ladakh residents register.`,
+                        "author": {
+                            "@type": "Organization",
+                            "name": companyName
+                        }
+                    }
+                ]}
+            />
             <Navbar />
 
             <main className="flex-grow">

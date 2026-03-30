@@ -7,13 +7,13 @@ import {
     Phone, Mail, Calendar, Shield, MapPin, FileText
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { settingsApi } from '@/api/settings.api';
-import { authApi } from '@/api/auth.api';
-import { useAuthStore } from '@/store/authStore';
-import { achievementsApi, type AdminAchievement } from '@/api/achievements.api';
-import { feedbacksApi, type AdminFeedback } from '@/api/feedbacks.api';
+import { settingsApi } from '@/services/settings.api';
+import { authApi } from '@/services/auth.api';
+import { useAuthStore } from '@/hooks/store/authStore';
+import { achievementsApi, type AdminAchievement } from '@/services/achievements.api';
+import { feedbacksApi, type AdminFeedback } from '@/services/feedbacks.api';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
-import api from '@/api/axios';
+import api from '@/services/axios';
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm';
 import MobileInput from '@/components/shared/MobileInput';
 

@@ -5,7 +5,7 @@ import {
     ArrowLeft, Users, Star, Phone, MapPin, Mail, Activity,
     CheckCircle, XCircle, UserX, Edit2, Save, X, Unlink, Calendar, QrCode
 } from 'lucide-react';
-import { adminSuperAgentApi } from '@/api/adminSuperAgent.api';
+import { adminSuperAgentApi } from '@/services/adminSuperAgent.api';
 import toast from 'react-hot-toast';
 import type { User } from '@/types';
 import { formatCurrency } from '@/utils/formatters';

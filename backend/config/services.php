@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'prerender' => [
+        'token' => env('PRERENDER_TOKEN'),
+    ],
+
 ];

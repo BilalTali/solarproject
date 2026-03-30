@@ -1,104 +1,109 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 
 // Layouts
-import AgentLayout from '@/layouts/AgentLayout';
-import AdminLayout from '@/layouts/AdminLayout';
-import SuperAgentLayout from '@/layouts/SuperAgentLayout';
+import AgentLayout from '@/components/layouts/AgentLayout';
+import AdminLayout from '@/components/layouts/AdminLayout';
+import SuperAgentLayout from '@/components/layouts/SuperAgentLayout';
 
 // Route Guards
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@/hooks/store/authStore';
 
 // Public Pages
-import MediaPage from '@/pages/public/MediaPage';
-import PublicDocumentsPage from '@/pages/public/DocumentsPage';
-import VerifyAgentPage from '@/pages/public/VerifyAgentPage';
-import PrivacyPolicyPage from '@/pages/public/PrivacyPolicyPage';
-import TermsConditionsPage from '@/pages/public/TermsConditionsPage';
-import AboutPage from '@/pages/public/AboutPage';
-import ContactPage from '@/pages/public/ContactPage';
-import FaqPage from '@/pages/public/FaqPage';
-import SchemeInfoPage from '@/pages/public/SchemeInfoPage';
-import RefundPolicyPage from '@/pages/public/RefundPolicyPage';
-import TrackStatusPage from '@/pages/public/TrackStatusPage';
-import HomePage from '@/pages/public/HomePage';
-import UserManualPage from '@/pages/public/UserManualPage';
+const MediaPage = lazy(() => import('@/pages/public/MediaPage'));
+const PublicDocumentsPage = lazy(() => import('@/pages/public/DocumentsPage'));
+const VerifyAgentPage = lazy(() => import('@/pages/public/VerifyAgentPage'));
+const PrivacyPolicyPage = lazy(() => import('@/pages/public/PrivacyPolicyPage'));
+const TermsConditionsPage = lazy(() => import('@/pages/public/TermsConditionsPage'));
+const AboutPage = lazy(() => import('@/pages/public/AboutPage'));
+const ContactPage = lazy(() => import('@/pages/public/ContactPage'));
+const FaqPage = lazy(() => import('@/pages/public/FaqPage'));
+const SchemeInfoPage = lazy(() => import('@/pages/public/SchemeInfoPage'));
+const RefundPolicyPage = lazy(() => import('@/pages/public/RefundPolicyPage'));
+const TrackStatusPage = lazy(() => import('@/pages/public/TrackStatusPage'));
+const HomePage = lazy(() => import('@/pages/public/HomePage'));
+const UserManualPage = lazy(() => import('@/pages/public/UserManualPage'));
+const CalculatorPage = lazy(() => import('@/pages/public/CalculatorPage'));
+const GuidePage = lazy(() => import('@/pages/public/GuidePage'));
+const StateSubsidyPage = lazy(() => import('@/pages/public/StateSubsidyPage'));
+const BenefitsPage = lazy(() => import('@/pages/public/BenefitsPage'));
 
 // Auth Pages
-import AgentLoginPage from '@/pages/agent/AgentLoginPage';
-import AgentRegisterPage from '@/pages/agent/AgentRegisterPage';
-import AgentSetPasswordPage from '@/pages/agent/AgentSetPasswordPage';
-import AdminLoginPage from '@/pages/admin/AdminLoginPage';
-import SuperAgentLoginPage from '@/pages/super-agent/SuperAgentLoginPage';
-import LoginPage from '@/pages/public/LoginPage';
+const AgentLoginPage = lazy(() => import('@/pages/agent/AgentLoginPage'));
+const AgentRegisterPage = lazy(() => import('@/pages/agent/AgentRegisterPage'));
+const AgentSetPasswordPage = lazy(() => import('@/pages/agent/AgentSetPasswordPage'));
+const AdminLoginPage = lazy(() => import('@/pages/admin/AdminLoginPage'));
+const SuperAgentLoginPage = lazy(() => import('@/pages/super-agent/SuperAgentLoginPage'));
+const LoginPage = lazy(() => import('@/pages/public/LoginPage'));
 
 // Business Development Executive Pages
-import AgentDashboardPage from '@/pages/agent/AgentDashboardPage';
-import AgentCreateLeadPage from '@/pages/agent/AgentCreateLeadPage';
-import AgentLeadsPage from '@/pages/agent/AgentLeadsPage';
-import AgentProfilePage from '@/pages/agent/AgentProfilePage';
+const AgentDashboardPage = lazy(() => import('@/pages/agent/AgentDashboardPage'));
+const AgentCreateLeadPage = lazy(() => import('@/pages/agent/AgentCreateLeadPage'));
+const AgentLeadsPage = lazy(() => import('@/pages/agent/AgentLeadsPage'));
+const AgentProfilePage = lazy(() => import('@/pages/agent/AgentProfilePage'));
 
-import AgentCommissionsPage from '@/pages/agent/AgentCommissionsPage';
-import AgentNotificationsPage from '@/pages/agent/AgentNotificationsPage';
-import AgentEnumeratorsPage from '@/pages/agent/AgentEnumeratorsPage';
-import { AgentOffersPage } from '@/pages/agent/AgentOffersPage';
-import { AgentWithdrawalsPage } from '@/pages/agent/AgentWithdrawalsPage';
+const AgentCommissionsPage = lazy(() => import('@/pages/agent/AgentCommissionsPage'));
+const AgentNotificationsPage = lazy(() => import('@/pages/agent/AgentNotificationsPage'));
+const AgentEnumeratorsPage = lazy(() => import('@/pages/agent/AgentEnumeratorsPage'));
+const AgentOffersPage = lazy(() => import('@/pages/agent/AgentOffersPage').then(module => ({ default: module.AgentOffersPage })));
+const AgentWithdrawalsPage = lazy(() => import('@/pages/agent/AgentWithdrawalsPage').then(module => ({ default: module.AgentWithdrawalsPage })));
 
 // Business Development Manager Pages
-import SuperAgentDashboardPage from '@/pages/super-agent/SuperAgentDashboardPage';
-import SuperAgentTeamPage from '@/pages/super-agent/SuperAgentTeamPage';
-import SuperAgentAgentDetailPage from '@/pages/super-agent/SuperAgentAgentDetailPage';
-import SuperAgentLeadsPage from '@/pages/super-agent/SuperAgentLeadsPage';
-import SuperAgentCommissionsPage from '@/pages/super-agent/SuperAgentCommissionsPage';
-import SuperAgentCreateLeadPage from '@/pages/super-agent/SuperAgentCreateLeadPage';
-import SuperAgentEnumeratorsPage from '@/pages/super-agent/SuperAgentEnumeratorsPage';
-import { SuperAgentTeamOffersPage } from '@/pages/super-agent/SuperAgentTeamOffersPage';
-import { SuperAgentLeadDetailPage } from '@/pages/super-agent/SuperAgentLeadDetailPage';
-import { SuperAgentNotificationsPage } from '@/pages/super-agent/SuperAgentNotificationsPage';
-import { SuperAgentProfilePage } from '@/pages/super-agent/SuperAgentProfilePage';
-import DocumentsPage from '@/pages/shared/DocumentsPage';
+const SuperAgentDashboardPage = lazy(() => import('@/pages/super-agent/SuperAgentDashboardPage'));
+const SuperAgentTeamPage = lazy(() => import('@/pages/super-agent/SuperAgentTeamPage'));
+const SuperAgentAgentDetailPage = lazy(() => import('@/pages/super-agent/SuperAgentAgentDetailPage'));
+const SuperAgentLeadsPage = lazy(() => import('@/pages/super-agent/SuperAgentLeadsPage'));
+const SuperAgentCommissionsPage = lazy(() => import('@/pages/super-agent/SuperAgentCommissionsPage'));
+const SuperAgentCreateLeadPage = lazy(() => import('@/pages/super-agent/SuperAgentCreateLeadPage'));
+const SuperAgentEnumeratorsPage = lazy(() => import('@/pages/super-agent/SuperAgentEnumeratorsPage'));
+const SuperAgentTeamOffersPage = lazy(() => import('@/pages/super-agent/SuperAgentTeamOffersPage').then(module => ({ default: module.SuperAgentTeamOffersPage })));
+const SuperAgentLeadDetailPage = lazy(() => import('@/pages/super-agent/SuperAgentLeadDetailPage').then(module => ({ default: module.SuperAgentLeadDetailPage })));
+const SuperAgentNotificationsPage = lazy(() => import('@/pages/super-agent/SuperAgentNotificationsPage').then(module => ({ default: module.SuperAgentNotificationsPage })));
+const SuperAgentProfilePage = lazy(() => import('@/pages/super-agent/SuperAgentProfilePage').then(module => ({ default: module.SuperAgentProfilePage })));
+const DocumentsPage = lazy(() => import('@/pages/shared/DocumentsPage'));
 
 // Admin Pages
-import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
-import AdminSuperAgentsPage from '@/pages/admin/AdminSuperAgentsPage';
-import AdminSuperAgentDetailPage from '@/pages/admin/AdminSuperAgentDetailPage';
-import AdminAgentsPage from '@/pages/admin/AdminAgentsPage';
-import AdminEnumeratorsPage from '@/pages/admin/AdminEnumeratorsPage';
-import AdminLeadsPage from '@/pages/admin/AdminLeadsPage';
-import AdminCommissionsPage from '@/pages/admin/AdminCommissionsPage';
-import AdminReportsPage from '@/pages/admin/AdminReportsPage';
-import AdminMediaPage from '@/pages/admin/AdminMediaPage';
-import AdminDocumentsPage from '@/pages/admin/AdminDocumentsPage';
-import AdminSettingsPage from '@/pages/admin/AdminSettingsPage';
-import { AdminOffersPage } from '@/pages/admin/AdminOffersPage';
-import { AdminRedemptionsPage } from '@/pages/admin/AdminRedemptionsPage';
-import { AdminAbsorptionsPage } from '@/pages/admin/AdminAbsorptionsPage';
-import { AdminWithdrawalsPage } from '@/pages/admin/AdminWithdrawalsPage';
-import AdminOperatorsPage from '@/pages/admin/AdminOperatorsPage';
+const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
+const AdminSuperAgentsPage = lazy(() => import('@/pages/admin/AdminSuperAgentsPage'));
+const AdminSuperAgentDetailPage = lazy(() => import('@/pages/admin/AdminSuperAgentDetailPage'));
+const AdminAgentsPage = lazy(() => import('@/pages/admin/AdminAgentsPage'));
+const AdminEnumeratorsPage = lazy(() => import('@/pages/admin/AdminEnumeratorsPage'));
+const AdminLeadsPage = lazy(() => import('@/pages/admin/AdminLeadsPage'));
+const AdminCommissionsPage = lazy(() => import('@/pages/admin/AdminCommissionsPage'));
+const AdminReportsPage = lazy(() => import('@/pages/admin/AdminReportsPage'));
+const AdminMediaPage = lazy(() => import('@/pages/admin/AdminMediaPage'));
+const AdminDocumentsPage = lazy(() => import('@/pages/admin/AdminDocumentsPage'));
+const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage'));
+const AdminOffersPage = lazy(() => import('@/pages/admin/AdminOffersPage').then(module => ({ default: module.AdminOffersPage })));
+const AdminRedemptionsPage = lazy(() => import('@/pages/admin/AdminRedemptionsPage').then(module => ({ default: module.AdminRedemptionsPage })));
+const AdminAbsorptionsPage = lazy(() => import('@/pages/admin/AdminAbsorptionsPage').then(module => ({ default: module.AdminAbsorptionsPage })));
+const AdminWithdrawalsPage = lazy(() => import('@/pages/admin/AdminWithdrawalsPage').then(module => ({ default: module.AdminWithdrawalsPage })));
+const AdminOperatorsPage = lazy(() => import('@/pages/admin/AdminOperatorsPage'));
 
 // Enumerator Pages
-import EnumeratorLayout from '@/layouts/EnumeratorLayout';
-import EnumeratorDashboardPage from '@/pages/enumerator/EnumeratorDashboardPage';
-import EnumeratorLeadsPage from '@/pages/enumerator/EnumeratorLeadsPage';
-import EnumeratorCreateLeadPage from '@/pages/enumerator/EnumeratorCreateLeadPage';
-import EnumeratorProfilePage from '@/pages/enumerator/EnumeratorProfilePage';
-import EnumeratorCommissionsPage from '@/pages/enumerator/EnumeratorCommissionsPage';
-import EnumeratorNotificationsPage from '@/pages/enumerator/EnumeratorNotificationsPage';
-import EnumeratorLoginPage from '@/pages/enumerator/EnumeratorLoginPage';
-import { EnumeratorWithdrawalsPage } from '@/pages/enumerator/EnumeratorWithdrawalsPage';
+import EnumeratorLayout from '@/components/layouts/EnumeratorLayout';
+const EnumeratorDashboardPage = lazy(() => import('@/pages/enumerator/EnumeratorDashboardPage'));
+const EnumeratorLeadsPage = lazy(() => import('@/pages/enumerator/EnumeratorLeadsPage'));
+const EnumeratorCreateLeadPage = lazy(() => import('@/pages/enumerator/EnumeratorCreateLeadPage'));
+const EnumeratorProfilePage = lazy(() => import('@/pages/enumerator/EnumeratorProfilePage'));
+const EnumeratorCommissionsPage = lazy(() => import('@/pages/enumerator/EnumeratorCommissionsPage'));
+const EnumeratorNotificationsPage = lazy(() => import('@/pages/enumerator/EnumeratorNotificationsPage'));
+const EnumeratorLoginPage = lazy(() => import('@/pages/enumerator/EnumeratorLoginPage'));
+const EnumeratorWithdrawalsPage = lazy(() => import('@/pages/enumerator/EnumeratorWithdrawalsPage').then(module => ({ default: module.EnumeratorWithdrawalsPage })));
 
 // Super Admin Pages
-import SuperAdminLayout from '@/layouts/SuperAdminLayout';
-import SuperAdminDashboardPage from '@/pages/super-admin/SuperAdminDashboardPage';
-import SuperAdminAdminsPage from '@/pages/super-admin/SuperAdminAdminsPage';
-import SuperAdminMonitorSuperAgentsPage from '@/pages/super-admin/SuperAdminMonitorSuperAgentsPage';
-import SuperAdminMonitorAgentsPage from '@/pages/super-admin/SuperAdminMonitorAgentsPage';
-import SuperAdminMonitorEnumeratorsPage from '@/pages/super-admin/SuperAdminMonitorEnumeratorsPage';
-import SuperAdminMonitorLeadsPage from '@/pages/super-admin/SuperAdminMonitorLeadsPage';
-import SuperAdminReportsPage from '@/pages/admin/AdminReportsPage'; // Reuse admin reports for now
-import SuperAdminLoginPage from '@/pages/super-admin/SuperAdminLoginPage';
+import SuperAdminLayout from '@/components/layouts/SuperAdminLayout';
+const SuperAdminDashboardPage = lazy(() => import('@/pages/super-admin/SuperAdminDashboardPage'));
+const SuperAdminAdminsPage = lazy(() => import('@/pages/super-admin/SuperAdminAdminsPage'));
+const SuperAdminMonitorSuperAgentsPage = lazy(() => import('@/pages/super-admin/SuperAdminMonitorSuperAgentsPage'));
+const SuperAdminMonitorAgentsPage = lazy(() => import('@/pages/super-admin/SuperAdminMonitorAgentsPage'));
+const SuperAdminMonitorEnumeratorsPage = lazy(() => import('@/pages/super-admin/SuperAdminMonitorEnumeratorsPage'));
+const SuperAdminMonitorLeadsPage = lazy(() => import('@/pages/super-admin/SuperAdminMonitorLeadsPage'));
+const SuperAdminReportsPage = lazy(() => import('@/pages/admin/AdminReportsPage')); // Reuse admin reports for now
+const SuperAdminLoginPage = lazy(() => import('@/pages/super-admin/SuperAdminLoginPage'));
 
 /** Redirect admin to dashboard; operators straight to leads */
 function AdminIndexRedirect() {
@@ -131,6 +136,7 @@ export default function App() {
             },
           }}
         />
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>}>
         <Routes>
           {/* Public */}
           <Route path="/" element={<HomePage />} />
@@ -148,6 +154,10 @@ export default function App() {
           <Route path="/refund-policy" element={<RefundPolicyPage />} />
           <Route path="/track-status" element={<TrackStatusPage />} />
           <Route path="/user-manual" element={<UserManualPage />} />
+          <Route path="/solar-subsidy-calculator" element={<CalculatorPage />} />
+          <Route path="/pm-surya-ghar-guide" element={<GuidePage />} />
+          <Route path="/state-wise-subsidy" element={<StateSubsidyPage />} />
+          <Route path="/benefits-of-solar" element={<BenefitsPage />} />
 
           {/* Business Development Executive Auth */}
           <Route path="/agent/login" element={<AgentLoginPage />} />
@@ -286,6 +296,7 @@ export default function App() {
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </QueryClientProvider>
   );

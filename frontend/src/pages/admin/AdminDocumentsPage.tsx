@@ -5,7 +5,7 @@ import {
     Image as ImageIcon, Download, Tag, Search
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { documentsApi, type AdminDocument } from '@/api/documents.api';
+import { documentsApi, type AdminDocument } from '@/services/documents.api';
 
 const AdminDocumentsPage: React.FC = () => {
     const queryClient = useQueryClient();

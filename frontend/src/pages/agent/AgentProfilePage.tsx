@@ -6,9 +6,9 @@ import {
     Briefcase, CreditCard, ClipboardCheck, Info, Map,
     GraduationCap, Target, Lock, CheckCircle2, Star, UserCheck
 } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
-import { authApi } from '@/api/auth.api';
-import { agentsApi } from '@/api/agents.api';
+import { useAuthStore } from '@/hooks/store/authStore';
+import { authApi } from '@/services/auth.api';
+import { agentsApi } from '@/services/agents.api';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';

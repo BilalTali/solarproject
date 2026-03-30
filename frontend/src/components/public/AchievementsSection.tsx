@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { publicApi, type PublicAchievement } from '@/api/public.api';
+import { publicApi, type PublicAchievement } from '@/services/public.api';
 import { Trophy, Calendar, ArrowRight } from 'lucide-react';
 
 export default function AchievementsSection() {

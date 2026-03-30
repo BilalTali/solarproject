@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { enumeratorApi } from '@/api/enumerator.api';
-import { useAuthStore } from '@/store/authStore';
+import { enumeratorApi } from '@/services/enumerator.api';
+import { useAuthStore } from '@/hooks/store/authStore';
 import { LayoutDashboard, FileText, CheckCircle, IndianRupee, TrendingUp, Users, ArrowRight, PlusCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
@@ -19,7 +19,7 @@ export default function EnumeratorDashboardPage() {
 
     if (isLoading) return <DashboardSkeleton />;
 
-    const stats = statsRes?.data;
+    const stats = (statsRes as any)?.data;
 
     const isDirect = (user as any)?.enumerator_creator_role === 'admin' || (user as any)?.enumerator_creator_role === 'super_agent';
     const earningsLabelSuffix = isDirect ? ' (Direct)' : ' (Private)';

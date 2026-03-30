@@ -4,7 +4,7 @@ import { ChevronRight } from 'lucide-react'
 import { OfferExcitementCard } from './OfferExcitementCard'
 import { OfferNotificationBanner } from './OfferNotificationBanner'
 import { OfferWithProgress, UserOfferProgress, computeUrgencyScore, OfferProgress } from '@/types'
-import api from '@/api/axios'
+import api from '@/services/axios'
 
 interface Props {
     role: 'agent' | 'super_agent'

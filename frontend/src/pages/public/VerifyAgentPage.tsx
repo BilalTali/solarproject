@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { ShieldCheck, ShieldAlert, ArrowLeft, MapPin, Calendar, Phone, PhoneCall, Droplets, Loader2 } from 'lucide-react';
 import { useSettings } from '@/hooks/useSettings';
+import SEOHead from '@/components/shared/SEOHead';
 
 interface VerifiedAgent {
     name: string;
@@ -81,6 +82,14 @@ export default function VerifyAgentPage() {
 
     return (
         <div className="min-h-screen bg-[#04111F] flex flex-col items-center font-body pb-12">
+            <SEOHead 
+                title={`Agent Verification: ${agent.name} - PM Surya Ghar`} 
+                description={`Official identity verification for ${agent.name} (${agent.agent_id}). Confirm the authenticity of ${companyName} field representatives.`}
+                breadcrumbs={[
+                    { name: 'Home', url: window.location.origin },
+                    { name: 'Verify Agent', url: window.location.origin + '/verify-agent' }
+                ]}
+            />
             {/* Header */}
             <header className="w-full bg-primary py-4 px-6 border-b-4 border-accent shadow-lg flex items-center gap-4">
                 <Link to="/" className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-display font-black text-primary text-xl shadow-inner">

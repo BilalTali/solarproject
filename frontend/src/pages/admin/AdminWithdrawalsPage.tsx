@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { withdrawalsApi } from '../../api/withdrawals.api';
-import SEOHead from '../../components/shared/SEOHead';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import { withdrawalsApi } from '@/services/withdrawals.api';
+import SEOHead from '@/components/shared/SEOHead';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { Wallet, Check, X as XIcon, DollarSign, Info } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
+import { WithdrawalRequest } from '@/types';
 
 export const AdminWithdrawalsPage: React.FC = () => {
     const queryClient = useQueryClient();
@@ -54,7 +55,7 @@ export const AdminWithdrawalsPage: React.FC = () => {
     });
 
     if (isLoading) return <LoadingSpinner />;
-    const withdrawals = withdrawalsResp?.data || [];
+    const withdrawals = (withdrawalsResp?.data as WithdrawalRequest[]) || [];
 
     const onApproveSubmit = (data: any) => {
         if (!actionModal.id) return;
@@ -116,7 +117,7 @@ export const AdminWithdrawalsPage: React.FC = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                withdrawals.map(w => (
+                                withdrawals.map((w: WithdrawalRequest) => (
                                     <tr key={w.id} className="hover:bg-slate-50/50">
                                         <td className="p-4">
                                             <div className="font-bold text-slate-900 text-sm">{w.offer?.title || 'Unknown'}</div>

@@ -31,6 +31,16 @@ class AuthController extends Controller
             $field = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'mobile';
         }
 
+        // Brute-force protection: block IP after 10 failed attempts per 15 min
+        $bruteKey = 'login-attempt:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($bruteKey, 10)) {
+            $seconds = RateLimiter::availableIn($bruteKey);
+            return response()->json([
+                'success' => false,
+                'message' => 'Too many failed login attempts. Try again in ' . ceil($seconds / 60) . ' minutes.',
+            ], 429);
+        }
+
         $user = User::query()->where(function ($q) use ($field, $identifier, $expectedRole) {
             $q->where($field, $identifier);
             if ($expectedRole === 'admin') {
@@ -42,6 +52,8 @@ class AuthController extends Controller
         })->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
+            // Increment brute-force counter on bad credentials
+            RateLimiter::hit($bruteKey, 15 * 60);
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid credentials.'

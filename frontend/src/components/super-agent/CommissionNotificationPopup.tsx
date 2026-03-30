@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { superAgentApi } from '@/api/superAgent.api';
+import { superAgentApi } from '@/services/superAgent.api';
 import { X, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

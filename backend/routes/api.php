@@ -68,20 +68,20 @@ $api->as('api.v1.')->group(function () {
     // ==============================
     // PUBLIC ROUTES
     // ==============================
-    Route::post('/public/leads', [PublicLeadController::class, 'store']);
+    Route::post('/public/leads', [PublicLeadController::class, 'store'])->middleware('throttle:forms');
     Route::get('/public/leads/track', [PublicLeadController::class, 'track']);
-    Route::post('/public/agent-register', [PublicLeadController::class, 'registerAgent']);
-    Route::get('/public/eligibility', [EligibilityController::class, 'index']);
+    Route::post('/public/agent-register', [PublicLeadController::class, 'registerAgent'])->middleware('throttle:forms');
+    Route::get('/public/eligibility', [EligibilityController::class, 'index'])->middleware(\App\Http\Middleware\CacheResponse::class);
     // Route::get('/public/commission-slabs', [AdminCommissionSlabController::class, 'index']);
-    Route::get('/public/incentive-offers', [AdminOfferController::class, 'index']);
+    Route::get('/public/incentive-offers', [AdminOfferController::class, 'index'])->middleware(\App\Http\Middleware\CacheResponse::class);
 
     // CMS Public (no auth required)
-    Route::get('/public/settings', [PublicController::class, 'settings']);
-    Route::get('/public/achievements', [PublicController::class, 'achievements']);
-    Route::get('/public/feedbacks', [PublicController::class, 'feedbacks']);
-    Route::get('/public/media', [MediaController::class, 'index']); // Public Reward Winners
-    Route::get('/public/feedback', [FeedbackController::class, 'store']);
-    Route::get('/public/documents', [DocumentController::class, 'publicIndex']);
+    Route::get('/public/settings', [PublicController::class, 'settings'])->middleware(\App\Http\Middleware\CacheResponse::class);
+    Route::get('/public/achievements', [PublicController::class, 'achievements'])->middleware(\App\Http\Middleware\CacheResponse::class);
+    Route::get('/public/feedbacks', [PublicController::class, 'feedbacks'])->middleware(\App\Http\Middleware\CacheResponse::class);
+    Route::get('/public/media', [MediaController::class, 'index'])->middleware(\App\Http\Middleware\CacheResponse::class); // Public Reward Winners
+    Route::get('/public/feedback', [FeedbackController::class, 'store'])->middleware('throttle:forms');
+    Route::get('/public/documents', [DocumentController::class, 'publicIndex'])->middleware(\App\Http\Middleware\CacheResponse::class);
     Route::get('/public/verify-agent/{token}', [PublicController::class, 'verifyAgent']);
 
     // Signed View for Lead Documents (No auth header needed, secured by signature)
@@ -110,7 +110,7 @@ $api->as('api.v1.')->group(function () {
         ->middleware('signed')
         ->name('joining-letter.download');
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'throttle:auth'])->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/set-password', [AuthController::class, 'setPassword']);

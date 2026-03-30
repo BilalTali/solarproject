@@ -5,7 +5,7 @@ import {
     Calendar
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { mediaApi, type AdminMedia } from '@/api/media.api';
+import { mediaApi, type AdminMedia } from '@/services/media.api';
 
 const AdminMediaPage: React.FC = () => {
     const queryClient = useQueryClient();

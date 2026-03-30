@@ -4,7 +4,7 @@ import {
     Search, Users, CheckCircle, XCircle, Clock, Phone,
     Eye, X, Plus, Shield, ShieldCheck, UserCheck
 } from 'lucide-react';
-import { adminEnumeratorApi } from '@/api/enumerator.api';
+import { adminEnumeratorApi } from '@/services/enumerator.api';
 import toast from 'react-hot-toast';
 import type { User, ApiResponse } from '@/types';
 import MobileInput from '@/components/shared/MobileInput';

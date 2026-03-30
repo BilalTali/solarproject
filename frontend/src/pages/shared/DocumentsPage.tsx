@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { documentsApi, type AdminDocument } from '@/api/documents.api';
+import { documentsApi, type AdminDocument } from '@/services/documents.api';
 import { FileText, Download, Search, RefreshCcw, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { offersApi } from '../../api/offers.api';
-import { SuperAgentAbsorbedPoint } from '../../types';
+import { offersApi } from '@/services/offers.api';
+import { SuperAgentAbsorbedPoint } from '@/types';
 import {
     Inbox, Clock, CheckCircle2, AlertCircle,
     Gift, Filter, Search, ChevronRight
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
-import SEOHead from '../../components/shared/SEOHead';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import SEOHead from '@/components/shared/SEOHead';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { clsx } from 'clsx';
 
 export const AdminAbsorptionsPage: React.FC = () => {
@@ -34,7 +34,7 @@ export const AdminAbsorptionsPage: React.FC = () => {
         }
     });
 
-    const points = (absorbedPointsResp?.data || []) as SuperAgentAbsorbedPoint[];
+    const points = (absorbedPointsResp?.data as SuperAgentAbsorbedPoint[]) || [];
     const filtered = points.filter(p => {
         const matchesStatus = !statusFilter || p.status === statusFilter;
         const matchesSearch = !searchTerm ||
@@ -83,7 +83,7 @@ export const AdminAbsorptionsPage: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-4">
-                    {filtered.map(p => (
+                    {filtered.map((p: SuperAgentAbsorbedPoint) => (
                         <div
                             key={p.id}
                             onClick={() => { setSelectedPoint(p); setAdminNotes(p.admin_notes || ''); }}

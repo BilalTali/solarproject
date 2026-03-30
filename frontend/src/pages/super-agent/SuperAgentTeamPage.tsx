@@ -5,7 +5,7 @@ import {
     Search, Users, Plus, X, UserPlus, Info,
     Image as ImageIcon, CreditCard, Hash, FileText, Upload, MapPin
 } from 'lucide-react';
-import { superAgentApi } from '@/api/superAgent.api';
+import { superAgentApi } from '@/services/superAgent.api';
 import type { User } from '@/types';
 import toast from 'react-hot-toast';
 import { INDIAN_STATES, STATE_DISTRICTS } from '@/constants/locationData';
@@ -41,7 +41,7 @@ export default function SuperAgentTeamPage() {
     });
 
     const createAgentMut = useMutation({
-        mutationFn: superAgentApi.createAgent,
+        mutationFn: (fd: FormData) => superAgentApi.createAgent(fd),
         onSuccess: () => {
             toast.success('Business Development Executive added to your team');
             setIsAddModalOpen(false);

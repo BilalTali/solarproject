@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
 import { useQuery } from '@tanstack/react-query';
-import { publicApi } from '@/api/public.api';
+import { publicApi } from '@/services/public.api';
 import {
     BookOpen, CheckCircle, Info, ShieldAlert,
     MapPin, Calculator, Users, Trophy,

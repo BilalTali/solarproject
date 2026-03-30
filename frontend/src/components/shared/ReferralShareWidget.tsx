@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Copy, Check, Share2, MessageSquare, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { authApi } from '@/api/auth.api';
-import { useAuthStore } from '@/store/authStore';
+import { authApi } from '@/services/auth.api';
+import { useAuthStore } from '@/hooks/store/authStore';
 
 interface ReferralShareWidgetProps {
     referralCode: string;

@@ -9,7 +9,7 @@ import {
     BarChart3, TrendingUp, Users, MapPin,
     Activity, Target, Award, PieChart as PieIcon
 } from 'lucide-react';
-import { reportsApi } from '@/api/reports.api';
+import { reportsApi } from '@/services/reports.api';
 
 const COLORS = [
     '#f97316', // Orange

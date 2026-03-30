@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { withdrawalsApi } from '../../api/withdrawals.api';
-import { offersApi } from '../../api/offers.api';
-import SEOHead from '../../components/shared/SEOHead';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import { withdrawalsApi } from '@/services/withdrawals.api';
+import { offersApi } from '@/services/offers.api';
+import SEOHead from '@/components/shared/SEOHead';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { Wallet, Plus, Calendar, IndianRupee, Info } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
 import { X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { WithdrawalRequest, UserOfferProgress } from '@/types';
 
 interface WithdrawalFormData {
     offer_id: number;
@@ -26,12 +27,12 @@ export const AgentWithdrawalsPage: React.FC = () => {
 
     const { data: withdrawalsResp, isLoading: isLoadingWithdrawals } = useQuery({
         queryKey: ['agent-withdrawals'],
-        queryFn: withdrawalsApi.agent.getAll
+        queryFn: () => withdrawalsApi.agent.getAll()
     });
 
     const { data: offersResp, isLoading: isLoadingOffers } = useQuery({
         queryKey: ['agent-offers'],
-        queryFn: offersApi.agent.getOffers
+        queryFn: () => offersApi.agent.getOffers()
     });
 
     const createMutation = useMutation({
@@ -50,19 +51,19 @@ export const AgentWithdrawalsPage: React.FC = () => {
 
     if (isLoadingWithdrawals || isLoadingOffers) return <LoadingSpinner />;
 
-    const withdrawals = withdrawalsResp?.data || [];
-    const offers = offersResp?.data || [];
+    const withdrawals = (withdrawalsResp?.data as WithdrawalRequest[]) || [];
+    const offers = (offersResp?.data as UserOfferProgress[]) || [];
     
     // Only show offers that have unredeemed points to withdraw
-    const eligibleOffers = offers.filter(o => Number(o.my_unredeemed_points) > 0);
-    const selectedOffer = offers.find(o => String(o.id) === String(selectedOfferId));
+    const eligibleOffers = offers.filter((o: UserOfferProgress) => Number(o.my_unredeemed_points) > 0);
+    const selectedOffer = offers.find((o: UserOfferProgress) => String(o.id) === String(selectedOfferId));
 
     const onSubmit = (data: WithdrawalFormData) => {
         createMutation.mutate({
             ...data,
             offer_id: Number(data.offer_id),
             points_withdrawn: Number(data.points_withdrawn)
-        });
+        } as any);
     };
 
     return (
@@ -104,7 +105,7 @@ export const AgentWithdrawalsPage: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {withdrawals.map((w) => (
+                                {withdrawals.map((w: WithdrawalRequest) => (
                                     <tr key={w.id} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="p-4">
                                             <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
@@ -186,7 +187,7 @@ export const AgentWithdrawalsPage: React.FC = () => {
                                     className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 font-medium"
                                 >
                                     <option value="">-- Choose an Offer --</option>
-                                    {eligibleOffers.map(o => (
+                                    {eligibleOffers.map((o: UserOfferProgress) => (
                                         <option key={o.id} value={o.id}>
                                             {o.title} - {Number(o.my_unredeemed_points)} PTS available
                                         </option>

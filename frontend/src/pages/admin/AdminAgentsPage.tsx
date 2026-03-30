@@ -5,8 +5,8 @@ import {
     ChevronLeft, ChevronRight, Eye, X, UserCheck, UserX, Link2, Unlink,
     Edit2, Save, QrCode
 } from 'lucide-react';
-import { agentsApi } from '@/api/agents.api';
-import { adminSuperAgentApi } from '@/api/adminSuperAgent.api';
+import { agentsApi } from '@/services/agents.api';
+import { adminSuperAgentApi } from '@/services/adminSuperAgent.api';
 import toast from 'react-hot-toast';
 import type { User, PaginatedResponse, ApiResponse } from '@/types';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';

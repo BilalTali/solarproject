@@ -7,11 +7,11 @@ import {
     Calendar, AlertCircle, FileDigit, Download, Image as ImageIcon,
     Camera, Mail, Shield, BadgeCheck, Save
 } from 'lucide-react';
-import { superAgentApi } from '@/api/superAgent.api';
-import { superAgentCommissionsApi } from '@/api/commissions.api';
+import { superAgentApi } from '@/services/superAgent.api';
+import { superAgentCommissionsApi } from '@/services/commissions.api';
 import { openAuthenticatedFile } from '@/utils/documentUtils';
-import { authApi } from '@/api/auth.api';
-import { useAuthStore } from '@/store/authStore';
+import { authApi } from '@/services/auth.api';
+import { useAuthStore } from '@/hooks/store/authStore';
 import toast from 'react-hot-toast';
 import type { Lead, CommissionPrompt } from '@/types';
 import CommissionInlineEntryForAgent from '@/components/super-agent/CommissionInlineEntryForAgent';

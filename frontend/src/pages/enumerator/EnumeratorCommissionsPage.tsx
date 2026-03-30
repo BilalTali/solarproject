@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { IndianRupee, ClipboardCheck, MapPin } from 'lucide-react';
-import { enumeratorApi } from '@/api/enumerator.api';
+import { enumeratorApi } from '@/services/enumerator.api';
 import { formatCurrency } from '@/utils/formatters';
 import type { Commission } from '@/types';
 

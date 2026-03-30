@@ -3,22 +3,42 @@ import Footer from '@/components/public/Footer';
 import SEOHead from '@/components/shared/SEOHead';
 import { Mail, Phone } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { publicApi } from '@/api/public.api';
-
-const getSetting = (s: any, k: string, fb: string) => s?.[k] || fb;
+import { publicApi, type PublicSettingsData } from '@/services/public.api';
 
 export default function ContactPage() {
-    const { data: settings = {} } = useQuery({
+    const { data: settings } = useQuery<PublicSettingsData>({
         queryKey: ['public-settings'],
         queryFn: publicApi.getSettings,
     });
 
-    const companyEmail = getSetting(settings, 'company_email', 'admin@suryamitra.in');
-    const companyMobile = getSetting(settings, 'company_mobile', '+91-98765 43210');
+    const companyEmail = settings?.company_email || 'admin@suryamitra.in';
+    const companyMobile = settings?.company_mobile || '+91-98765 43210';
 
     return (
         <div className="min-h-screen bg-neutral-50 flex flex-col">
-            <SEOHead />
+            <SEOHead 
+                title="Contact Us - PM Surya Ghar Assistance" 
+                description="Get in touch with our support team for any queries regarding PM Surya Ghar Muft Bijli Yojana, solar subsidies, or agent registrations." 
+                breadcrumbs={[
+                    { name: 'Home', url: window.location.origin },
+                    { name: 'Contact', url: window.location.origin + '/contact' }
+                ]}
+                schemas={[
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "ContactPage",
+                        "mainEntity": {
+                            "@type": "Organization",
+                            "contactPoint": {
+                                "@type": "ContactPoint",
+                                "telephone": companyMobile,
+                                "email": companyEmail,
+                                "contactType": "customer service"
+                            }
+                        }
+                    }
+                ]}
+            />
             <Navbar />
             <main className="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
                 <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100">

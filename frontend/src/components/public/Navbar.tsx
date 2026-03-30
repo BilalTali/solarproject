@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Sun } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { publicApi } from '@/api/public.api';
+import { publicApi } from '@/services/public.api';
 
 // Helper to resolve full url for logo
 const getFileUrl = (path: string | null | undefined) => {

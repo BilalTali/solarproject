@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Lock, Eye, EyeOff, ShieldCheck, AlertCircle } from 'lucide-react';
-import { authApi } from '@/api/auth.api';
+import { authApi } from '@/services/auth.api';
 import toast from 'react-hot-toast';
 
 interface ChangePasswordFormProps {

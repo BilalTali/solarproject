@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminCommissionsApi } from '@/api/commissions.api';
+import { adminCommissionsApi } from '@/services/commissions.api';
 import type { CommissionPrompt, Commission } from '@/types';
 import { Lock, Edit2, Loader2, Save } from 'lucide-react';
 import toast from 'react-hot-toast';

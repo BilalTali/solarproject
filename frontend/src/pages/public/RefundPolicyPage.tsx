@@ -3,7 +3,7 @@ import { ShieldCheck, AlertTriangle, Phone, Mail } from 'lucide-react';
 import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
 import { useQuery } from '@tanstack/react-query';
-import { publicApi } from '@/api/public.api';
+import { publicApi } from '@/services/public.api';
 
 const getSetting = (s: any, k: string, fb: string) => s?.[k] || fb;
 

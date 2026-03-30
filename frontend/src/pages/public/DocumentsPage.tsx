@@ -2,23 +2,10 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FileText, Download, Search, FolderOpen, ExternalLink } from 'lucide-react';
 import SEOHead from '@/components/shared/SEOHead';
-import api from '@/api/axios';
-
-interface PublicDocument {
-    id: number;
-    title: string;
-    description: string | null;
-    category: string | null;
-    file_url: string | null;
-    thumbnail_url: string | null;
-    is_published: boolean;
-    sort_order: number;
-    created_at: string;
-}
+import { publicApi, type PublicDocument } from '@/services/public.api';
 
 async function fetchPublicDocuments(): Promise<PublicDocument[]> {
-    const res = await api.get('/public/documents');
-    return res.data?.data ?? [];
+    return publicApi.getDocuments();
 }
 
 export default function DocumentsPage() {
@@ -50,6 +37,10 @@ export default function DocumentsPage() {
             <SEOHead
                 title="Document Download Centre — PM Surya Ghar"
                 description="Download official forms, guidelines and templates for PM Surya Ghar Muft Bijli Yojana."
+                breadcrumbs={[
+                    { name: 'Home', url: window.location.origin },
+                    { name: 'Documents', url: window.location.origin + '/documents' }
+                ]}
             />
 
             {/* Hero */}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Lead } from '@/types';
-import { leadsApi } from '@/api/leads.api';
+import { leadsApi } from '@/services/leads.api';
 
 interface Props {
     lead: Lead;

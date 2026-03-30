@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { IndianRupee, ClipboardCheck, Wallet, Clock, MapPin, ReceiptText, ChevronLeft, ChevronRight, ArrowUpRight, UserCog, CreditCard, X } from 'lucide-react';
-import { agentCommissionsApi } from '@/api/commissions.api';
+import { agentCommissionsApi } from '@/services/commissions.api';
 import { formatCurrency } from '@/utils/formatters';
 import type { Commission } from '@/types';
 import toast from 'react-hot-toast';

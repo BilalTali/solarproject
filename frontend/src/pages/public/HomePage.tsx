@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { publicApi } from '@/api/public.api';
+import { publicApi } from '@/services/public.api';
 import { Link } from 'react-router-dom';
 import {
     CheckCircle2, XCircle, Sun, IndianRupee, Zap, Home, BarChart3, ArrowRight,
@@ -14,6 +14,7 @@ import HeroSection from '@/components/public/HeroSection';
 import AchievementsSection from '@/components/public/AchievementsSection';
 import FeedbackSection from '@/components/public/FeedbackSection';
 import SEOHead from '@/components/shared/SEOHead';
+import AnimatedStat from '@/components/shared/AnimatedStat';
 
 // Dynamic Subsidy and Eligibility logic defined inside component using CMS settings
 
@@ -149,7 +150,22 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen bg-white">
-            <SEOHead />
+            <SEOHead 
+                title="PM Surya Ghar Muft Bijli Yojana - Free Solar Subsidy" 
+                description="Apply for PM Surya Ghar Muft Bijli Yojana. Get up to ₹78,000 subsidy and 300 units of free electricity per month. Free registration and expert guidance."
+                breadcrumbs={[
+                    { name: 'Home', url: window.location.origin }
+                ]}
+                schemas={[
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "WebSite",
+                        "url": window.location.origin,
+                        "name": getSetting(settings, 'company_name', 'AndleebSurya'),
+                        "description": "Official portal facilitator for PM Surya Ghar Muft Bijli Yojana details and subsidies."
+                    }
+                ]}
+            />
             <Navbar />
 
             {/* HERO — CMS Controlled */}
@@ -164,7 +180,7 @@ export default function HomePage() {
                                 <div className="text-accent">
                                     <DynamicIcon name={stat.icon} className="w-5 h-5" />
                                 </div>
-                                <div className="font-display font-bold text-2xl">{stat.value}</div>
+                                <AnimatedStat valueString={stat.value} className="font-display font-bold text-2xl" />
                                 <div className="text-white/70 text-sm">{stat.label}</div>
                             </div>
                         ))}

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { 
     Star, Search, ShieldCheck, Users, FileText
 } from 'lucide-react';
-import api from '@/api/axios';
+import api from '@/services/axios';
 import { ApiResponse, User, PaginatedResponse } from '@/types';
 
 export default function SuperAdminMonitorSuperAgentsPage() {

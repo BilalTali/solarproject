@@ -1,8 +1,8 @@
 import React from 'react';
 import { QrCode, ExternalLink, RefreshCw, ShieldCheck, History } from 'lucide-react';
 import { User, ApiResponse } from '@/types';
-import { agentsApi } from '@/api/agents.api';
-import { adminSuperAgentApi } from '@/api/adminSuperAgent.api';
+import { agentsApi } from '@/services/agents.api';
+import { adminSuperAgentApi } from '@/services/adminSuperAgent.api';
 import { toast } from 'react-hot-toast';
 
 interface QrCodePreviewProps {

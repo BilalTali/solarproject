@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { publicApi, type PublicFeedback, type PublicSettingsData } from '@/api/public.api';
+import { publicApi, type PublicFeedback, type PublicSettingsData } from '@/services/public.api';
 import { MessageSquare, CheckCircle2, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 

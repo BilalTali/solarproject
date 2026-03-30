@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Lead, LeadDocument } from '@/types';
-import { leadsApi } from '@/api/leads.api';
+import { leadsApi } from '@/services/leads.api';
 import { FileText, Eye, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
-import api from '@/api/axios';
+import api from '@/services/axios';
 
 interface Props {
     lead: Lead;

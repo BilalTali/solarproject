@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, Star, Users } from 'lucide-react';
-import { adminSuperAgentApi } from '@/api/adminSuperAgent.api';
+import { adminSuperAgentApi } from '@/services/adminSuperAgent.api';
 import type { User } from '@/types';
 import { Link } from 'react-router-dom';
 import MobileInput from '@/components/shared/MobileInput';

@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Solar;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AgentRegistrationRequest;
 use App\Http\Requests\StorePublicLeadRequest;
+use App\Mail\NewPublicLeadMail;
 use App\Models\User;
 use App\Services\AgentService;
 use App\Services\LeadService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class PortalLeadController extends Controller
@@ -39,6 +42,14 @@ class PortalLeadController extends Controller
 
             return $lead;
         });
+
+        // Dispatch queued admin notification email
+        try {
+            $adminEmail = config('mail.admin_notification_address', config('mail.from.address'));
+            Mail::to($adminEmail)->queue(new NewPublicLeadMail($lead));
+        } catch (\Throwable $e) {
+            Log::warning('Failed to queue lead notification email: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,
@@ -162,19 +173,6 @@ class PortalLeadController extends Controller
             ],
         ]);
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'reference' => $lead->ulid,
-                'beneficiary' => $lead->beneficiary_name,
-                'status' => $status,
-                'meaning' => $meaning,
-                'next_step' => $nextStep,
-                'step_index' => $stepIndex, // 1 to 5
-                'updated_at' => $lead->updated_at->toISOString(),
-                'district' => $lead->beneficiary_district,
-            ],
-        ]);
     }
 
     public function registerAgent(AgentRegistrationRequest $request)

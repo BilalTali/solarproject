@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { offersApi } from '../../api/offers.api';
+import { offersApi } from '@/services/offers.api';
 import { Gift, Users, Inbox, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
-import SEOHead from '../../components/shared/SEOHead';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
-import { OfferCard } from '../../components/shared/OfferCard';
+import SEOHead from '@/components/shared/SEOHead';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { OfferCard } from '@/components/shared/OfferCard';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
 import { clsx } from 'clsx';
+import { UserOfferProgress, TeamOfferPerformance, SuperAgentAbsorbedPoint } from '@/types';
 
 export const SuperAgentTeamOffersPage: React.FC = () => {
     const queryClient = useQueryClient();
@@ -16,29 +17,29 @@ export const SuperAgentTeamOffersPage: React.FC = () => {
     // 1. My Participation Query
     const { data: myOffersResp, isLoading: isMyLoading } = useQuery({
         queryKey: ['super-agent-my-offers'],
-        queryFn: offersApi.superAgent.getOffers
+        queryFn: () => offersApi.superAgent.getOffers()
     });
 
     // 2. Team Performance Query
     const { data: performanceResp, isLoading: isTeamLoading } = useQuery({
         queryKey: ['super-agent-team-performance'],
-        queryFn: offersApi.superAgent.getTeamPerformance,
+        queryFn: () => offersApi.superAgent.getTeamPerformance(),
         enabled: activeTab === 'team_performance'
     });
 
     // 3. Absorbed Points Query
     const { data: absorbedPointsResp, isLoading: isAbsorbedLoading } = useQuery({
         queryKey: ['super-agent-absorbed-points'],
-        queryFn: offersApi.superAgent.getAbsorbedPoints,
+        queryFn: () => offersApi.superAgent.getAbsorbedPoints(),
         enabled: activeTab === 'absorbed_points'
     });
 
-    const myOffers = myOffersResp?.data ?? [];
-    const teamPerformance = performanceResp?.data ?? [];
+    const myOffers = (myOffersResp?.data as UserOfferProgress[]) ?? [];
+    const teamPerformance = (performanceResp?.data as TeamOfferPerformance[]) ?? [];
 
     // Correction: absorbedPointsResp now returns { absorbed: [], summary: {} }
     const absorbedData = absorbedPointsResp?.data as any;
-    const absorbedPoints = absorbedData?.absorbed ?? [];
+    const absorbedPoints = (absorbedData?.absorbed as SuperAgentAbsorbedPoint[]) ?? [];
     const summary = absorbedData?.summary;
 
     const claimMutation = useMutation({

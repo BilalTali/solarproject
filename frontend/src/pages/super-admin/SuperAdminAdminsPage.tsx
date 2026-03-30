@@ -6,7 +6,7 @@ import {
     Settings2, ShieldAlert
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api from '@/api/axios';
+import api from '@/services/axios';
 import { ApiResponse, User, PaginatedResponse } from '@/types';
 
 export default function SuperAdminAdminsPage() {

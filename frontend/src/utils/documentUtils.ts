@@ -1,4 +1,4 @@
-import api from '@/api/axios';
+import api from '@/services/axios';
 
 /**
  * Fetches a protected file using the existing axios instance (with auth headers)

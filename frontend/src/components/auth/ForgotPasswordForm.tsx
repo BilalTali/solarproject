@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Mail, KeyRound, Lock, ArrowRight, CheckCircle, Eye, EyeOff } from 'lucide-react';
-import { authApi } from '@/api/auth.api';
+import { authApi } from '@/services/auth.api';
 
 type FPStep = 'email' | 'otp' | 'password' | 'done';
 

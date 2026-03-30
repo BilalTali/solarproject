@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { superAgentApi } from '@/api/superAgent.api';
+import { superAgentApi } from '@/services/superAgent.api';
 import { formatCurrency } from '@/utils/formatters';
 
 export default function SuperAgentAgentDetailPage() {

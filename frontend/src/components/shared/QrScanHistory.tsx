@@ -1,8 +1,8 @@
 import React from 'react';
 import { History, Globe, Monitor, MapPin, Calendar } from 'lucide-react';
-import { agentsApi } from '@/api/agents.api';
-import { adminSuperAgentApi } from '@/api/adminSuperAgent.api';
-import { superAgentApi } from '@/api/superAgent.api';
+import { agentsApi } from '@/services/agents.api';
+import { adminSuperAgentApi } from '@/services/adminSuperAgent.api';
+import { superAgentApi } from '@/services/superAgent.api';
 import { format } from 'date-fns';
 
 interface QrScanHistoryProps {

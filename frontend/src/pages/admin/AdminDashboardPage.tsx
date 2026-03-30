@@ -1,6 +1,6 @@
 import { Link, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import api from '@/api/axios';
+import api from '@/services/axios';
 import type { AdminDashboardStats } from '@/types';
 import DashboardSkeleton from '@/components/shared/DashboardSkeleton';
 import LeadStatusBadge from '@/components/shared/LeadStatusBadge';
@@ -8,7 +8,7 @@ import { formatCurrency, formatDate, STATUS_LABELS } from '@/utils/formatters';
 import { ArrowRight, Users, TrendingUp, CheckCircle2, Clock, IndianRupee } from 'lucide-react';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import DownloadJoiningLetterButton from '@/components/shared/DownloadJoiningLetterButton';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@/hooks/store/authStore';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const PIPELINE_COLORS: Record<string, string> = {
