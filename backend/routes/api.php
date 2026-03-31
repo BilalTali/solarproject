@@ -69,6 +69,10 @@ $api->as('api.v1.')->group(function () {
     // ==============================
     // PUBLIC ROUTES
     // ==============================
+    Route::get('/whatsapp/webhook',  [\App\Http\Controllers\Solar\WhatsAppWebhookController::class, 'verify']);
+    Route::post('/whatsapp/webhook', [\App\Http\Controllers\Solar\WhatsAppWebhookController::class, 'handle'])
+         ->middleware('throttle:300,1');
+
     Route::post('/public/leads', [PublicLeadController::class, 'store'])->middleware('throttle:forms');
     Route::get('/public/leads/track', [PublicLeadController::class, 'track']);
     Route::post('/public/agent-register', [PublicLeadController::class, 'registerAgent'])->middleware('throttle:forms');
@@ -372,6 +376,14 @@ $api->as('api.v1.')->group(function () {
             // FAQs (admin)
             Route::apiResource('faqs', AdminFAQController::class);
             Route::patch('/faqs/{faq}/toggle-status', [AdminFAQController::class, 'toggleStatus']);
+
+            // Chatbot
+            Route::apiResource('chatbot/categories', \App\Http\Controllers\Admin\ChatbotController::class)->except(['show']);
+            Route::patch('chatbot/categories/{id}/toggle', [\App\Http\Controllers\Admin\ChatbotController::class, 'toggleActive']);
+            Route::get('chatbot/registration-fields',      [\App\Http\Controllers\Admin\ChatbotController::class, 'getRegistrationFields']);
+            Route::put('chatbot/registration-fields',       [\App\Http\Controllers\Admin\ChatbotController::class, 'setRegistrationFields']);
+            Route::get('chatbot/sessions',                  [\App\Http\Controllers\Admin\ChatbotController::class, 'sessions']);
+            Route::get('chatbot/contacts',                  [\App\Http\Controllers\Admin\ChatbotController::class, 'contacts']);
         });
 
         // ==============================
@@ -393,6 +405,11 @@ $api->as('api.v1.')->group(function () {
             Route::get('/monitor/enumerators', [MonitoringController::class, 'enumerators']);
             Route::get('/monitor/leads', [MonitoringController::class, 'leads']);
             Route::get('/monitor/commissions', [MonitoringController::class, 'commissions']);
+
+            // WA Handlers
+            Route::get('chatbot/wa-handlers',              [\App\Http\Controllers\Admin\ChatbotController::class, 'waHandlers']);
+            Route::post('chatbot/wa-handlers/{id}/toggle', [\App\Http\Controllers\Admin\ChatbotController::class, 'toggleWaHandler']);
+            Route::post('chatbot/wa-handlers/reset-counters', [\App\Http\Controllers\Admin\ChatbotController::class, 'resetCounters']);
         });
 
         // ==============================

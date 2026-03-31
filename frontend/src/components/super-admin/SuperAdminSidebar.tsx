@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-    LayoutDashboard, Users, Shield, FileText, Monitor, LogOut, ShieldAlert, HelpCircle, Star
+    LayoutDashboard, Users, Shield, FileText, Monitor, LogOut, ShieldAlert, HelpCircle, MessageSquare
 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -17,7 +17,7 @@ const SUPER_ADMIN_NAV = [
     { icon: <Users className="w-5 h-5" />, label: 'Monitor Enumerators', to: '/super-admin/monitor/enumerators' },
     { icon: <FileText className="w-5 h-5" />, label: 'Monitor Leads', to: '/super-admin/monitor/leads' },
     { icon: <HelpCircle className="w-5 h-5" />, label: 'Help Center', to: '/super-admin/help-center' },
-    { icon: <Star className="w-5 h-5" />, label: 'Manage BDMs', to: '/admin/super-agents' },
+    { icon: <MessageSquare className="w-5 h-5" />, label: 'WhatsApp Chatbot', to: '/super-admin/chatbot' },
     { icon: <Shield className="w-5 h-5" />, label: 'Global Reports', to: '/super-admin/reports' },
 ];
 

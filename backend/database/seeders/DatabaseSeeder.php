@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             CommissionSlabSeeder::class,
             ICardSettingsSeeder::class,
             IncentiveOfferSeeder::class,
+            WaChatbotCategorySeeder::class,
         ]);
         // No agents seeded. Real agents will be created dynamically via the application UI.
     }

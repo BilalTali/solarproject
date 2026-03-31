@@ -135,7 +135,7 @@ class Lead extends Model
         'assigned_agent_id', 'assigned_super_agent_id', 'submitted_by_agent_id',
         'created_by_super_agent_id', 'submitted_by_enumerator_id', 'owner_type', 'verification_status',
         'revert_count', 'revert_reason', 'verified_by_super_agent_id',
-        'verified_at', 'reverted_at', 'reverted_by',
+        'verified_at', 'reverted_at', 'reverted_by', 'wa_handler_admin_id',
     ];
 
     protected function casts(): array

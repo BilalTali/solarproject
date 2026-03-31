@@ -83,6 +83,7 @@ const AdminAbsorptionsPage = lazy(() => import('@/pages/admin/AdminAbsorptionsPa
 const AdminWithdrawalsPage = lazy(() => import('@/pages/admin/AdminWithdrawalsPage').then(module => ({ default: module.AdminWithdrawalsPage })));
 const AdminOperatorsPage = lazy(() => import('@/pages/admin/AdminOperatorsPage'));
 const AdminFAQPage = lazy(() => import('@/pages/admin/AdminFAQPage'));
+const AdminChatbotPage = lazy(() => import('@/pages/admin/AdminChatbotPage'));
 
 // Enumerator Pages
 import EnumeratorLayout from '@/components/layouts/EnumeratorLayout';
@@ -247,6 +248,7 @@ export default function App() {
             <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
             <Route path="operators" element={<AdminOperatorsPage />} />
             <Route path="help-center" element={<AdminFAQPage />} />
+            <Route path="chatbot" element={<AdminChatbotPage />} />
             <Route index element={<AdminIndexRedirect />} />
           </Route>
 
@@ -292,6 +294,7 @@ export default function App() {
             <Route path="monitor/enumerators" element={<SuperAdminMonitorEnumeratorsPage />} />
             <Route path="monitor/leads" element={<SuperAdminMonitorLeadsPage />} />
             <Route path="help-center" element={<AdminFAQPage />} />
+            <Route path="chatbot" element={<AdminChatbotPage />} />
             <Route path="reports" element={<SuperAdminReportsPage />} />
             <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
           </Route>

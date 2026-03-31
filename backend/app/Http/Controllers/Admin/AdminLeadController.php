@@ -18,6 +18,19 @@ class AdminLeadController extends Controller
     {
         $query = Lead::query()->with(['assignedSuperAgent', 'assignedAgent', 'submittedByAgent', 'createdBySuperAgent', 'documents', 'commissions']);
 
+        $user = $request->user();
+
+        // ── WA LEAD VISIBILITY GATE ───────────────────────────────────────
+        if ($user->is_wa_lead_handler) {
+            $query->where(function ($q) use ($user) {
+                $q->where('source', '!=', 'whatsapp_chatbot')
+                  ->orWhere('wa_handler_admin_id', $user->id);
+            });
+        } else {
+            $query->where('source', '!=', 'whatsapp_chatbot');
+        }
+        // ── END GATE ─────────────────────────────────────────────────────
+
         if ($request->filled('status')) {
             $query->where(fn ($q) => $q->whereIn('status', explode(',', $request->status)));
         }

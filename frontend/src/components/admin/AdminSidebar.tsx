@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     Sun, LayoutDashboard, List, Users, DollarSign, BarChart3,
-    Settings, LogOut, Shield, Star, Award, FileText, Gift, Inbox, Wallet, HelpCircle
+    Settings, LogOut, Shield, Star, Award, FileText, Gift, Inbox, Wallet, HelpCircle, MessageSquare
 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -26,6 +26,7 @@ const ADMIN_NAV = [
     { icon: <DollarSign className="w-5 h-5" />, label: 'Commissions', to: '/admin/commissions' },
     { icon: <BarChart3 className="w-5 h-5" />, label: 'Reports', to: '/admin/reports' },
     { icon: <HelpCircle className="w-5 h-5" />, label: 'Help Center', to: '/admin/help-center' },
+    { icon: <MessageSquare className="w-5 h-5" />, label: 'WhatsApp Chatbot', to: '/admin/chatbot' },
     { icon: <Settings className="w-5 h-5" />, label: 'Settings', to: '/admin/settings' },
 ];
 

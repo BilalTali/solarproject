@@ -15,6 +15,7 @@ import AchievementsSection from '@/components/public/AchievementsSection';
 import FeedbackSection from '@/components/public/FeedbackSection';
 import SEOHead from '@/components/shared/SEOHead';
 import AnimatedStat from '@/components/shared/AnimatedStat';
+import WhatsAppFloatButton from '@/components/shared/WhatsAppFloatButton';
 
 // Dynamic Subsidy and Eligibility logic defined inside component using CMS settings
 
@@ -395,6 +396,7 @@ export default function HomePage() {
                 </div>
             </section>
 
+            <WhatsAppFloatButton />
             <Footer />
         </div>
     );

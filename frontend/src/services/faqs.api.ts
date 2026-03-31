@@ -13,27 +13,27 @@ export interface FAQ {
 
 export const faqApi = {
   getFaqs: async () => {
-    const response = await axiosInstance.get('/v1/admin/faqs');
+    const response = await axiosInstance.get('/admin/faqs');
     return response.data;
   },
 
   createFaq: async (data: Partial<FAQ>) => {
-    const response = await axiosInstance.post('/v1/admin/faqs', data);
+    const response = await axiosInstance.post('/admin/faqs', data);
     return response.data;
   },
 
   updateFaq: async (id: number, data: Partial<FAQ>) => {
-    const response = await axiosInstance.put(`/v1/admin/faqs/${id}`, data);
+    const response = await axiosInstance.put(`/admin/faqs/${id}`, data);
     return response.data;
   },
 
   deleteFaq: async (id: number) => {
-    const response = await axiosInstance.delete(`/v1/admin/faqs/${id}`);
+    const response = await axiosInstance.delete(`/admin/faqs/${id}`);
     return response.data;
   },
 
   toggleStatus: async (id: number) => {
-    const response = await axiosInstance.patch(`/v1/admin/faqs/${id}/toggle-status`);
+    const response = await axiosInstance.patch(`/admin/faqs/${id}/toggle-status`);
     return response.data;
   }
 };

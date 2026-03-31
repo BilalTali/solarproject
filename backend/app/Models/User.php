@@ -214,6 +214,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         'resume', 'mou_signed', 'super_agent_id', 'created_by_super_agent_id',
         'created_by_agent_id', 'enumerator_id', 'enumerator_creator_role',
         'parent_id', 'permissions', 'role', 'status',
+        'is_wa_lead_handler', 'wa_lead_round_robin_counter',
     ];
 
     protected static function boot()
@@ -248,6 +249,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
             'managed_states' => 'array',
             'languages_known' => 'array',
             'permissions' => 'array',
+            'is_wa_lead_handler' => 'boolean',
         ];
     }
 
