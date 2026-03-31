@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Sun, ExternalLink } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { publicApi } from '@/services/public.api';
-import WhatsAppButton from '@/components/shared/WhatsAppButton';
 
 const getSetting = (settingsObj: any, key: string, fallback: string) => {
     return settingsObj?.[key] || fallback;
@@ -89,7 +88,6 @@ export default function Footer() {
             </div>
             
             {/* INJECT WHATSAPP BUTTON HERE */}
-            <WhatsAppButton />
         </footer>
     );
 }
