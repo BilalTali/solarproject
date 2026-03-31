@@ -114,6 +114,17 @@ class ChatbotController extends Controller
         return response()->json($contacts);
     }
 
+    /** Public (no-auth) endpoint used by the frontend WhatsApp float button. */
+    public function publicContacts(): JsonResponse
+    {
+        $contacts = User::where('is_public_contact', true)
+            ->where('status', 'active')
+            ->whereNotNull('whatsapp_number')
+            ->select(['id', 'name', 'whatsapp_number'])
+            ->get();
+        return response()->json($contacts);
+    }
+
     // ── WhatsApp Lead Handlers (Super Admin Only) ─────────────────────
 
     public function waHandlers(Request $request): JsonResponse

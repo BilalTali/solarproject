@@ -315,7 +315,26 @@ SECTION 15 — PHASE 9: FINAL HARDENING & DEPLOYMENT
 ---
 
 ═══════════════════════════════════════════════
-SECTION 16 — FINAL PROJECT SCORECARD
+SECTION 16 — NEW FEATURE: WHATSAPP CHATBOT INTEGRATION
+═══════════════════════════════════════════════
+
+To dramatically expand accessibility, we implemented a complete **Meta WhatsApp Business API Chatbot** designed to automate lead capture and answer beneficiary questions directly inside their WhatsApp application.
+
+### State-Machine Conversational Engine
+- **Architecture**: Developed `WhatsAppChatbotService` as a finite state execution engine supporting menus, dynamic category fetching, linear registration flows, and fallback logic without any third-party conversational dependencies.
+- **Document Handling**: Added media capturing via `WhatsAppCloudApiService` downloading user-submitted documents natively.
+
+### Robust Lead Integration & Tracking
+- **Round-Robin Assignment**: Modified the core models to support automatic assignment of WhatsApp leads to dynamically prioritized `wa_lead_handler_admin_id` accounts.
+- **Gated Visibility**: Enforced hard security checks so untracked administrators cannot view leads sourced via the private Chatbot channel.
+
+### Admin Configuration Dashboard
+- **Full Customizability**: Delivered a sleek UI (`/admin/chatbot`) to manage conversational trees, configure registration data requirements, monitor live `wa_chatbot_sessions`, and set up support agents seamlessly.
+
+---
+
+═══════════════════════════════════════════════
+SECTION 17 — FINAL PROJECT SCORECARD
 ═══════════════════════════════════════════════
 
 | Category | Score | Notes |

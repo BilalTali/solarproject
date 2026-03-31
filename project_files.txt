@@ -362,3 +362,16 @@ frontend/src/pages/enumerator/EnumeratorDashboardPage.tsx
 frontend/src/pages/enumerator/EnumeratorLoginPage.tsx
 frontend/src/pages/enumerator/EnumeratorProfilePage.tsx
 frontend/src/store/authStore.ts
+backend/app/Http/Controllers/Admin/ChatbotController.php
+backend/app/Http/Controllers/Solar/WhatsAppWebhookController.php
+backend/app/Models/WaChatbotCategory.php
+backend/app/Models/WaChatbotSession.php
+backend/app/Services/WhatsAppChatbotService.php
+backend/app/Services/WhatsAppCloudApiService.php
+backend/database/migrations/2026_03_31_020000_create_wa_chatbot_tables.php
+backend/database/migrations/2026_03_31_020001_add_wa_handler_fields_to_users_table.php
+backend/database/migrations/2026_03_31_020002_add_wa_fields_to_leads_table.php
+backend/database/seeders/WaChatbotCategorySeeder.php
+frontend/src/components/shared/WhatsAppFloatButton.tsx
+frontend/src/pages/admin/AdminChatbotPage.tsx
+frontend/src/services/chatbot.api.ts

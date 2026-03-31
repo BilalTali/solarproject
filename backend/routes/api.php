@@ -89,6 +89,7 @@ $api->as('api.v1.')->group(function () {
     Route::get('/public/documents', [DocumentController::class, 'publicIndex'])->middleware(\App\Http\Middleware\CacheResponse::class);
     Route::get('/public/verify-agent/{token}', [PublicController::class, 'verifyAgent']);
     Route::get('/public/help', [PublicController::class, 'help']);
+    Route::get('/public/support-contacts', [\App\Http\Controllers\Admin\ChatbotController::class, 'publicContacts'])->middleware(\App\Http\Middleware\CacheResponse::class);
 
     // Signed View for Lead Documents (No auth header needed, secured by signature)
     Route::get('/signed/leads/{ulid}/documents/{id}/view', [LeadDocumentController::class, 'viewSigned'])
