@@ -1,23 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     HelpCircle, Trash2, RefreshCcw, Plus,
-    Edit2, Save, X, Search
+    Edit2, Save, X, Search, MessageSquare
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { faqApi, type FAQ } from '@/services/faqs.api';
+import { chatbotApi, type WaChatbotCategory } from '@/services/chatbot.api';
+import { Link } from 'react-router-dom';
 
 const AdminFAQPage: React.FC = () => {
     const queryClient = useQueryClient();
+    const [waCategories, setWaCategories] = useState<WaChatbotCategory[]>([]);
     const [faqForm, setFaqForm] = useState<Partial<FAQ>>({ 
         question: '', 
         answer: '', 
-        category: 'General', 
+        category: '', 
         sort_order: 0, 
         is_published: true 
     });
     const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Fetch chatbot categories for the dropdown so Help Center stays in sync
+    useEffect(() => {
+        chatbotApi.getCategories().then(res => {
+            setWaCategories(res.data || []);
+            // Set the first category as default if none selected
+            if (!faqForm.category && res.data?.length > 0) {
+                setFaqForm(p => ({ ...p, category: res.data[0].name }));
+            }
+        }).catch(() => {});
+    }, []);
 
     const { data: faqs = [], isLoading } = useQuery({
         queryKey: ['admin-faqs'],
@@ -66,7 +80,7 @@ const AdminFAQPage: React.FC = () => {
     });
 
     const resetForm = () => {
-        setFaqForm({ question: '', answer: '', category: 'General', sort_order: 0, is_published: true });
+        setFaqForm({ question: '', answer: '', category: waCategories[0]?.name || '', sort_order: 0, is_published: true });
         setEditingFaq(null);
     };
 
@@ -129,18 +143,30 @@ const AdminFAQPage: React.FC = () => {
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Category</label>
-                                <select 
-                                    className="w-full px-4 py-3 rounded-2xl border border-slate-100 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 bg-slate-50 transition-all text-sm font-semibold"
-                                    value={faqForm.category || ''}
-                                    onChange={e => setFaqForm(p => ({ ...p, category: e.target.value }))}
-                                >
-                                    <option value="General">General</option>
-                                    <option value="Technical">Technical</option>
-                                    <option value="Subsidy">Subsidy</option>
-                                    <option value="Installation">Installation</option>
-                                    <option value="Support">Support</option>
-                                </select>
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center justify-between">
+                                    <span>Category</span>
+                                    <Link to="/admin/chatbot" className="text-[10px] text-blue-500 hover:underline font-semibold flex items-center gap-1 normal-case tracking-normal">
+                                        <MessageSquare className="w-3 h-3" /> Manage Categories
+                                    </Link>
+                                </label>
+                                {waCategories.length > 0 ? (
+                                    <select 
+                                        className="w-full px-4 py-3 rounded-2xl border border-slate-100 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 bg-slate-50 transition-all text-sm font-semibold"
+                                        value={faqForm.category || ''}
+                                        onChange={e => setFaqForm(p => ({ ...p, category: e.target.value }))}
+                                    >
+                                        {waCategories.map(cat => (
+                                            <option key={cat.id} value={cat.name}>
+                                                {cat.icon_emoji ? `${cat.icon_emoji} ` : ''}{cat.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <div className="w-full px-4 py-3 rounded-2xl border border-orange-200 bg-orange-50 text-orange-700 text-xs font-semibold flex items-center gap-2">
+                                        <MessageSquare className="w-4 h-4 flex-shrink-0" />
+                                        <span>No chatbot categories yet. <Link to="/admin/chatbot" className="underline">Create one first →</Link></span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="space-y-1.5">
