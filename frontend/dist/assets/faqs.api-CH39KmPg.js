@@ -1,1 +1,0 @@
-import{e as s}from"./index-D_AQOp1d.js";const r={getFaqs:async()=>(await s.get("/admin/faqs")).data,createFaq:async a=>(await s.post("/admin/faqs",a)).data,updateFaq:async(a,e)=>(await s.put(`/admin/faqs/${a}`,e)).data,deleteFaq:async a=>(await s.delete(`/admin/faqs/${a}`)).data,toggleStatus:async a=>(await s.patch(`/admin/faqs/${a}/toggle-status`)).data};export{r as f};
