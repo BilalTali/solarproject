@@ -114,6 +114,28 @@ class ChatbotController extends Controller
         return response()->json($contacts);
     }
 
+    /** Returns ALL active users of all roles with their public-contact status for the management UI. */
+    public function allContacts(): JsonResponse
+    {
+        $users = User::where('status', 'active')
+            ->whereNotIn('role', ['beneficiary'])
+            ->whereNotNull('whatsapp_number')
+            ->select(['id', 'name', 'role', 'district', 'state', 'whatsapp_number', 'is_public_contact'])
+            ->orderByDesc('is_public_contact')
+            ->orderBy('name')
+            ->get();
+        return response()->json($users);
+    }
+
+    /** Toggle is_public_contact for any user (all roles). */
+    public function toggleContact(int $id): JsonResponse
+    {
+        $user = User::where('status', 'active')->findOrFail($id);
+        $user->is_public_contact = !$user->is_public_contact;
+        $user->save();
+        return response()->json(['id' => $user->id, 'is_public_contact' => $user->is_public_contact]);
+    }
+
     /** Public (no-auth) endpoint used by the frontend WhatsApp float button. */
     public function publicContacts(): JsonResponse
     {

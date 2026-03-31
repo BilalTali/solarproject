@@ -48,6 +48,8 @@ export const chatbotApi = {
     // Sessions & contacts
     getSessions: (page=1) => axiosInstance.get<{ data: WaChatbotSession[], current_page: number, last_page: number, total: number }>('/admin/chatbot/sessions', { params: { page } }),
     getContacts: () => axiosInstance.get('/admin/chatbot/contacts'),
+    getAllContacts: () => axiosInstance.get('/admin/chatbot/all-contacts'),
+    toggleContact: (id: number) => axiosInstance.post(`/admin/chatbot/contacts/${id}/toggle`),
 
     // WA Handlers (super-admin only)
     getWaHandlers:    () => axiosInstance.get<WaHandler[]>('/super-admin/chatbot/wa-handlers'),

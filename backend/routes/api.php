@@ -385,6 +385,8 @@ $api->as('api.v1.')->group(function () {
             Route::put('chatbot/registration-fields',       [\App\Http\Controllers\Admin\ChatbotController::class, 'setRegistrationFields']);
             Route::get('chatbot/sessions',                  [\App\Http\Controllers\Admin\ChatbotController::class, 'sessions']);
             Route::get('chatbot/contacts',                  [\App\Http\Controllers\Admin\ChatbotController::class, 'contacts']);
+            Route::get('chatbot/all-contacts',              [\App\Http\Controllers\Admin\ChatbotController::class, 'allContacts']);
+            Route::post('chatbot/contacts/{id}/toggle',     [\App\Http\Controllers\Admin\ChatbotController::class, 'toggleContact']);
         });
 
         // ==============================

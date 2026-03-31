@@ -386,54 +386,166 @@ function RegistrationTab() {
 
 // ── Contacts Tab ────────────────────────────────────────────────────────
 function ContactsTab() {
-    const [contacts, setContacts] = useState<any[]>([]);
+    const [allUsers, setAllUsers] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [toggling, setToggling] = useState<number | null>(null);
+    const [search, setSearch] = useState('');
 
-    useEffect(() => {
-        chatbotApi.getContacts().then(res => setContacts(res.data));
-    }, []);
+    const load = async () => {
+        try {
+            const res = await chatbotApi.getAllContacts();
+            setAllUsers(res.data);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { load(); }, []);
+
+    const handleToggle = async (id: number) => {
+        setToggling(id);
+        try {
+            const res = await chatbotApi.toggleContact(id);
+            setAllUsers(prev =>
+                prev.map(u => u.id === id ? { ...u, is_public_contact: res.data.is_public_contact } : u)
+                    .sort((a, b) => (b.is_public_contact ? 1 : 0) - (a.is_public_contact ? 1 : 0))
+            );
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setToggling(null);
+        }
+    };
+
+    const roleBadge = (role: string) => {
+        const map: Record<string, string> = {
+            super_admin: 'bg-purple-100 text-purple-700',
+            admin: 'bg-blue-100 text-blue-700',
+            super_agent: 'bg-orange-100 text-orange-700',
+            agent: 'bg-green-100 text-green-700',
+            enumerator: 'bg-gray-100 text-gray-700',
+        };
+        return map[role] || 'bg-gray-100 text-gray-600';
+    };
+
+    const roleLabel = (role: string) => role.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    const filtered = allUsers.filter(u =>
+        u.name.toLowerCase().includes(search.toLowerCase()) ||
+        u.role.toLowerCase().includes(search.toLowerCase()) ||
+        (u.district || '').toLowerCase().includes(search.toLowerCase())
+    );
+
+    const active = filtered.filter(u => u.is_public_contact);
+    const inactive = filtered.filter(u => !u.is_public_contact);
+
+    if (loading) return <div className="py-8 text-center text-gray-500">Loading users...</div>;
 
     return (
-        <div className="max-w-4xl">
-            <div className="bg-blue-50 text-blue-800 p-4 border border-blue-100 rounded-xl flex items-start gap-3 mb-6">
-                <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5" />
+        <div className="max-w-4xl space-y-5">
+            {/* Info Banner */}
+            <div className="bg-green-50 text-green-800 p-4 border border-green-100 rounded-xl flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-green-600" />
                 <div>
-                    <p className="font-medium text-sm mb-1">How are these contacts populated?</p>
+                    <p className="font-semibold text-sm mb-1">How does this work?</p>
                     <p className="text-sm opacity-90">
-                        Agents listed here are displayed to users requesting to "Talk to an Agent" on WhatsApp.
-                        To add or remove an agent, go to <Link to="/admin/super-agents" className="underline font-semibold">Super Agents Management</Link> and toggle their "Public Support Contact" setting.
+                        Users toggled <strong>ON</strong> here will appear as support contacts on the public WhatsApp float button.
+                        The first enabled contact's WhatsApp number is used for the <em>Apply</em> and <em>FAQ</em> bot flows.
+                        Only users with a WhatsApp number are shown.
                     </p>
                 </div>
             </div>
 
-            <div className="bg-white border text-sm border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 text-gray-600 font-medium">
-                        <tr>
-                            <th className="px-5 py-3 border-b border-gray-200">Name</th>
-                            <th className="px-5 py-3 border-b border-gray-200">Location</th>
-                            <th className="px-5 py-3 border-b border-gray-200">WhatsApp Link</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {contacts.map(c => (
-                            <tr key={c.id} className="hover:bg-gray-50">
-                                <td className="px-5 py-3 font-medium text-gray-900">{c.name}</td>
-                                <td className="px-5 py-3 text-gray-600">{c.district}, {c.state}</td>
-                                <td className="px-5 py-3">
-                                    <a href={`https://wa.me/91${c.whatsapp_number}`} target="_blank" rel="noreferrer" className="text-green-600 hover:underline font-medium flex items-center gap-1">
-                                        wa.me/91{c.whatsapp_number} <ExternalLink className="w-3 h-3" />
-                                    </a>
-                                </td>
-                            </tr>
-                        ))}
-                        {contacts.length === 0 && (
-                            <tr>
-                                <td colSpan={3} className="px-5 py-8 text-center text-gray-500">No public contacts found.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+            {/* Search */}
+            <div className="relative">
+                <input
+                    type="text"
+                    placeholder="Search by name, role or district..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    className="w-full pl-4 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500"
+                />
             </div>
+
+            {/* Active contacts */}
+            {active.length > 0 && (
+                <div>
+                    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-600" /> Active Contacts ({active.length})
+                    </h3>
+                    <div className="space-y-2">
+                        {active.map(u => (
+                            <div key={u.id} className="flex items-center justify-between p-4 bg-green-50 border border-green-100 rounded-xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center text-green-800 font-bold text-sm">
+                                        {u.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <div className="font-semibold text-gray-900">{u.name}</div>
+                                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${roleBadge(u.role)}`}>{roleLabel(u.role)}</span>
+                                            {u.district && <span className="text-xs text-gray-400">{u.district}{u.state ? `, ${u.state}` : ''}</span>}
+                                            <a href={`https://wa.me/91${u.whatsapp_number}`} target="_blank" rel="noreferrer" className="text-xs text-green-600 hover:underline flex items-center gap-1">
+                                                <ExternalLink className="w-3 h-3" /> +91{u.whatsapp_number}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => handleToggle(u.id)}
+                                    disabled={toggling === u.id}
+                                    className="px-4 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold border border-red-100 transition-colors disabled:opacity-50"
+                                >
+                                    {toggling === u.id ? '...' : 'Remove'}
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Available users */}
+            {inactive.length > 0 && (
+                <div>
+                    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <Users className="w-4 h-4 text-gray-400" /> Available Users ({inactive.length})
+                    </h3>
+                    <div className="space-y-2">
+                        {inactive.map(u => (
+                            <div key={u.id} className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-green-200 hover:bg-green-50/30 transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-sm">
+                                        {u.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <div className="font-semibold text-gray-700">{u.name}</div>
+                                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${roleBadge(u.role)}`}>{roleLabel(u.role)}</span>
+                                            {u.district && <span className="text-xs text-gray-400">{u.district}{u.state ? `, ${u.state}` : ''}</span>}
+                                            <span className="text-xs text-gray-300">+91{u.whatsapp_number}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => handleToggle(u.id)}
+                                    disabled={toggling === u.id}
+                                    className="px-4 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-xs font-bold border border-green-200 transition-colors disabled:opacity-50"
+                                >
+                                    {toggling === u.id ? '...' : '+ Add'}
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {filtered.length === 0 && (
+                <div className="text-center py-10 text-gray-400 text-sm">
+                    No matching users found. Make sure they have a WhatsApp number set in their profile.
+                </div>
+            )}
         </div>
     );
 }
