@@ -13,7 +13,7 @@ const faqs = [
     },
     {
         q: "What is the maximum subsidy amount available?",
-        a: "The subsidy is calculated based on system capacity: ₹30,000 per kW for up to 2 kW, and ₹18,000 for an additional kW. The maximum subsidy is capped at ₹78,000 for systems 3 kW or higher."
+        a: "The maximum government subsidy is capped at ₹94,800 for residential rooftop solar systems of 3 kW or higher capacity."
     },
     {
         q: "How many free electricity units will I get?",

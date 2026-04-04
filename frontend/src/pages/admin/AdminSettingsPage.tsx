@@ -35,10 +35,8 @@ type EligibilityQuestion = {
 };
 
 const defaultCalcData: CalculatorOption[] = [
-    { id: '1kw', label: '1KW System', central: 30000, state: 0, savings: 600, payback: 60 },
-    { id: '2kw', label: '2KW System', central: 60000, state: 0, savings: 1200, payback: 54 },
-    { id: '3kw', label: '3KW System', central: 78000, state: 0, savings: 1800, payback: 48 },
-    { id: 'above_3kw', label: 'Above 3kW System', central: 78000, state: 0, savings: 2400, payback: 42 },
+    { id: '3kw', label: '3KW System', central: 94800, state: 0, savings: 1800, payback: 48 },
+    { id: 'above_3kw', label: 'Above 3kW System', central: 94800, state: 0, savings: 2400, payback: 42 },
 ];
 
 const defaultEligData: EligibilityQuestion[] = [
@@ -49,7 +47,7 @@ const defaultEligData: EligibilityQuestion[] = [
 ];
 
 const defaultHeroStats: any[] = [
-    { icon: 'IndianRupee', value: '₹78,000', label: 'Max Subsidy' },
+    { icon: 'IndianRupee', value: '₹94,800', label: 'Max Subsidy' },
     { icon: 'Zap', value: '300 Units', label: 'Free / Month' },
     { icon: 'Home', value: '1 Crore+', label: 'Target Homes' },
     { icon: 'BarChart3', value: '25 Years', label: 'Panel Life' },
@@ -718,7 +716,7 @@ const AdminSettingsPage: React.FC = () => {
                             <div className="space-y-6">
                                 <h3 className="font-bold text-slate-800">Hero Section</h3>
                                 {F('hero_headline', 'Main Headline', 'text', 'Get 300 Units FREE Electricity Every Month')}
-                                {F('hero_subheadline', 'Sub-Headline', 'textarea', 'Government of India scheme — up to ₹78,000 subsidy for rooftop solar installation. We guide you end-to-end, completely free.')}
+                                {F('hero_subheadline', 'Sub-Headline', 'textarea', 'Government of India scheme — up to ₹94,800 subsidy for rooftop solar installation. We guide you end-to-end, completely free.')}
 
                                 <div className="pt-2">
                                     {FU('hero_video', 'Hero Background Video (MP4 — will show dark overlay)', 'video/mp4,video/*')}
@@ -810,7 +808,7 @@ const AdminSettingsPage: React.FC = () => {
                                                     </div>
                                                     <div className="flex-1">
                                                         <label className="text-[10px] font-bold text-slate-500 uppercase">Value</label>
-                                                        <input type="text" className="w-full text-xs border-slate-200 mt-1 rounded-lg font-bold" value={stat.value} onChange={e => handleHeroStatChange(idx, 'value', e.target.value)} placeholder="e.g. ₹78,000" />
+                                                        <input type="text" className="w-full text-xs border-slate-200 mt-1 rounded-lg font-bold" value={stat.value} onChange={e => handleHeroStatChange(idx, 'value', e.target.value)} placeholder="e.g. ₹94,800" />
                                                     </div>
                                                 </div>
                                                 <div>
@@ -1401,7 +1399,7 @@ const AdminSettingsPage: React.FC = () => {
                                 <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex gap-3">
                                     <AlertCircle className="text-blue-500 shrink-0" size={18} />
                                     <div className="text-xs text-blue-800 space-y-1">
-                                        <p><strong>3kW Threshold Note:</strong> Per business requirements, systems below 3kW usually earn 0 points. Ensure you map 1kW and 2kW to 0 points if required.</p>
+                                        <p><strong>3kW Threshold Note:</strong> Per business requirements, systems below 3kW are no longer supported and do not earn points. The platform now focuses exclusively on 3kW and higher capacities.</p>
                                         <p>Changes here affect all future point calculations for completed installations.</p>
                                     </div>
                                 </div>

@@ -94,9 +94,7 @@ export default function TermsConditionsPage() {
                                     } catch (e) { }
                                     return (
                                         <>
-                                            <li>Up to 2 kW: ₹30,000 subsidy</li>
-                                            <li>2 kW – 3 kW: ₹60,000 subsidy (composite)</li>
-                                            <li>Above 3 kW: ₹78,000 subsidy (maximum for residential)</li>
+                                            <li>3 kW & Above: ₹94,800 subsidy (maximum for residential)</li>
                                         </>
                                     );
                                 })()}

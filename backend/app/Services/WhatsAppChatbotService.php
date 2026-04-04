@@ -43,15 +43,26 @@ class WhatsAppChatbotService
 
         $input = $this->parseInput($message);
 
-        // Global override: "0" or "menu" resets flow
-        if (is_string($input) && in_array(strtolower(trim($input)), ['0', 'menu', 'hi', 'hello'])) {
+        // Global overrides: Keywords from website buttons
+        $cleanInput = is_string($input) ? strtoupper(trim($input)) : '';
+        
+        if (in_array($cleanInput, ['0', 'MENU', 'HI', 'HELLO'])) {
             $session->state = 'menu';
             $session->context = [];
             $session->save();
-        }
-
-        // Global override: "00" -> Talk to agent
-        if (is_string($input) && trim($input) === '00') {
+        } elseif ($cleanInput === 'APPLY') {
+            $session->state = 'register';
+            $session->context = ['reg_step' => 1, 'reg_data' => []];
+            $session->save();
+            $this->startRegistration($from);
+            return;
+        } elseif ($cleanInput === 'FAQ') {
+            $session->state = 'menu';
+            $session->context = [];
+            $session->save();
+            $this->sendFaqCategories($from);
+            return;
+        } elseif ($cleanInput === 'SUPPORT' || $cleanInput === '00') {
             $this->sendContactList($from);
             return;
         }
@@ -101,39 +112,54 @@ class WhatsAppChatbotService
 
     private function handleMenuState(WaChatbotSession $session, mixed $input): void
     {
-        // Check if an option was selected (1-8 based on our DB + fixed options)
-        if (is_string($input) && is_numeric(trim($input)) && (int)$input > 0 && (int)$input <= 8) {
-            $choice = (int) trim($input);
+        $choice = is_string($input) ? trim($input) : '';
 
-            if ($choice === 7) {
-                // Apply Now
-                $session->state = 'register';
-                $session->context = ['reg_step' => 1, 'reg_data' => []];
-                $session->save();
-                
-                $regFields = $this->getRegistrationFields();
-                $firstField = collect($regFields)->firstWhere('order', 1);
-                
-                $this->waApi->sendText($session->wa_phone, "Let's register you! (Type 0 anytime to cancel)\n\nStep 1: {$firstField['label']}");
-                return;
-            } elseif ($choice === 8) {
-                // Talk to Agent
-                $this->sendContactList($session->wa_phone);
-                return;
+        if ($choice === 'apply' || $choice === '7') {
+            // Apply Now
+            $session->state = 'register';
+            $session->context = ['reg_step' => 1, 'reg_data' => []];
+            $session->save();
+            $this->startRegistration($session->wa_phone);
+            return;
+        } 
+        
+        if ($choice === 'agent' || $choice === '8') {
+            // Talk to Agent
+            $this->sendContactList($session->wa_phone);
+            return;
+        }
+
+        // Check if a category was selected
+        if ($choice !== '') {
+            $category = null;
+            if (is_numeric($choice)) {
+                $category = WaChatbotCategory::where('sort_order', (int)$choice)->active()->first();
             } else {
-                // Category selected
-                $category = WaChatbotCategory::where('sort_order', $choice)->active()->first();
-                if ($category) {
-                    $session->state = 'category';
-                    $session->context = ['selected_category' => $category->name];
-                    $session->save();
-                    $this->sendQuestionList($session->wa_phone, $category);
-                    return;
+                // Interactive list sends the DB ID normally, but here we used 'cat_{id}'
+                if (str_starts_with($choice, 'cat_')) {
+                    $id = (int)str_replace('cat_', '', $choice);
+                    $category = WaChatbotCategory::active()->find($id);
                 }
+            }
+
+            if ($category) {
+                $session->state = 'category';
+                $session->context = ['selected_category' => $category->name];
+                $session->save();
+                $this->sendQuestionList($session->wa_phone, $category);
+                return;
             }
         }
 
         $this->sendCategoryMenu($session->wa_phone);
+    }
+
+    private function startRegistration(string $to): void
+    {
+        $regFields = $this->getRegistrationFields();
+        $firstField = collect($regFields)->firstWhere('order', 1);
+        
+        $this->waApi->sendText($to, "🚀 *Let's register you for PM Surya Ghar!*\n(Type 0 anytime to cancel)\n\nStep 1: *{$firstField['label']}*");
     }
 
     private function handleCategoryState(WaChatbotSession $session, mixed $input): void
@@ -345,17 +371,56 @@ class WhatsAppChatbotService
     {
         $categories = WaChatbotCategory::active()->ordered()->get();
         
-        $body = "🌞 Welcome to PM Surya Ghar Support!\nPlease choose a category by replying with a number:\n\n";
-
-        foreach ($categories as $cat) {
-            $body .= $cat->toMenuLine($cat->sort_order) . "\n";
-        }
-
-        // Hardcode apply and talk to agent
-        $body .= "7. 📋 Apply Now — Register for solar installation\n";
-        $body .= "8. 🧑‍💼 Talk to Agent — Connect with customer care\n";
-
-        $this->waApi->sendText($to, trim($body));
+        $sections = [
+            [
+                'title' => 'FAQ Categories',
+                'rows' => $categories->map(fn($cat) => [
+                    'id'    => 'cat_' . $cat->id,
+                    'title' => $cat->name,
+                    'description' => $cat->description ?: 'View questions'
+                ])->toArray()
+            ],
+            [
+                'title' => 'Quick Actions',
+                'rows' => [
+                    [
+                        'id'    => 'apply',
+                        'title' => '📋 Apply for Solar',
+                        'description' => 'Register for rooftop solar'
+                    ],
+                    [
+                        'id'    => 'agent',
+                        'title' => '🧑‍💼 Talk to Agent',
+                        'description' => 'Connect with customer care'
+                    ]
+                ]
+            ]
+        ];
+ 
+        $this->waApi->sendList(
+            $to,
+            'PM Surya Ghar Support',
+            "🌞 *Welcome to AndleebSurya!* \n\nGet up to 300 units free electricity monthly. How can we help you today?",
+            $sections
+        );
+    }
+ 
+    private function sendFaqCategories(string $to): void
+    {
+        $categories = WaChatbotCategory::active()->ordered()->get();
+        
+        $rows = $categories->map(fn($cat) => [
+            'id'    => 'cat_' . $cat->id,
+            'title' => $cat->name,
+            'description' => 'Browse questions'
+        ])->toArray();
+ 
+        $this->waApi->sendList(
+            $to,
+            'Frequently Asked Questions',
+            "📚 *Browse FAQ Categories*\n\nPlease select a category to see relevant questions.",
+            [['title' => 'Categories', 'rows' => $rows]]
+        );
     }
 
     private function sendQuestionList(string $to, WaChatbotCategory $cat): void
@@ -390,6 +455,7 @@ class WhatsAppChatbotService
         }
             
         $body = "📞 Customer Care Contacts:\n\n";
+        /** @var \App\Models\User $c */
         foreach ($contacts as $c) {
             $roleLabel = $c->isSuperAgent() ? 'BDM' : 'Agent';
             $body .= "✅ {$c->name} ({$roleLabel})\n";

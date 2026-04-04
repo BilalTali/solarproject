@@ -77,10 +77,8 @@ export default function HomePage() {
             }
         } catch (e) { }
         return [
-            { id: '1kw', label: '1KW System', central: 30000, state: 0, savings: 600, payback: 60 },
-            { id: '2kw', label: '2KW System', central: 60000, state: 0, savings: 1200, payback: 54 },
-            { id: '3kw', label: '3KW System', central: 78000, state: 0, savings: 1800, payback: 48 },
-            { id: 'above_3kw', label: 'Above 3kW System', central: 78000, state: 0, savings: 2400, payback: 42 },
+            { id: '3kw', label: '3KW System', central: 94800, state: 0, savings: 1800, payback: 48 },
+            { id: 'above_3kw', label: 'Above 3kW System', central: 94800, state: 0, savings: 2400, payback: 42 },
         ];
     })();
 
@@ -94,7 +92,7 @@ export default function HomePage() {
             }
         } catch (e) { }
         return [
-            { icon: 'IndianRupee', value: '₹78,000', label: 'Max Subsidy' },
+            { icon: 'IndianRupee', value: '₹94,800', label: 'Max Subsidy' },
             { icon: 'Zap', value: '300 Units', label: 'Free / Month' },
             { icon: 'Home', value: '1 Crore+', label: 'Target Homes' },
             { icon: 'BarChart3', value: '25 Years', label: 'Panel Life' },
@@ -135,7 +133,7 @@ export default function HomePage() {
         ];
     })();
 
-    const [capacitySelected, setCapacitySelected] = useState<string>(activeSubsidyData[0]?.id || '1kw');
+    const [capacitySelected, setCapacitySelected] = useState<string>(activeSubsidyData[0]?.id || '3kw');
 
     // Eligibility logic: fail if any answer doesn't match expected. Succeed if all match.
     const isUserIneligible = eligibilityQuestions.some(q =>
@@ -153,7 +151,7 @@ export default function HomePage() {
         <div className="min-h-screen bg-white">
             <SEOHead 
                 title="PM Surya Ghar Muft Bijli Yojana - Free Solar Subsidy" 
-                description="Apply for PM Surya Ghar Muft Bijli Yojana. Get up to ₹78,000 subsidy and 300 units of free electricity per month. Free registration and expert guidance."
+                description="Apply for PM Surya Ghar Muft Bijli Yojana. Get up to ₹94,800 subsidy and 300 units of free electricity per month. Free registration and expert guidance."
                 breadcrumbs={[
                     { name: 'Home', url: window.location.origin }
                 ]}

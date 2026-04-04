@@ -113,7 +113,7 @@ export default function UserManualPage() {
                                         </li>
                                         <li className="bg-white border border-neutral-100 p-5 rounded-2xl flex gap-4 shadow-sm hover:shadow-md transition-shadow">
                                             <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><Calculator className="w-5 h-5" /></div>
-                                            <div><p className="font-bold m-0 p-0 text-neutral-800">₹78,000 Subsidy</p><p className="m-0 p-0 text-xs text-neutral-500">Maximum residential subsidy</p></div>
+                                            <div><p className="font-bold m-0 p-0 text-neutral-800">₹94,800 Subsidy</p><p className="m-0 p-0 text-xs text-neutral-500">Maximum residential subsidy</p></div>
                                         </li>
                                         <li className="bg-white border border-neutral-100 p-5 rounded-2xl flex gap-4 shadow-sm hover:shadow-md transition-shadow">
                                             <div className="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center shrink-0"><CheckCircle className="w-5 h-5" /></div>
@@ -136,10 +136,10 @@ export default function UserManualPage() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-neutral-100">
-                                                <tr><td className="px-6 py-3 font-bold text-[#0A3D7A]">3 kW</td><td>₹1,59,500</td><td className="text-green-600 font-bold">₹94,800</td><td className="font-bold">₹64,700</td></tr>
-                                                <tr><td className="px-6 py-3 font-bold text-[#0A3D7A]">4 kW</td><td>₹2,09,000</td><td className="text-green-600 font-bold">₹94,800</td><td className="font-bold">₹1,14,200</td></tr>
-                                                <tr><td className="px-6 py-3 font-bold text-[#0A3D7A]">5 kW</td><td>₹2,59,500</td><td className="text-green-600 font-bold">₹94,800</td><td className="font-bold">₹1,63,700</td></tr>
-                                                <tr className="bg-blue-50/50"><td className="px-6 py-3 font-bold text-[#0A3D7A]">10 kW</td><td>₹5,15,000</td><td className="text-green-600 font-bold">₹94,800</td><td className="font-bold">₹4,20,200</td></tr>
+                                                <tr><td className="px-6 py-3 font-bold text-[#0A3D7A]">3 kW</td><td>₹1,50,000</td><td className="text-green-600 font-bold">₹94,800</td><td className="font-bold">₹55,200</td></tr>
+                                                <tr><td className="px-6 py-3 font-bold text-[#0A3D7A]">4 kW</td><td>₹2,00,000</td><td className="text-green-600 font-bold">₹94,800</td><td className="font-bold">₹1,05,200</td></tr>
+                                                <tr><td className="px-6 py-3 font-bold text-[#0A3D7A]">5 kW</td><td>₹2,50,000</td><td className="text-green-600 font-bold">₹94,800</td><td className="font-bold">₹1,55,200</td></tr>
+                                                <tr className="bg-blue-50/50"><td className="px-6 py-3 font-bold text-[#0A3D7A]">10 kW</td><td>₹5,00,000</td><td className="text-green-600 font-bold">₹94,800</td><td className="font-bold">₹4,05,200</td></tr>
                                             </tbody>
                                         </table>
                                     </div>

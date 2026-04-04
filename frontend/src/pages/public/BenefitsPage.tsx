@@ -33,7 +33,7 @@ export default function BenefitsPage() {
         {
             icon: <IndianRupee className="w-12 h-12 text-emerald-500" />,
             title: "Direct Govt. Subsidy",
-            desc: "Get upfront financial assistance. The Government of India provides a direct subsidy of up to ₹78,000 per household for rooftop solar installation.",
+            desc: "Get upfront financial assistance. The Government of India provides a direct subsidy of up to ₹94,800 per household for rooftop solar installation.",
             highlight: "Fixed Subsidy Rates"
         },
         {
@@ -66,7 +66,7 @@ export default function BenefitsPage() {
         <div className="min-h-screen bg-slate-50 flex flex-col">
             <SEOHead 
                 title="Benefits of PM Surya Ghar Muft Bijli Yojana" 
-                description="Explore the massive financial and environmental benefits of the PM Surya Ghar scheme. Save on bills, get ₹78,000 subsidy, and switch to green energy." 
+                description="Explore the massive financial and environmental benefits of the PM Surya Ghar scheme. Save on bills, get ₹94,800 subsidy, and switch to green energy." 
                 breadcrumbs={[
                     { name: 'Home', url: window.location.origin },
                     { name: 'Benefits', url: window.location.origin + '/benefits-of-solar' }
@@ -140,7 +140,7 @@ export default function BenefitsPage() {
                                             </div>
                                             <div>
                                                 <p className="text-xs text-slate-500 uppercase font-bold tracking-widest leading-none mb-1">Max Subsidy</p>
-                                                <p className="text-xl font-bold">₹78,000</p>
+                                                <p className="text-xl font-bold">₹94,800</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">
@@ -163,11 +163,11 @@ export default function BenefitsPage() {
                                         </div>
                                         <div className="flex justify-between text-sm py-2 border-b border-white/5 text-emerald-400">
                                             <span>Less: Govt Subsidy</span>
-                                            <span className="font-bold">- ₹78,000</span>
+                                            <span className="font-bold">- ₹94,800</span>
                                         </div>
                                         <div className="flex justify-between text-sm py-2 border-b border-white/5 font-bold">
                                             <span>Net Homeowner Cost</span>
-                                            <span>₹72,000</span>
+                                            <span>₹55,200</span>
                                         </div>
                                         <div className="flex justify-between text-sm py-2 text-accent">
                                             <span>Est. Annual Savings</span>

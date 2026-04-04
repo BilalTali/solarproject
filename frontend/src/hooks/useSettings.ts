@@ -17,7 +17,7 @@ export const DEFAULT_SETTINGS: PublicSettingsData = {
     social_instagram: null,
     social_youtube: null,
     hero_headline: 'Get 300 Units FREE Electricity Every Month',
-    hero_subheadline: 'Government of India scheme — up to ₹78,000 subsidy for rooftop solar installation. We guide you end-to-end, completely free.',
+    hero_subheadline: 'Government of India scheme — up to ₹94,800 subsidy for rooftop solar installation. We guide you end-to-end, completely free.',
     hero_video: null,
     hero_stats_json: null,
     how_it_works_json: null,

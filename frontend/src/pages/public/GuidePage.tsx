@@ -56,7 +56,7 @@ export default function GuidePage() {
                         <h1 className="text-4xl md:text-5xl font-display font-black text-slate-900 mb-6 leading-tight">
                             The Ultimate Guide to <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">PM Surya Ghar Yojana</span>
                         </h1>
-                        <p className="text-xl text-slate-600 max-w-2xl mx-auto">Everything you need to know to claim your ₹78,000 subsidy and get 300 units of free electricity every month.</p>
+                        <p className="text-xl text-slate-600 max-w-2xl mx-auto">Everything you need to know to claim your ₹94,800 subsidy and get 300 units of free electricity every month.</p>
                     </header>
 
                     <div className="prose prose-lg prose-slate max-w-none text-slate-700 space-y-8">
@@ -81,9 +81,7 @@ export default function GuidePage() {
                             </h2>
                             <p className="mb-4">The government offers direct DBT (Direct Benefit Transfer) subsidies based on the capacity of the solar plant you install:</p>
                             <ul className="space-y-3">
-                                <li><strong>Up to 2 kW capacity:</strong> ₹30,000 per kW. (Max: ₹60,000)</li>
-                                <li><strong>Additional capacity (2 kW to 3 kW):</strong> ₹18,000 per kW. (Max: ₹18,000)</li>
-                                <li><strong>Higher capacities (Above 3 kW):</strong> Capped at the maximum central subsidy of <strong>₹78,000</strong>.</li>
+                                <li><strong>Residential Rooftop Solar (3 kW & Above):</strong> Flat government subsidy of <strong>₹94,800</strong>.</li>
                             </ul>
                             <div className="mt-6 text-sm text-slate-500 italic">
                                 Note: Many states offer additional top-up subsidies that can be combined with the central subsidy, drastically reducing the final payable amount. Check our State-wise Subsidy tracking tool for localized data.

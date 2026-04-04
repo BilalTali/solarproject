@@ -100,7 +100,7 @@ class ChatbotController extends Controller
 
     public function sessions(Request $request): JsonResponse
     {
-        $perPage = $request->get('per_page', 20);
+        $perPage = $request->input('per_page', 20);
         $sessions = WaChatbotSession::orderBy('last_message_at', 'desc')->paginate($perPage);
         return response()->json($sessions);
     }
@@ -144,7 +144,11 @@ class ChatbotController extends Controller
             ->whereNotNull('whatsapp_number')
             ->select(['id', 'name', 'whatsapp_number'])
             ->get();
-        return response()->json($contacts);
+
+        return response()->json([
+            'contacts' => $contacts,
+            'chatbot_ready' => !empty(config('services.whatsapp.access_token'))
+        ]);
     }
 
     // ── WhatsApp Lead Handlers (Super Admin Only) ─────────────────────

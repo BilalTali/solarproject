@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+
+# Block all dashboard & private routes
+Disallow: /admin
+Disallow: /admin/
+Disallow: /agent/dashboard
+Disallow: /agent/leads
+Disallow: /agent/profile
+Disallow: /agent/commissions
+Disallow: /agent/offers
+Disallow: /agent/login
+Disallow: /super-agent/
+Disallow: /enumerator/
+Disallow: /super-admin/
+
+# Block all backend API routes
+Disallow: /api/
+
+# Block storage private files
+Disallow: /storage/leads/
+Disallow: /storage/profiles/
+
+Sitemap: https://andleebsurya.in/sitemap.xml

@@ -7,9 +7,7 @@ import { publicApi, type PublicSettingsData } from '@/services/public.api';
 
  
 const subsidyData = [
-    { capacity: 'Up to 2 kW', subsidy: '₹30,000', monthly: 'Up to 150 units free', tag: 'Most Popular' },
-    { capacity: '2 kW – 3 kW', subsidy: '₹60,000', monthly: 'Up to 200 units free', tag: 'Best Value' },
-    { capacity: 'Above 3 kW', subsidy: '₹78,000', monthly: 'Up to 300 units free', tag: 'Maximum' },
+    { capacity: '3 kW & Above', subsidy: '₹94,800', monthly: 'Up to 300 units free', tag: 'Maximum' },
 ];
 
 const documents = [
@@ -36,14 +34,14 @@ export default function SchemeInfoPage() {
         { step: '04', title: 'Government Portal Registration', desc: 'Your application is submitted on the official pmsuryaghar.gov.in portal.' },
         { step: '05', title: 'Site Survey', desc: 'An empanelled installation vendor surveys your rooftop and provides capacity recommendation.' },
         { step: '06', title: 'Solar Installation', desc: 'Solar panels are installed by the government-empanelled vendor at no cost to you.' },
-        { step: '07', title: 'Net Meter & Subsidy', desc: 'Net meter is installed. Government subsidy of up to ₹78,000 is credited directly to your bank account.' },
+        { step: '07', title: 'Net Meter & Subsidy', desc: 'Net meter is installed. Government subsidy of up to ₹94,800 is credited directly to your bank account.' },
     ];
 
     return (
         <div className="min-h-screen bg-neutral-50 flex flex-col">
             <SEOHead 
                 title={`PM Surya Ghar Muft Bijli Yojana — Free Solar Scheme Info`} 
-                description={`Everything about PM Surya Ghar Muft Bijli Yojana — free solar panels, ₹78,000 government subsidy, eligibility for J&K and Ladakh residents. Documents, process, benefits explained via ${companyName}.`}
+                description={`Everything about PM Surya Ghar Muft Bijli Yojana — free solar panels, ₹94,800 government subsidy, eligibility for J&K and Ladakh residents. Documents, process, benefits explained via ${companyName}.`}
                 keywords="PM Surya Ghar, Muft Bijli Yojana, free solar panels J&K, solar subsidy Jammu Kashmir, MNRE scheme, rooftop solar Ladakh"
                 breadcrumbs={[
                     { name: 'Home', url: window.location.origin },
@@ -54,7 +52,7 @@ export default function SchemeInfoPage() {
                         "@context": "https://schema.org",
                         "@type": "Article",
                         "headline": "PM Surya Ghar Muft Bijli Yojana — Free Solar Scheme Info",
-                        "description": `Get free solar panels with up to ₹78,000 government subsidy under PM Surya Ghar Muft Bijli Yojana. ${companyName} helps J&K and Ladakh residents register.`,
+                        "description": `Get free solar panels with up to ₹94,800 government subsidy under PM Surya Ghar Muft Bijli Yojana. ${companyName} helps J&K and Ladakh residents register.`,
                         "author": {
                             "@type": "Organization",
                             "name": companyName
@@ -76,7 +74,7 @@ export default function SchemeInfoPage() {
                             PM Surya Ghar Muft Bijli Yojana
                         </h1>
                         <p className="text-lg text-white/80 max-w-2xl mx-auto mb-2">
-                            Free rooftop solar installation with up to <strong className="text-accent">₹78,000 subsidy</strong> for eligible households in Jammu &amp; Kashmir and Ladakh.
+                            Free rooftop solar installation with up to <strong className="text-accent">₹94,800 subsidy</strong> for eligible households in Jammu &amp; Kashmir and Ladakh.
                         </p>
                         <p className="text-sm text-white/60">
                             {companyName} facilitates registration — we are not a government body
@@ -99,7 +97,7 @@ export default function SchemeInfoPage() {
                     <section className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
                         <h2 className="text-2xl font-display font-bold text-dark mb-4">What is PM Surya Ghar Muft Bijli Yojana?</h2>
                         <p className="text-neutral-700 leading-relaxed mb-4">
-                            PM Surya Ghar Muft Bijli Yojana is a flagship Government of India scheme launched in February 2024 under which residential households receive free rooftop solar panel installations along with a direct government subsidy of up to ₹78,000. The scheme aims to provide up to 300 units of free electricity per month to 1 crore households across India.
+                            PM Surya Ghar Muft Bijli Yojana is a flagship Government of India scheme launched in February 2024 under which residential households receive free rooftop solar panel installations along with a direct government subsidy of up to ₹94,800. The scheme aims to provide up to 300 units of free electricity per month to 1 crore households across India.
                         </p>
                         <div className="grid sm:grid-cols-3 gap-4 mt-6">
                             <div className="bg-primary/5 rounded-2xl p-4 text-center">
@@ -109,7 +107,7 @@ export default function SchemeInfoPage() {
                             </div>
                             <div className="bg-accent/5 rounded-2xl p-4 text-center">
                                 <IndianRupee className="w-8 h-8 text-accent mx-auto mb-2" />
-                                <p className="font-bold text-dark">Up to ₹78,000</p>
+                                <p className="font-bold text-dark">Up to ₹94,800</p>
                                 <p className="text-xs text-neutral-500 mt-1">Direct government subsidy</p>
                             </div>
                             <div className="bg-success/5 rounded-2xl p-4 text-center">

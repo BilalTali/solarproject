@@ -515,8 +515,6 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
                                 <Select
                                     label="System Capacity (kW) *" name="system_capacity" value={form.system_capacity} onChange={set} required
                                     options={[
-                                        { value: '1kw', label: '1 kW' },
-                                        { value: '2kw', label: '2 kW' },
                                         { value: '3kw', label: '3 kW' },
                                         { value: '3.3kw', label: '3.3 kW' },
                                         { value: '4kw', label: '4 kW' },

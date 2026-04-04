@@ -7,7 +7,7 @@ import { publicApi, type PublicSettingsData } from '@/services/public.api';
 
 // Realistic state-level subsidy data roughly mirroring India's PM Surya Ghar top-ups
 const stateSubsidies = [
-    { state: 'Uttar Pradesh', topUp: '₹30,000', conditional: 'Additional ₹30,000 for up to 2kW, making net subsidy ₹90,000 for 2kW systems. Above 3kW max ₹1,08,000.', extra: true },
+    { state: 'Uttar Pradesh', topUp: '₹30,000', conditional: 'Additional state top-up available for residential rooftop solar. Above 3kW max ₹94,800 + state share.', extra: true },
     { state: 'Delhi', topUp: '₹2,000/kW', conditional: 'Maximum capping of ₹10,000 for residential systems up to 5kW.', extra: true },
     { state: 'Haryana', topUp: '₹10,000/kW', conditional: 'Targeted mainly at extremely weak income groups with strict limits.', extra: true },
     { state: 'Gujarat', topUp: 'Nil', conditional: 'No discrete state top-up, but streamlined DISCOM approvals through SURYA GUJARAT portal.', extra: false },
@@ -60,7 +60,7 @@ export default function StateSubsidyPage() {
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">State-Wise</span> Subsidy Details
                     </h1>
                     <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                        While the Central Government provides a baseline subsidy up to ₹78,000 for all citizens, several State Governments offer additional "Top-up" subsidies to further accelerate renewable energy adoption in their regions.
+                        While the Central Government provides a baseline subsidy up to ₹94,800 for all citizens, several State Governments offer additional "Top-up" subsidies to further accelerate renewable energy adoption in their regions.
                     </p>
                 </div>
 

@@ -39,4 +39,12 @@ return [
         'token' => env('PRERENDER_TOKEN'),
     ],
 
+    'whatsapp' => [
+        'phone_number_id'     => env('WA_PHONE_NUMBER_ID'),
+        'access_token'        => env('WA_ACCESS_TOKEN'),
+        'verify_token'        => env('WA_VERIFY_TOKEN'),
+        'business_account_id' => env('WA_BUSINESS_ACCOUNT_ID'),
+        'api_version'         => env('WA_API_VERSION', 'v19.0'),
+    ],
+
 ];

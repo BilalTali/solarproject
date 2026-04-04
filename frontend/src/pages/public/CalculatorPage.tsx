@@ -1,196 +1,304 @@
-import { useState } from 'react';
-import Navbar from '@/components/public/Navbar';
-import Footer from '@/components/public/Footer';
-import SEOHead from '@/components/shared/SEOHead';
-import { IndianRupee, Zap, BarChart3, Sun, BatteryFull, Shield, Info } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { publicApi } from '@/services/public.api';
+import { useState, useMemo } from "react";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, ReferenceLine, Legend
+} from "recharts";
 
-export default function CalculatorPage() {
-    const { data: settings = {} } = useQuery({
-        queryKey: ['public-settings'],
-        queryFn: publicApi.getSettings,
-    });
+/* ─── DATA (exact from table, verified) ─── */
+const SYSTEMS = [
+  { id:"3kw",   label:"3 kW",   cost:159500, subsidy:94800,  share:64700,  down:8500,  uMin:300, uMax:400  },
+  { id:"3.3kw", label:"3.3 kW", cost:169000, subsidy:94800,  share:74200,  down:9000,  uMin:350, uMax:450  },
+  { id:"4kw",   label:"4 kW",   cost:209000, subsidy:94800,  share:114200, down:22000, uMin:400, uMax:500  },
+  { id:"5kw",   label:"5 kW",   cost:258500, subsidy:94800,  share:163700, down:26500, uMin:500, uMax:600  },
+  { id:"5.5kw", label:"5.5 kW", cost:279000, subsidy:94800,  share:184200, down:28500, uMin:550, uMax:650  },
+  { id:"6kw",   label:"6 kW",   cost:308000, subsidy:94800,  share:213200, down:28500, uMin:600, uMax:700  },
+  { id:"7kw",   label:"7 kW",   cost:357500, subsidy:144300, share:213200, down:31800, uMin:600, uMax:700  },
+  { id:"8kw",   label:"8 kW",   cost:407000, subsidy:144300, share:262700, down:37000, uMin:700, uMax:900  },
+  { id:"9kw",   label:"9 kW",   cost:457000, subsidy:194300, share:262700, down:37000, uMin:700, uMax:1000 },
+  { id:"10kw",  label:"10 kW",  cost:507000, subsidy:145300, share:361700, down:46600, uMin:900, uMax:1100 },
+];
 
-    const activeSubsidyData: any[] = (() => {
-        try {
-            const json = (settings as any).calculator_values_json;
-            if (json) {
-                const parsed = JSON.parse(json);
-                if (Array.isArray(parsed)) return parsed;
-            }
-        } catch (e) { }
-        return [
-            { id: '1kw', label: '1 KW', central: 30000, state: 0, savings: 600, payback: 60, cost: 65000, space: 100 },
-            { id: '2kw', label: '2 KW', central: 60000, state: 0, savings: 1200, payback: 54, cost: 120000, space: 200 },
-            { id: '3kw', label: '3 KW', central: 78000, state: 0, savings: 1800, payback: 48, cost: 170000, space: 300 },
-            { id: '4kw', label: '4 KW', central: 78000, state: 0, savings: 2400, payback: 42, cost: 220000, space: 400 },
-            { id: '5kw', label: '5 KW', central: 78000, state: 0, savings: 3000, payback: 36, cost: 270000, space: 500 },
-            { id: '10kw', label: '10 KW', central: 78000, state: 0, savings: 6000, payback: 30, cost: 500000, space: 1000 },
-        ];
-    })();
+const inr  = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
+const fmtK = (n: number) => {
+  if (n >= 100000) return "₹" + (n / 100000).toFixed(1) + "L";
+  if (n >= 1000)   return "₹" + (n / 1000).toFixed(0) + "k";
+  return "₹" + n;
+};
 
-    const [capacityOptions] = useState(activeSubsidyData);
-    const [selectedCapacity, setSelectedCapacity] = useState<string>('3kw');
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string | number;
+}
 
-    const activeData = capacityOptions.find(opt => opt.id === selectedCapacity) || capacityOptions[2];
+function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{
+      background:"#fff", border:"1px solid #e2e8f0",
+      borderRadius:12, padding:"12px 16px",
+      boxShadow:"0 8px 24px rgba(0,0,0,0.08)", fontSize:13
+    }}>
+      <p style={{ color:"#64748b", margin:"0 0 8px", fontWeight:700 }}>Year {label}</p>
+      {payload.map(p => (
+        <p key={p.name} style={{ color:p.color, margin:"3px 0", fontWeight:700 }}>
+          {p.name}: {fmtK(Math.round(p.value))}
+        </p>
+      ))}
+    </div>
+  );
+}
 
-    const totalSubsidy = Number(activeData.central) + Number(activeData.state);
-    const estimatedCost = activeData.cost || 0;
-    const finalCost = estimatedCost > totalSubsidy ? estimatedCost - totalSubsidy : 0;
-    const roofSpace = activeData.space || 300;
+export default function SolarCalculator() {
+  const [selected, setSelected] = useState("4kw");
+  const [rate, setRate]         = useState(6);
 
-    return (
-        <div className="min-h-screen bg-neutral-50 flex flex-col font-sans">
-            <SEOHead 
-                title="PM Surya Ghar Rooftop Solar Subsidy Calculator" 
-                description="Calculate your PM Surya Ghar Muft Bijli Yojana subsidy, monthly savings, and ROI estimate with our easy-to-use solar capacity calculator."
-                breadcrumbs={[
-                    { name: 'Home', url: window.location.origin },
-                    { name: 'Calculator', url: window.location.origin + '/solar-subsidy-calculator' }
-                ]}
-                schemas={[
-                    {
-                        "@context": "https://schema.org",
-                        "@type": "WebApplication",
-                        "name": "PM Surya Ghar Subsidy Calculator",
-                        "url": window.location.href,
-                        "description": "An interactive calculator to estimate government subsidy, installation cost, and payback period for rooftop solar panels in India.",
-                        "applicationCategory": "CalculatorApplication",
-                        "offers": {
-                            "@type": "Offer",
-                            "price": "0",
-                            "priceCurrency": "INR"
-                        }
-                    }
-                ]}
-            />
-            <Navbar />
+  const sys         = SYSTEMS.find(s => s.id === selected)!;
+  const avgUnits    = (sys.uMin + sys.uMax) / 2;
+  const monthlySave = Math.round(avgUnits * rate);
+  const annualSave  = monthlySave * 12;
+  const paybackYrs  = annualSave > 0 ? sys.share / annualSave : 0;
+  const breakEvenYr = Math.ceil(paybackYrs);
+  const subsidyPct  = Math.round((sys.subsidy / sys.cost) * 100);
+  const netAt       = (yr: number) => Math.max(0, yr * annualSave - sys.share);
 
-            <main className="flex-grow w-full py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-                <div className="text-center mb-12">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold mb-6">
-                        <Sun className="w-5 h-5" />
-                        <span>Interactive ROI Estimator</span>
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-display font-black text-slate-900 mb-6 tracking-tight">
-                        Rooftop Solar <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Subsidy Calculator</span>
-                    </h1>
-                    <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                        Find out exactly how much government subsidy you are entitled to, your upfront investment, and how quickly your solar panels will pay for themselves.
-                    </p>
-                </div>
+  const chartData = useMemo(() => Array.from({ length: 26 }, (_, yr) => ({
+    year: yr,
+    "Grid Bills (no solar)": Math.round(yr * annualSave),
+    "Solar Investment":       Math.round(sys.share),
+    "Your Net Savings":       Math.round(Math.max(0, yr * annualSave - sys.share)),
+  })), [sys.share, annualSave]);
 
-                <div className="grid lg:grid-cols-12 gap-8 items-start">
-                    
-                    {/* Left Panel: Inputs */}
-                    <div className="lg:col-span-4 bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col">
-                        <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                            <Zap className="w-6 h-6 text-primary" />
-                            System Capacity
-                        </h2>
-                        
-                        <div className="space-y-3 mb-8">
-                            {capacityOptions.map((opt) => (
-                                <button 
-                                    key={opt.id} 
-                                    onClick={() => setSelectedCapacity(opt.id)}
-                                    className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex justify-between items-center group
-                                        ${selectedCapacity === opt.id 
-                                            ? 'border-primary bg-primary/5 text-primary shadow-sm' 
-                                            : 'border-slate-100 hover:border-primary/30 text-slate-600 hover:bg-slate-50'
-                                    }`}
-                                >
-                                    <span className="font-semibold text-lg">{opt.label} System</span>
-                                    {selectedCapacity === opt.id && <div className="w-3 h-3 rounded-full bg-primary shadow-sm" />}
-                                </button>
-                            ))}
-                        </div>
+  return (
+    <div style={{ minHeight:"100vh", background:"#f8fafc", fontFamily:"'Inter','Segoe UI',sans-serif", color:"#0f172a" }}>
 
-                        <div className="mt-auto bg-slate-50 p-5 rounded-2xl border border-slate-100 text-sm text-slate-600 flex gap-3">
-                            <Info className="w-5 h-5 text-primary shrink-0" />
-                            <p>Assumes standard poly/mono-crystalline panels. Final costs vary slightly by vendor, state policies, and structure elevation.</p>
-                        </div>
-                    </div>
-
-                    {/* Right Panel: Results Dashboard */}
-                    <div className="lg:col-span-8 flex flex-col gap-6">
-                        
-                        {/* Primary Stat Hero */}
-                        <div className="bg-gradient-to-br from-[#0B1B3D] to-[#1A365D] rounded-[2rem] p-8 md:p-12 shadow-2xl relative overflow-hidden text-white">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[80px] rounded-full -mr-16 -mt-16" />
-                            
-                            <h3 className="text-primary-light font-bold text-sm tracking-widest uppercase mb-2">Maximum Subsidy</h3>
-                            <div className="flex items-end gap-2 mb-8">
-                                <span className="text-5xl md:text-7xl font-black tracking-tight flex items-center">
-                                    <IndianRupee className="w-10 h-10 md:w-14 md:h-14 opacity-80" />
-                                    {totalSubsidy.toLocaleString()}
-                                </span>
-                            </div>
-
-                            <div className="grid sm:grid-cols-2 gap-6 relative z-10">
-                                <div>
-                                    <div className="text-slate-400 text-sm mb-1">Estimated Installation Cost</div>
-                                    <div className="text-xl font-bold flex items-center">
-                                        <IndianRupee className="w-5 h-5 mr-1 opacity-70" /> {estimatedCost.toLocaleString()}
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="text-slate-400 text-sm mb-1">Your Final Payable Amount</div>
-                                    <div className="text-2xl font-bold text-accent flex items-center">
-                                        <IndianRupee className="w-6 h-6 mr-1" /> {finalCost.toLocaleString()}
-                                    </div>
-                                    <div className="text-xs text-slate-400 mt-1">Cost - Subsidy</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Secondary Stats Grid */}
-                        <div className="grid sm:grid-cols-2 gap-6">
-                            
-                            <div className="bg-white rounded-[2rem] p-8 shadow-lg shadow-slate-200/50 border border-slate-100 relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-3xl group-hover:bg-green-500/20 transition-all" />
-                                <div className="w-12 h-12 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                    <BarChart3 className="w-6 h-6" />
-                                </div>
-                                <h3 className="text-slate-500 font-medium mb-1">Monthly Electricity Savings</h3>
-                                <div className="text-3xl font-bold text-slate-800 flex items-center">
-                                    <IndianRupee className="w-7 h-7" /> {activeData.savings.toLocaleString()}
-                                </div>
-                            </div>
-                            
-                            <div className="bg-white rounded-[2rem] p-8 shadow-lg shadow-slate-200/50 border border-slate-100 relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl group-hover:bg-orange-500/20 transition-all" />
-                                <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                    <BatteryFull className="w-6 h-6" />
-                                </div>
-                                <h3 className="text-slate-500 font-medium mb-1">Payback Period (ROI)</h3>
-                                <div className="text-3xl font-bold text-slate-800">
-                                    {Math.floor(activeData.payback / 12)} yrs {activeData.payback % 12 > 0 ? `${activeData.payback % 12} mo` : ''}
-                                </div>
-                            </div>
-
-                        </div>
-
-                        {/* Technical Details Banner */}
-                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
-                                    <Shield className="w-5 h-5 text-slate-600" />
-                                </div>
-                                <div>
-                                    <div className="text-sm font-semibold text-slate-800">Clear Roof Space Needed</div>
-                                    <div className="text-xs text-slate-500">Unshaded, South-facing preferred</div>
-                                </div>
-                            </div>
-                            <div className="font-bold text-lg text-slate-800">~{roofSpace} sq.ft.</div>
-                        </div>
-
-                    </div>
-                </div>
-            </main>
-
-            <Footer />
+      {/* HERO */}
+      <div style={{ background:"linear-gradient(135deg,#fff7ed 0%,#ffffff 55%,#eff6ff 100%)", borderBottom:"1px solid #e2e8f0", padding:"48px 24px 40px", textAlign:"center" }}>
+        <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(234,88,12,0.1)", border:"1px solid rgba(234,88,12,0.25)", borderRadius:999, padding:"6px 18px", fontSize:13, color:"#ea580c", fontWeight:700, marginBottom:20 }}>
+          ☀️ PM Surya Ghar Muft Bijli Yojana
         </div>
-    );
+        <h1 style={{ fontSize:"clamp(26px,5vw,46px)", fontWeight:900, margin:"0 0 12px", lineHeight:1.15, letterSpacing:"-0.02em" }}>
+          Rooftop Solar <span style={{ color:"#ea580c" }}>Savings Calculator</span>
+        </h1>
+        <p style={{ color:"#64748b", fontSize:16, margin:"0 auto", maxWidth:540 }}>
+          Select your system — see exact govt. subsidy, your net cost, and when your panels start earning you money.
+        </p>
+      </div>
+
+      <div style={{ maxWidth:1080, margin:"0 auto", padding:"36px 16px 72px" }}>
+
+        {/* ══ CALCULATOR 1 ══ */}
+        <div style={{ background:"#fff", border:"1px solid #e2e8f0", borderRadius:24, padding:"32px", marginBottom:28, boxShadow:"0 2px 16px rgba(0,0,0,0.04)" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12, marginBottom:24 }}>
+            <h2 style={{ margin:0, fontSize:18, fontWeight:800 }}>📊 System & Subsidy Breakdown</h2>
+            <div style={{ display:"flex", alignItems:"center", gap:8, background:"#f8fafc", border:"1px solid #e2e8f0", borderRadius:12, padding:"8px 14px" }}>
+              <span style={{ fontSize:13, color:"#64748b", fontWeight:600 }}>Your electricity rate:</span>
+              <span style={{ fontWeight:700 }}>₹</span>
+              <input
+                type="number" min="1" max="30" step="0.5" value={rate}
+                onChange={e => setRate(Math.max(1, Number(e.target.value) || 6))}
+                style={{ width:48, border:"none", background:"transparent", fontSize:16, fontWeight:800, color:"#ea580c", textAlign:"center", outline:"none" }}
+              />
+              <span style={{ fontSize:13, color:"#64748b" }}>/unit</span>
+            </div>
+          </div>
+
+          {/* Capacity buttons */}
+          <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:28 }}>
+            {SYSTEMS.map(s => (
+              <button key={s.id} onClick={() => setSelected(s.id)} style={{
+                padding:"9px 18px", borderRadius:10, cursor:"pointer", fontWeight:700, fontSize:14, transition:"all 0.18s",
+                border: selected === s.id ? "2px solid #ea580c" : "2px solid #e2e8f0",
+                background: selected === s.id ? "#fff7ed" : "#fff",
+                color: selected === s.id ? "#ea580c" : "#64748b",
+              }}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Stat cards */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))", gap:14, marginBottom:28 }}>
+            {[
+              { label:"Project Cost",          value:inr(sys.cost),          sub:"Full installation",                icon:"🏗️", accent:false },
+              { label:"Govt. Subsidy",          value:inr(sys.subsidy),       sub:`${subsidyPct}% of project cost`,   icon:"🏛️", accent:true  },
+              { label:"Your Final Share",       value:inr(sys.share),         sub:"What you actually pay",            icon:"💰", accent:false },
+              { label:"Down Payment",           value:inr(sys.down),          sub:"To begin install",                 icon:"🔑", accent:false },
+              { label:"Units Generated/Month",  value:`${sys.uMin}–${sys.uMax}`, sub:`avg ${avgUnits} kWh/month`,    icon:"⚡", accent:false },
+              { label:"Monthly Bill Saved",     value:inr(monthlySave),       sub:`${avgUnits} units × ₹${rate}`,    icon:"📉", accent:true  },
+            ].map(c => (
+              <div key={c.label} style={{
+                background: c.accent ? "#fff7ed" : "#f8fafc",
+                border:`1px solid ${c.accent ? "#fed7aa" : "#e2e8f0"}`,
+                borderRadius:16, padding:"18px 18px 14px",
+              }}>
+                <div style={{ fontSize:20, marginBottom:6 }}>{c.icon}</div>
+                <div style={{ fontSize:11, color:"#94a3b8", fontWeight:700, letterSpacing:"0.06em", marginBottom:4 }}>
+                  {c.label.toUpperCase()}
+                </div>
+                <div style={{ fontSize:21, fontWeight:900, color: c.accent ? "#ea580c" : "#0f172a", lineHeight:1.2 }}>
+                  {c.value}
+                </div>
+                <div style={{ fontSize:12, color:"#94a3b8", marginTop:4 }}>{c.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Subsidy bar */}
+          <div>
+            <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, marginBottom:6 }}>
+              <span style={{ color:"#64748b", fontWeight:600 }}>Subsidy Coverage</span>
+              <span style={{ color:"#ea580c", fontWeight:800 }}>Saves {inr(sys.subsidy)} ({subsidyPct}%) off project cost</span>
+            </div>
+            <div style={{ height:10, background:"#f1f5f9", borderRadius:99, overflow:"hidden" }}>
+              <div style={{ height:"100%", borderRadius:99, width:`${subsidyPct}%`, background:"linear-gradient(90deg,#f97316,#ea580c)", transition:"width 0.4s ease" }} />
+            </div>
+            <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#94a3b8", marginTop:6 }}>
+              <span>You pay: <strong style={{ color:"#0f172a" }}>{inr(sys.share)}</strong></span>
+              <span>Subsidy: <strong style={{ color:"#ea580c" }}>{inr(sys.subsidy)}</strong></span>
+            </div>
+          </div>
+
+          {sys.id === "7kw" || sys.id === "8kw" || sys.id === "9kw" || sys.id === "10kw" ? (
+            <div style={{ marginTop:16, background:"#eff6ff", border:"1px solid #bfdbfe", borderRadius:12, padding:"10px 14px", fontSize:13, color:"#1d4ed8" }}>
+              ℹ️ For {sys.label} systems, effective subsidy includes additional state/scheme benefits beyond the ₹94,800 central subsidy.
+            </div>
+          ) : null}
+        </div>
+
+        {/* ══ CALCULATOR 2 — SAVINGS GRAPH ══ */}
+        <div style={{ background:"#fff", border:"1px solid #e2e8f0", borderRadius:24, padding:"32px", boxShadow:"0 2px 16px rgba(0,0,0,0.04)" }}>
+          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", flexWrap:"wrap", gap:16, marginBottom:24 }}>
+            <div>
+              <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:800 }}>📈 When Does It Pay For Itself?</h2>
+              <p style={{ margin:0, color:"#64748b", fontSize:14 }}>{sys.label} system · ₹{rate}/unit tariff · 25-year view</p>
+            </div>
+            <div style={{ background:"#fff7ed", border:"2px solid #fed7aa", borderRadius:16, padding:"14px 22px", textAlign:"center" }}>
+              <div style={{ fontSize:11, color:"#ea580c", fontWeight:800, letterSpacing:"0.08em", marginBottom:2 }}>BREAKS EVEN IN</div>
+              <div style={{ fontSize:38, fontWeight:900, color:"#ea580c", lineHeight:1 }}>
+                {paybackYrs.toFixed(1)}<span style={{ fontSize:15, fontWeight:700 }}> yrs</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Summary pills — two rows, clearly labelled */}
+          {/* Row 1: Total electricity bills avoided (gross) */}
+          <div style={{ marginBottom:8 }}>
+            <div style={{ fontSize:12, fontWeight:700, color:"#94a3b8", letterSpacing:"0.06em", marginBottom:8 }}>
+              ELECTRICITY BILLS AVOIDED (GROSS SAVINGS)
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))", gap:10 }}>
+              {[
+                { label:"Per Year",   val:inr(annualSave),       clr:"#16a34a" },
+                { label:"In 5 Years", val:inr(annualSave * 5),   clr:"#16a34a" },
+                { label:"In 10 Years",val:inr(annualSave * 10),  clr:"#16a34a" },
+                { label:"In 25 Years",val:inr(annualSave * 25),  clr:"#16a34a" },
+              ].map(p => (
+                <div key={p.label} style={{ background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:12, padding:"12px 14px" }}>
+                  <div style={{ fontSize:11, color:"#64748b", fontWeight:700, marginBottom:3 }}>{p.label.toUpperCase()}</div>
+                  <div style={{ fontSize:18, fontWeight:900, color:p.clr }}>{p.val}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 2: Net profit after recovering investment */}
+          <div style={{ marginBottom:28 }}>
+            <div style={{ fontSize:12, fontWeight:700, color:"#94a3b8", letterSpacing:"0.06em", marginBottom:8 }}>
+              NET PROFIT AFTER RECOVERING ₹{Math.round(sys.share).toLocaleString("en-IN")} INVESTMENT
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))", gap:10 }}>
+              {[
+                { label:"In 5 Years",  val: netAt(5)  > 0 ? inr(netAt(5))  : "Not yet", clr: netAt(5)  > 0 ? "#0284c7" : "#94a3b8" },
+                { label:"In 10 Years", val: netAt(10) > 0 ? inr(netAt(10)) : "Not yet", clr: netAt(10) > 0 ? "#7c3aed" : "#94a3b8" },
+                { label:"In 25 Years", val: inr(netAt(25)), clr:"#ea580c" },
+              ].map(p => (
+                <div key={p.label} style={{ background:"#f8fafc", border:"1px solid #e2e8f0", borderRadius:12, padding:"12px 14px" }}>
+                  <div style={{ fontSize:11, color:"#64748b", fontWeight:700, marginBottom:3 }}>{p.label.toUpperCase()}</div>
+                  <div style={{ fontSize:18, fontWeight:900, color:p.clr }}>{p.val}</div>
+                  {p.label === "In 5 Years" && netAt(5) > 0 && (
+                    <div style={{ fontSize:10, color:"#94a3b8", marginTop:2 }}>
+                      = {inr(annualSave*5)} saved − {inr(sys.share)} cost
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Chart */}
+          <div style={{ height:360, marginBottom:16 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top:10, right:16, left:0, bottom:0 }}>
+                <defs>
+                  <linearGradient id="gGrid" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ef4444" stopOpacity={0.15}/>
+                    <stop offset="100%" stopColor="#ef4444" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="gSolar" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#f97316" stopOpacity={0.15}/>
+                    <stop offset="100%" stopColor="#f97316" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="gSave" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#22c55e" stopOpacity={0.3}/>
+                    <stop offset="100%" stopColor="#22c55e" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false}/>
+                <XAxis dataKey="year" tickFormatter={v=>`Yr ${v}`} tick={{ fill:"#94a3b8", fontSize:12 }} axisLine={{ stroke:"#e2e8f0" }} tickLine={false} interval={4}/>
+                <YAxis tickFormatter={fmtK} tick={{ fill:"#94a3b8", fontSize:11 }} axisLine={false} tickLine={false} width={62}/>
+                <Tooltip content={<ChartTooltip/>}/>
+                <Legend wrapperStyle={{ fontSize:13, paddingTop:8 }} iconType="circle"/>
+                <ReferenceLine
+                  x={breakEvenYr} stroke="#ea580c" strokeDasharray="6 3" strokeWidth={2}
+                  label={{ value:`✓ Paid off ~Yr ${breakEvenYr}`, fill:"#ea580c", fontSize:12, fontWeight:700, position:"insideTopRight" }}
+                />
+                <Area type="monotone" dataKey="Grid Bills (no solar)"  stroke="#ef4444" strokeWidth={2} strokeDasharray="6 3" fill="url(#gGrid)"  dot={false}/>
+                <Area type="monotone" dataKey="Solar Investment"        stroke="#f97316" strokeWidth={2.5}                   fill="url(#gSolar)" dot={false}/>
+                <Area type="monotone" dataKey="Your Net Savings"        stroke="#22c55e" strokeWidth={2.5}                   fill="url(#gSave)"  dot={false}/>
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Legend keys */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:12, background:"#f8fafc", borderRadius:16, padding:"18px 20px", marginBottom:20 }}>
+            {[
+              { clr:"#ef4444", lbl:"Grid Bills (no solar)",  desc:`${inr(annualSave)}/yr forever → ${inr(annualSave*25)} over 25 years` },
+              { clr:"#f97316", lbl:"Solar Investment",        desc:`One-time ${inr(sys.share)}. No electricity bill after that` },
+              { clr:"#22c55e", lbl:"Your Net Savings",        desc:`Pure profit post break-even → ${inr(netAt(25))} in 25 yrs` },
+            ].map(l => (
+              <div key={l.lbl} style={{ display:"flex", gap:10 }}>
+                <div style={{ width:12, height:12, borderRadius:3, background:l.clr, marginTop:3, flexShrink:0 }}/>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#0f172a" }}>{l.lbl}</div>
+                  <div style={{ fontSize:12, color:"#64748b" }}>{l.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Callout */}
+          <div style={{ background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:14, padding:"16px 20px", display:"flex", gap:12, alignItems:"flex-start" }}>
+            <span style={{ fontSize:22 }}>💡</span>
+            <div>
+              <strong style={{ color:"#15803d", fontSize:14 }}>
+                After year {breakEvenYr}, every unit of electricity is yours — free.
+              </strong>
+              <p style={{ margin:"4px 0 0", color:"#166534", fontSize:13, lineHeight:1.6 }}>
+                Your {sys.label} system generates ~{avgUnits} units/month. At ₹{rate}/unit that's{" "}
+                <strong>{inr(monthlySave)}/month</strong> ({inr(annualSave)}/year) you no longer pay.
+                Over 25 years: grid would have cost <strong>{inr(annualSave*25)}</strong> vs your one-time{" "}
+                solar cost of <strong>{inr(sys.share)}</strong> — a net saving of <strong>{inr(netAt(25))}</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <p style={{ textAlign:"center", color:"#94a3b8", fontSize:12, marginTop:20 }}>
+          * Generation estimates based on average irradiance. Savings assume full self-consumption at ₹{rate}/unit.
+          For 7–10 kW systems, effective subsidy includes state + central scheme benefits. Consult your empanelled vendor for exact figures.
+        </p>
+      </div>
+    </div>
+  );
 }

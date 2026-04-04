@@ -170,7 +170,7 @@ const HelpCenterModal: React.FC<HelpCenterModalProps> = ({ isOpen, onClose }) =>
                     </div>
                     
                     <a
-                      href={`https://wa.me/${contact.whatsapp?.replace(/[^0-9]/g, '')}`}
+                      href={`https://wa.me/${contact.whatsapp?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('SUPPORT')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-auto w-full py-2.5 rounded-xl bg-green-500 hover:bg-green-600 active:scale-[0.98] text-white flex items-center justify-center gap-2 font-bold text-sm transition-all shadow-lg shadow-green-500/20"

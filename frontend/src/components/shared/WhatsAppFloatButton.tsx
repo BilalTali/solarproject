@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, ClipboardList, HelpCircle, UserCircle, ChevronRight, Loader2 } from 'lucide-react';
+import { MessageCircle, X, ClipboardList, HelpCircle, UserCircle, ChevronRight, Loader2, Construction } from 'lucide-react';
 import axiosInstance from '@/services/axios';
+import { toast } from 'react-hot-toast';
 
 interface SupportContact {
     id: number;
@@ -11,13 +12,17 @@ interface SupportContact {
 export default function WhatsAppFloatButton() {
     const [isOpen, setIsOpen] = useState(false);
     const [contacts, setContacts] = useState<SupportContact[]>([]);
+    const [chatbotReady, setChatbotReady] = useState(false);
     const [loading, setLoading] = useState(true);
     const popupRef = useRef<HTMLDivElement>(null);
 
     // Fetch real support contacts from the public API (no auth required)
     useEffect(() => {
-        axiosInstance.get<SupportContact[]>('/public/support-contacts')
-            .then(res => setContacts(res.data || []))
+        axiosInstance.get<{ contacts: SupportContact[], chatbot_ready: boolean }>('/public/support-contacts')
+            .then(res => {
+                setContacts(res.data.contacts || []);
+                setChatbotReady(res.data.chatbot_ready);
+            })
             .catch(() => {})
             .finally(() => setLoading(false));
     }, []);
@@ -36,21 +41,29 @@ export default function WhatsAppFloatButton() {
     const primaryContact = contacts[0];
 
     const handleRedirect = (type: 'apply' | 'faq' | 'chat') => {
+        if ((type === 'apply' || type === 'faq') && !chatbotReady) {
+            toast("WhatsApp Chatbot is currently under development. Direct chat with our experts is still available below.", {
+                icon: '🚧',
+                duration: 4000
+            });
+            return;
+        }
+
         let url = '';
         if (type === 'chat' && primaryContact) {
             // Direct chat: go to the specific agent's personal WhatsApp
             const num = primaryContact.whatsapp_number.replace(/\D/g, '');
             const fullNum = num.startsWith('91') ? num : `91${num}`;
-            url = `https://wa.me/${fullNum}?text=${encodeURIComponent('Hello, I need help with PM Surya Ghar.')}`;
+            url = `https://wa.me/${fullNum}?text=${encodeURIComponent('SUPPORT')}`;
         } else if (primaryContact) {
             // Apply / FAQ: go to the primary contact's WA with a trigger keyword for the chatbot
             const num = primaryContact.whatsapp_number.replace(/\D/g, '');
             const fullNum = num.startsWith('91') ? num : `91${num}`;
-            const text = type === 'apply' ? '7' : 'menu';
+            const text = type === 'apply' ? 'APPLY' : 'FAQ';
             url = `https://wa.me/${fullNum}?text=${encodeURIComponent(text)}`;
         } else {
             // Fallback: generic message if no contacts configured yet
-            url = `https://wa.me/?text=${encodeURIComponent('Hello, I need help with PM Surya Ghar.')}`;
+            url = `https://wa.me/?text=${encodeURIComponent('Hi')}`;
         }
         window.open(url, '_blank', 'noopener,noreferrer');
         setIsOpen(false);
@@ -91,29 +104,43 @@ export default function WhatsAppFloatButton() {
                                 <span className="text-sm">Loading options...</span>
                             </div>
                         ) : (
-                            <div className="space-y-2">
+                             <div className="space-y-2">
                                 <button
                                     onClick={() => handleRedirect('apply')}
-                                    className="w-full flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-[#25D366] hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
+                                    className={`w-full flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl transition-all group ${!chatbotReady ? 'opacity-70 cursor-not-allowed grayscale-[0.5]' : 'hover:border-[#25D366] hover:bg-green-50 dark:hover:bg-green-900/20'}`}
                                 >
                                     <div className="flex items-center gap-3 text-slate-700 dark:text-slate-200">
-                                        <div className="p-2 bg-green-100 dark:bg-green-900/40 text-[#128C7E] rounded-lg group-hover:bg-[#25D366] group-hover:text-white transition-colors">
+                                        <div className={`p-2 rounded-lg transition-colors ${!chatbotReady ? 'bg-slate-100 text-slate-400' : 'bg-green-100 dark:bg-green-900/40 text-[#128C7E] group-hover:bg-[#25D366] group-hover:text-white'}`}>
                                             <ClipboardList className="w-4 h-4" />
                                         </div>
-                                        <span className="font-semibold text-sm">Apply for Solar (Lead)</span>
+                                        <div className="text-left">
+                                            <span className="font-semibold text-sm block">Apply for Solar (Lead)</span>
+                                            {!chatbotReady && (
+                                                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                                                    <Construction className="w-3 h-3" /> Under Development
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                     <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#25D366]" />
                                 </button>
 
                                 <button
                                     onClick={() => handleRedirect('faq')}
-                                    className="w-full flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-[#25D366] hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
+                                    className={`w-full flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl transition-all group ${!chatbotReady ? 'opacity-70 cursor-not-allowed grayscale-[0.5]' : 'hover:border-[#25D366] hover:bg-green-50 dark:hover:bg-green-900/20'}`}
                                 >
                                     <div className="flex items-center gap-3 text-slate-700 dark:text-slate-200">
-                                        <div className="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-600 rounded-lg group-hover:bg-[#25D366] group-hover:text-white transition-colors">
+                                        <div className={`p-2 rounded-lg transition-colors ${!chatbotReady ? 'bg-slate-100 text-slate-400' : 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 group-hover:bg-[#25D366] group-hover:text-white'}`}>
                                             <HelpCircle className="w-4 h-4" />
                                         </div>
-                                        <span className="font-semibold text-sm">Frequently Asked Questions</span>
+                                        <div className="text-left">
+                                            <span className="font-semibold text-sm block">Frequently Asked Questions</span>
+                                            {!chatbotReady && (
+                                                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                                                    <Construction className="w-3 h-3" /> Under Development
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                     <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#25D366]" />
                                 </button>

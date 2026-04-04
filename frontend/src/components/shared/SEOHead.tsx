@@ -30,7 +30,7 @@ interface SEOHeadProps {
 
 const SEOHead: React.FC<SEOHeadProps> = ({
     title = 'PM Surya Ghar Muft Bijli Yojana - Free Solar Subsidy & Registration',
-    description = 'Apply for PM Surya Ghar Muft Bijli Yojana. Get up to ₹78,000 subsidy and 300 units of free electricity per month. Free registration and expert guidance.',
+    description = 'Apply for PM Surya Ghar Muft Bijli Yojana. Get up to ₹94,800 subsidy and 300 units of free electricity per month. Free registration and expert guidance.',
     keywords = 'PM Surya Ghar, PM Surya Ghar Yojana, Solar Subsidy India, Rooftop Solar, Muft Bijli Yojana, Solar Installation, Free Electricity',
     image = '/logo.webp',
     schemas = [],
