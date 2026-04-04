@@ -1,4 +1,7 @@
 import { useState, useMemo } from "react";
+import Navbar from '@/components/public/Navbar';
+import Footer from '@/components/public/Footer';
+import SEOHead from '@/components/shared/SEOHead';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine, Legend
@@ -70,8 +73,13 @@ export default function SolarCalculator() {
   })), [sys.share, annualSave]);
 
   return (
-    <div style={{ minHeight:"100vh", background:"#f8fafc", fontFamily:"'Inter','Segoe UI',sans-serif", color:"#0f172a" }}>
-
+    <div style={{ minHeight:"100vh", background:"#f8fafc", fontFamily:"'Inter','Segoe UI',sans-serif", color:"#0f172a", display: "flex", flexDirection: "column" }}>
+      <SEOHead 
+          title="PM Surya Ghar Rooftop Solar Subsidy Calculator" 
+          description="Calculate your PM Surya Ghar Muft Bijli Yojana subsidy, monthly savings, and ROI estimate with our easy-to-use solar capacity calculator."
+      />
+      <Navbar />
+      <main style={{ flexGrow: 1, width: "100%" }}>
       {/* HERO */}
       <div style={{ background:"linear-gradient(135deg,#fff7ed 0%,#ffffff 55%,#eff6ff 100%)", borderBottom:"1px solid #e2e8f0", padding:"48px 24px 40px", textAlign:"center" }}>
         <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(234,88,12,0.1)", border:"1px solid rgba(234,88,12,0.25)", borderRadius:999, padding:"6px 18px", fontSize:13, color:"#ea580c", fontWeight:700, marginBottom:20 }}>
@@ -299,6 +307,8 @@ export default function SolarCalculator() {
           For 7–10 kW systems, effective subsidy includes state + central scheme benefits. Consult your empanelled vendor for exact figures.
         </p>
       </div>
+      </main>
+      <Footer />
     </div>
   );
 }
