@@ -80,13 +80,7 @@ export default function SuperAdminProfilePage() {
         onSuccess: (res) => {
             if (res.success) {
                 setUser(res.data);
-                toast.success('Profile updated successfully');
-                setEditing(false);
             }
-        },
-        onError: (err: any) => {
-            const msg = err.response?.data?.message || 'Update failed';
-            toast.error(msg);
         }
     });
 
@@ -97,7 +91,7 @@ export default function SuperAdminProfilePage() {
         
         try {
             // 1. Personal Profile
-            updateProfileMutation.mutate(editForm);
+            await updateProfileMutation.mutateAsync(editForm);
 
             // 2. Branding (if Super Admin)
             if (user?.role === 'super_admin') {
@@ -117,9 +111,10 @@ export default function SuperAdminProfilePage() {
             }
             
             setEditing(false);
-            toast.success('Profile & Authority updated');
-        } catch (err) {
-            toast.error('Failed to sync changes');
+            toast.success('Profile & Authority updated globally');
+        } catch (err: any) {
+            const msg = err.response?.data?.message || 'Failed to sync changes';
+            toast.error(msg);
         }
     };
 
