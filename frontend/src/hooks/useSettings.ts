@@ -87,7 +87,7 @@ export function useSettings() {
         settings,
         isLoading,
         companyName: settings.company_name || 'SuryaMitra',
-        affiliatedWith: settings.company_affiliated_with || '',
+        affiliatedWith: settings.company_name || '',
         registrationNo: settings.company_registration_no,
         logo: settings.company_logo ? getFileUrl(settings.company_logo) : null,
         masterLogo: settings.company_logo_2 ? getFileUrl(settings.company_logo_2) : null,

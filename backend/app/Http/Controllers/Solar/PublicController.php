@@ -19,7 +19,7 @@ class PublicController extends Controller
             'company_name', 'company_email', 'company_mobile', 'company_whatsapp',
             'company_address', 'company_slogan', 'company_logo', 'company_favicon',
             'company_logo_2', 'company_signature', 'company_seal', 'company_website',
-            'company_registration_no', 'company_affiliated_with',
+            'company_registration_no',
             'authorized_signatory', 'authorized_signatory_title',
             'hero_headline', 'hero_subheadline', 'hero_video',
             'hero_stats_json', 'how_it_works_json', 'why_choose_us_json',

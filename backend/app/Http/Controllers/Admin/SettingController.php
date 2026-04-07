@@ -20,7 +20,6 @@ class SettingController extends Controller
         'company_name',
         'company_slogan',
         'company_registration_no',
-        'company_affiliated_with',
         'company_logo',
         'company_logo_2'
     ];

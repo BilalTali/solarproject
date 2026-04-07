@@ -112,12 +112,7 @@ export default function SuperAdminProfilePage() {
                 }
 
                 // Update text fields
-                const textKeys = [
-                    'company_name', 
-                    'company_slogan', 
-                    'company_registration_no', 
-                    'company_affiliated_with'
-                ];
+                const textKeys = ['company_name', 'company_slogan', 'company_registration_no'];
                 const settingsToSave = textKeys.map(k => ({ key: k, value: localBranding[k] || '' }));
                 await updateBrandingMutation.mutateAsync(settingsToSave);
                 
@@ -146,7 +141,7 @@ export default function SuperAdminProfilePage() {
                         <h1 className="text-3xl font-display font-black text-slate-900 tracking-tight leading-none">
                             Profile & Authority
                         </h1>
-                        <p className="text-slate-400 text-xs font-black uppercase tracking-[0.2em] mt-2">{localBranding.company_affiliated_with || 'Master Identity Authority'}</p>
+                        <p className="text-slate-400 text-xs font-black uppercase tracking-[0.2em] mt-2">{localBranding.company_name || 'Master Identity Authority'}</p>
                     </div>
                 </div>
 
@@ -236,7 +231,7 @@ export default function SuperAdminProfilePage() {
                                         <StaticBlock icon={<User size={14} />} label="Administrator Name" value={user?.name} />
                                         <StaticBlock icon={<Mail size={14} />} label="Security Email" value={user?.email} />
                                         <StaticBlock icon={<Shield size={14} />} label="Primary Mobile" value={user?.mobile} />
-                                        <StaticBlock icon={<LayoutDashboard size={14} />} label="Access Mode" value={localBranding.company_affiliated_with || 'Master Identity'} />
+                                        <StaticBlock icon={<LayoutDashboard size={14} />} label="Access Mode" value={localBranding.company_name || 'Master Identity'} />
                                     </>
                                 ) : (
                                     <>
@@ -274,7 +269,6 @@ export default function SuperAdminProfilePage() {
                                     <>
                                         <StaticBlock icon={<Globe size={14} />} label="Platform Name (Master)" value={localBranding.company_name} />
                                         <StaticBlock icon={<Shield size={14} />} label="Global Registration No" value={localBranding.company_registration_no} />
-                                        <StaticBlock icon={<Building2 size={14} />} label="Affiliated With" value={localBranding.company_affiliated_with} />
                                         <div className="md:col-span-2">
                                             <StaticBlock icon={<Globe size={14} />} label="Platform Slogan" value={localBranding.company_slogan} />
                                         </div>
@@ -288,7 +282,6 @@ export default function SuperAdminProfilePage() {
                                     <>
                                         <InputBlock label="Platform Name (Master)" value={localBranding.company_name || ''} onChange={v => setLocalBranding({...localBranding, company_name: v})} />
                                         <InputBlock label="Global Registration No" value={localBranding.company_registration_no || ''} onChange={v => setLocalBranding({...localBranding, company_registration_no: v})} />
-                                        <InputBlock label="Affiliated With" value={localBranding.company_affiliated_with || ''} onChange={v => setLocalBranding({...localBranding, company_affiliated_with: v})} />
                                         <div className="md:col-span-2">
                                             <InputBlock label="Platform Slogan" value={localBranding.company_slogan || ''} onChange={v => setLocalBranding({...localBranding, company_slogan: v})} />
                                         </div>

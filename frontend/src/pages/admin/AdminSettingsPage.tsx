@@ -632,7 +632,6 @@ const AdminSettingsPage: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {F('company_name', 'Company Name', 'text', 'SURYAMITRA SOLAR NETWORK')}
                                     {user?.role === 'super_admin' && F('company_registration_no', 'Registration Number', 'text', 'REG/SMS/2026/0892')}
-                                    {user?.role === 'super_admin' && F('company_affiliated_with', 'Affiliated with', 'text', 'Government of India / MNRE')}
                                     {F('company_email', 'Support Email', 'email', 'info@suryamitra.in')}
                                     {F('company_phone', 'Support Phone', 'text', '+91-9906766655')}
                                     {F('company_mobile', 'Support Mobile', 'tel', '+91 911 911 9111')}
@@ -680,7 +679,7 @@ const AdminSettingsPage: React.FC = () => {
                             </div>
 
                             <SectionSave label="Save Company Info" keys={[
-                                'company_name', 'company_registration_no', 'company_affiliated_with',
+                                'company_name', 'company_registration_no',
                                 'company_email', 'company_mobile', 'company_whatsapp', 'company_website', 'company_address',
                                 'footer_about_text', 'footer_copyright', 'footer_disclaimer',
                                 'footer_section_quick_links', 'footer_section_legal', 'footer_link_about', 'footer_link_scheme',
