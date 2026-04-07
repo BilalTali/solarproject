@@ -17,6 +17,7 @@ export default function SuperAdminProfilePage() {
     const [editForm, setEditForm] = useState({
         name: user?.name ?? '',
         email: user?.email ?? '',
+        mobile: user?.mobile ?? '',
     });
 
     // Branding State (Managed by unified 'editing')
@@ -95,11 +96,19 @@ export default function SuperAdminProfilePage() {
 
             // 2. Branding (if Super Admin)
             if (user?.role === 'super_admin') {
-                const fileKeys = ['company_logo_2', 'company_favicon']; // Only Authority assets for SuperAdmin
+                const fileKeys = ['company_logo', 'company_logo_2', 'company_favicon']; // Included Platform Logo
                 // Upload files first
                 for (const key of fileKeys) {
                     const file = pendingBrandingFiles[key];
-                    if (file) await uploadFileMutation.mutateAsync({ key, file });
+                    if (file) {
+                        const uploadRes = await uploadFileMutation.mutateAsync({ key, file });
+                        if (uploadRes?.data?.url) {
+                            const url: string = uploadRes.data.url;
+                            const relativePath = url.includes('/storage/') ? url.split('/storage/')[1] : url;
+                            // Pre-update localBranding to avoid stale state in text keys mapping
+                            localBranding[key] = relativePath;
+                        }
+                    }
                 }
 
                 // Update text fields
@@ -227,6 +236,7 @@ export default function SuperAdminProfilePage() {
                                 ) : (
                                     <>
                                         <InputBlock label="Full Legal Name" value={editForm.name} onChange={v => setEditForm({...editForm, name: v})} />
+                                        <InputBlock label="Primary Mobile" value={editForm.mobile} onChange={v => setEditForm({...editForm, mobile: v})} />
                                         <InputBlock label="Security Email" type="email" value={editForm.email} onChange={v => setEditForm({...editForm, email: v})} />
                                         <div className="md:col-span-2 p-6 bg-amber-50 rounded-3xl border border-amber-100 flex items-start gap-4">
                                             <AlertCircle className="text-amber-600 w-5 h-5 shrink-0 mt-1" />
@@ -259,7 +269,8 @@ export default function SuperAdminProfilePage() {
                                     <>
                                         <StaticBlock icon={<Shield size={14} />} label="Global Registration No" value={localBranding.company_registration_no} />
                                         <StaticBlock icon={<Building2 size={14} />} label="Affiliated With" value={localBranding.company_affiliated_with} />
-                                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-50">
+                                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-50">
+                                            <StaticLogo label="Platform Logo (Master)" path={localBranding.company_logo} />
                                             <StaticLogo label="Affiliation Logo (Master)" path={localBranding.company_logo_2} />
                                             <StaticLogo label="System Favicon" path={localBranding.company_favicon} />
                                         </div>
@@ -269,7 +280,13 @@ export default function SuperAdminProfilePage() {
                                         <InputBlock label="Global Registration No" value={localBranding.company_registration_no || ''} onChange={v => setLocalBranding({...localBranding, company_registration_no: v})} />
                                         <InputBlock label="Affiliated With" value={localBranding.company_affiliated_with || ''} onChange={v => setLocalBranding({...localBranding, company_affiliated_with: v})} />
                                         
-                                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-50">
+                                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-50">
+                                            <FileUploadBlock 
+                                                label="Platform Logo (Master)" 
+                                                currentPath={localBranding.company_logo} 
+                                                pendingFile={pendingBrandingFiles.company_logo}
+                                                onSelect={f => setPendingBrandingFiles(p => ({...p, company_logo: f}))}
+                                            />
                                             <FileUploadBlock 
                                                 label="Affiliation Logo (Master)" 
                                                 currentPath={localBranding.company_logo_2} 

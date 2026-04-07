@@ -19,6 +19,7 @@ class SettingController extends Controller
     public const MASTER_BRANDING_KEYS = [
         'company_registration_no',
         'company_affiliated_with',
+        'company_logo',
         'company_logo_2'
     ];
 
