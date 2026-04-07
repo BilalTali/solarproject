@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Mail, Shield, BadgeCheck, Save, Camera, Settings, Key, AlertCircle, LayoutDashboard, Building2, Upload, Image } from 'lucide-react';
+import { User, Mail, Shield, BadgeCheck, Save, Camera, Settings, Key, AlertCircle, LayoutDashboard, Building2, Upload, Image, Globe } from 'lucide-react';
 import { settingsApi } from '@/services/settings.api';
 import { authApi } from '@/services/auth.api';
 import { useAuthStore } from '@/hooks/store/authStore';
@@ -112,7 +112,12 @@ export default function SuperAdminProfilePage() {
                 }
 
                 // Update text fields
-                const textKeys = ['company_registration_no', 'company_affiliated_with'];
+                const textKeys = [
+                    'company_name', 
+                    'company_slogan', 
+                    'company_registration_no', 
+                    'company_affiliated_with'
+                ];
                 const settingsToSave = textKeys.map(k => ({ key: k, value: localBranding[k] || '' }));
                 await updateBrandingMutation.mutateAsync(settingsToSave);
                 
@@ -267,9 +272,13 @@ export default function SuperAdminProfilePage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {!editing ? (
                                     <>
+                                        <StaticBlock icon={<Globe size={14} />} label="Platform Name (Master)" value={localBranding.company_name} />
                                         <StaticBlock icon={<Shield size={14} />} label="Global Registration No" value={localBranding.company_registration_no} />
                                         <StaticBlock icon={<Building2 size={14} />} label="Affiliated With" value={localBranding.company_affiliated_with} />
-                                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-50">
+                                        <div className="md:col-span-2">
+                                            <StaticBlock icon={<Globe size={14} />} label="Platform Slogan" value={localBranding.company_slogan} />
+                                        </div>
+                                        <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-50">
                                             <StaticLogo label="Platform Logo (Master)" path={localBranding.company_logo} />
                                             <StaticLogo label="Affiliation Logo (Master)" path={localBranding.company_logo_2} />
                                             <StaticLogo label="System Favicon" path={localBranding.company_favicon} />
@@ -277,10 +286,14 @@ export default function SuperAdminProfilePage() {
                                     </>
                                 ) : (
                                     <>
+                                        <InputBlock label="Platform Name (Master)" value={localBranding.company_name || ''} onChange={v => setLocalBranding({...localBranding, company_name: v})} />
                                         <InputBlock label="Global Registration No" value={localBranding.company_registration_no || ''} onChange={v => setLocalBranding({...localBranding, company_registration_no: v})} />
                                         <InputBlock label="Affiliated With" value={localBranding.company_affiliated_with || ''} onChange={v => setLocalBranding({...localBranding, company_affiliated_with: v})} />
+                                        <div className="md:col-span-2">
+                                            <InputBlock label="Platform Slogan" value={localBranding.company_slogan || ''} onChange={v => setLocalBranding({...localBranding, company_slogan: v})} />
+                                        </div>
                                         
-                                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-50">
+                                        <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-50">
                                             <FileUploadBlock 
                                                 label="Platform Logo (Master)" 
                                                 currentPath={localBranding.company_logo} 

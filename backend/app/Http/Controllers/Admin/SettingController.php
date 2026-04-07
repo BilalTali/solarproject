@@ -17,6 +17,8 @@ class SettingController extends Controller
      * Master Branding keys reserved for Super Admin only.
      */
     public const MASTER_BRANDING_KEYS = [
+        'company_name',
+        'company_slogan',
         'company_registration_no',
         'company_affiliated_with',
         'company_logo',
@@ -30,14 +32,7 @@ class SettingController extends Controller
         $targetUserId = $user->isSuperAdmin() ? null : $user->getRootAdminId();
         $mergedSettings = Setting::getMergedSettings($targetUserId);
 
-        // Group by 'group' as the frontend expects
-        $groupedSettings = $mergedSettings->filter(function($setting) use ($user) {
-            // Hide Master keys from regular Admins
-            if (!$user->isSuperAdmin() && in_array($setting->key, self::MASTER_BRANDING_KEYS)) {
-                return false;
-            }
-            return true;
-        })->groupBy('group');
+        $groupedSettings = $mergedSettings->groupBy('group');
 
         return response()->json([
             'success' => true,
