@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Solar;
 use App\Http\Controllers\Controller;
 use App\Models\Achievement;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class PublicController extends Controller
@@ -16,16 +17,30 @@ class PublicController extends Controller
     {
         $keys = [
             'company_name', 'company_email', 'company_mobile', 'company_whatsapp',
-            'company_address', 'company_slogan', 'company_logo', 'company_signature',
+            'company_address', 'company_slogan', 'company_logo', 'company_favicon',
+            'company_logo_2', 'company_signature', 'company_seal', 'company_website',
+            'company_registration_no', 'company_affiliated_with',
+            'authorized_signatory', 'authorized_signatory_title',
             'hero_headline', 'hero_subheadline', 'hero_video',
             'hero_stats_json', 'how_it_works_json', 'why_choose_us_json',
             'calculator_headline', 'calculator_subheadline', 'calculator_values_json',
             'eligibility_headline', 'eligibility_subheadline', 'eligibility_questions_json',
             'eligibility_success_title', 'eligibility_success_desc', 'eligibility_error_title', 'eligibility_error_desc',
             'footer_about_text', 'footer_copyright', 'footer_disclaimer',
+            'footer_section_quick_links', 'footer_section_legal',
+            'footer_link_about', 'footer_link_scheme', 'footer_link_contact',
+            'footer_link_faq', 'footer_link_privacy', 'footer_link_terms', 'footer_link_refund'
         ];
 
-        $settings = Setting::query()->where(fn ($q) => $q->whereIn('key', $keys))->get()->keyBy('key');
+        // Determine the primary user ID for public settings — typically the first Super Admin
+        $superAdmin = User::roleSuperAdmin()->first();
+        $userId = $superAdmin ? $superAdmin->id : null;
+
+        $settings = Setting::query()
+            ->whereIn('key', $keys)
+            ->where('user_id', $userId)
+            ->get()
+            ->keyBy('key');
 
         $result = [];
         foreach ($keys as $key) {
@@ -34,7 +49,8 @@ class PublicController extends Controller
             $value = $item?->value;
 
             // File paths — return as full URLs
-            if (in_array($key, ['company_logo', 'company_logo_2', 'company_signature', 'company_seal', 'hero_video']) && $value) {
+            $assetKeys = ['company_logo', 'company_logo_2', 'company_signature', 'company_seal', 'company_favicon', 'hero_video'];
+            if (in_array($key, $assetKeys) && $value) {
                 $value = asset('storage/'.$value);
             }
 
@@ -90,7 +106,7 @@ class PublicController extends Controller
     public function verifyAgent(\Illuminate\Http\Request $request, string $token)
     {
         /** @var \App\Models\User|null $user */
-        $user = \App\Models\User::query()->where(fn ($q) => $q->where('qr_token', $token))
+        $user = User::query()->where(fn ($q) => $q->where('qr_token', $token))
             ->with(['superAgent'])
             ->first();
 
@@ -143,7 +159,7 @@ class PublicController extends Controller
         ]);
     }
 
-    private function getDesignation(\App\Models\User $user): string
+    private function getDesignation(User $user): string
     {
         return match ($user->role) {
             'admin' => 'ADMINISTRATOR',
@@ -157,7 +173,7 @@ class PublicController extends Controller
     {
         $faqs = \App\Models\FAQ::published()->orderBy('sort_order')->get();
         
-        $contacts = \App\Models\User::where('is_public_contact', true)
+        $contacts = User::where('is_public_contact', true)
             ->where('status', 'active')
             ->select('id', 'name', 'district', 'state', 'whatsapp_number', 'role')
             ->orderBy('public_contact_order')

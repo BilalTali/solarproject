@@ -14,6 +14,7 @@ import CommissionInlineEntry from '@/components/admin/CommissionInlineEntry';
 import { useAuthStore } from '@/hooks/store/authStore';
 import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor, MILESTONE_STATUSES } from '@/constants/leadStatuses';
 import { List } from 'react-window';
+import MobileFilterModal from '@/components/shared/MobileFilterModal';
 
 // ── constants ─────────────────────────────────────────────────────────────────
 const CAPACITY_LABEL: Record<string, string> = {
@@ -36,7 +37,8 @@ export default function AdminLeadsPage() {
     // for assign panel
     const [assignSuperAgent, setAssignSuperAgent] = useState<number | string>('');
     const [activePrompts, setActivePrompts] = useState<Record<string, CommissionPrompt>>({});
-    // commission prompt shown inside sidebar after status change
+    // mobile filter modal state
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
     const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -165,24 +167,22 @@ export default function AdminLeadsPage() {
                 </p>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-                <div className="relative w-full sm:w-auto">
+            {/* Desktop Filters */}
+            <div className="hidden sm:flex flex-wrap gap-3">
+                <div className="relative">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                         type="text"
-                        placeholder="Beneficiary name, mobile, lead ref…"
+                        placeholder="Search beneficiary name, mobile, lead ref…"
                         value={search}
                         onChange={e => { setSearch(e.target.value); setPage(1); }}
-                        aria-label="Search leads"
-                        className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 w-full sm:w-80"
+                        className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 w-80"
                     />
                 </div>
                 <select
                     value={status}
                     onChange={e => { setStatus(e.target.value); setPage(1); }}
-                    aria-label="Filter by status"
-                    className="w-full sm:w-auto px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                     <option value="">All Statuses</option>
                     {LEAD_STATUS_OPTIONS.map(opt => (
@@ -192,12 +192,11 @@ export default function AdminLeadsPage() {
                 <select
                     value={source}
                     onChange={e => { setSource(e.target.value); setPage(1); }}
-                    aria-label="Filter by source"
-                    className="w-full sm:w-auto px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                     <option value="">All Sources</option>
                     <option value="public_form">Public Form</option>
-                    <option value="agent_submission">Business Development Executive Submission</option>
+                    <option value="agent_submission">Executive Submission</option>
                 </select>
                 {(search || status || source) && (
                     <button
@@ -209,7 +208,54 @@ export default function AdminLeadsPage() {
                 )}
             </div>
 
-            {/* Table */}
+            {/* Mobile Filters Header */}
+            <div className="sm:hidden flex items-center justify-between gap-2">
+                <div className="relative flex-1">
+                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Search leads..."
+                        value={search}
+                        onChange={e => { setSearch(e.target.value); setPage(1); }}
+                        className="w-full pl-8 pr-4 py-1.5 border border-slate-200 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                </div>
+                <button 
+                    onClick={() => setIsFilterModalOpen(true)}
+                    className={`relative p-2 rounded-full border border-slate-200 ${status || source ? 'bg-orange-50 border-orange-200 text-orange-600' : 'bg-white text-slate-600'}`}
+                >
+                    <Filter size={18} />
+                    {(status || source) && (
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                            {[status, source].filter(Boolean).length}
+                        </span>
+                    )}
+                </button>
+            </div>
+
+            <MobileFilterModal 
+                isOpen={isFilterModalOpen}
+                onClose={() => setIsFilterModalOpen(false)}
+                fields={[
+                    { id: 'search', label: 'Search', type: 'text' as const, placeholder: 'Name, mobile, or reference ID...' },
+                    { id: 'status', label: 'Status', type: 'select' as const, options: LEAD_STATUS_OPTIONS },
+                    { id: 'source', label: 'Source', type: 'select' as const, options: [
+                        { label: 'Public Form', value: 'public_form' },
+                        { label: 'Executive Submission', value: 'agent_submission' }
+                    ]}
+                ]}
+                values={{ search, status, source }}
+                onChange={(id, val) => {
+                    if (id === 'search') setSearch(val);
+                    if (id === 'status') setStatus(val);
+                    if (id === 'source') setSource(val);
+                    setPage(1);
+                }}
+                onClear={() => {
+                    setSearch(''); setStatus(''); setSource(''); setPage(1);
+                }}
+            />
+
             {/* Table / Card View */}
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 {/* Desktop Table View */}
@@ -228,10 +274,10 @@ export default function AdminLeadsPage() {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {isLoading ? (
-                                <tr><td colSpan={17} className="text-center py-12 text-slate-400">Loading leads…</td></tr>
+                                <tr><td colSpan={18} className="text-center py-12 text-slate-400">Loading leads…</td></tr>
                             ) : leads.length === 0 ? (
                                 <tr>
-                                    <td colSpan={17} className="text-center py-12">
+                                    <td colSpan={18} className="text-center py-12">
                                         <FileText size={32} className="mx-auto text-slate-300 mb-2" />
                                         <p className="text-slate-400">No leads found{search || status || source ? ' matching your filters' : ''}.</p>
                                     </td>
@@ -280,9 +326,9 @@ export default function AdminLeadsPage() {
                                                         <div className="px-4 py-3 w-[100px] flex items-center">
                                                             <button 
                                                                 onClick={(e) => { e.stopPropagation(); openDetail(lead); }}
-                                                                className="text-xs text-orange-600 hover:text-orange-700 font-black tracking-tight"
+                                                                className="text-xs text-orange-600 hover:text-orange-700 font-extrabold uppercase tracking-widest"
                                                             >
-                                                                VIEW →
+                                                                View →
                                                             </button>
                                                         </div>
                                                     </div>
@@ -308,67 +354,56 @@ export default function AdminLeadsPage() {
                     ) : leads.map(lead => (
                         <div
                             key={lead.id}
-                            role="button"
-                            tabIndex={0}
-                            aria-label={`View details for ${lead.beneficiary_name}`}
-                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(lead); } }}
-                            className="p-4 space-y-4 cursor-pointer hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-inset"
+                            className="p-4 space-y-4 cursor-pointer hover:bg-slate-50 transition-all border-l-4 relative rounded-r-xl"
+                            style={{ borderLeftColor: getLeadStatusColor(lead.status).split(' ')[1]?.replace('text-', '') === 'orange-600' ? '#ea580c' : (getLeadStatusColor(lead.status).includes('emerald') ? '#059669' : (getLeadStatusColor(lead.status).includes('rose') ? '#e11d48' : '#64748b')) }}
                             onClick={() => openDetail(lead)}
                         >
-                                    <div className="flex justify-between items-start">
-                                        <div className="space-y-1">
-                                            <h3 className="font-bold text-slate-800 leading-tight">{lead.beneficiary_name}</h3>
-                                            <p className="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">Ref: {lead.ulid?.slice(-8)}</p>
-                                        </div>
+                            <div className="flex justify-between items-start">
+                                <div className="space-y-1">
+                                    <h3 className="font-bold text-slate-800 leading-tight flex items-center gap-2">
+                                        {lead.beneficiary_name}
+                                        {lead.source === 'public_form' && <span className="bg-violet-100 text-violet-700 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest">Public</span>}
+                                    </h3>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">Ref: {lead.ulid?.slice(-8)}</p>
                                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getLeadStatusColor(lead.status)}`}>
                                             {getLeadStatusLabel(lead.status)}
                                         </span>
                                     </div>
-
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                                <div className="space-y-0.5">
-                                    <p className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">Mobile</p>
-                                    <p className="text-xs text-slate-700">{lead.beneficiary_mobile}</p>
                                 </div>
-                                <div className="space-y-0.5">
-                                    <p className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">Referral</p>
-                                    <p className="text-xs text-indigo-600 font-mono">{lead.referral_agent_id || '—'}</p>
-                                </div>
-                                <div className="space-y-0.5 text-right">
-                                    <p className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">District</p>
-                                    <p className="text-xs text-slate-700 truncate">{lead.beneficiary_district}</p>
-                                </div>
-                                <div className="space-y-0.5">
-                                    <p className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">Manager</p>
-                                    <p className="text-xs text-slate-700 truncate">
-                                        {lead.submitted_by_enumerator?.enumerator_creator_role === 'admin' 
-                                            ? 'Direct Settlement' 
-                                            : (lead.assigned_super_agent?.name ?? '—')}
-                                    </p>
-                                </div>
-                                <div className="space-y-0.5 text-right">
-                                    <p className="text-[10px] text-slate-500 uppercase font-semibold tracking-wider">Executive</p>
-                                    <p className="text-xs text-slate-700 truncate">
-                                        {lead.submitted_by_enumerator 
-                                            ? lead.submitted_by_enumerator.name 
-                                            : (lead.submitted_by_agent?.name ?? lead.assigned_agent?.name ?? 'Direct')}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-                                <span className="text-[10px] text-slate-500 font-medium">Added on {fmt(lead.created_at)}</span>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); openDetail(lead); }}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50 text-orange-600 rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-orange-100 transition-colors"
-                                    aria-label={`Manage ${lead.beneficiary_name}`}
+                                    className="p-2 -mt-1 -mr-1 rounded-full text-slate-400 hover:text-slate-600"
                                 >
-                                    Manage
+                                    <ChevronRight size={20} />
                                 </button>
                             </div>
 
-                            {role === 'admin' && activePrompts[lead.ulid] && (
-                                <div className="p-3 bg-orange-50 mt-2 rounded-lg border border-orange-100 w-full" onClick={e => e.stopPropagation()}>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-1.5"><Phone size={10} /> Mobile</p>
+                                    <p className="text-xs text-slate-700 font-medium">{lead.beneficiary_mobile}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-1.5"><Hash size={10} /> Referral</p>
+                                    <p className="text-xs text-indigo-600 font-bold font-mono">{lead.referral_agent_id || '—'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-1.5"><MapPin size={10} /> Location</p>
+                                    <p className="text-xs text-slate-700 truncate font-medium">{lead.beneficiary_district}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-1.5"><CheckCircle size={10} /> Manager</p>
+                                    <p className="text-xs text-slate-700 truncate font-medium">
+                                        {lead.submitted_by_enumerator?.enumerator_creator_role === 'admin' 
+                                            ? 'Admin direct' 
+                                            : (lead.assigned_super_agent?.name ?? 'Unassigned')}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {activePrompts[lead.ulid] && (
+                                <div className="p-3 bg-orange-50 mt-2 rounded-xl border border-orange-100 w-full" onClick={e => e.stopPropagation()}>
                                     <CommissionInlineEntry
                                         leadUlid={lead.ulid}
                                         leadStatus={lead.status}
@@ -383,6 +418,11 @@ export default function AdminLeadsPage() {
                                     />
                                 </div>
                             )}
+
+                            <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+                                <span className="text-[10px] text-slate-400 font-medium">Added on {fmt(lead.created_at)}</span>
+                                <span className="text-[10px] text-orange-600 font-black tracking-widest uppercase">View full details →</span>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -429,16 +469,23 @@ export default function AdminLeadsPage() {
                             aria-labelledby="detail-title"
                         >
                             {/* Header */}
-                            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
-                                <div>
+                            <div className="px-5 py-4 border-b border-slate-200 flex items-center gap-3 sticky top-0 bg-white z-10">
+                                <button
+                                    onClick={() => setDetail(null)}
+                                    aria-label="Back to leads list"
+                                    className="sm:hidden p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors"
+                                >
+                                    <ChevronLeft size={24} className="text-slate-600" />
+                                </button>
+                                <div className="flex-1">
                                     <h2 id="detail-title" className="text-base font-bold text-slate-800">Lead Details</h2>
-                                    <p className="text-xs font-mono text-slate-500">{fullLead?.ulid}</p>
+                                    <p className="text-[10px] font-mono text-slate-500 uppercase">ULID: {fullLead?.ulid?.slice(-12)}</p>
                                 </div>
                                 <button
                                     ref={closeButtonRef}
                                     onClick={() => setDetail(null)}
                                     aria-label="Close detail panel"
-                                    className="p-1 rounded-lg hover:bg-slate-100 transition-colors"
+                                    className="hidden sm:block p-1 rounded-lg hover:bg-slate-100 transition-colors"
                                 >
                                     <X size={20} className="text-slate-500 hover:text-slate-600" />
                                 </button>
@@ -465,7 +512,7 @@ export default function AdminLeadsPage() {
                                                     [<MapPin size={13} />, 'Address', fullLead?.beneficiary_address ?? '—'],
                                                     [<Hash size={13} />, 'Consumer No.', fullLead?.consumer_number ?? '—'],
                                                     [<Hash size={13} />, 'DISCOM', fullLead?.discom_name ?? '—'],
-                                                ] as [React.ReactNode, string, string | React.ReactNode][]).map(([icon, lbl, val]) => (
+                                                ] as [React.ReactNode, string, any][]).map(([icon, lbl, val]) => (
                                                     <div key={lbl as string} className="flex gap-3 items-start">
                                                         <span className="text-slate-500 mt-0.5 shrink-0">{icon}</span>
                                                         <span className="text-xs text-slate-600 w-28 shrink-0">{lbl}</span>
@@ -480,7 +527,7 @@ export default function AdminLeadsPage() {
                                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">System Info</p>
                                             <div className="space-y-2">
                                                 {([
-                                                    ['Source', fullLead?.source === 'public_form' ? 'Public Form' : 'Business Development Executive Submission'],
+                                                    ['Source', fullLead?.source === 'public_form' ? 'Public Form' : 'Executive Submission'],
                                                     ['Roof Size', fullLead?.roof_size?.replace(/_/g, ' ') ?? '—'],
                                                     ['Capacity', (
                                                         <div className="flex gap-2">
@@ -502,7 +549,7 @@ export default function AdminLeadsPage() {
                                                     ['Business Development Manager Comm.', fullLead?.formatted_commissions?.super_agent_commission?.amount ? `₹${fullLead.formatted_commissions.super_agent_commission.amount}` : '—'],
                                                     ['Business Development Executive Comm.', fullLead?.formatted_commissions?.agent_commission?.amount ? `₹${fullLead.formatted_commissions.agent_commission.amount}` : '—'],
                                                     ['Created', fullLead?.created_at ? fmt(fullLead.created_at) : '—'],
-                                                ] as [string, string][]).map(([lbl, val]) => (
+                                                ] as [string, any][]).map(([lbl, val]) => (
                                                     <div key={lbl} className="flex gap-3 items-start">
                                                         <span className="text-xs text-slate-600 w-28 shrink-0">{lbl}</span>
                                                         <span className="text-xs font-medium text-slate-800">{val}</span>

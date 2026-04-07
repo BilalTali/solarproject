@@ -11,8 +11,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SuperAdminSeeder::class,
             SettingsSeeder::class,
+            FAQSeeder::class,
             CommissionSlabSeeder::class,
-            ICardSettingsSeeder::class,
             IncentiveOfferSeeder::class,
             WaChatbotCategorySeeder::class,
         ]);

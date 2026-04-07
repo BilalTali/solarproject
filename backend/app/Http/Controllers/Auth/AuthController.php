@@ -283,9 +283,12 @@ class AuthController extends Controller
             $query->where(fn($q) => $q->where('role', $expectedRole));
         }
         $user = $query->first();
+        
+        Log::info("Forgot password request for identifier: {$identifier}, role: {$expectedRole}. User found: " . ($user ? 'Yes' : 'No'));
 
         // Always return success to prevent enumeration
         if (!$user || !$user->email) {
+            Log::warning("Forgot password failed: User not found or has no email. Identifier: {$identifier}");
             return response()->json([
                 'success' => true,
                 'message' => 'If an account matched that identifier, a reset OTP has been sent to its registered email.'
@@ -315,7 +318,12 @@ class AuthController extends Controller
             ]
         );
 
-        Mail::to($user->email)->send(new PasswordResetOtpMail($otp, $user->name));
+        try {
+            Mail::to($user->email)->send(new PasswordResetOtpMail($otp, $user->name));
+            Log::info("Forgot password OTP mail sent to: {$user->email}");
+        } catch (\Exception $e) {
+            Log::error("Forgot password OTP mail failed for: {$user->email}. Error: " . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,

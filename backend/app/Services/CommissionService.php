@@ -23,16 +23,21 @@ class CommissionService
         float $amount,
         User $payer
     ): Commission {
-        if (! in_array($lead->status, ['COMPLETED', 'REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
-            throw new LeadNotCompletedException('Commission can only be entered for leads that have reached the registration milestone.');
+        if ($lead->status !== 'COMPLETED') {
+            throw new LeadNotCompletedException('Commission can only be entered for leads that have reached the COMPLETED milestone.');
         }
 
-        // Authorization logic based on parentage
+        // Authorization logic based on parentage (Allow ancestors to enter commission)
         $hierarchyService = app(HierarchyService::class);
         $logicalParentId = $hierarchyService->getLogicalParentId($payee, $lead);
+        $ascendantSAId = $hierarchyService->findAscendantSuperAgentId($payee);
 
-        if (! $payer->isAdmin() && (int) $logicalParentId !== (int) $payer->id) {
-            throw new CommissionAccessDeniedException('You can only enter commissions for your direct subordinates.');
+        $isAuthorized = ($payer->isAdmin() || 
+                         (int) $logicalParentId === (int) $payer->id || 
+                         ($payer->isSuperAgent() && (int) $ascendantSAId === (int) $payer->id));
+
+        if (! $isAuthorized) {
+            throw new CommissionAccessDeniedException('You can only enter commissions for your subordinates.');
         }
 
         $existing = Commission::query()->withTrashed()->where(fn($q) => $q->where('lead_id', $lead->id))
@@ -118,12 +123,16 @@ class CommissionService
         User $payer
     ): Commission {
         $payee = $commission->payee;
-
         $hierarchyService = app(HierarchyService::class);
         $logicalParentId = $hierarchyService->getLogicalParentId($payee, $commission->lead);
+        $ascendantSAId = $hierarchyService->findAscendantSuperAgentId($payee);
 
-        if (! $payer->isAdmin() && (int) $logicalParentId !== (int) $payer->id) {
-            throw new CommissionAccessDeniedException('You can only mark payments for your direct subordinates.');
+        $isAuthorized = ($payer->isAdmin() || 
+                         (int) $logicalParentId === (int) $payer->id || 
+                         ($payer->isSuperAgent() && (int) $ascendantSAId === (int) $payer->id));
+
+        if (! $isAuthorized) {
+            throw new CommissionAccessDeniedException('You can only mark payments for your subordinates.');
         }
 
         if ($commission->isPaid()) {
@@ -206,35 +215,42 @@ class CommissionService
      */
     public function getCommissionStatus(Lead $lead): array
     {
-        if (! in_array($lead->status, ['COMPLETED', 'REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
+        if ($lead->status !== 'COMPLETED') {
             return [];
         }
 
-        $submitter = $lead->submittedByEnumerator ?? $lead->submittedByAgent ?? $lead->createdBySuperAgent;
-        if (! $submitter) return [];
-
         $hierarchyService = app(HierarchyService::class);
-        $chain = $hierarchyService->getCommissionChain($submitter, $lead);
-        
         $prompts = [];
-        
-        // 1. Submitter Commission
-        if ($submitter->isSuperAgent()) {
-            // Super Agent submitted the lead directly
-            $prompts[] = $this->buildPrompt($lead, $submitter, 'super_agent');
-        } elseif ($submitter->isEnumerator() || $submitter->isAgent()) {
-            $parentId = $hierarchyService->getLogicalParentId($submitter, $lead);
-            $parent = $parentId ? User::find($parentId) : null;
-            // Only add if a non-admin payer (BDM or Agent above) exists in the chain
-            // Exception: Enumerators CAN be paid directly by Admin if they were created by Admin.
-            if ($parent && (!$parent->isAdmin() || $submitter->isEnumerator())) {
-                $prompts[] = $this->buildPrompt($lead, $submitter, $submitter->role);
-            }
+        $processedPayeeIds = [];
+
+        // 1. Identify all potential payees (Submitter, Assignee, Enumerator)
+        $potentialPayees = collect([
+            $lead->submittedByEnumerator,
+            $lead->submittedByAgent,
+            $lead->assignedAgent,
+            $lead->createdBySuperAgent
+        ])->filter()->unique('id');
+
+        foreach ($potentialPayees as $payee) {
+            /** @var User $payee */
+            if ($payee->isAdmin()) continue;
+            
+            $prompts[] = $this->buildPrompt($lead, $payee, $payee->role);
+            $processedPayeeIds[] = $payee->id;
         }
 
-        // 2. Upstream Hierarchy (BDM/Super Agent level and above — excluding Admin who is the terminal payer)
-        foreach ($chain as $user) {
-            $prompts[] = $this->buildPrompt($lead, $user, $user->role);
+        // 2. Upstream Hierarchy (BDM/Super Agent level and above)
+        // We look at the submitter's chain if available, otherwise the assignee's chain.
+        $startingUser = $lead->submittedByEnumerator ?? $lead->submittedByAgent ?? $lead->assignedAgent ?? $lead->createdBySuperAgent;
+        
+        if ($startingUser) {
+            $chain = $hierarchyService->getCommissionChain($startingUser, $lead);
+            foreach ($chain as $user) {
+                if (!in_array($user->id, $processedPayeeIds)) {
+                    $prompts[] = $this->buildPrompt($lead, $user, $user->role);
+                    $processedPayeeIds[] = $user->id;
+                }
+            }
         }
 
         return $prompts;

@@ -15,7 +15,10 @@ class SettingController extends Controller
 {
     public function index()
     {
-        $settings = Setting::all()->groupBy('group');
+        $settings = Setting::query()
+            ->where('user_id', auth()->id())
+            ->get()
+            ->groupBy('group');
 
         return response()->json([
             'success' => true,
@@ -50,7 +53,11 @@ class SettingController extends Controller
                 $value = $setting['value'];
 
                 // Determine group: keep existing group if the row exists, else derive from key prefix
-                $existing = Setting::query()->where(fn($q) => $q->where('key', $key))->first();
+                $existing = Setting::query()
+                    ->where('key', $key)
+                    ->where('user_id', auth()->id())
+                    ->first();
+
                 if ($existing) {
                     $existing->update(['value' => $value]);
                 } else {
@@ -61,7 +68,12 @@ class SettingController extends Controller
                             break;
                         }
                     }
-                    Setting::create(['key' => $key, 'value' => $value, 'group' => $group]);
+                    Setting::create([
+                        'key' => $key,
+                        'value' => $value,
+                        'group' => $group,
+                        'user_id' => auth()->id()
+                    ]);
                 }
             }
 
@@ -97,7 +109,11 @@ class SettingController extends Controller
 
         // Delete old file if exists
         /** @var Setting|null $existing */
-        $existing = Setting::query()->where(fn($q) => $q->where('key', $key))->first();
+        $existing = Setting::query()
+            ->where('key', $key)
+            ->where('user_id', auth()->id())
+            ->first();
+
         if ($existing && $existing->value) {
             Storage::disk('public')->delete((string)$existing->value);
         }
@@ -111,14 +127,17 @@ class SettingController extends Controller
 
         $path = $file->store($folder, 'public');
 
-        Setting::updateOrCreate(['key' => $key], [
-            'value' => $path,
-            'group' => match ($key) {
-                'company_favicon', 'company_logo', 'company_logo_2', 'company_signature', 'company_seal' => 'branding',
-                'hero_video' => 'homepage',
-                default => 'general',
-            },
-        ]);
+        Setting::updateOrCreate(
+            ['key' => $key, 'user_id' => auth()->id()],
+            [
+                'value' => $path,
+                'group' => match ($key) {
+                    'company_favicon', 'company_logo', 'company_logo_2', 'company_signature', 'company_seal' => 'branding',
+                    'hero_video' => 'homepage',
+                    default => 'general',
+                },
+            ]
+        );
 
         return response()->json([
             'success' => true,

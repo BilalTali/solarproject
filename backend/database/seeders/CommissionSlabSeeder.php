@@ -16,7 +16,7 @@ class CommissionSlabSeeder extends Seeder
                 'agent_commission' => 1000.00,
                 'super_agent_override' => 300.00,
                 'description' => 'Ideal for small households',
-                'is_active' => true,
+                'is_active' => false,
             ],
             [
                 'capacity' => '2kw',
@@ -24,7 +24,7 @@ class CommissionSlabSeeder extends Seeder
                 'agent_commission' => 1500.00,
                 'super_agent_override' => 400.00,
                 'description' => 'Suitable for medium households',
-                'is_active' => true,
+                'is_active' => false,
             ],
             [
                 'capacity' => '3kw',

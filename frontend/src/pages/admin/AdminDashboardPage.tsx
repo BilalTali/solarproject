@@ -79,7 +79,7 @@ export default function AdminDashboardPage() {
                 </div>
                 <div className="hidden md:flex gap-3">
                     <DownloadIdCardButton />
-                    <DownloadJoiningLetterButton user={user!} variant="button" />
+                    {user && <DownloadJoiningLetterButton user={user} variant="button" />}
                     <Link to="/admin/leads" className="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 px-5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95">View All Leads</Link>
                 </div>
             </div>

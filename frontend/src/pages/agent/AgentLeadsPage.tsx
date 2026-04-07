@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { PlusCircle, CheckCircle, CornerUpLeft, DollarSign, Search, Filter } from 'lucide-react';
+import { PlusCircle, CheckCircle, CornerUpLeft, DollarSign, Search, Filter, Phone, MapPin, ChevronRight, ChevronLeft, FileText } from 'lucide-react';
 import { leadsApi } from '@/services/leads.api';
 import type { Lead } from '@/types';
 import LeadStatusBadge from '@/components/shared/LeadStatusBadge';
@@ -12,7 +12,8 @@ import { VerifyLeadModal } from '@/components/agent/VerifyLeadModal';
 import { RevertLeadModal } from '@/components/agent/RevertLeadModal';
 import { agentCommissionsApi } from '@/services/commissions.api';
 import CommissionInlineEntryForAgent from '@/components/super-agent/CommissionInlineEntryForAgent';
-import { LEAD_STATUS_OPTIONS } from '@/constants/leadStatuses';
+import { LEAD_STATUS_OPTIONS, getLeadStatusColor } from '@/constants/leadStatuses';
+import MobileFilterModal from '@/components/shared/MobileFilterModal';
 
 
 export default function AgentLeadsPage() {
@@ -21,6 +22,7 @@ export default function AgentLeadsPage() {
     const qc = useQueryClient();
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
     const [verifyingLead, setVerifyingLead] = useState<Lead | null>(null);
     const [revertingLead, setRevertingLead] = useState<Lead | null>(null);
@@ -56,15 +58,15 @@ export default function AgentLeadsPage() {
                 <div className="flex items-center gap-3">
                     <Link
                         to="/agent/leads/new"
-                        className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+                        className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-orange-100 active:scale-95"
                     >
-                        <PlusCircle size={16} /> New Lead
+                        <PlusCircle size={18} /> New Lead
                     </Link>
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap gap-3">
+            {/* Desktop Filters */}
+            <div className="hidden sm:flex flex-wrap gap-3">
                 <div className="relative">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
@@ -95,6 +97,47 @@ export default function AgentLeadsPage() {
                 )}
             </div>
 
+            {/* Mobile Filters Header */}
+            <div className="sm:hidden flex items-center justify-between gap-2">
+                <div className="relative flex-1">
+                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Search leads..."
+                        value={search}
+                        onChange={e => { setSearch(e.target.value); setPage(1); }}
+                        className="w-full pl-8 pr-4 py-1.5 border border-slate-200 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                </div>
+                <button 
+                    onClick={() => setIsFilterModalOpen(true)}
+                    className={`relative p-2 rounded-full border border-slate-200 ${status ? 'bg-orange-50 border-orange-200 text-orange-600' : 'bg-white text-slate-600'}`}
+                >
+                    <Filter size={18} />
+                    {status && (
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">1</span>
+                    )}
+                </button>
+            </div>
+
+            <MobileFilterModal 
+                isOpen={isFilterModalOpen}
+                onClose={() => setIsFilterModalOpen(false)}
+                fields={[
+                    { id: 'search', label: 'Search', type: 'text' as const, placeholder: 'Name or mobile...' },
+                    { id: 'status', label: 'Status', type: 'select' as const, options: LEAD_STATUS_OPTIONS }
+                ]}
+                values={{ search, status }}
+                onChange={(id, val) => {
+                    if (id === 'search') setSearch(val);
+                    if (id === 'status') setStatus(val);
+                    setPage(1);
+                }}
+                onClear={() => {
+                    setSearch(''); setStatus(''); setPage(1);
+                }}
+            />
+
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 {/* Desktop Table View */}
                 <div className="hidden lg:block overflow-x-auto">
@@ -114,9 +157,9 @@ export default function AgentLeadsPage() {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {isLoading ? (
-                                <tr><td colSpan={16} className="text-center py-12 text-slate-400">Loading leads...</td></tr>
+                                <tr><td colSpan={17} className="text-center py-12 text-slate-400">Loading leads...</td></tr>
                             ) : leads.length === 0 ? (
-                                <tr><td colSpan={16} className="text-center py-12 text-slate-400">No leads found.</td></tr>
+                                <tr><td colSpan={17} className="text-center py-12 text-slate-400">No leads found.</td></tr>
                             ) : (
                                 leads.map((lead) => (
                                     <React.Fragment key={lead.id}>
@@ -242,9 +285,9 @@ export default function AgentLeadsPage() {
                                             {(!lead.commission_prompt || !lead.commission_prompt.should_prompt) && lead.verification_status !== 'reverted_to_agent' && (
                                                 <Link
                                                     to={`/agent/leads/${lead.ulid}`}
-                                                    className="text-orange-600 hover:text-orange-700 font-medium text-xs block text-center mt-1"
+                                                    className="text-orange-600 hover:text-orange-700 font-extrabold text-[10px] uppercase tracking-widest block text-center mt-1"
                                                 >
-                                                    View →
+                                                    VIEW →
                                                 </Link>
                                             )}
                                         </td>
@@ -253,7 +296,7 @@ export default function AgentLeadsPage() {
                                     {/* Inline Commission Entry Row */}
                                     {activeCommissionPrompt?.leadUlid === lead.ulid && activeCommissionPrompt.prompt && (
                                         <tr>
-                                            <td colSpan={16} className="p-0 border-b border-orange-200 bg-orange-50/30">
+                                            <td colSpan={17} className="p-0 border-b border-orange-200 bg-orange-50/30">
                                                 <div className="p-4 md:p-6 lg:px-8 border-l-4 border-orange-400">
                                                     <div className="bg-white rounded-xl shadow-sm border border-orange-100 overflow-hidden">
                                                         {(() => {
@@ -296,57 +339,126 @@ export default function AgentLeadsPage() {
                     {isLoading ? (
                         <div className="p-8 text-center text-slate-400">Loading leads...</div>
                     ) : leads.length === 0 ? (
-                        <div className="p-8 text-center text-slate-400">No leads found.</div>
+                        <div className="p-8 text-center py-12">
+                            <FileText size={40} className="mx-auto text-slate-200 mb-2" />
+                            <p className="text-slate-400 text-sm font-medium">No leads found.</p>
+                        </div>
                     ) : (
                         leads.map((lead) => (
-                            <div key={lead.id} className="p-4 space-y-4">
+                            <div 
+                                key={lead.id} 
+                                className={`p-4 space-y-4 border-l-4 transition-all ${lead.verification_status === 'reverted_to_agent' ? 'bg-red-50/30 border-red-500' : 'hover:bg-slate-50'}`}
+                                style={lead.verification_status !== 'reverted_to_agent' ? { borderLeftColor: getLeadStatusColor(lead.status).split(' ')[1]?.replace('text-', '') === 'orange-600' ? '#ea580c' : (getLeadStatusColor(lead.status).includes('emerald') ? '#059669' : (getLeadStatusColor(lead.status).includes('rose') ? '#e11d48' : '#64748b')) } : {}}
+                            >
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <Link to={`/agent/leads/${lead.ulid}`} className="font-bold text-slate-800 hover:text-orange-600 transition-colors block">
+                                        <Link to={`/agent/leads/${lead.ulid}`} className="font-bold text-slate-800 leading-tight block">
                                             {lead.beneficiary_name}
                                         </Link>
                                         <div className="flex items-center gap-2">
                                             <p className="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">Ref: {lead.ulid?.slice(-8)}</p>
                                             {lead.referral_agent_id && (
-                                                <span className="bg-indigo-50 text-indigo-600 text-[8px] font-black px-1 rounded border border-indigo-100 uppercase">Referral</span>
+                                                <span className="bg-indigo-50 text-indigo-700 text-[8px] font-black px-1.5 py-0.5 rounded border border-indigo-100 uppercase tracking-widest">Referral</span>
                                             )}
                                         </div>
                                     </div>
-                                    <LeadStatusBadge status={lead.status} />
+                                    <div className="flex flex-col gap-1.5 items-end">
+                                        <LeadStatusBadge status={lead.status} />
+                                        <VerificationStatusBadge status={lead.verification_status} revertCount={lead.revert_count} />
+                                    </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                                    <div className="space-y-0.5">
-                                        <p className="text-[10px] text-slate-500 uppercase font-semibold">Mobile</p>
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-3 font-medium">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-1.5"><Phone size={10} /> Mobile</p>
                                         <p className="text-xs text-slate-700">{lead.beneficiary_mobile}</p>
                                     </div>
-                                    <div className="space-y-0.5 text-right">
-                                        <p className="text-[10px] text-slate-400 uppercase font-semibold">Location</p>
+                                    <div className="space-y-1 text-right">
+                                        <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-1.5 justify-end"><MapPin size={10} /> Location</p>
                                         <p className="text-xs text-slate-700 truncate">{lead.beneficiary_district}, {lead.beneficiary_state}</p>
                                     </div>
-                                    <div className="space-y-0.5">
-                                        <p className="text-[10px] text-slate-400 uppercase font-semibold">System / Capacity</p>
-                                        <p className="text-xs text-slate-700">{lead.system_capacity?.replace(/_/g, ' ') || '—'}</p>
-                                    </div>
-                                    <div className="space-y-0.5 text-right">
-                                        <p className="text-[10px] text-slate-400 uppercase font-semibold">Commission</p>
-                                        <p className="text-xs font-bold text-slate-800">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-1.5"><DollarSign size={10} /> Commission</p>
+                                        <p className="text-xs font-black text-orange-600">
                                             {(() => {
                                                 const agentComm = lead.formatted_commissions?.all?.find(c => c.payee_role === 'agent');
                                                 return agentComm ? `₹${agentComm.amount}` : '—';
                                             })()}
                                         </p>
                                     </div>
+                                    <div className="space-y-1 text-right">
+                                        <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-1.5 justify-end"><CheckCircle size={10} /> Pay Status</p>
+                                        {(() => {
+                                            const agentComm = lead.formatted_commissions?.all?.find(c => c.payee_role === 'agent');
+                                            if (!agentComm) return <p className="text-xs text-slate-400 italic">N/A</p>;
+                                            return (
+                                                <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-black tracking-widest ${agentComm.payment_status === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                    {agentComm.payment_status}
+                                                </span>
+                                            );
+                                        })()}
+                                    </div>
                                 </div>
 
-                                <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-                                    <span className="text-[10px] text-slate-500 font-medium">Added on {formatDate(lead.created_at)}</span>
+                                {lead.verification_status === 'reverted_to_agent' && (
+                                    <div className="bg-red-50 p-3 rounded-xl border border-red-100 space-y-2">
+                                        <p className="text-[10px] text-red-700 font-bold uppercase flex items-center gap-1.5"><CornerUpLeft size={10} /> Action Required</p>
+                                        <p className="text-xs text-red-600 italic">"{lead.revert_reason}"</p>
+                                        <Link
+                                            to={`/agent/leads/${lead.ulid}/resubmit`}
+                                            className="w-full py-2 bg-red-600 text-white text-xs font-bold rounded-lg flex items-center justify-center shadow-lg shadow-red-100"
+                                        >
+                                            Edit & Resubmit Lead
+                                        </Link>
+                                    </div>
+                                )}
+
+                                {lead.verification_status === 'pending_agent_verification' && (
+                                    <div className="flex gap-2">
+                                        <button 
+                                            onClick={() => setVerifyingLead(lead)} 
+                                            className="flex-1 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-100 active:scale-95 transition-all"
+                                        >
+                                            ✅ Verify
+                                        </button>
+                                        <button 
+                                            onClick={() => setRevertingLead(lead)} 
+                                            className="flex-1 py-2.5 bg-rose-50 text-rose-700 text-xs font-bold rounded-xl active:scale-95 transition-all"
+                                        >
+                                            ↩ Revert
+                                        </button>
+                                    </div>
+                                )}
+
+                                {(() => {
+                                    const prompts = lead.commission_status?.prompts || [];
+                                    if (prompts.length === 0) return null;
+
+                                    return (
+                                        <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 shadow-inner">
+                                            <p className="text-[10px] text-orange-700 font-bold uppercase mb-3 flex items-center gap-1.5"><DollarSign size={10} /> Add Commission for Executive</p>
+                                            <CommissionInlineEntryForAgent
+                                                leadUlid={lead.ulid}
+                                                leadStatus={lead.status}
+                                                commissionPrompt={prompts[0]}
+                                                existingCommission={lead.formatted_commissions?.all?.find(c => c.payee_id === prompts[0].payee_id) || null}
+                                                agentName={prompts[0].payee_name || lead.submitted_by_enumerator?.name || 'Enumerator'}
+                                                agentCode={prompts[0].payee_code || ''}
+                                                onSaved={() => qc.invalidateQueries({ queryKey: ['agent-leads'] })}
+                                                onSkip={() => {}}
+                                                commissionsApi={agentCommissionsApi}
+                                            />
+                                        </div>
+                                    );
+                                })()}
+
+                                <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+                                    <span className="text-[10px] text-slate-400 font-medium">Added on {formatDate(lead.created_at)}</span>
                                     <Link
                                         to={`/agent/leads/${lead.ulid}`}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50 text-orange-600 rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-orange-100 transition-colors"
-                                        aria-label={`View details for ${lead.beneficiary_name}`}
+                                        className="text-[10px] text-orange-600 font-black uppercase tracking-widest flex items-center gap-1"
                                     >
-                                        Details <PlusCircle size={10} aria-hidden="true" />
+                                        View Details <ChevronRight size={12} />
                                     </Link>
                                 </div>
                             </div>
@@ -356,23 +468,21 @@ export default function AgentLeadsPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-between">
+                    <div className="px-4 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
                         <button
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            aria-label="Previous Page"
-                            className="text-xs px-3 py-1.5 rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50"
+                            className="flex items-center gap-1 text-xs px-3 py-2 rounded-xl bg-white border border-slate-200 disabled:opacity-40 font-bold text-slate-600 shadow-sm active:scale-95 transition-all"
                         >
-                            <span aria-hidden="true">←</span> Prev
+                            <ChevronLeft size={14} /> Prev
                         </button>
-                        <span className="text-xs text-slate-500" aria-label={`Page ${page} of ${totalPages}`}>Page {page} of {totalPages}</span>
+                        <span className="text-xs font-bold text-slate-500">Page {page} of {totalPages}</span>
                         <button
                             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                             disabled={page === totalPages}
-                            aria-label="Next Page"
-                            className="text-xs px-3 py-1.5 rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50"
+                            className="flex items-center gap-1 text-xs px-3 py-2 rounded-xl bg-white border border-slate-200 disabled:opacity-40 font-bold text-slate-600 shadow-sm active:scale-95 transition-all"
                         >
-                            Next <span aria-hidden="true">→</span>
+                            Next <ChevronRight size={14} />
                         </button>
                     </div>
                 )}

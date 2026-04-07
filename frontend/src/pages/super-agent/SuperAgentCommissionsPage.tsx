@@ -28,7 +28,7 @@ export default function SuperAgentCommissionsPage() {
     if (tab === 'my_earnings') {
         backendFilter = statusFilter === 'pending' ? 'pending_my_payment' : (statusFilter === 'paid' ? 'fully_paid' : 'all_my_earnings');
     } else {
-        backendFilter = statusFilter === 'pending' ? 'pending_to_pay' : (statusFilter === 'paid' ? 'all_to_pay' : 'all_to_pay'); // Standardized
+        backendFilter = statusFilter === 'pending' ? 'pending_to_pay' : (statusFilter === 'paid' ? 'payouts_paid' : 'all_to_pay');
     }
 
     const { data: commissionsData, isLoading: loadingCommissions } = useQuery({

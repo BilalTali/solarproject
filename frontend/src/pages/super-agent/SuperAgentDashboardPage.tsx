@@ -174,7 +174,7 @@ export default function SuperAgentDashboardPage() {
             {/* ID Card & Letters section */}
             <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DownloadIdCardButton variant="card" />
-                <DownloadJoiningLetterButton user={user!} variant="card" />
+                {user && <DownloadJoiningLetterButton user={user} variant="card" />}
             </div>
 
             {/* KPI Stat Cards */}
@@ -310,9 +310,9 @@ export default function SuperAgentDashboardPage() {
                         <QrCode className="w-5 h-5 text-orange-500" />
                         My Verification QR
                     </h2>
-                    <QrCodePreview user={user!} />
+                    {user && <QrCodePreview user={user} />}
                     <div className="mt-4 pt-4 border-t border-slate-100">
-                        <QrScanHistory userId={user!.id} role="super_agent" isSelfView={true} />
+                        {user && <QrScanHistory userId={user.id} role="super_agent" isSelfView={true} />}
                     </div>
                 </div>
             </div>
@@ -331,11 +331,13 @@ export default function SuperAgentDashboardPage() {
                     variant="button"
                     className="flex-1 h-[52px] !bg-[#FF9500] !text-[#04111F] !rounded-xl !shadow-none border-none font-bold text-sm"
                 />
-                <DownloadJoiningLetterButton
-                    user={user!}
-                    variant="outline"
-                    className="flex-1 h-[52px] !border-[#FF9500] !text-white !bg-transparent !rounded-xl font-bold text-sm"
-                />
+                {user && (
+                    <DownloadJoiningLetterButton
+                        user={user}
+                        variant="outline"
+                        className="flex-1 h-[52px] !border-[#FF9500] !text-white !bg-transparent !rounded-xl font-bold text-sm"
+                    />
+                )}
             </div>
         </div>
     );

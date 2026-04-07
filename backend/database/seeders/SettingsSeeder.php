@@ -18,7 +18,7 @@ class SettingsSeeder extends Seeder
 
             // ── Company / Letterhead ──────────────────────────────────────────
             ['key' => 'company_name',             'value' => 'SuryaMitra Solar Network',       'group' => 'company'],
-            ['key' => 'company_tagline',          'value' => 'Empowering India with Free Solar Energy', 'group' => 'company'],
+            ['key' => 'company_slogan',           'value' => 'Empowering India with Free Solar Energy', 'group' => 'company'],
             ['key' => 'company_registration_no',  'value' => 'REG/SMS/2026/0892', 'group' => 'company'],
             ['key' => 'company_affiliated_with',  'value' => 'Government of India / MNRE', 'group' => 'company'],
             ['key' => 'company_address',          'value' => 'Basement Suite 4, Residency Road, Near Regal Chowk, Srinagar, J&K - 190001', 'group' => 'company'],
@@ -34,6 +34,7 @@ class SettingsSeeder extends Seeder
             ['key' => 'company_logo',             'value' => 'branding/logo.png', 'group' => 'branding'],
             ['key' => 'company_favicon',          'value' => 'branding/favicon.ico', 'group' => 'branding'],
             ['key' => 'company_seal',             'value' => 'branding/seal.png', 'group' => 'branding'],
+            ['key' => 'company_logo_2',           'value' => 'branding/logo_2.png', 'group' => 'branding'],
 
             // ── ICard Specific ────────────────────────────────────────────────
             ['key' => 'authorized_signatory',     'value' => 'Er. Sameer Ahmad', 'group' => 'icard'],

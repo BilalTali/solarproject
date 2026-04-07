@@ -125,17 +125,39 @@ class Lead extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'ulid', 'source',
+        'ulid',
+        'source',
         'referral_agent_id',
-        'beneficiary_name', 'beneficiary_mobile', 'beneficiary_email',
-        'beneficiary_state', 'beneficiary_district', 'beneficiary_address', 'beneficiary_pincode',
-        'consumer_number', 'discom_name', 'monthly_bill_amount',
-        'roof_size', 'system_capacity', 'query_message', 'admin_notes',
-        'follow_up_date', 'govt_application_number',
-        'assigned_agent_id', 'assigned_super_agent_id', 'submitted_by_agent_id',
-        'created_by_super_agent_id', 'submitted_by_enumerator_id', 'owner_type', 'verification_status',
-        'revert_count', 'revert_reason', 'verified_by_super_agent_id',
-        'verified_at', 'reverted_at', 'reverted_by', 'wa_handler_admin_id',
+        'beneficiary_name',
+        'beneficiary_mobile',
+        'beneficiary_email',
+        'beneficiary_state',
+        'beneficiary_district',
+        'beneficiary_address',
+        'beneficiary_pincode',
+        'consumer_number',
+        'discom_name',
+        'monthly_bill_amount',
+        'roof_size',
+        'system_capacity',
+        'query_message',
+        'admin_notes',
+        'follow_up_date',
+        'govt_application_number',
+        'assigned_agent_id',
+        'assigned_super_agent_id',
+        'submitted_by_agent_id',
+        'created_by_super_agent_id',
+        'submitted_by_enumerator_id',
+        'owner_type',
+        'verification_status',
+        'revert_count',
+        'revert_reason',
+        'verified_by_super_agent_id',
+        'verified_at',
+        'reverted_at',
+        'reverted_by',
+        'wa_handler_admin_id',
     ];
 
     protected function casts(): array
@@ -258,17 +280,17 @@ class Lead extends Model
     public function scopeVisibleToSuperAgent(Builder $q, int $superAgentId): Builder
     {
         return $q->where(function ($query) use ($superAgentId) {
-            $query->where(fn ($q) => $q->where('assigned_super_agent_id', $superAgentId))
-                ->orWhere(fn ($q) => $q->where('created_by_super_agent_id', $superAgentId))
+            $query->where(fn($q) => $q->where('assigned_super_agent_id', $superAgentId))
+                ->orWhere(fn($q) => $q->where('created_by_super_agent_id', $superAgentId))
                 ->orWhereHas('submittedByAgent', function ($q2) use ($superAgentId) {
-                    $q2->where(fn ($q) => $q->where('parent_id', $superAgentId));
+                    $q2->where(fn($q) => $q->where('parent_id', $superAgentId));
                 })
                 ->orWhereHas('assignedAgent', function ($q2) use ($superAgentId) {
-                    $q2->where(fn ($q) => $q->where('parent_id', $superAgentId));
+                    $q2->where(fn($q) => $q->where('parent_id', $superAgentId));
                 })
                 ->orWhereHas('submittedByEnumerator', function ($q2) use ($superAgentId) {
                     $q2->whereHas('parent', fn($q3) => $q3->where('parent_id', $superAgentId))
-                       ->orWhere('parent_id', $superAgentId);
+                        ->orWhere('parent_id', $superAgentId);
                 });
         });
     }
@@ -279,15 +301,15 @@ class Lead extends Model
      */
     public function scopeNeedsVerificationBySuperAgent(Builder $q, int $superAgentId): Builder
     {
-        return $q->where(fn ($q) => $q->where('verification_status', 'pending_super_agent_verification'))
+        return $q->where(fn($q) => $q->where('verification_status', 'pending_super_agent_verification'))
             ->where(function ($query) use ($superAgentId) {
-                $query->where(fn ($q) => $q->where('assigned_super_agent_id', $superAgentId))
-                    ->orWhere(fn ($q) => $q->where('created_by_super_agent_id', $superAgentId))
+                $query->where(fn($q) => $q->where('assigned_super_agent_id', $superAgentId))
+                    ->orWhere(fn($q) => $q->where('created_by_super_agent_id', $superAgentId))
                     ->orWhereHas('submittedByAgent', function ($q2) use ($superAgentId) {
-                        $q2->where(fn ($q) => $q->where('parent_id', $superAgentId));
+                        $q2->where(fn($q) => $q->where('parent_id', $superAgentId));
                     })
                     ->orWhereHas('submittedByEnumerator', function ($q2) use ($superAgentId) {
-                        $q2->where(fn ($q) => $q->where('parent_id', $superAgentId));
+                        $q2->where(fn($q) => $q->where('parent_id', $superAgentId));
                     });
             });
     }
@@ -299,8 +321,8 @@ class Lead extends Model
     public function scopeVisibleToAgent(Builder $q, int $agentId): Builder
     {
         return $q->where(function ($query) use ($agentId) {
-            $query->where(fn ($q) => $q->where('submitted_by_agent_id', $agentId))
-                ->orWhere(fn ($q) => $q->where('assigned_agent_id', $agentId));
+            $query->where(fn($q) => $q->where('submitted_by_agent_id', $agentId))
+                ->orWhere(fn($q) => $q->where('assigned_agent_id', $agentId));
         });
     }
 
@@ -312,7 +334,7 @@ class Lead extends Model
     public function getFormattedCommissionsAttribute(): array
     {
         $commissions = $this->getRelationValue('commissions');
-        
+
         $result = [
             'super_agent_commission' => null,
             'agent_commission' => null,
@@ -320,14 +342,14 @@ class Lead extends Model
             'all' => []
         ];
 
-        if (! in_array($this->status, ['COMPLETED', 'REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
+        if (!in_array($this->status, ['COMPLETED', 'REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
             return $result;
         }
 
         foreach ($commissions as $c) {
             $formatted = $this->formatComm($c);
             $result['all'][] = $formatted;
-            
+
             // Map to legacy keys for frontend compatibility
             if ($c->payee_role === 'super_agent') {
                 $result['super_agent_commission'] = $formatted;
@@ -349,7 +371,7 @@ class Lead extends Model
             'payee_id' => $c->payee_id,
             'payee_role' => $c->payee_role,
             'payee_name' => $c->payee?->name ?? 'Unknown',
-            'payee_code' => match($c->payee_role) {
+            'payee_code' => match ($c->payee_role) {
                 'super_agent' => $c->payee?->super_agent_code ?? '',
                 'agent' => $c->payee?->agent_id ?? '',
                 'enumerator' => $c->payee?->enumerator_id ?? '',
@@ -358,7 +380,7 @@ class Lead extends Model
             'entered_by_name' => $c->enteredBy?->name ?? 'System',
             'payment_status' => $c->payment_status,
             'is_locked' => $c->isLocked(),
-            'is_editable' => ! $c->isLocked(),
+            'is_editable' => !$c->isLocked(),
         ];
     }
 
@@ -369,7 +391,7 @@ class Lead extends Model
     {
         $prompts = app(\App\Services\CommissionService::class)->getCommissionStatus($this);
         $user = auth()->user();
-        
+
         // Scope prompts to the current user (Payer). 
         // This ensures Admin only sees prompts where they pay BDM (super_agent),
         // Super Agent only sees prompts where they pay Agent/Enumerator, etc.
@@ -378,21 +400,24 @@ class Lead extends Model
             $prompts = array_values(array_filter($prompts, function ($p) use ($userId, $user) {
                 // Match by payer_id
                 $payerId = (int) ($p['payer_id'] ?? 0);
-                if ($payerId !== $userId) return false;
+                if ($payerId === $userId)
+                    return true;
+
+                // HIERARCHY OVERRIDE: Super Agent should see prompts for their team (Agent/Enumerator) 
+                // even if they are not the immediate payer.
+                if ($user->isSuperAgent()) {
+                    $payee = User::find($p['payee_id']);
+                    if ($payee && app(\App\Services\HierarchyService::class)->findAscendantSuperAgentId($payee) === $userId) {
+                        return true;
+                    }
+                }
 
                 // HIERARCHY GUARD: Admin should only ever pay BDMs (super_agent role) OR direct Enumerators.
-                // BDMs should only pay Agents/Enumerators. Prevents cross-level commission leakage.
                 if ($user->isAdmin() || $user->isSuperAdmin()) {
                     return in_array($p['payee_role'] ?? '', ['super_agent', 'enumerator']);
                 }
-                if ($user->isSuperAgent()) {
-                    return in_array($p['payee_role'] ?? '', ['agent', 'enumerator']);
-                }
-                if ($user->isAgent()) {
-                    return ($p['payee_role'] ?? '') === 'enumerator';
-                }
 
-                return true;
+                return false;
             }));
         }
 

@@ -113,7 +113,7 @@ const getFileUrl = (path: string | null | undefined) => {
     if (!path) return '';
     if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) return path;
     const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').split('/api/v1')[0];
-    return `${baseUrl} /storage/${path} `;
+    return `${baseUrl}/storage/${path}`;
 };
 
 function FileUploadField({ settingKey, label, accept, currentUrl, pendingFile, onSelect }: {
@@ -694,6 +694,8 @@ const AdminSettingsPage: React.FC = () => {
                         <div className="space-y-6 animate-in fade-in duration-300">
                             <h3 className="font-bold text-slate-800">Branding &amp; Identity</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {F('company_slogan', 'Company Slogan', 'text', 'Clean Energy for a Greener India')}
+                                <div className="hidden md:block"></div>
                                 {F('authorized_signatory', 'Authorized Signatory Name', 'text', 'Authorized Signatory')}
                                 {F('authorized_signatory_title', 'Authorized Signatory Title', 'text', 'Managing Director')}
                             </div>

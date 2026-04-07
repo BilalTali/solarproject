@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { authApi } from '@/services/auth.api';
 import { useAuthStore } from '@/hooks/store/authStore';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
-import { useSettings } from '@/hooks/useSettings';
+import { useAdminSettings } from '@/hooks/useAdminSettings';
 
 const ADMIN_NAV = [
     { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', to: '/admin/dashboard' },
@@ -38,7 +38,7 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, clearAuth } = useAuthStore();
-    const { companyName } = useSettings();
+    const { companyName } = useAdminSettings();
 
     const isOperator = user?.role === 'operator';
     const NAV = isOperator ? OPERATOR_NAV : ADMIN_NAV;
