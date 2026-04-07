@@ -192,6 +192,7 @@ class SettingController extends Controller
 
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'mobile' => ['sometimes', 'string', 'max:20'],
             'whatsapp_number' => ['nullable', 'string', 'max:20'],
             'father_name' => ['nullable', 'string', 'max:255'],
