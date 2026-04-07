@@ -35,6 +35,15 @@ class Setting extends Model
         return $this->belongsTo(User::class);
     }
 
+    public const MEDIA_KEYS = [
+        'company_favicon',
+        'company_logo',
+        'company_logo_2',
+        'company_signature',
+        'company_seal',
+        'hero_video'
+    ];
+
     protected static function booted()
     {
         static::saved(function ($setting) {
@@ -46,6 +55,22 @@ class Setting extends Model
             $userId = $setting->user_id ?? 'global';
             Cache::forget("settings.{$userId}." . $setting->key);
         });
+    }
+
+    /**
+     * Transform a relative storage path into a full URL.
+     */
+    public static function transformMediaUrl(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        if (str_starts_with($value, 'http') || str_starts_with($value, 'data:') || str_starts_with($value, 'blob:')) {
+            return $value;
+        }
+
+        return asset('storage/' . $value);
     }
 
     /**
@@ -77,6 +102,48 @@ class Setting extends Model
             return $setting ? (string)$setting->value : null;
         });
 
-        return $value !== null ? $value : $default;
+        $finalValue = $value !== null ? $value : $default;
+
+        // Auto-transform media keys
+        if (in_array($key, self::MEDIA_KEYS)) {
+            return self::transformMediaUrl($finalValue);
+        }
+
+        return $finalValue;
+    }
+
+    /**
+     * Get all merged settings (Global + User override) for a specific user ID.
+     * Transformation of media URLs is handled automatically.
+     */
+    public static function getMergedSettings($userId = null)
+    {
+        // 1. Fetch Global Settings
+        $globalSettings = static::query()
+            ->whereNull('user_id')
+            ->get();
+
+        // 2. Fetch User-specific Settings
+        $userSettings = collect();
+        if ($userId) {
+            $userSettings = static::query()
+                ->where('user_id', $userId)
+                ->get();
+        }
+
+        // 3. Merge: User settings override global settings
+        $merged = $globalSettings->keyBy('key')->merge(
+            $userSettings->keyBy('key')
+        )->values();
+
+        // 4. Transform media URLs
+        $merged->transform(function ($setting) {
+            if (in_array($setting->key, self::MEDIA_KEYS)) {
+                $setting->value = self::transformMediaUrl($setting->value);
+            }
+            return $setting;
+        });
+
+        return $merged;
     }
 }

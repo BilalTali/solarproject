@@ -16,42 +16,9 @@ class SettingController extends Controller
     public function index()
     {
         $userId = auth()->id();
+        $mergedSettings = Setting::getMergedSettings($userId);
 
-        // 1. Get Global Settings
-        $globalSettings = Setting::query()
-            ->whereNull('user_id')
-            ->get();
-
-        // 2. Get User-specific Settings
-        $userSettings = Setting::query()
-            ->where('user_id', $userId)
-            ->get();
-
-        // 3. Merge: User settings override global settings
-        // We use the 'key' as the identifier
-        $mergedSettings = $globalSettings->keyBy('key')->merge(
-            $userSettings->keyBy('key')
-        )->values();
-
-        // 4. Transform media paths to full URLs for the frontend
-        $mediaKeys = [
-            'company_favicon',
-            'company_logo',
-            'company_logo_2',
-            'company_signature',
-            'company_seal',
-            'hero_video'
-        ];
-
-        $mergedSettings->transform(function ($setting) use ($mediaKeys) {
-            if (in_array($setting->key, $mediaKeys) && $setting->value) {
-                // Return full URL to ensure frontend can always load it
-                $setting->value = asset('storage/' . $setting->value);
-            }
-            return $setting;
-        });
-
-        // 5. Group by 'group' as the frontend expects
+        // Group by 'group' as the frontend expects
         $groupedSettings = $mergedSettings->groupBy('group');
 
         return response()->json([

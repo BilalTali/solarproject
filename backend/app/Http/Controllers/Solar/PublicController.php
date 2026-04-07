@@ -36,25 +36,15 @@ class PublicController extends Controller
         $superAdmin = User::roleSuperAdmin()->first();
         $userId = $superAdmin ? $superAdmin->id : null;
 
-        $settings = Setting::query()
+        // Use centralized merging and transformation logic
+        $settings = Setting::getMergedSettings($userId)
             ->whereIn('key', $keys)
-            ->where('user_id', $userId)
-            ->get()
-            ->keyBy('key');
+            ->pluck('value', 'key');
 
+        // Ensure all requested keys are present in the result
         $result = [];
         foreach ($keys as $key) {
-            /** @var Setting|null $item */
-            $item = $settings[$key] ?? null;
-            $value = $item?->value;
-
-            // File paths — return as full URLs
-            $assetKeys = ['company_logo', 'company_logo_2', 'company_signature', 'company_seal', 'company_favicon', 'hero_video'];
-            if (in_array($key, $assetKeys) && $value) {
-                $value = asset('storage/'.$value);
-            }
-
-            $result[$key] = $value;
+            $result[$key] = $settings[$key] ?? null;
         }
 
         return response()->json(['success' => true, 'data' => $result]);
