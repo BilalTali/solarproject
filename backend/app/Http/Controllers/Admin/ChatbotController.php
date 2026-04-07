@@ -147,7 +147,7 @@ class ChatbotController extends Controller
 
         return response()->json([
             'contacts' => $contacts,
-            'chatbot_ready' => !empty(config('services.whatsapp.access_token'))
+            'chatbot_ready' => false // Forced to false to show 'under development' state
         ]);
     }
 

@@ -126,7 +126,7 @@ export default function SolarCalculator() {
           </div>
 
           {/* Stat cards */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))", gap:14, marginBottom:28 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:14, marginBottom:28 }}>
             {[
               { label:"Project Cost",          value:inr(sys.cost),          sub:"Full installation",                icon:"🏗️", accent:false },
               { label:"Govt. Subsidy",          value:inr(sys.subsidy),       sub:`${subsidyPct}% of project cost`,   icon:"🏛️", accent:true  },

@@ -548,4 +548,28 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
 
         return $chain;
     }
+
+    /**
+     * Get the ID of the root Admin for this user by traversing the hierarchy.
+     * Returns null if no Admin is found or if the user is a Super Admin.
+     */
+    public function getRootAdminId(): ?int
+    {
+        if ($this->isSuperAdmin()) {
+            return null;
+        }
+
+        if ($this->isAdmin()) {
+            return $this->id;
+        }
+
+        $chain = $this->hierarchyChain();
+        foreach ($chain as $userObj) {
+            if ($userObj->isAdmin() && !$userObj->isSuperAdmin()) {
+                return $userObj->id;
+            }
+        }
+
+        return null;
+    }
 }

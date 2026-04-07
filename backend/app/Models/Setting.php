@@ -49,12 +49,27 @@ class Setting extends Model
         static::saved(function ($setting) {
             $userId = $setting->user_id ?? 'global';
             Cache::forget("settings.{$userId}." . $setting->key);
+            self::clearApiCaches();
         });
 
         static::deleted(function ($setting) {
             $userId = $setting->user_id ?? 'global';
             Cache::forget("settings.{$userId}." . $setting->key);
+            self::clearApiCaches();
         });
+    }
+
+    protected static function clearApiCaches()
+    {
+        $host = request()->getHost();
+        $endpoints = [
+            "http://{$host}/api/v1/public/settings",
+            "https://{$host}/api/v1/public/settings",
+        ];
+
+        foreach ($endpoints as $url) {
+            Cache::forget('api_cache_' . md5($url . '_guest'));
+        }
     }
 
     /**
@@ -73,14 +88,13 @@ class Setting extends Model
         return asset('storage/' . $value);
     }
 
-    /**
-     * Get a setting value, scoped to a user if provided.
-     */
     public static function getValue(string $key, $default = null, $userId = null): mixed
     {
-        // If no userId provided, attempt to use authenticated user
+        // If no userId provided, attempt to use authenticated user's root admin context
         if ($userId === null && auth()->check()) {
-            $userId = auth()->id();
+            /** @var \App\Models\User $user */
+            $user = auth()->user();
+            $userId = $user->getRootAdminId();
         }
 
         $userIdStr = $userId ?? 'global';

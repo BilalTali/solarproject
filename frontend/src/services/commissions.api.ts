@@ -77,3 +77,16 @@ export const agentCommissionsApi = {
     markPaid: (id: number, payload: MarkCommissionPaidPayload) =>
         axiosInstance.put(`/agent/commissions/${id}/mark-paid`, payload),
 };
+
+// ── SUPER ADMIN (settles commissions for Admins) ───────────────────
+export const superAdminCommissionsApi = {
+    getAll: (params?: Record<string, unknown>) =>
+        axiosInstance.get<{ data: { data: Commission[]; meta: { current_page: number; last_page: number; total: number } } }>('/super-admin/commissions', { params }),
+
+    getSummary: () =>
+        axiosInstance.get<{ data: { admin_unpaid_count: number; admin_unpaid_amount: number; admin_paid_amount: number; all_time_disbursed: number } }>('/super-admin/commissions/summary'),
+
+    settle: (id: number, payload: MarkCommissionPaidPayload) =>
+        axiosInstance.put(`/super-admin/commissions/${id}/settle`, payload),
+};
+

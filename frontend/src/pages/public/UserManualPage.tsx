@@ -37,7 +37,7 @@ export default function UserManualPage() {
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-[#F97316] font-bold text-xs uppercase tracking-widest mb-6">
                             <BookOpen className="w-4 h-4" /> v1.0 • March 2026
                         </div>
-                        <h1 className="text-4xl md:text-6xl font-display font-black mb-4 tracking-tight">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-black mb-4 tracking-tight">
                             User <span className="text-[#F97316]">Manual</span>
                         </h1>
                         <p className="text-xl text-blue-100 max-w-2xl font-light leading-relaxed">
@@ -91,7 +91,7 @@ export default function UserManualPage() {
                             <article className="prose prose-blue max-w-none prose-headings:font-display prose-headings:font-black prose-headings:tracking-tight prose-p:text-neutral-600 prose-p:leading-relaxed">
 
                                 <section id="intro">
-                                    <h2 className="text-3xl md:text-4xl text-[#0A3D7A]">1. What is {companyName}?</h2>
+                                    <h2 className="text-3xl md:text-4xl lg:text-5xl text-[#0A3D7A]">1. What is {companyName}?</h2>
                                     <p>
                                         {companyName} (andleebsurya.in) is a private digital facilitation platform operated by <strong>Andleeb Cluster of Services Pvt</strong>, in affiliation with <strong>Malik Solar Tech Agency</strong> — an Authorized Distributor for the PM Surya Ghar Muft Bijli Yojana in Jammu & Kashmir and Ladakh.
                                     </p>

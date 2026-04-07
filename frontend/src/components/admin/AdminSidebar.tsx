@@ -38,7 +38,7 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, clearAuth } = useAuthStore();
-    const { companyName } = useAdminSettings();
+    const { companyName, logo } = useAdminSettings();
 
     const isOperator = user?.role === 'operator';
     const NAV = isOperator ? OPERATOR_NAV : ADMIN_NAV;
@@ -56,10 +56,16 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
         <aside className="sidebar w-64 h-full flex flex-col shadow-2xl" aria-label="Admin Sidebar">
             {/* Logo */}
             <div className="flex items-center gap-2 p-5 border-b border-white/10">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center" aria-hidden="true">
-                    <Sun className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center overflow-hidden shrink-0" aria-hidden="true">
+                    {logo ? (
+                        <img src={logo} alt={companyName} className="w-full h-full object-contain" />
+                    ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center">
+                            <Sun className="w-5 h-5 text-white" />
+                        </div>
+                    )}
                 </div>
-                <span className="font-display font-bold text-white">{companyName}</span>
+                <span className="font-display font-bold text-white leading-tight">{companyName}</span>
             </div>
 
             {/* Admin Profile */}

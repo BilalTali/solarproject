@@ -173,7 +173,7 @@ export default function HomePage() {
             {/* STATS BAR */}
             <section className="bg-primary-light py-5">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-white text-center">
                         {heroStats.map((stat, idx) => (
                             <div key={idx} className="flex flex-col items-center gap-1">
                                 <div className="text-accent">
@@ -194,10 +194,10 @@ export default function HomePage() {
                         <h2 className="font-display font-bold text-3xl text-dark mb-3">{getSetting(settings, 'label_how_it_works', 'How It Works')}</h2>
                         <p className="text-neutral-600 max-w-xl mx-auto">Five simple steps from application to free electricity</p>
                     </div>
-                    <div className="flex flex-col md:flex-row items-center gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 items-center gap-6">
                         {howItWorks.map((step, i, arr) => (
-                            <div key={i} className="flex items-center gap-4 w-full md:w-auto">
-                                <div className="flex-1 flex flex-col items-center text-center p-5 bg-white rounded-card shadow-card">
+                            <div key={i} className="flex items-center gap-4 w-full h-full">
+                                <div className="flex-1 flex flex-col items-center text-center p-5 bg-white rounded-card shadow-card h-full">
                                     <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-3">
                                         <DynamicIcon name={step.icon} className="w-7 h-7" />
                                     </div>
@@ -205,7 +205,7 @@ export default function HomePage() {
                                     <div className="font-display font-bold text-dark text-base mb-1">{step.title}</div>
                                     <div className="text-neutral-600 text-xs">{step.desc}</div>
                                 </div>
-                                {i < arr.length - 1 && <ArrowRight className="hidden md:block w-6 h-6 text-neutral-600 shrink-0" />}
+                                {i < arr.length - 1 && <ArrowRight className="hidden lg:block w-6 h-6 text-neutral-600 shrink-0" />}
                             </div>
                         ))}
                     </div>
@@ -272,7 +272,7 @@ export default function HomePage() {
                     </div>
                     <div className="card">
                         <label className="label">Select System Capacity</label>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
                             {activeSubsidyData.map((opt) => (
                                 <button key={opt.id} onClick={() => setCapacitySelected(opt.id)} className={`py-3 px-2 rounded-xl border-2 text-sm font-semibold transition-all ${capacitySelected === opt.id ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20' : 'border-gray-200 text-neutral-600 hover:border-primary/50'}`}>
                                     {opt.label}
@@ -334,7 +334,7 @@ export default function HomePage() {
                     <div className="text-center mb-12">
                         <h2 className="font-display font-bold text-3xl text-dark mb-3">Why Choose {getSetting(settings, 'company_name', 'SuryaMitra')}?</h2>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {whyChooseUs.map((item, idx) => (
                             <div key={idx} className="card hover:shadow-lg transition-shadow">
                                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-4">

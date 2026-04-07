@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
-import { OfferExcitementCard } from './OfferExcitementCard'
+import { OfferCard } from '../shared/OfferCard' // Changed from OfferExcitementCard
 import { OfferNotificationBanner } from './OfferNotificationBanner'
 import { OfferWithProgress, UserOfferProgress, computeUrgencyScore, OfferProgress } from '@/types'
 import api from '@/services/axios'
@@ -22,8 +22,8 @@ export const OffersDashboardSection = ({ role, onRedeem }: Props) => {
             const res = await api.get(endpoint);
             return res.data.data ?? [];
         },
-        refetchInterval: 60_000,
-        staleTime: 30_000,
+        refetchInterval: 20_000,
+        staleTime: 10_000,
     })
 
     // Live offers only:
@@ -41,53 +41,89 @@ export const OffersDashboardSection = ({ role, onRedeem }: Props) => {
         const pa = pm[a.id], pb = pm[b.id]
         if (pa?.can_redeem && !pb?.can_redeem) return -1
         if (!pa?.can_redeem && pb?.can_redeem) return 1
-        return computeUrgencyScore(b, pb) - computeUrgencyScore(a, pa)
+        return computeUrgencyScore(a, pa) - computeUrgencyScore(b, pb)
     })
 
-    const display = sorted // No longer slicing to show all
     const allRoute = role === 'agent' ? '/agent/offers' : '/super-agent/offers'
 
     if (isLoading) return (
         <div className="flex gap-4 mb-6 overflow-hidden">
-            {[1, 2].map(i => <div key={i} className="h-44 w-full md:w-[calc(50%-8px)] flex-shrink-0 animate-pulse bg-white/5 border border-white/10 rounded-[22px]" />)}
+            {[1, 2].map(i => <div key={i} className="h-64 w-[320px] flex-shrink-0 animate-pulse bg-slate-100 rounded-[2.5rem]" />)}
         </div>
     )
 
-    if (!display.length) return null
+    if (!live.length) return null
 
     return (
-        <section className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="font-display font-bold text-lg text-dark">
-                    Active Offers
-                </h2>
+        <section className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-8 bg-indigo-600 rounded-full" />
+                    <div>
+                        <h2 className="font-display font-black text-2xl text-slate-900 tracking-tight leading-none">
+                            Active Offers
+                        </h2>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Exclusive Rewards for You</p>
+                    </div>
+                </div>
                 <button
                     onClick={() => navigate(allRoute)}
-                    className="flex items-center gap-1 text-sm text-primary hover:underline font-medium"
+                    className="flex items-center gap-1.5 text-[10px] text-indigo-600 hover:text-indigo-700 font-black uppercase tracking-[0.2em] bg-indigo-50 px-4 py-2 rounded-full transition-all"
                 >
-                    View All {live.length} <ChevronRight className="w-4 h-4" />
+                    View All {live.length} <ChevronRight className="w-4 h-4 stroke-[3]" />
                 </button>
             </div>
 
-            <OfferNotificationBanner offers={display.slice(0, 3)} progressMap={pm} role={role} />
+            <OfferNotificationBanner offers={live.slice(0, 3)} progressMap={pm} role={role} />
 
             <div className="relative group/scroll">
                 <div className="
-                    flex gap-4 pb-4 px-1
+                    flex gap-6 pb-12 px-1
                     overflow-x-auto scrollbar-hide snap-x snap-mandatory
                 ">
-                    {display.map(offer => (
-                        <div key={offer.id} className="w-[85%] sm:w-[calc(50%-8px)] flex-shrink-0 snap-start">
-                            <OfferExcitementCard
-                                offer={offer}
-                                progress={role === 'agent' ? offer.progress : offer.own_progress}
-                                role={role}
-                                onRedeem={onRedeem}
-                                compact={display.length >= 3}
-                            />
-                        </div>
-                    ))}
+                    {sorted.map(offer => {
+                        // Map OfferWithProgress + its own_progress/progress into the UserOfferProgress expected by OfferCard
+                        const progress = role === 'agent' ? offer.progress : offer.own_progress;
+                        
+                        if (!progress) return null;
+
+                        const cardData: UserOfferProgress = {
+                            ...progress,
+                            // Ensure shared fields from the offer itself are used if progress is missing them
+                            id: offer.id,
+                            title: offer.title,
+                            description: offer.description,
+                            prize_label: offer.prize_label,
+                            prize_amount: offer.prize_amount,
+                            prize_image_url: offer.prize_image_url,
+                            offer_from: offer.offer_from,
+                            offer_to: offer.offer_to,
+                            offer_type: offer.offer_type,
+                            target_points: offer.target_points,
+                            is_featured: offer.is_featured,
+                            is_claimable: offer.is_claimable,
+                            days_remaining: offer.days_remaining
+                        };
+
+                        return (
+                            <div key={offer.id} className="w-[88vw] sm:w-[350px] flex-shrink-0 snap-start">
+                                <OfferCard
+                                    offer={cardData}
+                                    onRedeem={onRedeem}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
+                
+                {/* Visual indicator for more items */}
+                {live.length > 1 && (
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 md:hidden">
+                        {live.map((_, i) => (
+                            <div key={i} className="w-1 h-1 rounded-full bg-slate-200" />
+                        ))}
+                    </div>
+                )}
             </div>
         </section>
     )

@@ -107,4 +107,96 @@ class MonitoringController extends Controller
 
         return response()->json(['success' => true, 'data' => $query->paginate($request->per_page ?? 20)]);
     }
+
+    // ══════════════════════════════════════════════════════════════
+    // SUPER ADMIN — ADMIN COMMISSION SETTLEMENT
+    // ══════════════════════════════════════════════════════════════
+
+    /** Summary of Admin commission amounts (pending & paid) */
+    public function commissionsSummary(): JsonResponse
+    {
+        $base = Commission::query()->where(fn($q) => $q->where('payee_role', 'admin'));
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'admin_unpaid_count'  => (clone $base)->where(fn($q) => $q->where('payment_status', 'unpaid'))->count(),
+                'admin_unpaid_amount' => (float)(clone $base)->where(fn($q) => $q->where('payment_status', 'unpaid'))->sum('amount'),
+                'admin_paid_amount'   => (float)(clone $base)->where(fn($q) => $q->where('payment_status', 'paid'))->sum('amount'),
+                'all_time_disbursed'  => (float) Commission::query()->where(fn($q) => $q->where('payment_status', 'paid'))->sum('amount'),
+            ],
+        ]);
+    }
+
+    /** Paginated list of Admin commissions with optional status filter */
+    public function commissionsList(Request $request): JsonResponse
+    {
+        $query = Commission::with(['payee', 'lead', 'enteredBy', 'paidBy'])
+            ->where(fn($q) => $q->where('payee_role', 'admin'))
+            ->latest();
+
+        if ($request->filled('status') && in_array($request->status, ['paid', 'unpaid'])) {
+            $status = $request->status;
+            $query->where(fn($q) => $q->where('payment_status', $status));
+        }
+
+        if ($request->filled('payee_id')) {
+            $payeeId = $request->payee_id;
+            $query->where(fn($q) => $q->where('payee_id', $payeeId));
+        }
+
+        $commissions = $query->paginate($request->per_page ?? 20);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $commissions->items(),
+            'meta'    => [
+                'current_page' => $commissions->currentPage(),
+                'last_page'    => $commissions->lastPage(),
+                'total'        => $commissions->total(),
+            ],
+        ]);
+    }
+
+    /** Settle (mark as paid) a commission for an Admin */
+    public function settleCommission(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'payment_method'    => 'required|string|in:bank_transfer,upi,cash,cheque',
+            'payment_reference' => 'required|string|max:255',
+            'payment_notes'     => 'nullable|string|max:1000',
+        ]);
+
+        $commission = Commission::query()
+            ->where(fn($q) => $q->where('payee_role', 'admin'))
+            ->findOrFail($id);
+
+        if ($commission->payment_status === 'paid') {
+            return response()->json(['success' => false, 'message' => 'Commission is already marked as paid.'], 422);
+        }
+
+        $commission->update([
+            'payment_status'    => 'paid',
+            'paid_at'           => now(),
+            'paid_by'           => $request->user()->id,
+            'payment_method'    => $request->payment_method,
+            'payment_reference' => $request->payment_reference,
+            'payment_notes'     => $request->payment_notes ?? null,
+        ]);
+
+        app(\App\Services\NotificationService::class)->send(
+            $commission->payee_id,
+            'commission_paid',
+            '✅ Commission Payment Received',
+            "₹{$commission->amount} has been settled by Super Admin. Ref: {$request->payment_reference}",
+            ['commission_id' => $commission->id, 'amount' => $commission->amount]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Admin commission settled successfully.',
+            'data'    => $commission->fresh(['payee', 'paidBy']),
+        ]);
+    }
 }
+

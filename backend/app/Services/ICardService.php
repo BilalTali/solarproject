@@ -44,11 +44,13 @@ class ICardService
             (isset($nameParts[1]) ? substr($nameParts[1], 0, 1) : '')
         );
 
+        $adminId = $user->getRootAdminId();
+
         // ── Branding Assets (Dynamic) ─────────────────────────────
-        $logoPath = Setting::getValue('company_logo');
-        $logoPath2 = Setting::getValue('company_logo_2');
-        $signaturePath = Setting::getValue('company_signature');
-        $sealPath = Setting::getValue('company_seal');
+        $logoPath = Setting::getValue('company_logo', null, $adminId);
+        $logoPath2 = Setting::getValue('company_logo_2', null, $adminId);
+        $signaturePath = Setting::getValue('company_signature', null, $adminId);
+        $sealPath = Setting::getValue('company_seal', null, $adminId);
 
         $logoBase64 = $this->getBase64Image($logoPath);
         $logoBase64_2 = $this->getBase64Image($logoPath2);
@@ -56,23 +58,23 @@ class ICardService
         $sealBase64 = $this->getBase64Image($sealPath);
 
         // ── Company Settings ──────────────────────────────────────
-        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK');
-        $companyAddress = Setting::getValue('company_address', 'Srinagar, Jammu & Kashmir');
-        $companyEmail = Setting::getValue('company_email', 'info@suryamitra.in');
-        $companyRegNo = Setting::getValue('company_registration_no', '');
-        $websiteUrl = Setting::getValue('company_website', 'suryamitra.in');
+        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK', $adminId);
+        $companyAddress = Setting::getValue('company_address', 'Srinagar, Jammu & Kashmir', $adminId);
+        $companyEmail = Setting::getValue('company_email', 'info@suryamitra.in', $adminId);
+        $companyRegNo = Setting::getValue('company_registration_no', '', $adminId);
+        $websiteUrl = Setting::getValue('company_website', 'suryamitra.in', $adminId);
         $companyWebsite = preg_replace('#^https?://#', '', $websiteUrl);
-        $companyPhone = Setting::getValue('company_phone', '');
+        $companyPhone = Setting::getValue('company_phone', '', $adminId);
 
-        $companyAffiliatedWith = Setting::getValue('company_affiliated_with', '');
-        $authorizedSignatory = Setting::getValue('authorized_signatory', 'Authorized Signatory');
+        $companyAffiliatedWith = Setting::getValue('company_affiliated_with', '', $adminId);
+        $authorizedSignatory = Setting::getValue('authorized_signatory', 'Authorized Signatory', $adminId);
 
         // ── Card Content Settings (Dynamic) ────────────────────────
-        $icardClearance = Setting::getValue('icard_clearance', 'Level-V (Elite)');
-        $companyEmergency = Setting::getValue('company_emergency', '102');
-        $icardVerifiedBy = Setting::getValue('icard_verified_by', 'CHIEF OPERATIONS OFFICER');
+        $icardClearance = Setting::getValue('icard_clearance', 'Level-V (Elite)', $adminId);
+        $companyEmergency = Setting::getValue('company_emergency', '102', $adminId);
+        $icardVerifiedBy = Setting::getValue('icard_verified_by', 'CHIEF OPERATIONS OFFICER', $adminId);
 
-        $icardWarningText = Setting::getValue('icard_warning_text', 'This ID card remains the property of the issuing authority.');
+        $icardWarningText = Setting::getValue('icard_warning_text', 'This ID card remains the property of the issuing authority.', $adminId);
 
         // ── QR Code & Verification (New Phase 30) ──────────────────
         $frontendUrl = config('app.frontend_url') ?? env('APP_FRONTEND_URL', 'https://andleebsurya.in');
@@ -155,7 +157,7 @@ class ICardService
             $generator = new \Picqer\Barcode\BarcodeGeneratorPNG;
             $barcodeData = $generator->getBarcode(
                 $cardNumber,
-                \Picqer\Barcode\BarcodeGeneratorPNG::TYPE_CODE_128,
+                \Picqer\Barcode\BarcodeGenerator::TYPE_CODE_128,
                 2,   // width factor
                 50   // height in pixels
             );

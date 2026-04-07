@@ -12,7 +12,7 @@ class MediaController extends Controller
     public function index()
     {
         $media = Media::orderBy('sort_order')->orderBy('date', 'desc')->get()
-            ->map(fn ($m) => $this->format($m));
+            ->map(fn (Media $m) => $this->format($m));
 
         return response()->json(['success' => true, 'data' => $media]);
     }
@@ -21,6 +21,7 @@ class MediaController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
+            'winner_name' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'date' => 'nullable|date',
             'is_published' => 'sometimes|boolean',
@@ -42,6 +43,7 @@ class MediaController extends Controller
     {
         $data = $request->validate([
             'title' => 'sometimes|string|max:255',
+            'winner_name' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'date' => 'nullable|date',
             'is_published' => 'sometimes|boolean',
@@ -77,6 +79,7 @@ class MediaController extends Controller
         return [
             'id' => $m->id,
             'title' => $m->title,
+            'winner_name' => $m->winner_name,
             'description' => $m->description,
             'image_url' => $m->image_path ? asset('storage/'.$m->image_path) : null,
             'date' => $m->date?->format('Y-m-d'),

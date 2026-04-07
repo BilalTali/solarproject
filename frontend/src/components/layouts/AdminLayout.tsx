@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
-import { useSettings } from '@/hooks/useSettings';
+import { useAdminSettings } from '@/hooks/useAdminSettings';
 
 export default function AdminLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { companyName } = useSettings();
+    const { companyName, logo } = useAdminSettings();
 
     return (
         <div className="flex h-screen bg-neutral-100 overflow-hidden">
@@ -44,7 +44,14 @@ export default function AdminLayout() {
                         >
                             <Menu className="w-5 h-5" />
                         </button>
-                        <span className="font-display font-bold text-white tracking-wide">{companyName} <span className="text-accent text-xs font-medium ml-1">Admin</span></span>
+                        <div className="flex items-center gap-2">
+                            {logo && (
+                                <div className="w-6 h-6 rounded-full overflow-hidden bg-white/10 shrink-0">
+                                    <img src={logo} alt={companyName} className="w-full h-full object-contain" />
+                                </div>
+                            )}
+                            <span className="font-display font-bold text-white tracking-wide">{companyName} <span className="text-accent text-xs font-medium ml-1">Admin</span></span>
+                        </div>
                     </header>
 
                     {/* Content Area with subtle background pattern */}

@@ -18,8 +18,8 @@ export const offersApi = {
             const { data } = await axios.post<ApiResponse<Offer>>('/admin/offers', payload);
             return data;
         },
-        update: async (id: number, payload: Partial<Offer>) => {
-            const { data } = await axios.put<ApiResponse<Offer>>(`/admin/offers/${id}`, payload);
+        update: async (id: number, payload: any) => {
+            const { data } = await axios.post<ApiResponse<Offer>>(`/admin/offers/${id}`, payload);
             return data;
         },
         delete: async (id: number) => {

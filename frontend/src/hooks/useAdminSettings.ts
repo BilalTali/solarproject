@@ -2,11 +2,18 @@ import { useQuery } from '@tanstack/react-query';
 import { settingsApi } from '@/services/settings.api';
 import { useAuthStore } from '@/hooks/store/authStore';
 
+const getFileUrl = (path: string | null | undefined) => {
+    if (!path) return '';
+    if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) return path;
+    const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').split('/api/v1')[0];
+    return `${baseUrl}/storage/${path}`;
+};
+
 export function useAdminSettings() {
     const { user } = useAuthStore();
     
     const { data: response, isLoading } = useQuery({
-        queryKey: ['admin-settings', user?.id],
+        queryKey: ['admin-settings'],
         queryFn: settingsApi.getSettings,
         enabled: !!user,
         staleTime: 1000 * 60 * 5, // 5 minutes
@@ -26,6 +33,7 @@ export function useAdminSettings() {
         settings,
         isLoading,
         companyName: settings.company_name || 'SuryaMitra',
-        logo: settings.company_logo,
+        logo: settings.company_logo ? getFileUrl(settings.company_logo) : null,
+        favicon: settings.company_favicon ? getFileUrl(settings.company_favicon) : null,
     };
 }

@@ -66,6 +66,9 @@ export interface PublicSettingsData {
     label_apply_title: string | null;
     label_apply_desc: string | null;
     label_whatsapp_text: string | null;
+    company_registration_no: string | null;
+    company_affiliated_with: string | null;
+    company_logo_2: string | null;
     external_pmsuryaghar_label: string | null;
     external_pmsuryaghar_url: string | null;
 }
@@ -73,6 +76,7 @@ export interface PublicSettingsData {
 export interface PublicAchievement {
     id: number;
     title: string;
+    winner_name: string | null;
     description: string | null;
     image_url: string | null;
     date: string | null;
@@ -90,6 +94,7 @@ export interface PublicFeedback {
 export interface PublicMedia {
     id: number;
     title: string;
+    winner_name: string | null;
     description: string | null;
     image_url: string | null;
     date: string | null;

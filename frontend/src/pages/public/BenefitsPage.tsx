@@ -90,7 +90,7 @@ export default function BenefitsPage() {
                 {/* Hero Section */}
                 <section className="bg-gradient-to-br from-primary to-blue-900 text-white py-20 px-4 mt-[-1px]">
                     <div className="max-w-6xl mx-auto text-center">
-                        <h1 className="text-4xl md:text-6xl font-display font-black mb-6 tracking-tight">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-black mb-6 tracking-tight">
                             Why Switch to <span className="text-accent underline decoration-accent/30 underline-offset-8">Solar</span>?
                         </h1>
                         <p className="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed">

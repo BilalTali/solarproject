@@ -13,13 +13,30 @@ use App\Http\Requests\UpdateSettingRequest;
 
 class SettingController extends Controller
 {
+    /**
+     * Master Branding keys reserved for Super Admin only.
+     */
+    public const MASTER_BRANDING_KEYS = [
+        'company_registration_no',
+        'company_affiliated_with',
+        'company_logo_2'
+    ];
+
     public function index()
     {
-        $userId = auth()->id();
-        $mergedSettings = Setting::getMergedSettings($userId);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $targetUserId = $user->isSuperAdmin() ? null : $user->getRootAdminId();
+        $mergedSettings = Setting::getMergedSettings($targetUserId);
 
         // Group by 'group' as the frontend expects
-        $groupedSettings = $mergedSettings->groupBy('group');
+        $groupedSettings = $mergedSettings->filter(function($setting) use ($user) {
+            // Hide Master keys from regular Admins
+            if (!$user->isSuperAdmin() && in_array($setting->key, self::MASTER_BRANDING_KEYS)) {
+                return false;
+            }
+            return true;
+        })->groupBy('group');
 
         return response()->json([
             'success' => true,
@@ -49,14 +66,22 @@ class SettingController extends Controller
                 'signatory_' => 'signatory',
             ];
 
+            $user = auth()->user();
+            $targetUserId = $user->isSuperAdmin() ? null : $user->id;
+
             foreach ($validated['settings'] as $setting) {
                 $key = $setting['key'];
                 $value = $setting['value'];
 
+                // Master Branding Protection
+                if (!$user->isSuperAdmin() && in_array($key, self::MASTER_BRANDING_KEYS)) {
+                    continue; // Refuse update for Master keys by non-Super Admin
+                }
+
                 // Determine group: keep existing group if the row exists, else derive from key prefix
                 $existing = Setting::query()
                     ->where('key', $key)
-                    ->where('user_id', auth()->id())
+                    ->where('user_id', $targetUserId)
                     ->first();
 
                 if ($existing) {
@@ -73,7 +98,7 @@ class SettingController extends Controller
                         'key' => $key,
                         'value' => $value,
                         'group' => $group,
-                        'user_id' => auth()->id()
+                        'user_id' => $targetUserId
                     ]);
                 }
             }
@@ -91,6 +116,9 @@ class SettingController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update settings: '.$e->getMessage(),
+                'error_type' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ], 500);
         }
     }
@@ -108,11 +136,19 @@ class SettingController extends Controller
         $key = $request->input('key');
         $file = $request->file('file');
 
+        $user = auth()->user();
+        $targetUserId = $user->isSuperAdmin() ? null : $user->id;
+
+        // Master Branding Protection for file uploads
+        if (!$user->isSuperAdmin() && in_array($key, self::MASTER_BRANDING_KEYS)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Only Super Admin can modify Master Branding assets.'], 403);
+        }
+
         // Delete old file if exists
         /** @var Setting|null $existing */
         $existing = Setting::query()
             ->where('key', $key)
-            ->where('user_id', auth()->id())
+            ->where('user_id', $targetUserId)
             ->first();
 
         if ($existing && $existing->value) {
@@ -129,7 +165,7 @@ class SettingController extends Controller
         $path = $file->store($folder, 'public');
 
         Setting::updateOrCreate(
-            ['key' => $key, 'user_id' => auth()->id()],
+            ['key' => $key, 'user_id' => $targetUserId],
             [
                 'value' => $path,
                 'group' => match ($key) {

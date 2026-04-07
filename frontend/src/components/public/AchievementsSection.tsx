@@ -21,7 +21,7 @@ export default function AchievementsSection() {
                     <div className="inline-flex items-center gap-2 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-pill mb-4 border border-primary/10">
                         <Trophy className="w-3.5 h-3.5" /> Proven Track Record
                     </div>
-                    <h2 className="font-display font-black text-4xl md:text-5xl text-dark mb-4">Milestones We've Delivered</h2>
+                    <h2 className="font-display font-black text-4xl lg:text-5xl text-dark mb-4">Milestones We've Delivered</h2>
                     <p className="text-neutral-600 max-w-xl mx-auto text-lg">Real impact for families across India through sustainable energy.</p>
                 </div>
 
@@ -32,14 +32,14 @@ export default function AchievementsSection() {
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-[280px]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-[280px]">
                         {achievements.map((a: PublicAchievement, idx) => {
                             // First achievement and every 5th one or so gets larger
                             const isLarge = idx === 0 || (idx > 0 && idx % 7 === 0);
                             return (
                                 <div
                                     key={a.id}
-                                    className={`group relative rounded-card overflow-hidden bg-white border border-neutral-100 shadow-card hover:shadow-premium transition-all duration-500 hover:-translate-y-1 ${isLarge ? 'md:col-span-2 md:row-span-2' : ''}`}
+                                    className={`group relative rounded-card overflow-hidden bg-white border border-neutral-100 shadow-card hover:shadow-premium transition-all duration-500 hover:-translate-y-1 ${isLarge ? 'sm:col-span-2 lg:row-span-2' : ''}`}
                                 >
                                     {a.image_url ? (
                                         <div className="absolute inset-0 z-0">

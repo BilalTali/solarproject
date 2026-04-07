@@ -631,8 +631,8 @@ const AdminSettingsPage: React.FC = () => {
                                 <h3 className="font-bold text-slate-800 mb-4">Company Contact Information</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {F('company_name', 'Company Name', 'text', 'SURYAMITRA SOLAR NETWORK')}
-                                    {F('company_registration_no', 'Registration Number', 'text', 'REG/SMS/2026/0892')}
-                                    {F('company_affiliated_with', 'Affiliated with', 'text', 'Government of India / MNRE')}
+                                    {user?.role === 'super_admin' && F('company_registration_no', 'Registration Number', 'text', 'REG/SMS/2026/0892')}
+                                    {user?.role === 'super_admin' && F('company_affiliated_with', 'Affiliated with', 'text', 'Government of India / MNRE')}
                                     {F('company_email', 'Support Email', 'email', 'info@suryamitra.in')}
                                     {F('company_phone', 'Support Phone', 'text', '+91-9906766655')}
                                     {F('company_mobile', 'Support Mobile', 'tel', '+91 911 911 9111')}
@@ -702,7 +702,7 @@ const AdminSettingsPage: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-4">
                                 {FU('company_logo', 'Company Logo', 'image/*')}
                                 {FU('company_favicon', 'Favicon (.ico, .png, .svg)', '.ico,.png,.svg,image/*')}
-                                {FU('company_logo_2', 'Affiliation Logo', 'image/*')}
+                                {user?.role === 'super_admin' && FU('company_logo_2', 'Affiliation Logo', 'image/*')}
                                 {FU('company_signature', 'Authorized Signature', 'image/*')}
                                 {FU('company_seal', 'Official Seal', 'image/*')}
                             </div>

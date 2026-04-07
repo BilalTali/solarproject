@@ -28,7 +28,7 @@ export default function Navbar() {
 
     return (
         <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100 shadow-sm">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <div className="flex items-center gap-4">
@@ -44,13 +44,13 @@ export default function Navbar() {
                                 {settings?.company_name || 'AndleebSurya'}
                             </span>
                         </Link>
-                        <div className="hidden md:block">
+                        <div className="hidden lg:block">
                             <LanguageSwitcher className="ml-2" variant="light" />
                         </div>
                     </div>
 
                     {/* Desktop Nav */}
-                    <div className="hidden md:flex items-center gap-4">
+                    <div className="hidden lg:flex items-center gap-4">
                         <Link
                             to="/"
                             className="text-sm font-bold text-neutral-600 px-6 py-2.5 rounded-xl hover:bg-neutral-50 hover:text-primary transition-all duration-300"
@@ -84,13 +84,13 @@ export default function Navbar() {
                     </div>
 
                     {/* CTAs */}
-                    <div className="hidden md:flex items-center gap-3">
+                    <div className="hidden lg:flex items-center gap-3">
                         <a href="/#lead-form" className="btn-accent text-sm py-2 px-5">{settings?.nav_cta_electricity || t('home.hero_cta_primary')}</a>
                         <Link to="/login" className="btn-ghost text-sm py-2 px-5">{settings?.nav_portal_login || t('nav.login')}</Link>
                     </div>
 
                     {/* Hamburger */}
-                    <div className="flex md:hidden items-center gap-3">
+                    <div className="flex lg:hidden items-center gap-3">
                         <LanguageSwitcher variant="light" />
                         <button onClick={() => setIsOpen(!isOpen)} className="p-2 rounded-lg text-neutral-600 hover:bg-neutral-100">
                             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -100,7 +100,7 @@ export default function Navbar() {
 
                 {/* Mobile Nav */}
                 {isOpen && (
-                    <div className="md:hidden py-4 border-t border-gray-100 flex flex-col gap-2 animate-in slide-in-from-top-2">
+                    <div className="lg:hidden py-4 border-t border-gray-100 flex flex-col gap-2 animate-in slide-in-from-top-2">
                         <Link to="/" className="text-base font-bold text-neutral-600 hover:text-primary py-3 px-4 rounded-xl hover:bg-neutral-50 transition-all" onClick={() => setIsOpen(false)}>{settings?.nav_home || t('nav.home')}</Link>
                         <Link to="/media" className="text-base font-bold text-neutral-600 hover:text-primary py-3 px-4 rounded-xl hover:bg-neutral-50 transition-all" onClick={() => setIsOpen(false)}>{settings?.nav_rewards || t('nav.benefits')}</Link>
                         <Link to="/solar-subsidy-calculator" className="text-base font-bold text-neutral-600 hover:text-primary py-3 px-4 rounded-xl hover:bg-neutral-50 transition-all" onClick={() => setIsOpen(false)}>{settings?.nav_calculator || t('nav.calculator')}</Link>

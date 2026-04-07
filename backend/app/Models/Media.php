@@ -33,6 +33,7 @@ class Media extends Model
 {
     protected $fillable = [
         'title',
+        'winner_name',
         'description',
         'image_path',
         'date',

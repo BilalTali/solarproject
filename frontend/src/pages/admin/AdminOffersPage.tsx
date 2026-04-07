@@ -105,6 +105,7 @@ export const AdminOffersPage: React.FC = () => {
         if (prizeImageFile) fd.append('prize_image', prizeImageFile);
 
         if (editingOffer) {
+            fd.append('_method', 'PUT');
             updateMutation.mutate({ id: editingOffer.id, payload: fd });
         } else {
             createMutation.mutate(fd);

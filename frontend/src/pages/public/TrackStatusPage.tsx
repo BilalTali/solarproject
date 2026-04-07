@@ -356,7 +356,7 @@ export default function TrackStatusPage() {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-6 lg:gap-3 relative">
+                                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-6 lg:gap-3 relative">
                                         {steps.map((step, idx) => {
                                             const stepNum = idx + 1;
                                             const isCompleted = currentStep > stepNum;

@@ -9,7 +9,7 @@ import { mediaApi, type AdminMedia } from '@/services/media.api';
 
 const AdminMediaPage: React.FC = () => {
     const queryClient = useQueryClient();
-    const [mediaForm, setMediaForm] = useState({ title: '', description: '', date: '', is_published: true });
+    const [mediaForm, setMediaForm] = useState({ title: '', winner_name: '', description: '', date: '', is_published: true });
     const [mediaImage, setMediaImage] = useState<File | null>(null);
     const [editingMedia, setEditingMedia] = useState<AdminMedia | null>(null);
 
@@ -24,7 +24,7 @@ const AdminMediaPage: React.FC = () => {
             queryClient.invalidateQueries({ queryKey: ['admin-media'] });
             queryClient.invalidateQueries({ queryKey: ['public-media'] });
             toast.success('Media entry added');
-            setMediaForm({ title: '', description: '', date: '', is_published: true });
+            setMediaForm({ title: '', winner_name: '', description: '', date: '', is_published: true });
             setMediaImage(null);
         },
         onError: () => toast.error('Failed to add media'),
@@ -100,6 +100,16 @@ const AdminMediaPage: React.FC = () => {
                         </div>
 
                         <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Winner Name</label>
+                            <input
+                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent bg-white transition-all text-sm"
+                                value={mediaForm.winner_name}
+                                onChange={e => setMediaForm(p => ({ ...p, winner_name: e.target.value }))}
+                                placeholder="e.g. Rahul Sharma"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Date</label>
                             <div className="relative">
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -138,6 +148,21 @@ const AdminMediaPage: React.FC = () => {
                             </div>
                         </div>
 
+                        {/* Published toggle */}
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                            <div>
+                                <p className="text-xs font-bold text-slate-700">Show on Public Page</p>
+                                <p className="text-[10px] text-slate-400 mt-0.5">Visible at andleebsurya.in/media</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setMediaForm(p => ({ ...p, is_published: !p.is_published }))}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${mediaForm.is_published ? 'bg-primary' : 'bg-slate-300'}`}
+                            >
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${mediaForm.is_published ? 'translate-x-6' : 'translate-x-1'}`} />
+                            </button>
+                        </div>
+
                         <div className="flex gap-3 pt-2">
                             <button
                                 type="submit"
@@ -148,11 +173,11 @@ const AdminMediaPage: React.FC = () => {
                                 {editingMedia ? 'Save Changes' : 'Add Media'}
                             </button>
                             {editingMedia && (
-                                <button
+                                    <button
                                     type="button"
                                     onClick={() => {
                                         setEditingMedia(null);
-                                        setMediaForm({ title: '', description: '', date: '', is_published: true });
+                                        setMediaForm({ title: '', winner_name: '', description: '', date: '', is_published: true });
                                         setMediaImage(null);
                                     }}
                                     className="px-4 py-2.5 text-sm text-slate-500 hover:bg-slate-100 rounded-xl font-bold border border-slate-100"
@@ -184,10 +209,14 @@ const AdminMediaPage: React.FC = () => {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h5 className="font-bold text-slate-800 truncate">{m.title}</h5>
+                                        {m.winner_name && <p className="text-xs font-bold text-accent mb-0.5 tracking-tight flex items-center gap-1.5">Winner: {m.winner_name}</p>}
                                         <p className="text-xs text-slate-500 mb-1 line-clamp-1">{m.description || 'No description'}</p>
                                         <div className="flex items-center gap-3">
                                             <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter flex items-center gap-1">
                                                 <Calendar size={10} /> {m.date || 'No date'}
+                                            </span>
+                                            <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full ${m.is_published ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>
+                                                {m.is_published ? 'Published' : 'Draft'}
                                             </span>
                                         </div>
                                     </div>
@@ -197,6 +226,7 @@ const AdminMediaPage: React.FC = () => {
                                                 setEditingMedia(m);
                                                 setMediaForm({
                                                     title: m.title,
+                                                    winner_name: m.winner_name || '',
                                                     description: m.description || '',
                                                     date: m.date || '',
                                                     is_published: m.is_published

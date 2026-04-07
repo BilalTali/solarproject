@@ -62,20 +62,35 @@ export const DEFAULT_SETTINGS: PublicSettingsData = {
     label_apply_title: 'Apply for Free Solar Electricity',
     label_apply_desc: 'Fill the form below and our team will call you within 24 hours',
     label_whatsapp_text: 'WhatsApp Us',
+    company_registration_no: null,
+    company_affiliated_with: null,
+    company_logo_2: null,
     external_pmsuryaghar_label: 'pmsuryaghar.gov.in',
     external_pmsuryaghar_url: 'https://pmsuryaghar.gov.in',
+};
+
+const getFileUrl = (path: string | null | undefined) => {
+    if (!path) return '';
+    if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) return path;
+    const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').split('/api/v1')[0];
+    return `${baseUrl}/storage/${path}`;
 };
 
 export function useSettings() {
     const { data: settings = DEFAULT_SETTINGS, isLoading } = useQuery({
         queryKey: ['public-settings'],
         queryFn: publicApi.getSettings,
-        staleTime: 1000 * 60 * 10, // 10 minutes
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
 
     return {
         settings,
         isLoading,
         companyName: settings.company_name || 'SuryaMitra',
+        affiliatedWith: settings.company_affiliated_with || '',
+        registrationNo: settings.company_registration_no,
+        logo: settings.company_logo ? getFileUrl(settings.company_logo) : null,
+        masterLogo: settings.company_logo_2 ? getFileUrl(settings.company_logo_2) : null,
+        favicon: settings.company_favicon ? getFileUrl(settings.company_favicon) : null,
     };
 }

@@ -14,7 +14,7 @@ export default function HeroSection() {
     const hasVideo = !!settings.hero_video;
 
     return (
-        <section className="relative overflow-hidden min-h-[600px] md:min-h-[800px] flex items-center pt-20">
+        <section className="relative overflow-hidden min-h-[500px] md:min-h-[700px] lg:min-h-[800px] flex items-center pt-20">
             {/* Background Layer */}
             <div className="absolute inset-0 z-0">
                 {hasVideo ? (
@@ -45,7 +45,7 @@ export default function HeroSection() {
                             PM Surya Ghar Yojana 2024
                         </div>
 
-                        <h1 className="font-display font-black text-4xl sm:text-5xl md:text-7xl text-white leading-[1.1] mb-8">
+                        <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-[1.1] mb-8">
                             {((settings?.hero_headline ?? t('home.hero_title')) || '').split(' ').map((word: string, i: number) => (
                                 <span key={i} className={word.toLowerCase() === 'free' || word.toLowerCase() === 'units' ? 'text-accent text-glow' : ''}>
                                     {word}{' '}
@@ -53,7 +53,7 @@ export default function HeroSection() {
                             ))}
                         </h1>
 
-                        <p className="text-white/70 text-lg md:text-xl mb-10 max-w-xl leading-relaxed font-body">
+                        <p className="text-white/70 text-lg lg:text-xl mb-10 max-w-xl leading-relaxed font-body">
                             {settings.hero_subheadline || t('home.hero_subtitle')}
                         </p>
 

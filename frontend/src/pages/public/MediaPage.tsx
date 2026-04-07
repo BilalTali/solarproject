@@ -110,9 +110,16 @@ export default function MediaPage() {
                                             {/* Glowing bottom line */}
                                             <div className="absolute bottom-0 left-0 h-1 bg-accent w-0 group-hover:w-full transition-all duration-700" />
 
-                                            <h3 className="text-2xl font-display font-black text-dark mb-4 group-hover:text-primary transition-colors leading-tight">
-                                                {m.title}
-                                            </h3>
+                                            <div className="mb-2">
+                                                <h3 className="text-2xl font-display font-black text-dark group-hover:text-primary transition-colors leading-tight">
+                                                    {m.winner_name || m.title}
+                                                </h3>
+                                                {m.winner_name && (
+                                                    <p className="text-sm font-black uppercase tracking-widest text-accent mt-1 drop-shadow-sm">
+                                                        {m.title}
+                                                    </p>
+                                                )}
+                                            </div>
 
                                             {m.description && (
                                                 <p className="text-neutral-500 text-base leading-relaxed mb-6 line-clamp-3">

@@ -32,19 +32,22 @@ class PublicController extends Controller
             'footer_link_faq', 'footer_link_privacy', 'footer_link_terms', 'footer_link_refund'
         ];
 
-        // Determine the primary user ID for public settings — typically the first Super Admin
-        $superAdmin = User::roleSuperAdmin()->first();
-        $userId = $superAdmin ? $superAdmin->id : null;
-
-        // Use centralized merging and transformation logic
-        $settings = Setting::getMergedSettings($userId)
+        // Super Admin manages the global Master Branding (user_id = null)
+        $settings = Setting::whereNull('user_id')
             ->whereIn('key', $keys)
-            ->pluck('value', 'key');
+            ->get();
 
-        // Ensure all requested keys are present in the result
         $result = [];
         foreach ($keys as $key) {
-            $result[$key] = $settings[$key] ?? null;
+            $setting = $settings->firstWhere('key', $key);
+            $value = $setting ? (string) $setting->value : null;
+
+            // Auto-transform media keys (from Setting model)
+            if (in_array($key, Setting::MEDIA_KEYS)) {
+                $value = Setting::transformMediaUrl($value);
+            }
+
+            $result[$key] = $value;
         }
 
         return response()->json(['success' => true, 'data' => $result]);
@@ -62,6 +65,7 @@ class PublicController extends Controller
             ->map(fn ($a) => [
                 'id' => $a->id,
                 'title' => $a->title,
+                'winner_name' => $a->winner_name,
                 'description' => $a->description,
                 'image_url' => $a->image_path ? asset('storage/'.$a->image_path) : null,
                 'date' => $a->date?->format('d M Y'),

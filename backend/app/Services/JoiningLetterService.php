@@ -59,25 +59,30 @@ class JoiningLetterService
             default => 'MEMBER',
         };
 
+        $adminId = $user->getRootAdminId();
+
         // ── Company Settings (Shared with ICard) ──────────────────
-        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK');
-        $companyAddress = Setting::getValue('company_address', 'Srinagar, Jammu & Kashmir');
-        $companyEmail = Setting::getValue('company_email', 'info@suryamitra.in');
-        $companyWebsite = Setting::getValue('company_website', 'https://suryamitra.in');
-        $companyPhone = Setting::getValue('company_phone', '');
-        $companyRegNo = Setting::getValue('company_registration_no', '');
-        $companyAffiliatedWith = Setting::getValue('company_affiliated_with', '');
-        $companyTagline = Setting::getValue('company_tagline', 'Empowering Sustainable Futures');
+        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK', $adminId);
+        $companyAddress = Setting::getValue('company_address', 'Srinagar, Jammu & Kashmir', $adminId);
+        $companyEmail = Setting::getValue('company_email', 'info@suryamitra.in', $adminId);
+        $companyWebsite = Setting::getValue('company_website', 'https://suryamitra.in', $adminId);
+        $companyPhone = Setting::getValue('company_phone', '', $adminId);
+        $companyRegNo = Setting::getValue('company_registration_no', '', $adminId);
+        $companyAffiliatedWith = Setting::getValue('company_affiliated_with', '', $adminId);
+        $companyTagline = Setting::getValue('company_tagline', 'Empowering Sustainable Futures', $adminId);
 
         // ── Branding Assets (Dynamic) ─────────────────────────────
-        $logoPath = Setting::getValue('company_logo');
-        $signaturePath = Setting::getValue('company_signature');
+        $logoPath = Setting::getValue('company_logo', null, $adminId);
+        $signaturePath = Setting::getValue('company_signature', null, $adminId);
 
         $logoBase64 = $this->getBase64Image($logoPath);
         $sigBase64 = $this->getBase64Image($signaturePath);
 
         // ── Legacy Setting Fetch for Other Text ────────────────────
-        $settings = Setting::query()->where(fn ($q) => $q->whereIn('group', ['company', 'signatory', 'letter']))->get()->pluck('value', 'key')->toArray();
+        $settings = Setting::getMergedSettings($adminId)
+            ->whereIn('group', ['company', 'signatory', 'letter'])
+            ->pluck('value', 'key')
+            ->toArray();
 
         // ── Process Body Placeholders ─────────────────────────────
         $bodyTemplate = $user->role === 'super_agent'
@@ -169,7 +174,7 @@ class JoiningLetterService
             $generator = new \Picqer\Barcode\BarcodeGeneratorPNG;
             $barcodeData = $generator->getBarcode(
                 $cardNumber,
-                \Picqer\Barcode\BarcodeGeneratorPNG::TYPE_CODE_128,
+                \Picqer\Barcode\BarcodeGenerator::TYPE_CODE_128,
                 2,
                 50
             );
@@ -264,7 +269,7 @@ class JoiningLetterService
             // Check storage if not in public
             if (Storage::disk('public')->exists($path)) {
                 $content = Storage::disk('public')->get($path);
-                $mime = Storage::disk('public')->mimeType($path);
+                $mime = mime_content_type(Storage::disk('public')->path($path)) ?: 'image/png';
 
                 return 'data:'.$mime.';base64,'.base64_encode($content);
             }

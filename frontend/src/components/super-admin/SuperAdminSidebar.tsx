@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-    LayoutDashboard, Users, Shield, FileText, Monitor, LogOut, ShieldAlert, HelpCircle, MessageSquare
+    LayoutDashboard, Users, Shield, FileText, Monitor, LogOut, ShieldAlert, HelpCircle, MessageSquare, IndianRupee, Settings
 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -11,6 +11,7 @@ import { useSettings } from '@/hooks/useSettings';
 const SUPER_ADMIN_NAV = [
     { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', to: '/super-admin/dashboard' },
     { icon: <ShieldAlert className="w-5 h-5" />, label: 'Manage Admins', to: '/super-admin/admins' },
+    { icon: <IndianRupee className="w-5 h-5" />, label: 'Commission Settlements', to: '/super-admin/commissions' },
     { icon: <hr className="border-white/10 my-2" />, label: '', to: '', divider: true },
     { icon: <Monitor className="w-5 h-5" />, label: 'Monitor BDMs (SA)', to: '/super-admin/monitor/super-agents' },
     { icon: <Users className="w-5 h-5" />, label: 'Monitor BDEs (Agent)', to: '/super-admin/monitor/agents' },
@@ -19,17 +20,18 @@ const SUPER_ADMIN_NAV = [
     { icon: <HelpCircle className="w-5 h-5" />, label: 'Help Center', to: '/super-admin/help-center' },
     { icon: <MessageSquare className="w-5 h-5" />, label: 'WhatsApp Chatbot', to: '/super-admin/chatbot' },
     { icon: <Shield className="w-5 h-5" />, label: 'Global Reports', to: '/super-admin/reports' },
+    { icon: <Settings className="w-5 h-5" />, label: 'Profile & Settings', to: '/super-admin/profile' },
 ];
 
 export default function SuperAdminSidebar({ onClose }: { onClose?: () => void }) {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, clearAuth } = useAuthStore();
-    const { companyName } = useSettings();
-
+    const { affiliatedWith, logo, masterLogo } = useSettings();
+    
     const logoutMutation = useMutation({
         mutationFn: authApi.logout,
-        onSettled: () => {
+        onSuccess: () => {
             clearAuth();
             navigate('/super-admin/login');
             toast.success('Logged out successfully');
@@ -40,12 +42,23 @@ export default function SuperAdminSidebar({ onClose }: { onClose?: () => void })
         <aside className="sidebar sidebar-premium w-64 h-full flex flex-col shadow-2xl bg-neutral-900 border-r border-white/5" aria-label="Super Admin Sidebar">
             {/* Logo */}
             <div className="flex items-center gap-2 p-5 border-b border-white/10 bg-black/20">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg shadow-primary/20" aria-hidden="true">
-                    <Shield className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center overflow-hidden shrink-0 shadow-lg" aria-hidden="true">
+                    {masterLogo || logo ? (
+                        <img src={masterLogo || logo || ''} alt={affiliatedWith || 'Master identity'} className="w-full h-full object-contain" />
+                    ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center">
+                            <Shield className="w-5 h-5 text-white" />
+                        </div>
+                    )}
                 </div>
-                <div className="flex flex-col">
-                    <span className="font-display font-bold text-white text-sm leading-none">{companyName}</span>
-                    <span className="text-[10px] text-primary font-bold uppercase tracking-widest mt-1">Super Admin</span>
+                <div className="flex flex-col min-w-0">
+                    <span className="font-display font-black text-white text-[11px] leading-tight uppercase tracking-wider truncate">
+                        {affiliatedWith || 'Master Identity Authority'}
+                    </span>
+                    <div className="flex items-center gap-1.5 mt-1">
+                        <div className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse" />
+                        <span className="text-[9px] text-white/40 font-black uppercase tracking-[0.2em]">Console Access</span>
+                    </div>
                 </div>
             </div>
 

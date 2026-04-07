@@ -106,6 +106,8 @@ const SuperAdminMonitorEnumeratorsPage = lazy(() => import('@/pages/super-admin/
 const SuperAdminMonitorLeadsPage = lazy(() => import('@/pages/super-admin/SuperAdminMonitorLeadsPage'));
 const SuperAdminReportsPage = lazy(() => import('@/pages/admin/AdminReportsPage')); // Reuse admin reports for now
 const SuperAdminLoginPage = lazy(() => import('@/pages/super-admin/SuperAdminLoginPage'));
+const SuperAdminCommissionsPage = lazy(() => import('@/pages/super-admin/SuperAdminCommissionsPage'));
+const SuperAdminProfilePage = lazy(() => import('@/pages/super-admin/SuperAdminProfilePage'));
 
 /** Redirect admin to dashboard; operators straight to leads */
 function AdminIndexRedirect() {
@@ -289,6 +291,7 @@ export default function App() {
           >
             <Route path="dashboard" element={<SuperAdminDashboardPage />} />
             <Route path="admins" element={<SuperAdminAdminsPage />} />
+            <Route path="commissions" element={<SuperAdminCommissionsPage />} />
             <Route path="monitor/super-agents" element={<SuperAdminMonitorSuperAgentsPage />} />
             <Route path="monitor/agents" element={<SuperAdminMonitorAgentsPage />} />
             <Route path="monitor/enumerators" element={<SuperAdminMonitorEnumeratorsPage />} />
@@ -296,6 +299,7 @@ export default function App() {
             <Route path="help-center" element={<AdminFAQPage />} />
             <Route path="chatbot" element={<AdminChatbotPage />} />
             <Route path="reports" element={<SuperAdminReportsPage />} />
+            <Route path="profile" element={<SuperAdminProfilePage />} />
             <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
           </Route>
 

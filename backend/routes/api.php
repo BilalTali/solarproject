@@ -132,6 +132,9 @@ $api->as('api.v1.')->group(function () {
         Route::get('/leads/{ulid}/documents/{id}/download', [LeadDocumentController::class, 'download'])->name('leads.documents.download');
         Route::get('/leads/{ulid}/documents/{id}/view-url', [LeadDocumentController::class, 'getSignedUrl']);
 
+        // Authenticated settings lookup works for all sub-roles to fetch their parent admin's branding
+        Route::get('/admin/settings', [AdminSettingController::class, 'index']);
+
         // ==============================
         // ENUMERATOR ROUTES
         // ==============================
@@ -345,7 +348,6 @@ $api->as('api.v1.')->group(function () {
             Route::apiResource('offers', AdminOfferController::class);
 
             // Settings
-            Route::get('/settings', [AdminSettingController::class, 'index']);
             Route::put('/settings', [AdminSettingController::class, 'updateBulk']);
             Route::post('/settings/upload', [AdminSettingController::class, 'uploadFile']);
             Route::put('/profile', [AdminSettingController::class, 'updateProfile']);
@@ -413,7 +415,13 @@ $api->as('api.v1.')->group(function () {
             Route::get('chatbot/wa-handlers',              [\App\Http\Controllers\Admin\ChatbotController::class, 'waHandlers']);
             Route::post('chatbot/wa-handlers/{id}/toggle', [\App\Http\Controllers\Admin\ChatbotController::class, 'toggleWaHandler']);
             Route::post('chatbot/wa-handlers/reset-counters', [\App\Http\Controllers\Admin\ChatbotController::class, 'resetCounters']);
+
+            // Commission Settlement (Super Admin pays Admins)
+            Route::get('/commissions/summary', [MonitoringController::class, 'commissionsSummary']);
+            Route::get('/commissions', [MonitoringController::class, 'commissionsList']);
+            Route::put('/commissions/{id}/settle', [MonitoringController::class, 'settleCommission']);
         });
+
 
         // ==============================
         // ADMIN + OPERATOR SHARED ROUTES
