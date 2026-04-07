@@ -62,17 +62,17 @@ class JoiningLetterService
         $adminId = $user->getRootAdminId();
 
         // ── Company Settings (Shared with ICard) ──────────────────
-        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK', $adminId);
+        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK', null);
         $companyAddress = Setting::getValue('company_address', 'Srinagar, Jammu & Kashmir', $adminId);
         $companyEmail = Setting::getValue('company_email', 'info@suryamitra.in', $adminId);
         $companyWebsite = Setting::getValue('company_website', 'https://suryamitra.in', $adminId);
         $companyPhone = Setting::getValue('company_phone', '', $adminId);
-        $companyRegNo = Setting::getValue('company_registration_no', '', $adminId);
+        $companyRegNo = Setting::getValue('company_registration_no', '', null);
         $companyAffiliatedWith = Setting::getValue('company_affiliated_with', '', $adminId);
         $companyTagline = Setting::getValue('company_tagline', 'Empowering Sustainable Futures', $adminId);
 
         // ── Branding Assets (Dynamic) ─────────────────────────────
-        $logoPath = Setting::getValue('company_logo', null, $adminId);
+        $logoPath = Setting::getValue('company_logo', null, null);
         $signaturePath = Setting::getValue('company_signature', null, $adminId);
 
         $logoBase64 = $this->getBase64Image($logoPath);
@@ -192,7 +192,7 @@ class JoiningLetterService
     private function generateQrCode(User $user): ?string
     {
         $icardClearance = Setting::getValue('icard_clearance', 'Level-V (Elite)');
-        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK');
+        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK', null);
         $cardNumber = $user->agent_id ?? $user->super_agent_code ?? 'ADM-PENDING';
 
         if ($user->qr_token) {

@@ -14,14 +14,44 @@ use App\Http\Requests\UpdateSettingRequest;
 class SettingController extends Controller
 {
     /**
-     * Master Branding keys reserved for Super Admin only.
+     * Keys that are managed GLOBALLY by the Super Admin only.
+     * These include platform branding, homepage content, and system configuration.
      */
-    public const MASTER_BRANDING_KEYS = [
+    public const SYSTEM_MANAGED_KEYS = [
+        // Master Branding
         'company_name',
         'company_slogan',
-        'company_registration_no',
         'company_logo',
-        'company_logo_2'
+        'company_favicon',
+        'company_logo_2',
+        'company_registration_no',
+
+        // Homepage Content
+        'hero_headline',
+        'hero_subheadline',
+        'hero_video',
+        'hero_stats_json',
+        'how_it_works_json',
+        'why_choose_us_json',
+        'eligibility_headline',
+        'eligibility_subheadline',
+        'eligibility_questions_json',
+        'eligibility_success_title',
+        'eligibility_success_desc',
+        'eligibility_error_title',
+        'eligibility_error_desc',
+        'calculator_headline',
+        'calculator_subheadline',
+        'calculator_values_json',
+        'capacity_points_json',
+
+        // Global Navigation & Footer
+        'nav_home', 'nav_rewards', 'nav_calculator', 'nav_track_status', 'nav_guide',
+        'nav_portal_login', 'nav_cta_electricity',
+        'footer_section_quick_links', 'footer_section_legal', 'footer_link_about',
+        'footer_link_scheme', 'footer_link_contact', 'footer_link_faq', 'footer_link_privacy',
+        'footer_link_terms', 'footer_link_refund', 'footer_about_text', 'footer_copyright',
+        'footer_disclaimer'
     ];
 
     public function index()
@@ -31,7 +61,13 @@ class SettingController extends Controller
         $targetUserId = $user->isSuperAdmin() ? null : $user->getRootAdminId();
         $mergedSettings = Setting::getMergedSettings($targetUserId);
 
-        $groupedSettings = $mergedSettings->groupBy('group');
+        // Filter out System-Managed keys from regular Admins (they should only manage their own portfolio)
+        $groupedSettings = $mergedSettings->filter(function($setting) use ($user) {
+            if (!$user->isSuperAdmin() && in_array($setting->key, self::SYSTEM_MANAGED_KEYS)) {
+                return false;
+            }
+            return true;
+        })->groupBy('group');
 
         return response()->json([
             'success' => true,
@@ -68,9 +104,9 @@ class SettingController extends Controller
                 $key = $setting['key'];
                 $value = $setting['value'];
 
-                // Master Branding Protection
-                if (!$user->isSuperAdmin() && in_array($key, self::MASTER_BRANDING_KEYS)) {
-                    continue; // Refuse update for Master keys by non-Super Admin
+                // System Managed Protection
+                if (!$user->isSuperAdmin() && in_array($key, self::SYSTEM_MANAGED_KEYS)) {
+                    continue; // Refuse update for System keys by non-Super Admin
                 }
 
                 // Determine group: keep existing group if the row exists, else derive from key prefix
@@ -135,7 +171,7 @@ class SettingController extends Controller
         $targetUserId = $user->isSuperAdmin() ? null : $user->id;
 
         // Master Branding Protection for file uploads
-        if (!$user->isSuperAdmin() && in_array($key, self::MASTER_BRANDING_KEYS)) {
+        if (!$user->isSuperAdmin() && in_array($key, self::SYSTEM_MANAGED_KEYS)) {
             return response()->json(['success' => false, 'message' => 'Unauthorized: Only Super Admin can modify Master Branding assets.'], 403);
         }
 

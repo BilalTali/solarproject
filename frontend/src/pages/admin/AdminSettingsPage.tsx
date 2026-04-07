@@ -577,12 +577,14 @@ const AdminSettingsPage: React.FC = () => {
     const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
         { id: 'company', label: 'Company Info', icon: Building2 },
         { id: 'branding', label: 'Branding', icon: Image },
-        { id: 'homepage', label: 'Homepage', icon: Globe },
+        ...(user?.role === 'super_admin' ? [
+            { id: 'homepage' as TabId, label: 'Homepage', icon: Globe },
+            { id: 'portal' as TabId, label: 'Portal', icon: Globe },
+        ] : []),
         { id: 'achievements', label: 'Achievements', icon: Trophy },
         { id: 'feedback', label: 'Feedback', icon: MessageSquare },
         { id: 'icard', label: 'ID Card', icon: CreditCard },
         { id: 'letter', label: 'Joining Letter', icon: FileText },
-        { id: 'portal', label: 'Portal', icon: Globe },
         { id: 'profile', label: 'My Profile', icon: User },
         { id: 'incentive', label: 'Incentive Points', icon: Trophy },
     ];

@@ -47,8 +47,8 @@ class ICardService
         $adminId = $user->getRootAdminId();
 
         // ── Branding Assets (Dynamic) ─────────────────────────────
-        $logoPath = Setting::getValue('company_logo', null, $adminId);
-        $logoPath2 = Setting::getValue('company_logo_2', null, $adminId);
+        $logoPath = Setting::getValue('company_logo', null, null);
+        $logoPath2 = Setting::getValue('company_logo_2', null, null);
         $signaturePath = Setting::getValue('company_signature', null, $adminId);
         $sealPath = Setting::getValue('company_seal', null, $adminId);
 
@@ -58,10 +58,10 @@ class ICardService
         $sealBase64 = $this->getBase64Image($sealPath);
 
         // ── Company Settings ──────────────────────────────────────
-        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK', $adminId);
+        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK', null);
         $companyAddress = Setting::getValue('company_address', 'Srinagar, Jammu & Kashmir', $adminId);
         $companyEmail = Setting::getValue('company_email', 'info@suryamitra.in', $adminId);
-        $companyRegNo = Setting::getValue('company_registration_no', '', $adminId);
+        $companyRegNo = Setting::getValue('company_registration_no', '', null);
         $websiteUrl = Setting::getValue('company_website', 'suryamitra.in', $adminId);
         $companyWebsite = preg_replace('#^https?://#', '', $websiteUrl);
         $companyPhone = Setting::getValue('company_phone', '', $adminId);
