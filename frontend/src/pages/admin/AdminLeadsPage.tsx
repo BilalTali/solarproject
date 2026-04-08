@@ -197,6 +197,7 @@ export default function AdminLeadsPage() {
                     <option value="">All Sources</option>
                     <option value="public_form">Public Form</option>
                     <option value="agent_submission">Executive Submission</option>
+                    <option value="referral">Referral</option>
                 </select>
                 {(search || status || source) && (
                     <button
@@ -241,7 +242,8 @@ export default function AdminLeadsPage() {
                     { id: 'status', label: 'Status', type: 'select' as const, options: LEAD_STATUS_OPTIONS },
                     { id: 'source', label: 'Source', type: 'select' as const, options: [
                         { label: 'Public Form', value: 'public_form' },
-                        { label: 'Executive Submission', value: 'agent_submission' }
+                        { label: 'Executive Submission', value: 'agent_submission' },
+                        { label: 'Referral', value: 'referral' },
                     ]}
                 ]}
                 values={{ search, status, source }}
@@ -311,8 +313,14 @@ export default function AdminLeadsPage() {
                                                         <div className="px-4 py-3 text-slate-600 whitespace-nowrap w-[100px] flex items-center">{lead.roof_size?.replace(/_/g, ' ') || '—'}</div>
                                                         <div className="px-4 py-3 text-slate-600 whitespace-nowrap w-[120px] flex items-center">{lead.monthly_bill_amount ? `₹${lead.monthly_bill_amount}` : '—'}</div>
                                                         <div className="px-4 py-3 w-[100px] flex items-center">
-                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ${lead.source === 'public_form' ? 'bg-violet-100 text-violet-700' : 'bg-sky-100 text-sky-700'}`}>
-                                                                {lead.source === 'public_form' ? 'Public' : 'Executive'}
+                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ${
+                                                                lead.source === 'public_form'
+                                                                    ? (lead.referral_agent_id ? 'bg-emerald-100 text-emerald-700' : 'bg-violet-100 text-violet-700')
+                                                                    : 'bg-sky-100 text-sky-700'
+                                                            }`}>
+                                                                {lead.source === 'public_form'
+                                                                    ? (lead.referral_agent_id ? 'Referral' : 'Public')
+                                                                    : 'Executive'}
                                                             </span>
                                                         </div>
                                                         <div className="px-4 py-3 text-slate-600 whitespace-nowrap w-[200px] flex items-center">{lead.assigned_super_agent?.name ?? <span className="text-slate-400 italic">Unassigned</span>}</div>
@@ -362,7 +370,8 @@ export default function AdminLeadsPage() {
                                 <div className="space-y-1">
                                     <h3 className="font-bold text-slate-800 leading-tight flex items-center gap-2">
                                         {lead.beneficiary_name}
-                                        {lead.source === 'public_form' && <span className="bg-violet-100 text-violet-700 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest">Public</span>}
+                                        {lead.source === 'public_form' && !lead.referral_agent_id && <span className="bg-violet-100 text-violet-700 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest">Public</span>}
+                                        {lead.referral_agent_id && <span className="bg-emerald-100 text-emerald-700 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest">Referral</span>}
                                     </h3>
                                     <div className="flex items-center gap-2">
                                         <p className="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">Ref: {lead.ulid?.slice(-8)}</p>
@@ -527,7 +536,9 @@ export default function AdminLeadsPage() {
                                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">System Info</p>
                                             <div className="space-y-2">
                                                 {([
-                                                    ['Source', fullLead?.source === 'public_form' ? 'Public Form' : 'Executive Submission'],
+                                                    ['Source', fullLead?.source === 'public_form'
+                                                        ? (fullLead.referral_agent_id ? `Referral (via ${fullLead.referral_agent_id})` : 'Public Form')
+                                                        : 'Executive Submission'],
                                                     ['Roof Size', fullLead?.roof_size?.replace(/_/g, ' ') ?? '—'],
                                                     ['Capacity', (
                                                         <div className="flex gap-2">

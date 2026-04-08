@@ -61,15 +61,9 @@ class Setting extends Model
 
     protected static function clearApiCaches()
     {
-        $host = request()->getHost();
-        $endpoints = [
-            "http://{$host}/api/v1/public/settings",
-            "https://{$host}/api/v1/public/settings",
-        ];
-
-        foreach ($endpoints as $url) {
-            Cache::forget('api_cache_' . md5($url . '_guest'));
-        }
+        // Settings govern the entire frontend and dashboard experience. 
+        // A full cache flush ensures no stale IDs or cached response middleware bypasses the fresh assets.
+        Cache::flush();
     }
 
     /**

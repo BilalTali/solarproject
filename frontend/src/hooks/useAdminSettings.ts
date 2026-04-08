@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { settingsApi } from '@/services/settings.api';
 import { useAuthStore } from '@/hooks/store/authStore';
+import { useSettings } from '@/hooks/useSettings';
 
 const getFileUrl = (path: string | null | undefined) => {
     if (!path) return '';
@@ -11,6 +12,7 @@ const getFileUrl = (path: string | null | undefined) => {
 
 export function useAdminSettings() {
     const { user } = useAuthStore();
+    const publicSettings = useSettings();
     
     const { data: response, isLoading } = useQuery({
         queryKey: ['admin-settings'],
@@ -32,8 +34,8 @@ export function useAdminSettings() {
     return {
         settings,
         isLoading,
-        companyName: settings.company_name || 'SuryaMitra',
-        logo: settings.company_logo ? getFileUrl(settings.company_logo) : null,
-        favicon: settings.company_favicon ? getFileUrl(settings.company_favicon) : null,
+        companyName: settings.company_name || publicSettings.companyName || 'SuryaMitra',
+        logo: settings.company_logo ? getFileUrl(settings.company_logo) : publicSettings.logo,
+        favicon: settings.company_favicon ? getFileUrl(settings.company_favicon) : publicSettings.favicon,
     };
 }

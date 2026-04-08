@@ -15,7 +15,7 @@ export const ReferralShareWidget: React.FC<ReferralShareWidgetProps> = ({ referr
     const { setUser } = useAuthStore();
 
     const baseUrl = window.location.origin;
-    const referralUrl = referralCode ? `${baseUrl}/?ref=${referralCode}` : null;
+    const referralUrl = referralCode ? `${baseUrl}/?ref=${referralCode}#lead-form` : null;
     const roleName = role === 'agent' ? 'BDE (Field Agent)' : 'BDM (Team Manager)';
 
     /**

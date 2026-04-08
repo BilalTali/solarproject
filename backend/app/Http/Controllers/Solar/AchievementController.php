@@ -12,7 +12,7 @@ class AchievementController extends Controller
     public function index()
     {
         $achievements = Achievement::query()->orderBy('sort_order')->orderBy('date', 'desc')->get()
-            ->map(fn ($a) => $this->format($a));
+            ->map(fn (Achievement $a) => $this->format($a));
 
         return response()->json(['success' => true, 'data' => $achievements]);
     }
@@ -21,6 +21,7 @@ class AchievementController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
+            'winner_name' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'date' => 'nullable|date',
             'is_published' => 'sometimes|boolean',
@@ -42,6 +43,7 @@ class AchievementController extends Controller
     {
         $data = $request->validate([
             'title' => 'sometimes|string|max:255',
+            'winner_name' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'date' => 'nullable|date',
             'is_published' => 'sometimes|boolean',
@@ -77,6 +79,7 @@ class AchievementController extends Controller
         return [
             'id' => $a->id,
             'title' => $a->title,
+            'winner_name' => $a->winner_name,
             'description' => $a->description,
             'image_url' => $a->image_path ? asset('storage/'.$a->image_path) : null,
             'date' => $a->date?->format('Y-m-d'),

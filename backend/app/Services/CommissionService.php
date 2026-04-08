@@ -32,7 +32,11 @@ class CommissionService
         $logicalParentId = $hierarchyService->getLogicalParentId($payee, $lead);
         $ascendantSAId = $hierarchyService->findAscendantSuperAgentId($payee);
 
-        $isAuthorized = ($payer->isAdmin() || 
+        // PUBLIC REFERRAL LEAD: Admin always authorized to pay the referral BDM directly
+        $isPublicReferralLead = ($lead->source === 'public_form' && $lead->referral_agent_id && ! $lead->submitted_by_agent_id && ! $lead->submitted_by_enumerator_id);
+
+        $isAuthorized = ($payer->isAdmin() ||
+                         $isPublicReferralLead ||
                          (int) $logicalParentId === (int) $payer->id || 
                          ($payer->isSuperAgent() && (int) $ascendantSAId === (int) $payer->id));
 
@@ -180,6 +184,24 @@ class CommissionService
     {
         $lead->refresh();
         $submitter = $lead->submittedByEnumerator ?? $lead->submittedByAgent ?? $lead->createdBySuperAgent;
+
+        // --- PUBLIC REFERRAL LEAD CASE ---
+        // Public form leads have no submitter user, but may have a referral SA assigned.
+        // Treat the assigned super agent as the single required payee.
+        if (! $submitter && $lead->assigned_super_agent_id && $lead->referral_agent_id) {
+            $requiredPayees = [$lead->assigned_super_agent_id];
+            $enteredCount = Commission::query()
+                ->where('lead_id', $lead->id)
+                ->whereIn('payee_id', $requiredPayees)
+                ->count();
+            $status = match (true) {
+                $enteredCount === 0 => 'none',
+                $enteredCount >= count($requiredPayees) => 'all_entered',
+                default => 'partially_entered',
+            };
+            $lead->update(['commission_entry_status' => $status]);
+            return;
+        }
         
         if (! $submitter) {
             $lead->update(['commission_entry_status' => 'none']);
@@ -223,6 +245,18 @@ class CommissionService
         $prompts = [];
         $processedPayeeIds = [];
 
+        // --- SPECIAL CASE: PUBLIC REFERRAL LEAD ---
+        // Public form leads submitted via referral link have no agent/enumerator submitter.
+        // The referral BDM (assigned_super_agent) IS the payee, and Admin is the payer.
+        $hasNoSubmitter = ! $lead->submittedByEnumerator && ! $lead->submittedByAgent && ! $lead->createdBySuperAgent && ! $lead->assignedAgent;
+        if ($hasNoSubmitter && $lead->assigned_super_agent_id && $lead->referral_agent_id) {
+            $referralSA = User::find($lead->assigned_super_agent_id);
+            if ($referralSA && ! $referralSA->isAdmin()) {
+                $prompts[] = $this->buildReferralPrompt($lead, $referralSA);
+            }
+            return $prompts;
+        }
+
         // 1. Identify all potential payees (Submitter, Assignee, Enumerator)
         $potentialPayees = collect([
             $lead->submittedByEnumerator,
@@ -254,6 +288,35 @@ class CommissionService
         }
 
         return $prompts;
+    }
+
+    /**
+     * Build a commission prompt specifically for a referral BDM on a public form lead.
+     * Payer is always Admin for these leads.
+     */
+    private function buildReferralPrompt(Lead $lead, User $referralSA): array
+    {
+        $comm = Commission::query()
+            ->where('lead_id', $lead->id)
+            ->where('payee_id', $referralSA->id)
+            ->first();
+
+        return [
+            'payee_id'         => $referralSA->id,
+            'payee_name'       => $referralSA->name,
+            'payee_role'       => $referralSA->role,
+            'payee_code'       => $referralSA->super_agent_code ?? $referralSA->agent_id ?? '',
+            'payee_type_label' => 'Business Development Manager (Referral)',
+            'payer_id'         => null,   // Admin — no specific user ID
+            'payer_name'       => 'Admin',
+            'payer_role'       => 'admin',
+            'status'           => $comm ? 'entered' : 'pending',
+            'amount'           => $comm ? (float) $comm->amount : null,
+            'suggested_amount' => $this->getSuggestedAmount($lead, $referralSA, null),
+            'payment_status'   => $comm ? $comm->payment_status : null,
+            'commission_id'    => $comm ? $comm->id : null,
+            'is_editable'      => $comm ? (! $comm->isLocked() && ! $comm->isPaid()) : true,
+        ];
     }
 
     private function buildPrompt(Lead $lead, User $payee, string $role): array

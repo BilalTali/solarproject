@@ -4,6 +4,7 @@ import type { ApiResponse } from '@/types';
 export interface AdminAchievement {
     id: number;
     title: string;
+    winner_name: string | null;
     description: string | null;
     image_url: string | null;
     date: string | null;

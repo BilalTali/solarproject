@@ -11,6 +11,7 @@ export interface PublicSettingsData {
     company_logo: string | null;
     company_favicon: string | null;
     company_signature: string | null;
+    company_seal: string | null;
     company_website: string | null;
     social_facebook: string | null;
     social_twitter: string | null;
@@ -69,6 +70,7 @@ export interface PublicSettingsData {
     company_registration_no: string | null;
     company_affiliated_with: string | null;
     company_logo_2: string | null;
+    icard_clearance: string | null;
     external_pmsuryaghar_label: string | null;
     external_pmsuryaghar_url: string | null;
 }

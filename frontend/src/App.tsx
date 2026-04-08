@@ -300,6 +300,7 @@ export default function App() {
             <Route path="chatbot" element={<AdminChatbotPage />} />
             <Route path="reports" element={<SuperAdminReportsPage />} />
             <Route path="profile" element={<SuperAdminProfilePage />} />
+            <Route path="settings" element={<SuperAdminProfilePage />} />
             <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
           </Route>
 

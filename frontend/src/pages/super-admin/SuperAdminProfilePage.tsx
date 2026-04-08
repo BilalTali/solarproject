@@ -1,18 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Mail, Shield, BadgeCheck, Save, Camera, Settings, Key, AlertCircle, LayoutDashboard, Building2, Upload, Image, Globe } from 'lucide-react';
+import { 
+    Shield, BadgeCheck, Save, 
+    Building2, Globe,  
+    RefreshCcw, Trophy, MessageSquare,
+    Upload, Check, Key, FileText
+} from 'lucide-react';
 import { settingsApi } from '@/services/settings.api';
-import { authApi } from '@/services/auth.api';
 import { useAuthStore } from '@/hooks/store/authStore';
+import { AchievementManager } from '@/components/admin/AchievementManager';
+import { FeedbackManager } from '@/components/admin/FeedbackManager';
 import api from '@/services/axios';
 import toast from 'react-hot-toast';
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm';
-import { useSettings } from '@/hooks/useSettings';
+import { SettingJsonEditor } from '@/components/admin/SettingJsonEditor';
 
 export default function SuperAdminProfilePage() {
     const queryClient = useQueryClient();
     const { user, setUser } = useAuthStore();
-    const { } = useSettings();
     const [editing, setEditing] = useState(false);
     const [editForm, setEditForm] = useState({
         name: user?.name ?? '',
@@ -20,306 +25,424 @@ export default function SuperAdminProfilePage() {
         mobile: user?.mobile ?? '',
     });
 
-    // Branding State (Managed by unified 'editing')
-    const [localBranding, setLocalBranding] = useState<Record<string, string>>({});
-    const [pendingBrandingFiles, setPendingBrandingFiles] = useState<Record<string, File>>({});
+    // Authority Tabs
+    const [authorityTab, setAuthorityTab] = useState<'presence' | 'content' | 'branding' | 'achievements' | 'feedback' | 'nav' | 'footer'>('presence');
+    const [saving, setSaving] = useState(false);
 
-    const { data: settingsData } = useQuery({
+    // Authority State
+    const [localAuthority, setLocalAuthority] = useState<Record<string, string>>({});
+    const [pendingFiles, setPendingFiles] = useState<Record<string, File>>({});
+
+    const { data: settingsData, isLoading } = useQuery({
         queryKey: ['admin-settings'],
         queryFn: settingsApi.getSettings
     });
 
     useEffect(() => {
         if (settingsData?.success && settingsData.data) {
-            const flat: Record<string, string> = { ...localBranding };
+            const flat: Record<string, string> = {};
             Object.values(settingsData.data).flat().forEach(item => {
                 flat[item.key] = item.value || '';
             });
-            setLocalBranding(flat);
+            setLocalAuthority(flat);
         }
     }, [settingsData]);
 
-    const updateBrandingMutation = useMutation({
+    const updateMutation = useMutation({
         mutationFn: settingsApi.updateSettings,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
             queryClient.invalidateQueries({ queryKey: ['public-settings'] });
-            toast.success('System branding persisted');
+            toast.success('System authority synchronized');
         }
     });
 
     const uploadFileMutation = useMutation({
         mutationFn: ({ key, file }: { key: string; file: File }) => settingsApi.uploadSettingsFile(key, file),
-        onSuccess: (data, { key }) => {
-            if (data?.data?.url) {
-                const url: string = data.data.url;
+        onSuccess: (res, { key }) => {
+            if (res?.data?.url) {
+                const url: string = res.data.url;
                 const relativePath = url.includes('/storage/') ? url.split('/storage/')[1] : url;
-                setLocalBranding(prev => ({ ...prev, [key]: relativePath }));
+                setLocalAuthority(prev => ({ ...prev, [key]: relativePath }));
             }
             queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
-            queryClient.invalidateQueries({ queryKey: ['public-settings'] });
         }
     });
 
-    const uploadPhotoMutation = useMutation({
-        mutationFn: authApi.uploadProfilePhoto,
-        onSuccess: (res) => {
-            if (res.success) {
-                setUser(res.data);
-                toast.success('Profile photo updated');
-            }
-        },
-        onError: () => toast.error('Failed to upload photo')
-    });
-
     const updateProfileMutation = useMutation({
-        mutationFn: async (data: { name: string; email: string }) => {
-            // Admin prefix used as identified in api.php
+        mutationFn: async (data: any) => {
             const res = await api.put('/admin/profile', data);
             return res.data;
         },
         onSuccess: (res) => {
             if (res.success) {
                 setUser(res.data);
+                setEditing(false);
+                toast.success('Root profile updated');
             }
         }
     });
 
-    const handleSave = async () => {
-        if (!editForm.name.trim() || !editForm.email.trim()) {
-            return toast.error('Name and Email are required');
-        }
-        
+    const handleAuthoritySave = async (keys: string[]) => {
         try {
-            // 1. Personal Profile
-            await updateProfileMutation.mutateAsync(editForm);
+            setSaving(true);
+            const uploadedKeys = new Set<string>();
 
-            // 2. Branding (if Super Admin)
-            if (user?.role === 'super_admin') {
-                const fileKeys = ['company_logo', 'company_logo_2', 'company_favicon']; // Included Platform Logo
-                // Upload files first
-                for (const key of fileKeys) {
-                    const file = pendingBrandingFiles[key];
-                    if (file) {
-                        const uploadRes = await uploadFileMutation.mutateAsync({ key, file });
-                        if (uploadRes?.data?.url) {
-                            const url: string = uploadRes.data.url;
-                            const relativePath = url.includes('/storage/') ? url.split('/storage/')[1] : url;
-                            // Pre-update localBranding to avoid stale state in text keys mapping
-                            localBranding[key] = relativePath;
-                        }
+            // 1. Upload pending files first
+            for (const key of keys) {
+                if (pendingFiles[key]) {
+                    const res = await uploadFileMutation.mutateAsync({ key, file: pendingFiles[key] });
+                    if (res.success) {
+                        uploadedKeys.add(key);
                     }
                 }
-
-                // Update text fields
-                const textKeys = ['company_name', 'company_slogan', 'company_registration_no'];
-                const settingsToSave = textKeys.map(k => ({ key: k, value: localBranding[k] || '' }));
-                await updateBrandingMutation.mutateAsync(settingsToSave);
-                
-                setPendingBrandingFiles({});
             }
-            
-            setEditing(false);
-            toast.success('Profile & Authority updated globally');
-        } catch (err: any) {
-            const msg = err.response?.data?.message || 'Failed to sync changes';
-            toast.error(msg);
+
+            // 2. Clear pending state for the keys we're saving
+            setPendingFiles(prev => {
+                const updated = { ...prev };
+                keys.forEach(k => delete updated[k]);
+                return updated;
+            });
+
+            // 3. Save text fields (skip keys that were just uploaded as files, or are known media keys)
+            const settingsToSave = keys
+                .filter(k => localAuthority[k] !== undefined && !uploadedKeys.has(k) && !['hero_video', 'company_logo', 'company_logo_2', 'company_favicon'].includes(k))
+                .map(k => ({ key: k, value: localAuthority[k] }));
+
+            if (settingsToSave.length > 0) {
+                await updateMutation.mutateAsync(settingsToSave);
+            }
+            toast.success('Authority committed and synchronized');
+        } catch (err) {
+            toast.error('Failed to commit authority');
+        } finally {
+            setSaving(false);
         }
     };
 
-    // Use handleSave unified above
+    if (isLoading) return <div className="flex h-64 items-center justify-center"><RefreshCcw className="w-8 h-8 text-indigo-600 animate-spin" /></div>;
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Header Section */}
+        <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-700">
+            {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-200">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-indigo-100 shadow-xl">
-                        <Settings className="text-white w-6 h-6" />
+                    <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center shadow-2xl shadow-indigo-100">
+                        <Shield className="text-white w-7 h-7" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-display font-black text-slate-900 tracking-tight leading-none">
-                            Profile & Authority
-                        </h1>
-                        <p className="text-slate-400 text-xs font-black uppercase tracking-[0.2em] mt-2">{localBranding.company_name || 'Master Identity Authority'}</p>
+                        <h1 className="text-3xl font-display font-black text-slate-900 tracking-tight leading-none">System Authority Hub</h1>
+                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">{localAuthority.company_name || 'Platform Root Control'}</p>
                     </div>
                 </div>
-
                 {!editing ? (
-                    <button
-                        onClick={() => setEditing(true)}
-                        className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-slate-200"
-                    >
+                    <button onClick={() => setEditing(true)} className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 hover:scale-105 transition-all shadow-xl">
                         Edit Root Profile
                     </button>
                 ) : (
                     <div className="flex gap-3">
-                        <button
-                            onClick={() => setEditing(false)}
-                            className="px-6 py-3 border border-slate-200 text-slate-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleSave}
-                            disabled={updateProfileMutation.isPending}
-                            className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all hover:scale-105 shadow-xl shadow-indigo-100 disabled:opacity-50"
-                        >
-                            <Save size={14} /> {updateProfileMutation.isPending ? 'Propagating...' : 'Save Changes'}
+                        <button onClick={() => setEditing(false)} className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 rounded-2xl">Cancel</button>
+                        <button onClick={() => updateProfileMutation.mutate(editForm)} className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-indigo-700 shadow-xl">
+                            <Save size={14} /> Save Profile
                         </button>
                     </div>
                 )}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left: Authority Card */}
-                <div className="lg:col-span-1">
-                    <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-slate-300">
-                        <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 rounded-full -mr-20 -mt-20 blur-3xl pointer-events-none" />
-                        
-                        <div className="flex flex-col items-center relative z-10">
-                            <div className="relative group">
-                                <div className="w-40 h-40 rounded-[2.5rem] bg-slate-800 border-4 border-slate-800 overflow-hidden shadow-2xl">
-                                    {user?.profile_photo_url ? (
-                                        <img src={user.profile_photo_url} alt={user.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-indigo-600/20">
-                                            <Shield size={60} className="text-indigo-400" />
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="absolute inset-0 bg-slate-900/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-[2.5rem] cursor-pointer">
-                                    <Camera className="w-8 h-8 text-white mb-2" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/80">Upload Photo</span>
-                                    <input
-                                        type="file"
-                                        className="absolute inset-0 opacity-0 cursor-pointer"
-                                        accept="image/*"
-                                        onChange={(e) => {
-                                            const file = e.target.files?.[0];
-                                            if (file) uploadPhotoMutation.mutate(file);
-                                        }}
-                                    />
-                                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                {/* Left: Global Authority Navigator */}
+                <div className="lg:col-span-1 space-y-4">
+                    <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-indigo-100">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+                        <div className="relative z-10 flex flex-col items-center">
+                            <div className="w-32 h-32 rounded-3xl bg-slate-800 border-4 border-slate-800 overflow-hidden shadow-2xl mb-6">
+                                {user?.profile_photo_url ? (
+                                    <img src={user.profile_photo_url} alt={user.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-indigo-600/20 text-indigo-400 font-black text-4xl">
+                                        {user?.name.charAt(0)}
+                                    </div>
+                                )}
                             </div>
-
-                            <div className="mt-8 text-center">
-                                <h3 className="text-2xl font-display font-black tracking-tight">{user?.name}</h3>
-                                <div className="flex items-center justify-center gap-2 mt-2 bg-indigo-600/20 px-4 py-1.5 rounded-full border border-indigo-500/30">
-                                    <BadgeCheck size={14} className="text-indigo-400" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-100">Root Administrator</span>
-                                </div>
-                            </div>
-
-                            <div className="w-full mt-10 space-y-3 pb-4">
-                                <AuthorityMeta label="Account Level" value="Level 0 (System Root)" />
-                                <AuthorityMeta label="Access Control" value="Global Full Access" />
-                                <AuthorityMeta label="Two-Factor" value="Standard" />
+                            <h3 className="text-xl font-display font-black tracking-tight text-center">{user?.name}</h3>
+                            <div className="mt-2 bg-indigo-600/30 px-3 py-1 rounded-full border border-indigo-500/30 flex items-center gap-1.5">
+                                <BadgeCheck size={12} className="text-indigo-400" />
+                                <span className="text-[8px] font-black uppercase tracking-widest text-indigo-100">Root Authority</span>
                             </div>
                         </div>
                     </div>
+
+                    <nav className="bg-white rounded-[2rem] border border-slate-200 p-2 shadow-sm space-y-1">
+                        <NavTab id="presence" label="Hero Presence" icon={<Globe size={16} />} active={authorityTab === 'presence'} onClick={setAuthorityTab} />
+                        <NavTab id="content" label="Homepage Content" icon={<FileText size={16} />} active={authorityTab === 'content'} onClick={setAuthorityTab} />
+                        <NavTab id="branding" label="Master Branding" icon={<Building2 size={16} />} active={authorityTab === 'branding'} onClick={setAuthorityTab} />
+                        <NavTab id="nav" label="Navigation Links" icon={<Key size={16} />} active={authorityTab === 'nav'} onClick={setAuthorityTab} />
+                        <NavTab id="footer" label="Footer Settings" icon={<Building2 size={16} />} active={authorityTab === 'footer'} onClick={setAuthorityTab} />
+                        <NavTab id="achievements" label="Achievements" icon={<Trophy size={16} />} active={authorityTab === 'achievements'} onClick={setAuthorityTab} />
+                        <NavTab id="feedback" label="Customer Feedback" icon={<MessageSquare size={16} />} active={authorityTab === 'feedback'} onClick={setAuthorityTab} />
+                    </nav>
                 </div>
 
-                {/* Right: Core Settings */}
-                <div className="lg:col-span-2 space-y-8">
-                    {/* Identity Module */}
-                    <div className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm">
+                {/* Right: Module Content */}
+                <div className="lg:col-span-3 space-y-8">
+                    {editing && (
+                        <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-4">
+                            <InputBlock label="Full Root Name" value={editForm.name} onChange={v => setEditForm(p => ({ ...p, name: v }))} />
+                            <InputBlock label="Primary Mobile" value={editForm.mobile} onChange={v => setEditForm(p => ({ ...p, mobile: v }))} />
+                            <div className="md:col-span-2">
+                                <InputBlock label="Security Email" value={editForm.email} onChange={v => setEditForm(p => ({ ...p, email: v }))} />
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden min-h-[500px]">
                         <div className="p-8 lg:p-10">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {!editing ? (
-                                    <>
-                                        <StaticBlock icon={<User size={14} />} label="Administrator Name" value={user?.name} />
-                                        <StaticBlock icon={<Mail size={14} />} label="Security Email" value={user?.email} />
-                                        <StaticBlock icon={<Shield size={14} />} label="Primary Mobile" value={user?.mobile} />
-                                        <StaticBlock icon={<LayoutDashboard size={14} />} label="Access Mode" value={localBranding.company_name || 'Master Identity'} />
-                                    </>
-                                ) : (
-                                    <>
-                                        <InputBlock label="Full Legal Name" value={editForm.name} onChange={v => setEditForm({...editForm, name: v})} />
-                                        <InputBlock label="Primary Mobile" value={editForm.mobile} onChange={v => setEditForm({...editForm, mobile: v})} />
-                                        <InputBlock label="Security Email" type="email" value={editForm.email} onChange={v => setEditForm({...editForm, email: v})} />
-                                        <div className="md:col-span-2 p-6 bg-amber-50 rounded-3xl border border-amber-100 flex items-start gap-4">
-                                            <AlertCircle className="text-amber-600 w-5 h-5 shrink-0 mt-1" />
-                                            <div>
-                                                <h4 className="font-bold text-amber-900 text-sm">Sensitive Update Notice</h4>
-                                                <p className="text-amber-800/80 text-xs mt-1 leading-relaxed">
-                                                    Updating your security email requires a new verification during the next login. Ensure you have access to this email address.
-                                                </p>
+                            {authorityTab === 'presence' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><Globe size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Homepage Hero Authority</h2>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-6">
+                                        <InputBlock label="Main Headline" value={localAuthority.hero_headline || ''} onChange={v => setLocalAuthority(p => ({ ...p, hero_headline: v }))} />
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Sub Headline</label>
+                                            <textarea 
+                                                value={localAuthority.hero_subheadline || ''} 
+                                                onChange={e => setLocalAuthority(p => ({ ...p, hero_subheadline: e.target.value }))}
+                                                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all h-32" 
+                                            />
+                                        </div>
+                                        <FileUploadBlock 
+                                            label="Presence Video (MP4)" 
+                                            currentPath={localAuthority.hero_video} 
+                                            pendingFile={pendingFiles.hero_video}
+                                            onSelect={f => setPendingFiles(p => ({ ...p, hero_video: f }))}
+                                            accept="video/mp4"
+                                        />
+                                    </div>
+                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['hero_headline', 'hero_subheadline', 'hero_video'])} />
+                                </div>
+                            )}
+
+                            {authorityTab === 'content' && (
+                                <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><FileText size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Homepage Sections Authority</h2>
+                                    </div>
+                                    
+                                    <SettingJsonEditor 
+                                        label="Platform Stats (Hero)"
+                                        value={localAuthority.hero_stats_json || '[]'}
+                                        onChange={v => setLocalAuthority(p => ({ ...p, hero_stats_json: v }))}
+                                        fields={[
+                                            { key: 'label', label: 'Label (e.g. Happy Users)', type: 'text' },
+                                            { key: 'value', label: 'Value (e.g. 50k+)', type: 'text' },
+                                            { key: 'icon', label: 'Lucide Icon Name', type: 'text' }
+                                        ]}
+                                    />
+
+                                    <div className="pt-6 border-t border-slate-50">
+                                        <SettingJsonEditor 
+                                            label="How It Works Steps"
+                                            value={localAuthority.how_it_works_json || '[]'}
+                                            onChange={v => setLocalAuthority(p => ({ ...p, how_it_works_json: v }))}
+                                            fields={[
+                                                { key: 'title', label: 'Step Title', type: 'text' },
+                                                { key: 'desc', label: 'Description', type: 'textarea' }
+                                            ]}
+                                        />
+                                    </div>
+
+                                    <div className="pt-6 border-t border-slate-50">
+                                        <SettingJsonEditor 
+                                            label="Why Choose Us Cards"
+                                            value={localAuthority.why_choose_us_json || '[]'}
+                                            onChange={v => setLocalAuthority(p => ({ ...p, why_choose_us_json: v }))}
+                                            fields={[
+                                                { key: 'title', label: 'Benefit Title', type: 'text' },
+                                                { key: 'desc', label: 'Description', type: 'textarea' },
+                                                { key: 'icon', label: 'Lucide Icon Name', type: 'text' }
+                                            ]}
+                                        />
+                                    </div>
+
+                                    <div className="pt-6 border-t border-slate-50 space-y-6">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Eligibility Checker</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <InputBlock label="Checker Headline" value={localAuthority.eligibility_headline || ''} onChange={v => setLocalAuthority(p => ({ ...p, eligibility_headline: v }))} />
+                                            <InputBlock label="Checker Sub-headline" value={localAuthority.eligibility_subheadline || ''} onChange={v => setLocalAuthority(p => ({ ...p, eligibility_subheadline: v }))} />
+                                        </div>
+                                        <SettingJsonEditor 
+                                            label="Eligibility Questions"
+                                            value={localAuthority.eligibility_questions_json || '[]'}
+                                            onChange={v => setLocalAuthority(p => ({ ...p, eligibility_questions_json: v }))}
+                                            fields={[
+                                                { key: 'id', label: 'Unique ID (e.g. q1)', type: 'text' },
+                                                { key: 'text', label: 'Question', type: 'text' },
+                                                { key: 'expected', label: 'Required Answer (yes/no)', type: 'text' }
+                                            ]}
+                                        />
+                                    </div>
+
+                                    <div className="pt-6 border-t border-slate-50 space-y-6">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Subsidy Calculator</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <InputBlock label="Calculator Headline" value={localAuthority.calculator_headline || ''} onChange={v => setLocalAuthority(p => ({ ...p, calculator_headline: v }))} />
+                                            <InputBlock label="Calculator Sub-headline" value={localAuthority.calculator_subheadline || ''} onChange={v => setLocalAuthority(p => ({ ...p, calculator_subheadline: v }))} />
+                                        </div>
+                                        <SettingJsonEditor 
+                                            label="Calculator Packages"
+                                            value={localAuthority.calculator_values_json || '[]'}
+                                            onChange={v => setLocalAuthority(p => ({ ...p, calculator_values_json: v }))}
+                                            fields={[
+                                                { key: 'id', label: 'Identifier (e.g. 3kw)', type: 'text' },
+                                                { key: 'label', label: 'Display Label', type: 'text' },
+                                                { key: 'central', label: 'Central Subsidy (₹)', type: 'number' },
+                                                { key: 'state', label: 'State Subsidy (₹)', type: 'number' },
+                                                { key: 'savings', label: 'Monthly Savings (₹)', type: 'number' },
+                                                { key: 'payback', label: 'Payback (Months)', type: 'number' }
+                                            ]}
+                                        />
+                                    </div>
+
+                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['hero_stats_json', 'how_it_works_json', 'why_choose_us_json', 'eligibility_headline', 'eligibility_subheadline', 'eligibility_questions_json', 'calculator_headline', 'calculator_subheadline', 'calculator_values_json'])} />
+                                </div>
+                            )}
+
+                            {authorityTab === 'nav' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><Key size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Navigation Authority</h2>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <InputBlock label="Home Link" value={localAuthority.nav_home || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_home: v }))} />
+                                        <InputBlock label="Rewards Link" value={localAuthority.nav_rewards || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_rewards: v }))} />
+                                        <InputBlock label="Calculator Link" value={localAuthority.nav_calculator || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_calculator: v }))} />
+                                        <InputBlock label="Track Status Link" value={localAuthority.nav_track_status || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_track_status: v }))} />
+                                        <InputBlock label="Portal Login Button" value={localAuthority.nav_portal_login || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_portal_login: v }))} />
+                                        <InputBlock label="CTA Button (Electricity)" value={localAuthority.nav_cta_electricity || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_cta_electricity: v }))} />
+                                    </div>
+                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['nav_home', 'nav_rewards', 'nav_calculator', 'nav_track_status', 'nav_portal_login', 'nav_cta_electricity'])} />
+                                </div>
+                            )}
+
+                            {authorityTab === 'footer' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><Building2 size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Global Footer Authority</h2>
+                                    </div>
+                                    <div className="space-y-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Footer About Text</label>
+                                            <textarea 
+                                                value={localAuthority.footer_about_text || ''} 
+                                                onChange={e => setLocalAuthority(p => ({ ...p, footer_about_text: e.target.value }))}
+                                                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all h-24" 
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <InputBlock label="Copyright Text" value={localAuthority.footer_copyright || ''} onChange={v => setLocalAuthority(p => ({ ...p, footer_copyright: v }))} />
+                                            <InputBlock label="Disclaimer Text" value={localAuthority.footer_disclaimer || ''} onChange={v => setLocalAuthority(p => ({ ...p, footer_disclaimer: v }))} />
+                                        </div>
+                                        <div className="pt-6 border-t border-slate-50 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <InputBlock label="Footer Section (Quick Links)" value={localAuthority.footer_section_quick_links || ''} onChange={v => setLocalAuthority(p => ({ ...p, footer_section_quick_links: v }))} />
+                                            <InputBlock label="Footer Section (Legal)" value={localAuthority.footer_section_legal || ''} onChange={v => setLocalAuthority(p => ({ ...p, footer_section_legal: v }))} />
+                                        </div>
+                                        <div className="pt-6 border-t border-slate-50">
+                                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-800 mb-4">Quick Links & Legal Labels</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <InputBlock label="About Us Link" value={localAuthority.footer_link_about || ''} onChange={v => setLocalAuthority(p => ({ ...p, footer_link_about: v }))} />
+                                                <InputBlock label="Scheme Link" value={localAuthority.footer_link_scheme || ''} onChange={v => setLocalAuthority(p => ({ ...p, footer_link_scheme: v }))} />
+                                                <InputBlock label="Contact Link" value={localAuthority.footer_link_contact || ''} onChange={v => setLocalAuthority(p => ({ ...p, footer_link_contact: v }))} />
+                                                <InputBlock label="FAQ Link" value={localAuthority.footer_link_faq || ''} onChange={v => setLocalAuthority(p => ({ ...p, footer_link_faq: v }))} />
+                                                <InputBlock label="Privacy Link" value={localAuthority.footer_link_privacy || ''} onChange={v => setLocalAuthority(p => ({ ...p, footer_link_privacy: v }))} />
+                                                <InputBlock label="Terms Link" value={localAuthority.footer_link_terms || ''} onChange={v => setLocalAuthority(p => ({ ...p, footer_link_terms: v }))} />
+                                                <InputBlock label="Refund Link" value={localAuthority.footer_link_refund || ''} onChange={v => setLocalAuthority(p => ({ ...p, footer_link_refund: v }))} />
                                             </div>
                                         </div>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Master Authority Module (Focus: Affiliation Logo & Registration) */}
-                    <div className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm">
-                        <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-white rounded-xl shadow-sm border border-slate-100">
-                                    <Building2 className="w-4 h-4 text-slate-400" />
+                                        <div className="pt-6 border-t border-slate-50">
+                                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-800 mb-4">Global Contact Information</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <InputBlock label="Support Email" value={localAuthority.company_email || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_email: v }))} />
+                                                <InputBlock label="Support Phone" value={localAuthority.company_phone || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_phone: v }))} />
+                                                <InputBlock label="Support Mobile" value={localAuthority.company_mobile || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_mobile: v }))} />
+                                                <InputBlock label="WhatsApp Number" value={localAuthority.company_whatsapp || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_whatsapp: v }))} />
+                                                <InputBlock label="Website URL" value={localAuthority.company_website || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_website: v }))} />
+                                                <div className="md:col-span-3">
+                                                    <div className="space-y-1.5 w-full">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Address</label>
+                                                        <textarea 
+                                                            value={localAuthority.company_address || ''} 
+                                                            onChange={e => setLocalAuthority(p => ({ ...p, company_address: e.target.value }))}
+                                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all h-20" 
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['footer_about_text', 'footer_copyright', 'footer_disclaimer', 'footer_section_quick_links', 'footer_section_legal', 'footer_link_about', 'footer_link_scheme', 'footer_link_contact', 'footer_link_faq', 'footer_link_privacy', 'footer_link_terms', 'footer_link_refund', 'company_email', 'company_phone', 'company_mobile', 'company_whatsapp', 'company_website', 'company_address'])} />
                                 </div>
-                                <h3 className="font-display font-black text-sm text-slate-800 uppercase tracking-widest">Master Identity Authority</h3>
-                            </div>
-                        </div>
-                        <div className="p-8 lg:p-10">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {!editing ? (
-                                    <>
-                                        <StaticBlock icon={<Globe size={14} />} label="Platform Name (Master)" value={localBranding.company_name} />
-                                        <StaticBlock icon={<Shield size={14} />} label="Global Registration No" value={localBranding.company_registration_no} />
+                            )}
+
+                            {authorityTab === 'branding' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><Building2 size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Master Identity Branding</h2>
+                                    </div>
+                                    <div className="p-4 bg-indigo-50 border-l-4 border-indigo-400 rounded-xl">
+                                        <p className="text-xs text-indigo-800 font-bold">
+                                            <strong>Super Admin Exclusive:</strong> Set the global platform name, primary logo, and favicon. These appear across the entire platform as the master identity.
+                                            Each admin sets their own secondary/affiliation logo (<code>company_logo_2</code>) separately in their own settings for use on ID cards and documents.
+                                        </p>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <InputBlock label="Platform Name" value={localAuthority.company_name || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_name: v }))} />
+                                        <InputBlock label="Govt Registration No" value={localAuthority.company_registration_no || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_registration_no: v }))} />
                                         <div className="md:col-span-2">
-                                            <StaticBlock icon={<Globe size={14} />} label="Platform Slogan" value={localBranding.company_slogan} />
+                                            <InputBlock label="Platform Slogan" value={localAuthority.company_slogan || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_slogan: v }))} />
                                         </div>
-                                        <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-50">
-                                            <StaticLogo label="Platform Logo (Master)" path={localBranding.company_logo} />
-                                            <StaticLogo label="Affiliation Logo (Master)" path={localBranding.company_logo_2} />
-                                            <StaticLogo label="System Favicon" path={localBranding.company_favicon} />
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <InputBlock label="Platform Name (Master)" value={localBranding.company_name || ''} onChange={v => setLocalBranding({...localBranding, company_name: v})} />
-                                        <InputBlock label="Global Registration No" value={localBranding.company_registration_no || ''} onChange={v => setLocalBranding({...localBranding, company_registration_no: v})} />
-                                        <div className="md:col-span-2">
-                                            <InputBlock label="Platform Slogan" value={localBranding.company_slogan || ''} onChange={v => setLocalBranding({...localBranding, company_slogan: v})} />
-                                        </div>
-                                        
-                                        <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-50">
-                                            <FileUploadBlock 
-                                                label="Platform Logo (Master)" 
-                                                currentPath={localBranding.company_logo} 
-                                                pendingFile={pendingBrandingFiles.company_logo}
-                                                onSelect={f => setPendingBrandingFiles(p => ({...p, company_logo: f}))}
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-50">
+                                        <div className="space-y-2">
+                                            <FileUploadBlock
+                                                label="Global Primary Logo"
+                                                currentPath={localAuthority.company_logo}
+                                                pendingFile={pendingFiles.company_logo}
+                                                onSelect={f => setPendingFiles(p => ({ ...p, company_logo: f }))}
                                             />
-                                            <FileUploadBlock 
-                                                label="Affiliation Logo (Master)" 
-                                                currentPath={localBranding.company_logo_2} 
-                                                pendingFile={pendingBrandingFiles.company_logo_2}
-                                                onSelect={f => setPendingBrandingFiles(p => ({...p, company_logo_2: f}))}
-                                            />
-                                            <FileUploadBlock 
-                                                label="System Favicon" 
-                                                currentPath={localBranding.company_favicon} 
-                                                pendingFile={pendingBrandingFiles.company_favicon}
-                                                onSelect={f => setPendingBrandingFiles(p => ({...p, company_favicon: f}))}
-                                            />
+                                            <p className="text-[9px] text-indigo-600 font-black uppercase tracking-widest">Platform-wide logo · Super Admin only</p>
                                         </div>
-                                    </>
-                                )}
-                            </div>
+                                        <div className="space-y-2">
+                                            <FileUploadBlock
+                                                label="System Favicon"
+                                                currentPath={localAuthority.company_favicon}
+                                                pendingFile={pendingFiles.company_favicon}
+                                                onSelect={f => setPendingFiles(p => ({ ...p, company_favicon: f }))}
+                                            />
+                                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Browser tab icon</p>
+                                        </div>
+                                    </div>
+                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['company_name', 'company_registration_no', 'company_slogan', 'company_logo', 'company_favicon'])} />
+                                </div>
+                            )}
+
+                            {authorityTab === 'achievements' && <AchievementManager />}
+                            {authorityTab === 'feedback' && <FeedbackManager />}
                         </div>
                     </div>
 
                     {!editing && (
-                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-1000">
-                            <div className="mb-6 flex items-center gap-3 px-4">
-                                <div className="p-2 bg-indigo-600 rounded-xl shadow-indigo-100 shadow-lg">
-                                    <Key className="w-4 h-4 text-white" />
-                                </div>
-                                <h3 className="font-display font-black text-sm text-slate-800 uppercase tracking-widest">Security Override</h3>
-                            </div>
+                        <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm">
+                            <h3 className="font-display font-black text-slate-800 text-sm uppercase tracking-widest flex items-center gap-2 mb-6">
+                                <Key className="text-indigo-600" size={18} /> Root Security
+                            </h3>
                             <ChangePasswordForm />
                         </div>
                     )}
@@ -329,73 +452,67 @@ export default function SuperAdminProfilePage() {
     );
 }
 
-const StaticBlock = ({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string }) => (
-    <div className="space-y-2 group">
-        <div className="flex items-center gap-2 text-slate-400 group-hover:text-indigo-600 transition-colors">
-            {icon}
-            <label className="text-[10px] font-black uppercase tracking-[0.2em]">{label}</label>
-        </div>
-        <p className="font-display font-black text-slate-800 text-xl border-b-2 border-slate-50 pb-2 group-hover:border-indigo-100 transition-all">{value || 'Not Configured'}</p>
-    </div>
+const NavTab = ({ id, label, icon, active, onClick }: { id: any, label: string, icon: React.ReactNode, active: boolean, onClick: (id: any) => void }) => (
+    <button 
+        onClick={() => onClick(id)}
+        className={`w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${active ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50'}`}
+    >
+        {icon}
+        <span>{label}</span>
+    </button>
 );
 
-const InputBlock = ({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (v: string) => void; type?: string }) => (
-    <div className="space-y-3">
-        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{label}</label>
-        <input
-            type={type}
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            className="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all shadow-inner"
+const InputBlock = ({ label, value, onChange, type = "text" }: { label: string, value: string, onChange: (v: string) => void, type?: string }) => (
+    <div className="space-y-1.5 w-full">
+        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
+        <input 
+            type={type} 
+            value={value} 
+            onChange={e => onChange(e.target.value)} 
+            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all" 
         />
     </div>
 );
 
-const AuthorityMeta = ({ label, value }: { label: string; value: string }) => (
-    <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 group hover:border-indigo-500/30 transition-all">
-        <span className="text-[10px] font-black text-white/40 uppercase tracking-widest group-hover:text-white/60">{label}</span>
-        <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest group-hover:text-indigo-300">{value}</span>
-    </div>
-);
-
-const getFileUrl = (path: string | null | undefined) => {
-    if (!path) return '';
-    if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) return path;
-    const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').split('/api/v1')[0];
-    return `${baseUrl}/storage/${path}`;
-};
-
-const StaticLogo = ({ label, path }: { label: string; path?: string }) => (
-    <div className="space-y-4">
-        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{label}</label>
-        <div className="h-24 w-full rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center p-4">
-            {path ? (
-                <img src={getFileUrl(path)} alt={label} className="max-h-full max-w-full object-contain" />
-            ) : (
-                <Image className="text-slate-200" size={30} />
-            )}
-        </div>
-    </div>
-);
-
-const FileUploadBlock = ({ label, currentPath, pendingFile, onSelect }: { label: string; currentPath?: string; pendingFile?: File; onSelect: (f: File) => void }) => {
-    const previewUrl = pendingFile ? URL.createObjectURL(pendingFile) : getFileUrl(currentPath);
+const FileUploadBlock = ({ label, currentPath, pendingFile, onSelect, accept = "image/*" }: { label: string, currentPath?: string, pendingFile?: File, onSelect: (f: File) => void, accept?: string }) => {
+    const getSafeUrl = (path: string | undefined | null) => {
+        if (!path) return null;
+        if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) return path;
+        return `${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').split('/api/v1')[0]}/storage/${path}`;
+    };
+    const previewUrl = pendingFile ? URL.createObjectURL(pendingFile) : getSafeUrl(currentPath);
+    const isVideo = accept.includes('video') || String(previewUrl).toLowerCase().endsWith('.mp4') || String(pendingFile?.type).includes('video');
     return (
-        <div className="space-y-4">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{label}</label>
+        <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
             <div className="relative group">
-                <div className="h-32 w-full rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-4 transition-all group-hover:border-indigo-400">
+                <div className="h-32 w-full rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-4 transition-all group-hover:border-indigo-400 overflow-hidden">
                     {previewUrl ? (
-                        <div className="relative h-full w-full flex items-center justify-center">
+                        isVideo ? (
+                            <video src={previewUrl} className="h-full w-full object-cover rounded-xl" autoPlay loop muted playsInline />
+                        ) : (
                             <img src={previewUrl} alt={label} className="max-h-full max-w-full object-contain" />
-                            {pendingFile && <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[8px] px-2 py-0.5 rounded-full font-black uppercase">Pending</div>}
-                        </div>
+                        )
                     ) : (
-                        <Upload className="text-slate-300 group-hover:text-indigo-400 transition-colors" size={30} />
+                        <Upload className="text-slate-300" size={30} />
                     )}
-                    <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => e.target.files?.[0] && onSelect(e.target.files[0])} />
+                    <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept={accept} onChange={e => e.target.files?.[0] && onSelect(e.target.files[0])} />
                 </div>
+                {pendingFile && <div className="absolute top-2 right-2 bg-indigo-600 text-white text-[8px] px-2 py-1 rounded-full font-black uppercase">Unsaved</div>}
             </div>
         </div>
     );
 };
+
+const CommitButton = ({ onClick, saving }: { onClick: () => void, saving: boolean }) => (
+    <div className="flex justify-end pt-6 border-t border-slate-50">
+        <button 
+            disabled={saving}
+            onClick={onClick} 
+            className="flex items-center gap-2 px-10 py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-slate-900 transition-all shadow-2xl shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+            {saving ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <Check size={18} />}
+            {saving ? 'Synchronizing...' : 'Commit Authority'}
+        </button>
+    </div>
+);

@@ -1,7 +1,5 @@
-@php
-    /** @var \App\Models\User $user */
-    /** @var string|null $companyName */
     /** @var string|null $logoBase64 */
+    /** @var string|null $logoBase64_2 */
     /** @var string|null $profilePhotoBase64 */
     /** @var string|null $initials */
     /** @var string|null $designation */
@@ -312,10 +310,21 @@
 
       <div class="header-zone">
         <div class="header-curve"></div>
-        @if($logoBase64)
-          <img src="{{ $logoBase64 }}" class="brand-logo-img" alt="Logo">
-        @endif
-        <div class="brand-name">{{ $companyName ?? 'SURYAMITRA' }}</div>
+        <div style="position: absolute; top: 15px; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; z-index: 10;">
+          @if($logoBase64)
+            <img src="{{ $logoBase64 }}" class="brand-logo-img" alt="Logo">
+          @endif
+          @if($logoBase64_2)
+             <div style="width: 2px; height: 30px; background: rgba(255,255,255,0.2); margin: 0 5px;"></div>
+             <img src="{{ $logoBase64_2 }}" class="brand-logo-img" alt="Affiliate" style="width: 35px; height: 35px; opacity: 0.8;">
+          @endif
+        </div>
+        <div style="padding-top: 60px;">
+          <div class="brand-name">{{ $companyName ?? 'SURYAMITRA' }}</div>
+          @if(isset($affiliatedPartner))
+            <div class="brand-meta" style="color: #F7B100; font-size: 8px;">Affiliated with: {{ $affiliatedPartner }}</div>
+          @endif
+        </div>
       </div>
 
       <div class="photo-anchor">

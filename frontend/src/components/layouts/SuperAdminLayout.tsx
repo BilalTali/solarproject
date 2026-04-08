@@ -6,7 +6,7 @@ import { useSettings } from '@/hooks/useSettings';
 
 export default function SuperAdminLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { affiliatedWith, logo, masterLogo } = useSettings();
+    const { companyName, logo, masterLogo } = useSettings();
 
     return (
         <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
@@ -39,7 +39,7 @@ export default function SuperAdminLayout() {
                         <div className="flex items-center gap-2">
                              <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center overflow-hidden shrink-0">
                                 {masterLogo || logo ? (
-                                    <img src={masterLogo || logo || ''} alt={affiliatedWith || 'Master identity'} className="w-full h-full object-contain" />
+                                    <img src={masterLogo || logo || ''} alt={companyName || 'Master identity'} className="w-full h-full object-contain" />
                                 ) : (
                                     <div className="w-full h-full bg-indigo-600 flex items-center justify-center">
                                         <Shield className="w-4 h-4 text-white" />
@@ -47,7 +47,7 @@ export default function SuperAdminLayout() {
                                 )}
                              </div>
                              <h1 className="text-xl font-bold text-slate-900 tracking-tight hidden sm:block">
-                                {affiliatedWith || 'Master identity'} <span className="text-indigo-600 font-medium text-sm ml-2 px-2 py-0.5 bg-indigo-50 rounded-full border border-indigo-100">Authority Panel</span>
+                                {companyName || 'Master identity'} <span className="text-indigo-600 font-medium text-sm ml-2 px-2 py-0.5 bg-indigo-50 rounded-full border border-indigo-100">Authority Panel</span>
                              </h1>
                         </div>
                     </div>

@@ -16,16 +16,14 @@ class MonitoringController extends Controller
     /** Global stats for Super Admin */
     public function stats(): JsonResponse
     {
-        $stats = Cache::remember('super_admin_dashboard_stats', 300, function () {
-            return [
-                'total_admins' => User::roleAdmin()->count(),
-                'total_super_agents' => User::roleSuperAgent()->count(),
-                'total_agents' => User::roleAgent()->count(),
-                'total_enumerators' => User::roleEnumerator()->count(),
-                'total_leads' => Lead::count(),
-                'total_commissions' => Commission::sum('amount') ?? 0,
-            ];
-        });
+        $stats = [
+            'total_admins' => User::roleAdmin()->count(),
+            'total_super_agents' => User::roleSuperAgent()->count(),
+            'total_agents' => User::roleAgent()->count(),
+            'total_enumerators' => User::roleEnumerator()->count(),
+            'total_leads' => Lead::count(),
+            'total_commissions' => (float) Commission::sum('amount'),
+        ];
 
         return response()->json([
             'success' => true,

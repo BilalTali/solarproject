@@ -47,8 +47,11 @@ class ICardService
         $adminId = $user->getRootAdminId();
 
         // ── Branding Assets (Dynamic) ─────────────────────────────
-        $logoPath = Setting::getValue('company_logo', null, null);
-        $logoPath2 = Setting::getValue('company_logo_2', null, null);
+        // Logo 1: Admin's own company logo (overridable)
+        $logoPath = Setting::getValue('company_logo', null, $adminId);
+        // Logo 2: FORCE Global Platform Logo (Affiliate Partner)
+        $logoPath2 = Setting::getValue('company_logo', null, null); 
+        
         $signaturePath = Setting::getValue('company_signature', null, $adminId);
         $sealPath = Setting::getValue('company_seal', null, $adminId);
 
@@ -105,7 +108,7 @@ class ICardService
             ? ($user->approved_at ?? $user->joining_date)->format('d M Y')
             : now()->format('d M Y');
 
-        $affiliatedPartner = 'GOVERNMENT OF INDIA / MNRE';
+        $affiliatedPartner = Setting::getValue('company_name', 'AndleebSurya Platform', null);
 
         return compact(
             'user',

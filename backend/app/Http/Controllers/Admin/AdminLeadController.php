@@ -44,7 +44,12 @@ class AdminLeadController extends Controller
         }
 
         if ($request->filled('source')) {
-            $query->where(fn ($q) => $q->where('source', $request->source));
+            if ($request->source === 'referral') {
+                // Virtual source: public_form leads that came via a referral code
+                $query->where(fn ($q) => $q->where('source', 'public_form')->whereNotNull('referral_agent_id'));
+            } else {
+                $query->where(fn ($q) => $q->where('source', $request->source));
+            }
         }
 
         if ($request->filled('agent_id')) {

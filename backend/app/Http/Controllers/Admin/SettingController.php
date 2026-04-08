@@ -14,19 +14,11 @@ use App\Http\Requests\UpdateSettingRequest;
 class SettingController extends Controller
 {
     /**
-     * Keys that are managed GLOBALLY by the Super Admin only.
-     * These include platform branding, homepage content, and system configuration.
+     * Keys that are managed strictly by the Super Admin for the GLOBAL platform.
+     * Regular admins cannot modify these.
      */
-    public const SYSTEM_MANAGED_KEYS = [
-        // Master Branding
-        'company_name',
-        'company_slogan',
-        'company_logo',
-        'company_favicon',
-        'company_logo_2',
-        'company_registration_no',
-
-        // Homepage Content
+    public const PLATFORM_ONLY_KEYS = [
+        // Homepage Presence
         'hero_headline',
         'hero_subheadline',
         'hero_video',
@@ -51,7 +43,34 @@ class SettingController extends Controller
         'footer_section_quick_links', 'footer_section_legal', 'footer_link_about',
         'footer_link_scheme', 'footer_link_contact', 'footer_link_faq', 'footer_link_privacy',
         'footer_link_terms', 'footer_link_refund', 'footer_about_text', 'footer_copyright',
-        'footer_disclaimer'
+        'footer_disclaimer',
+        
+        // Global Portal Logic
+        'incentive_points_per_lead', 'incentive_points_per_agent',
+    ];
+
+    /**
+     * Keys that are overridable by Tenants (Admins) for their specific company identity.
+     * Super Admin manages the GLOBAL version of these (user_id = null).
+     */
+    public const TENANT_KEYS = [
+        'company_name',
+        'company_slogan',
+        'company_logo',
+        'company_favicon',
+        'company_logo_2',          // Admin's own secondary / affiliation logo
+        'company_registration_no',
+        'company_email',
+        'company_phone',
+        'company_mobile',
+        'company_whatsapp',
+        'company_address',
+        'company_website',
+        'company_signature',
+        'company_seal',
+        'authorized_signatory',
+        'authorized_signatory_title',
+        'icard_clearance',
     ];
 
     public function index()
@@ -61,9 +80,9 @@ class SettingController extends Controller
         $targetUserId = $user->isSuperAdmin() ? null : $user->getRootAdminId();
         $mergedSettings = Setting::getMergedSettings($targetUserId);
 
-        // Filter out System-Managed keys from regular Admins (they should only manage their own portfolio)
+        // Filter: Regular Admins only see Tenant keys (allowing them to manage their own identity)
         $groupedSettings = $mergedSettings->filter(function($setting) use ($user) {
-            if (!$user->isSuperAdmin() && in_array($setting->key, self::SYSTEM_MANAGED_KEYS)) {
+            if (!$user->isSuperAdmin() && !in_array($setting->key, self::TENANT_KEYS)) {
                 return false;
             }
             return true;
@@ -104,9 +123,9 @@ class SettingController extends Controller
                 $key = $setting['key'];
                 $value = $setting['value'];
 
-                // System Managed Protection
-                if (!$user->isSuperAdmin() && in_array($key, self::SYSTEM_MANAGED_KEYS)) {
-                    continue; // Refuse update for System keys by non-Super Admin
+                // Role-based Content Protection
+                if (!$user->isSuperAdmin() && in_array($key, self::PLATFORM_ONLY_KEYS)) {
+                    continue; // Force isolation: Regular Admins cannot touch Platform configs
                 }
 
                 // Determine group: keep existing group if the row exists, else derive from key prefix
@@ -170,9 +189,9 @@ class SettingController extends Controller
         $user = auth()->user();
         $targetUserId = $user->isSuperAdmin() ? null : $user->id;
 
-        // Master Branding Protection for file uploads
-        if (!$user->isSuperAdmin() && in_array($key, self::SYSTEM_MANAGED_KEYS)) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized: Only Super Admin can modify Master Branding assets.'], 403);
+        // Platform Protection for file uploads
+        if (!$user->isSuperAdmin() && in_array($key, self::PLATFORM_ONLY_KEYS)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Only Super Admin can modify Platform-level assets.'], 403);
         }
 
         // Delete old file if exists

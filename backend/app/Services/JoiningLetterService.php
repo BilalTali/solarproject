@@ -72,11 +72,18 @@ class JoiningLetterService
         $companyTagline = Setting::getValue('company_tagline', 'Empowering Sustainable Futures', $adminId);
 
         // ── Branding Assets (Dynamic) ─────────────────────────────
-        $logoPath = Setting::getValue('company_logo', null, null);
+        // Logo 1: Admin's own company logo
+        $logoPath = Setting::getValue('company_logo', null, $adminId);
+        // Logo 2: FORCE Global Platform Logo (Affiliate Partner)
+        $logoPath2 = Setting::getValue('company_logo', null, null);
+
         $signaturePath = Setting::getValue('company_signature', null, $adminId);
+        $sealPath = Setting::getValue('company_seal', null, $adminId);
 
         $logoBase64 = $this->getBase64Image($logoPath);
+        $logoBase64_2 = $this->getBase64Image($logoPath2);
         $sigBase64 = $this->getBase64Image($signaturePath);
+        $sealBase64 = $this->getBase64Image($sealPath);
 
         // ── Legacy Setting Fetch for Other Text ────────────────────
         $settings = Setting::getMergedSettings($adminId)
@@ -123,12 +130,15 @@ class JoiningLetterService
             'companyAffiliatedWith' => $companyAffiliatedWith,
             'companyTagline' => $companyTagline,
             'logoBase64' => $logoBase64,
+            'logoBase64_2' => $logoBase64_2,
             'sigBase64' => $sigBase64,
+            'sealBase64' => $sealBase64,
             'designation' => $designation,
             'letterNumber' => $letterNumber,
             'body' => $body,
             'terms' => $terms,
             'settings' => $settings,
+            'affiliatedPartner' => Setting::getValue('company_name', 'AndleebSurya Platform', null),
             'authorizedSignatory' => $settings['signatory_name'] ?? 'Authorized Signatory',
             'signatoryTitle' => $settings['signatory_title'] ?? 'Manager',
             'barcodeBase64' => $this->generateBarcode($letterNumber),

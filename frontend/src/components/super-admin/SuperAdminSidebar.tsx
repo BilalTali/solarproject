@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-    LayoutDashboard, Users, Shield, FileText, Monitor, LogOut, ShieldAlert, HelpCircle, MessageSquare, IndianRupee, Settings
+    LayoutDashboard, Users, Shield, FileText, Monitor, LogOut, ShieldAlert, HelpCircle, MessageSquare, IndianRupee, Settings, Globe
 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -20,14 +20,15 @@ const SUPER_ADMIN_NAV = [
     { icon: <HelpCircle className="w-5 h-5" />, label: 'Help Center', to: '/super-admin/help-center' },
     { icon: <MessageSquare className="w-5 h-5" />, label: 'WhatsApp Chatbot', to: '/super-admin/chatbot' },
     { icon: <Shield className="w-5 h-5" />, label: 'Global Reports', to: '/super-admin/reports' },
-    { icon: <Settings className="w-5 h-5" />, label: 'Profile & Settings', to: '/super-admin/profile' },
+    { icon: <Globe className="w-5 h-5" />, label: 'Global Homepage Presence', to: '/super-admin/settings' },
+    { icon: <Settings className="w-5 h-5" />, label: 'Global Settings', to: '/super-admin/settings' },
 ];
 
 export default function SuperAdminSidebar({ onClose }: { onClose?: () => void }) {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, clearAuth } = useAuthStore();
-    const { affiliatedWith, logo, masterLogo } = useSettings();
+    const { companyName, logo, masterLogo } = useSettings();
     
     const logoutMutation = useMutation({
         mutationFn: authApi.logout,
@@ -44,7 +45,7 @@ export default function SuperAdminSidebar({ onClose }: { onClose?: () => void })
             <div className="flex items-center gap-2 p-5 border-b border-white/10 bg-black/20">
                 <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center overflow-hidden shrink-0 shadow-lg" aria-hidden="true">
                     {masterLogo || logo ? (
-                        <img src={masterLogo || logo || ''} alt={affiliatedWith || 'Master identity'} className="w-full h-full object-contain" />
+                        <img src={masterLogo || logo || ''} alt={companyName || 'Master identity'} className="w-full h-full object-contain" />
                     ) : (
                         <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center">
                             <Shield className="w-5 h-5 text-white" />
@@ -53,7 +54,7 @@ export default function SuperAdminSidebar({ onClose }: { onClose?: () => void })
                 </div>
                 <div className="flex flex-col min-w-0">
                     <span className="font-display font-black text-white text-[11px] leading-tight uppercase tracking-wider truncate">
-                        {affiliatedWith || 'Master Identity Authority'}
+                        {companyName || 'Master Identity Authority'}
                     </span>
                     <div className="flex items-center gap-1.5 mt-1">
                         <div className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse" />

@@ -24,7 +24,9 @@ class SettingsSeeder extends Seeder
             ['key' => 'company_address',          'value' => 'Basement Suite 4, Residency Road, Near Regal Chowk, Srinagar, J&K - 190001', 'group' => 'company'],
             ['key' => 'company_website',          'value' => 'https://suryamitra.in', 'group' => 'company'],
             ['key' => 'company_email',            'value' => 'info@suryamitra.in',      'group' => 'company'],
-            ['key' => 'company_phone',            'value' => '+91-99067 66655',         'group' => 'company'],
+            ['key' => 'company_phone',            'value' => '+91-9419012345',         'group' => 'company'],
+            ['key' => 'company_whatsapp',         'value' => '+91-9419012345',         'group' => 'company'],
+            ['key' => 'company_mobile',           'value' => '+91-9419012345',         'group' => 'company'],
 
             // ── Authorized Signatory ──────────────────────────────────────────
             ['key' => 'signatory_name',           'value' => 'Er. Sameer Ahmad', 'group' => 'signatory'],
@@ -87,9 +89,18 @@ class SettingsSeeder extends Seeder
             ['key' => 'eligibility_error_desc', 'value' => 'Based on your answers, you may not qualify for the government subsidy at this moment. However, please contact our support team as there may still be other options available for you.', 'group' => 'homepage'],
 
             // Footer
-            ['key' => 'footer_about_text', 'value' => 'Facilitating solar rooftop installations under the PM Surya Ghar Muft Bijli Yojana across India.', 'group' => 'company'],
-            ['key' => 'footer_copyright', 'value' => '© 2026 SuryaMitra. All rights reserved.', 'group' => 'company'],
-            ['key' => 'footer_disclaimer', 'value' => '⚠️ SuryaMitra is an independent facilitation agency. Not a government body. PM Surya Ghar Muft Bijli Yojana is a Government of India scheme.', 'group' => 'company'],
+            ['key' => 'footer_about_text', 'value' => 'AndleebSurya is a dedicated facilitator for the PM Surya Ghar scheme, empowering the people of Jammu & Kashmir and Ladakh with clean, free energy solutions.', 'group' => 'company'],
+            ['key' => 'footer_copyright', 'value' => '© 2024 AndleebSurya. Not an official Govt website.', 'group' => 'company'],
+            ['key' => 'footer_disclaimer', 'value' => '⚠️ Disclaimer: All subsidies are subject to MNRE guidelines and National Portal approvals.', 'group' => 'company'],
+
+            // Navigation Labels
+            ['key' => 'nav_home', 'value' => 'Home', 'group' => 'homepage'],
+            ['key' => 'nav_portal_login', 'value' => 'Portal Login', 'group' => 'homepage'],
+            ['key' => 'nav_cta_electricity', 'value' => 'Show Subsidy', 'group' => 'homepage'],
+            ['key' => 'label_how_it_works', 'value' => 'How It Works', 'group' => 'homepage'],
+            ['key' => 'label_eligibility_checker', 'value' => 'Check Your Eligibility', 'group' => 'homepage'],
+            ['key' => 'label_subsidy_calculator', 'value' => 'Solar Subsidy Calculator', 'group' => 'homepage'],
+            ['key' => 'label_whatsapp_text', 'value' => 'Chat with Solar Expert', 'group' => 'homepage'],
 
             // Navigation Labels
             ['key' => 'nav_calculator', 'value' => 'Calculator', 'group' => 'homepage'],

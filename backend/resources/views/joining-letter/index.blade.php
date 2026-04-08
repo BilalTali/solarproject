@@ -14,6 +14,7 @@
     /** @var string $body */
     /** @var array $terms */
     /** @var string|null $logoBase64 */
+    /** @var string|null $logoBase64_2 */
     /** @var string|null $sigBase64 */
     /** @var string $authorizedSignatory */
     /** @var string $signatoryTitle */
@@ -245,13 +246,18 @@
     <table class="header-table" cellspacing="0" cellpadding="0">
         <tr>
             <td class="logo-cell">
-                @if($logoBase64)
-                    <img src="{{ $logoBase64 }}" class="logo">
-                @endif
-            </td>
-            <td class="company-cell">
-                <div class="company-name">{{ $companyName }}</div>
-                <div class="company-tagline">{{ $companyTagline }}</div>
+                    @if($logoBase64)
+                        <img src="{{ $logoBase64 }}" class="logo">
+                    @endif
+                    @if($logoBase64_2)
+                        <img src="{{ $logoBase64_2 }}" class="logo" style="margin-left: 10px; border-left: 1px solid #ddd; padding-left: 10px; opacity: 0.8;">
+                    @endif
+                </td>
+                <td class="company-cell">
+                    <div class="company-name">{{ $companyName }}</div>
+                    @if($affiliatedPartner)
+                        <div class="company-tagline" style="color: #666; font-size: 8.5pt;">Partnered with: {{ $affiliatedPartner }}</div>
+                    @endif
                 <div class="company-info" style="line-height: 1.5;">
                     <div>{{ $companyAddress }}</div>
                     @if($companyAffiliatedWith)

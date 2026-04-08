@@ -11,6 +11,7 @@ export const DEFAULT_SETTINGS: PublicSettingsData = {
     company_logo: null,
     company_favicon: null,
     company_signature: null,
+    company_seal: null,
     company_website: 'https://suryamitra.in',
     social_facebook: null,
     social_twitter: null,
@@ -65,6 +66,7 @@ export const DEFAULT_SETTINGS: PublicSettingsData = {
     company_registration_no: null,
     company_affiliated_with: null,
     company_logo_2: null,
+    icard_clearance: 'Level-V (Elite)',
     external_pmsuryaghar_label: 'pmsuryaghar.gov.in',
     external_pmsuryaghar_url: 'https://pmsuryaghar.gov.in',
 };
@@ -87,10 +89,18 @@ export function useSettings() {
         settings,
         isLoading,
         companyName: settings.company_name || 'SuryaMitra',
-        affiliatedWith: settings.company_name || '',
+        affiliatedWith: settings.company_affiliated_with,
+        companyEmail: settings.company_email,
+        companyMobile: settings.company_mobile,
+        companyWhatsapp: settings.company_whatsapp,
+        companyAddress: settings.company_address,
+        companyWebsite: settings.company_website,
         registrationNo: settings.company_registration_no,
         logo: settings.company_logo ? getFileUrl(settings.company_logo) : null,
+        // Affiliate Partner Logo — set exclusively by Super Admin, appears on ID cards
         masterLogo: settings.company_logo_2 ? getFileUrl(settings.company_logo_2) : null,
         favicon: settings.company_favicon ? getFileUrl(settings.company_favicon) : null,
+        signature: settings.company_signature ? getFileUrl(settings.company_signature) : null,
+        seal: settings.company_seal ? getFileUrl(settings.company_seal) : null,
     };
 }

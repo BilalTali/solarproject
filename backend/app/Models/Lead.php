@@ -412,9 +412,10 @@ class Lead extends Model
                     }
                 }
 
-                // HIERARCHY GUARD: Admin should only ever pay BDMs (super_agent role) OR direct Enumerators.
+                // Admin sees any prompt where they are the logical payer (covers direct agents,
+                // super agents, and enumerators that report straight to admin — e.g. referral leads).
                 if ($user->isAdmin() || $user->isSuperAdmin()) {
-                    return in_array($p['payee_role'] ?? '', ['super_agent', 'enumerator']);
+                    return ($p['payer_role'] ?? '') === 'admin';
                 }
 
                 return false;
