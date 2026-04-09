@@ -24,6 +24,8 @@ class WhatsAppChatbotService
 
     public function handle(string $from, array $message): void
     {
+        Log::error('Chatbot Handle - From: ' . $from, ['message' => $message]);
+        
         // $from is usually E.164, without '+'
         $phone = ltrim($from, '+');
 
@@ -31,6 +33,7 @@ class WhatsAppChatbotService
             ['wa_phone' => $phone],
             ['state' => 'menu', 'context' => []]
         );
+
 
         // Timeout check: greater than 30 mins -> reset to menu
         if ($session->last_message_at && $session->last_message_at->diffInMinutes(now()) > 30) {

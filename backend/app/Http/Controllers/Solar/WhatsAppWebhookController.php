@@ -42,7 +42,7 @@ class WhatsAppWebhookController extends Controller
     {
         try {
             $data = $request->all();
-            Log::info('WhatsApp Webhook Incoming:', ['payload' => $data]);
+            Log::error('WhatsApp Webhook Incoming:', ['payload' => $data]);
 
 
             // Structure expected:
