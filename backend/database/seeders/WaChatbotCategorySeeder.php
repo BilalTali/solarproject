@@ -76,21 +76,21 @@ class WaChatbotCategorySeeder extends Seeder
                 'value' => json_encode([
                     [
                         'key'      => 'name',
-                        'label'    => 'Your full name',
+                        'label'    => 'Your full name (as per Aadhaar)',
                         'required' => true,
                         'order'    => 1,
                         'type'     => 'text',
                     ],
                     [
                         'key'      => 'mobile',
-                        'label'    => 'Your mobile number (10 digits)',
+                        'label'    => 'Your 10-digit mobile number',
                         'required' => true,
                         'order'    => 2,
                         'type'     => 'mobile',
                     ],
                     [
                         'key'      => 'state',
-                        'label'    => 'Your state (e.g. Uttar Pradesh)',
+                        'label'    => 'Your state (e.g. Jammu & Kashmir)',
                         'required' => true,
                         'order'    => 3,
                         'type'     => 'text',
@@ -104,7 +104,7 @@ class WaChatbotCategorySeeder extends Seeder
                     ],
                     [
                         'key'      => 'area',
-                        'label'    => 'Your village / mohalla / town (or type Skip)',
+                        'label'    => 'Your village / colony / house no. (or type Skip)',
                         'required' => false,
                         'order'    => 5,
                         'type'     => 'text',

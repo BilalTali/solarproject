@@ -149,6 +149,7 @@ class ChatbotController extends Controller
             'contacts'      => $contacts,
             'chatbot_ready' => !empty(config('services.whatsapp.phone_number_id'))
                                && !empty(config('services.whatsapp.access_token')),
+            'company_whatsapp' => Setting::where('key', 'company_whatsapp')->value('value') ?? '+91-8899055335',
         ]);
     }
 

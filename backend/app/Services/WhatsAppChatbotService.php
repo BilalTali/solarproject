@@ -159,7 +159,7 @@ class WhatsAppChatbotService
         $regFields = $this->getRegistrationFields();
         $firstField = collect($regFields)->firstWhere('order', 1);
         
-        $this->waApi->sendText($to, "🚀 *Let's register you for PM Surya Ghar!*\n(Type 0 anytime to cancel)\n\nStep 1: *{$firstField['label']}*");
+        $this->waApi->sendText($to, "🚀 *Let's get you registered for PM Surya Ghar!*\n\nWe'll need a few details to process your application. You can type *0* anytime to return to the main menu.\n\n👉 Step 1: *{$firstField['label']}*");
     }
 
     private function handleCategoryState(WaChatbotSession $session, mixed $input): void
@@ -229,7 +229,7 @@ class WhatsAppChatbotService
                 $data['elec_bill_media_id'] = $input['media_id'];
                 $step++;
             } else {
-                $this->waApi->sendText($session->wa_phone, "Please send a valid photo of your Electricity Bill 📄");
+                $this->waApi->sendText($session->wa_phone, "Step {$step}: Please send a clear *photo* of your Electricity Bill 📄");
                 return;
             }
         } elseif ($step === $totalFields + 2) {
@@ -238,7 +238,7 @@ class WhatsAppChatbotService
                 $data['aadhaar_media_id'] = $input['media_id'];
                 $step++;
             } else {
-                $this->waApi->sendText($session->wa_phone, "Please send a valid photo of your Aadhaar Card 🪪");
+                $this->waApi->sendText($session->wa_phone, "Step {$step}: Please send a clear *photo* of your Aadhaar Card 🪪");
                 return;
             }
         } elseif ($step === $totalFields + 3) {
@@ -275,7 +275,7 @@ class WhatsAppChatbotService
                 $session->state = 'done';
                 $session->save();
                 
-                $this->waApi->sendText($session->wa_phone, "✅ Registration complete!\nYour Application ID: {$lead->ulid}\nOur team will contact you soon.\nReply 0 for Main Menu.");
+                $this->waApi->sendText($session->wa_phone, "✅ *Registration successful!*\n\nYour Application ID is: *{$lead->ulid}*\n\nOur team will review your application and contact you shortly. Thank you for choosing green energy!\n\nReply *0* for the Main Menu.");
             } catch (\Exception $e) {
                 Log::error('WA Chatbot Lead Creation Error: ' . $e->getMessage());
                 $this->waApi->sendText($session->wa_phone, "❌ Sorry, there was an error processing your registration. Please try again later.\nReply 0 for Main Menu.");
@@ -400,7 +400,7 @@ class WhatsAppChatbotService
         $this->waApi->sendList(
             $to,
             'PM Surya Ghar Support',
-            "🌞 *Welcome to AndleebSurya!* \n\nGet up to 300 units free electricity monthly. How can we help you today?",
+            "🌞 *Welcome to AndleebSurya!* \n\nJoin the revolution of free solar energy. Get up to 300 units of free electricity every month!\n\nHow can we assist you today?",
             $sections
         );
     }

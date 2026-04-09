@@ -25,9 +25,9 @@ class SettingsSeeder extends Seeder
             ['key' => 'company_address',          'value' => 'Basement Suite 4, Residency Road, Near Regal Chowk, Srinagar, J&K - 190001', 'group' => 'company'],
             ['key' => 'company_website',          'value' => 'https://suryamitra.in', 'group' => 'company'],
             ['key' => 'company_email',            'value' => 'info@suryamitra.in',      'group' => 'company'],
-            ['key' => 'company_phone',            'value' => '+91-9419012345',         'group' => 'company'],
-            ['key' => 'company_whatsapp',         'value' => '+91-9419012345',         'group' => 'company'],
-            ['key' => 'company_mobile',           'value' => '+91-9419012345',         'group' => 'company'],
+            ['key' => 'company_phone',            'value' => '+91-8899055335',         'group' => 'company'],
+            ['key' => 'company_whatsapp',         'value' => '+91-8899055335',         'group' => 'company'],
+            ['key' => 'company_mobile',           'value' => '+91-8899055335',         'group' => 'company'],
 
             // ── Authorized Signatory ──────────────────────────────────────────
             ['key' => 'signatory_name',           'value' => 'Er. Sameer Ahmad', 'group' => 'signatory'],

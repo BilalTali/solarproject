@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, ClipboardList, HelpCircle, UserCircle, ChevronRight, Loader2 } from 'lucide-react';
 import axiosInstance from '@/services/axios';
+import { useSettings } from '@/hooks/useSettings';
 
 interface SupportContact {
     id: number;
@@ -12,13 +13,18 @@ export default function WhatsAppFloatButton() {
     const [isOpen, setIsOpen] = useState(false);
     const [contacts, setContacts] = useState<SupportContact[]>([]);
     const [loading, setLoading] = useState(true);
+    const [companyWa, setCompanyWa] = useState('+918899055335');
     const popupRef = useRef<HTMLDivElement>(null);
+    const { settings } = useSettings();
 
     // Fetch real support contacts from the public API (no auth required)
     useEffect(() => {
-        axiosInstance.get<{ contacts: SupportContact[] }>('/public/support-contacts')
+        axiosInstance.get<{ contacts: SupportContact[], company_whatsapp?: string }>('/public/support-contacts')
             .then(res => {
                 setContacts(res.data.contacts || []);
+                if (res.data.company_whatsapp) {
+                    setCompanyWa(res.data.company_whatsapp);
+                }
             })
             .catch(() => {})
             .finally(() => setLoading(false));
@@ -38,23 +44,19 @@ export default function WhatsAppFloatButton() {
     const primaryContact = contacts[0];
 
     const handleRedirect = (type: 'apply' | 'faq' | 'chat') => {
-
         let url = '';
-        if (type === 'chat' && primaryContact) {
-            // Direct chat: go to the specific agent's personal WhatsApp
-            const num = primaryContact.whatsapp_number.replace(/\D/g, '');
-            const fullNum = num.startsWith('91') ? num : `91${num}`;
-            url = `https://wa.me/${fullNum}?text=${encodeURIComponent('SUPPORT')}`;
-        } else if (primaryContact) {
-            // Apply / FAQ: go to the primary contact's WA with a trigger keyword for the chatbot
-            const num = primaryContact.whatsapp_number.replace(/\D/g, '');
-            const fullNum = num.startsWith('91') ? num : `91${num}`;
-            const text = type === 'apply' ? 'APPLY' : 'FAQ';
-            url = `https://wa.me/${fullNum}?text=${encodeURIComponent(text)}`;
+        
+        const targetNumber = primaryContact ? primaryContact.whatsapp_number : (settings?.company_whatsapp || companyWa || '');
+        const num = targetNumber.replace(/\D/g, '');
+        const fullNum = num ? (num.startsWith('91') ? num : `91${num}`) : '';
+
+        if (type === 'chat') {
+            url = fullNum ? `https://wa.me/${fullNum}?text=${encodeURIComponent('SUPPORT')}` : `https://wa.me/?text=${encodeURIComponent('SUPPORT')}`;
         } else {
-            // Fallback: generic message if no contacts configured yet
-            url = `https://wa.me/?text=${encodeURIComponent('Hi')}`;
+            const text = type === 'apply' ? 'APPLY' : 'FAQ';
+            url = fullNum ? `https://wa.me/${fullNum}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
         }
+
         window.open(url, '_blank', 'noopener,noreferrer');
         setIsOpen(false);
     };

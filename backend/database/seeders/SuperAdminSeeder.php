@@ -20,6 +20,9 @@ class SuperAdminSeeder extends Seeder
                 'password' => \Illuminate\Support\Facades\Hash::make('Sugen@9313'),
                 'role' => \App\Models\User::ROLE_SUPER_ADMIN,
                 'status' => 'active',
+                'is_wa_lead_handler' => true,
+                'is_public_contact' => true,
+                'whatsapp_number' => '8899055335',
                 'email_verified_at' => now(),
             ]
         );
