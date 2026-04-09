@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\ICardController;
 use App\Http\Controllers\Admin\JoiningLetterController;
+use App\Http\Controllers\Solar\DocumentController;
+use App\Http\Controllers\Solar\LeadDocumentController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -46,3 +48,12 @@ Route::middleware(['web', 'auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/joining-letter/{user}/preview', [JoiningLetterController::class, 'preview'])
         ->name('joining-letter.preview');
 });
+
+// ── Shared Signed Document View Routes (In web.php to prevent JSON errors) ──
+Route::get('/document-view/{id}/{type}', [DocumentController::class, 'viewSigned'])
+    ->name('documents.signed-view')
+    ->middleware('signed');
+
+Route::get('/lead-document-view/{ulid}/{id}', [LeadDocumentController::class, 'viewSigned'])
+    ->name('leads.documents.signed-view')
+    ->middleware('signed');

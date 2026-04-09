@@ -19,23 +19,22 @@ class ICardController extends Controller
      */
     public function download(Request $request): Response
     {
-        \Illuminate\Support\Facades\Log::warning('ICard download request', [
-            'userId_param' => $request->route('userId'),
-            'userId_query' => $request->query('userId'),
-            'has_valid_signature' => $request->hasValidSignature(),
-            'auth_user' => Auth::id()
-        ]);
-
+        // 1. Determine target user
+        // We prioritize the ID in the route/query if the request is signed OR if the requester is an Admin.
+        $requestedUserId = $request->route('userId') ?? $request->query('userId');
         $user = Auth::user();
-        if (! $user && $request->hasValidSignature()) {
-            $userId = $request->route('userId') ?? $request->query('userId');
-            if ($userId) {
-                $user = User::find($userId);
+
+        if ($requestedUserId) {
+            if ($request->hasValidSignature() || ($user?->isAdmin())) {
+                $user = User::findOrFail($requestedUserId);
             }
         }
 
         if (! $user) {
-            \Illuminate\Support\Facades\Log::warning('ICard download failed: User not found or unauthorized');
+            \Illuminate\Support\Facades\Log::warning('ICard download failed: User not found or unauthorized', [
+                'userId_param' => $requestedUserId,
+                'auth_id' => Auth::id()
+            ]);
             abort(401, 'Unauthorized or invalid download link');
         }
 

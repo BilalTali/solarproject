@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\LeadDocument;
 use App\Models\Setting;
 use App\Models\User;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -102,7 +104,27 @@ class ICardService
         $mobile = $user->mobile ?? '—';
         $address = Str::limit($user->address ?? 'Pampore, Pulwama', 35);
 
-        $profilePhotoBase64 = $this->getProcessedProfilePhoto($user->profile_photo);
+        $photoPath = $user->profile_photo;
+
+        // ── Fallback: Lead Document Photo ──────────────────────────
+        // Some users might have a photo uploaded during lead stage but not in the user profile photo field.
+        if (!$photoPath) {
+            /** @var \App\Models\Lead|null $lead */
+            $lead = \App\Models\Lead::query()
+                ->where(fn($q) => $q->where('submitted_by_enumerator_id', $user->id)
+                    ->orWhere('submitted_by_agent_id', $user->id)
+                    ->orWhere('beneficiary_mobile', $user->mobile))
+                ->first();
+            
+            if ($lead) {
+                $leadPhoto = $lead->documents()->where('document_type', 'photo')->first();
+                if ($leadPhoto && $leadPhoto->file_path) {
+                    $photoPath = $leadPhoto->file_path;
+                }
+            }
+        }
+
+        $profilePhotoBase64 = $this->getProcessedProfilePhoto($photoPath);
         
         $validUntil = ($user->approved_at ?? $user->joining_date)
             ? ($user->approved_at ?? $user->joining_date)->addYear()->format('d M Y')
@@ -341,16 +363,58 @@ class ICardService
     {
         if (!$path) return null;
 
-        $absPath = storage_path('app/public/' . $path);
-        if (!file_exists($absPath)) return null;
+        $content = null;
+        $mimeType = 'image/png';
+
+        // 1. Handle external URLs or Full Storage URLs
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            $storageUrl = asset('storage/');
+            if (str_starts_with($path, $storageUrl)) {
+                // It's a local storage URL, convert to path
+                $path = str_replace($storageUrl, '', $path);
+            } else {
+                // It's a truly external URL, try to download it
+                try {
+                    $response = Http::timeout(5)->get($path);
+                    if ($response->successful()) {
+                        $content = $response->body();
+                        $mimeType = $response->header('Content-Type') ?? 'image/png';
+                    }
+                } catch (\Throwable $e) {
+                    return null;
+                }
+            }
+        }
+
+        // 2. Resolve local path if not downloaded yet
+        if (!$content) {
+            // Check public path first
+            $fullPath = public_path($path);
+            if (file_exists($fullPath) && !is_dir($fullPath)) {
+                $content = file_get_contents($fullPath);
+                $mimeType = 'image/' . pathinfo($fullPath, PATHINFO_EXTENSION);
+            } 
+            // Check storage/app/public
+            elseif (Storage::disk('public')->exists($path)) {
+                $content = Storage::disk('public')->get($path);
+                $mimeType = 'image/' . pathinfo($path, PATHINFO_EXTENSION);
+            }
+            // Check local disk (for Lead Documents usually stored on local)
+            elseif (Storage::disk('local')->exists($path)) {
+                $content = Storage::disk('local')->get($path);
+                $mimeType = 'image/' . pathinfo($path, PATHINFO_EXTENSION);
+            }
+        }
+
+        if (!$content) return null;
 
         try {
             if (!function_exists('imagecreatefromstring')) {
-                return 'data:image/png;base64,' . base64_encode(file_get_contents($absPath));
+                return 'data:' . $mimeType . ';base64,' . base64_encode($content);
             }
 
-            $img = @imagecreatefromstring(file_get_contents($absPath));
-            if (!$img) return 'data:image/png;base64,' . base64_encode(file_get_contents($absPath));
+            $img = @imagecreatefromstring($content);
+            if (!$img) return 'data:' . $mimeType . ';base64,' . base64_encode($content);
 
             $w = imagesx($img);
             $h = imagesy($img);
@@ -400,7 +464,7 @@ class ICardService
 
             return $base64;
         } catch (\Throwable $e) {
-            return 'data:image/png;base64,' . base64_encode(file_get_contents($absPath));
+            return 'data:' . $mimeType . ';base64,' . base64_encode($content);
         }
     }
 }

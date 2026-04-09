@@ -1,0 +1,33 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+set host "92.249.46.36"
+set port "65002"
+set user "u335000182"
+set pass "Sugen@9313"
+set local_backend "/Users/computergallery/Documents/pmsuryaghar/backend/"
+set remote_backend "/home/u335000182/domains/andleebsurya.in/public_html/backend/"
+set local_frontend "/Users/computergallery/Documents/pmsuryaghar/frontend/dist/"
+set remote_frontend "/home/u335000182/domains/andleebsurya.in/public_html/"
+
+puts "\n--- Starting Backend Sync ---\n"
+spawn rsync -avz --progress -e "ssh -p $port -o StrictHostKeyChecking=no" --exclude ".git" --exclude "node_modules" --exclude "vendor" --exclude ".env" $local_backend $user@$host:$remote_backend
+expect {
+    "password:" {
+        send "$pass\r"
+        exp_continue
+    }
+    eof
+}
+
+puts "\n--- Starting Frontend Sync ---\n"
+spawn rsync -avz --progress -e "ssh -p $port -o StrictHostKeyChecking=no" --exclude "backend" --exclude "storage" --exclude ".env" $local_frontend $user@$host:$remote_frontend
+expect {
+    "password:" {
+        send "$pass\r"
+        exp_continue
+    }
+    eof
+}
+
+puts "\n--- Sync Complete ---\n"

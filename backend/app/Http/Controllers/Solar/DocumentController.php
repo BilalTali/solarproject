@@ -9,13 +9,18 @@ use App\Models\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentController extends Controller
 {
     public function index()
     {
         $documents = Document::query()->orderBy('sort_order')->orderBy('created_at', 'desc')->get()
-            ->map(fn ($d) => $this->format($d));
+            ->map(function (Document $d) {
+                return $this->format($d);
+            });
 
         return response()->json(['success' => true, 'data' => $documents]);
     }
@@ -23,9 +28,11 @@ class DocumentController extends Controller
     /** Public endpoint — returns only published documents */
     public function publicIndex()
     {
-        $documents = Document::query()->where(fn ($q) => $q->where('is_published', true))
+        $documents = Document::query()->where(fn($q) => $q->where('is_published', true))
             ->orderBy('sort_order')->orderBy('created_at', 'desc')->get()
-            ->map(fn ($d) => $this->format($d));
+            ->map(function (Document $d) {
+                return $this->format($d);
+            });
 
         return response()->json(['success' => true, 'data' => $documents]);
     }
@@ -53,15 +60,23 @@ class DocumentController extends Controller
 
         if ($request->hasFile('file')) {
             if ($document->file_path) {
-                Storage::disk('local')->delete($document->file_path);
-                Storage::disk('public')->delete($document->file_path);
+                /** @var \Illuminate\Filesystem\FilesystemAdapter $local */
+                $local = Storage::disk('local');
+                $local->delete($document->file_path);
+                /** @var \Illuminate\Filesystem\FilesystemAdapter $public */
+                $public = Storage::disk('public');
+                $public->delete($document->file_path);
             }
             $data['file_path'] = $request->file('file')->store('documents', 'local');
         }
         if ($request->hasFile('thumbnail')) {
             if ($document->thumbnail_path) {
-                Storage::disk('local')->delete($document->thumbnail_path);
-                Storage::disk('public')->delete($document->thumbnail_path);
+                /** @var \Illuminate\Filesystem\FilesystemAdapter $local */
+                $local = Storage::disk('local');
+                $local->delete($document->thumbnail_path);
+                /** @var \Illuminate\Filesystem\FilesystemAdapter $public */
+                $public = Storage::disk('public');
+                $public->delete($document->thumbnail_path);
             }
             $data['thumbnail_path'] = $request->file('thumbnail')->store('document_thumbs', 'local');
         }
@@ -75,12 +90,20 @@ class DocumentController extends Controller
     public function destroy(Document $document)
     {
         if ($document->file_path) {
-            Storage::disk('local')->delete($document->file_path);
-            Storage::disk('public')->delete($document->file_path);
+            /** @var \Illuminate\Filesystem\FilesystemAdapter $local */
+            $local = Storage::disk('local');
+            $local->delete($document->file_path);
+            /** @var \Illuminate\Filesystem\FilesystemAdapter $public */
+            $public = Storage::disk('public');
+            $public->delete($document->file_path);
         }
         if ($document->thumbnail_path) {
-            Storage::disk('local')->delete($document->thumbnail_path);
-            Storage::disk('public')->delete($document->thumbnail_path);
+            /** @var \Illuminate\Filesystem\FilesystemAdapter $local */
+            $local = Storage::disk('local');
+            $local->delete($document->thumbnail_path);
+            /** @var \Illuminate\Filesystem\FilesystemAdapter $public */
+            $public = Storage::disk('public');
+            $public->delete($document->thumbnail_path);
         }
         $document->delete();
 
@@ -92,12 +115,21 @@ class DocumentController extends Controller
         $document = Document::findOrFail($id);
         
         $url = URL::temporarySignedRoute(
-            'api.v1.documents.signed-view',
-            now()->addMinutes(30),
+            'documents.signed-view',
+            now()->addMinutes(120),
             ['id' => $id, 'type' => $type]
         );
 
-        return response()->json(['url' => $url]);
+        // Force HTTPS if the application is accessed over HTTPS
+        if ($request->isSecure()) {
+            $url = str_replace('http://', 'https://', $url);
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['url' => $url]);
+        }
+
+        return redirect($url);
     }
 
     public function viewSigned(Request $request, $id, $type)
@@ -108,12 +140,16 @@ class DocumentController extends Controller
 
         if (!$path) abort(404);
 
-        if (Storage::disk('local')->exists($path)) {
-            return Storage::disk('local')->response($path);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $local */
+        $local = Storage::disk('local');
+        if ($local->exists($path)) {
+            return $local->response($path);
         }
 
-        if (Storage::disk('public')->exists($path)) {
-            return Storage::disk('public')->response($path);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $public */
+        $public = Storage::disk('public');
+        if ($public->exists($path)) {
+            return $public->response($path);
         }
 
         abort(404, 'File not found');
@@ -121,13 +157,37 @@ class DocumentController extends Controller
 
     private function format(Document $d): array
     {
+        $file_url = null;
+        if ($d->file_path) {
+            $file_url = URL::temporarySignedRoute(
+                'documents.signed-view',
+                now()->addMinutes(120),
+                ['id' => $d->id, 'type' => 'file']
+            );
+            if (request()->isSecure()) {
+                $file_url = str_replace('http://', 'https://', $file_url);
+            }
+        }
+
+        $thumbnail_url = null;
+        if ($d->thumbnail_path) {
+            $thumbnail_url = URL::temporarySignedRoute(
+                'documents.signed-view',
+                now()->addMinutes(120),
+                ['id' => $d->id, 'type' => 'thumbnail']
+            );
+            if (request()->isSecure()) {
+                $thumbnail_url = str_replace('http://', 'https://', $thumbnail_url);
+            }
+        }
+
         return [
             'id' => $d->id,
             'title' => $d->title,
             'description' => $d->description,
             'category' => $d->category,
-            'file_url' => $d->file_path ? url('/api/v1/documents/'.$d->id.'/view-url?type=file') : null,
-            'thumbnail_url' => $d->thumbnail_path ? url('/api/v1/documents/'.$d->id.'/view-url?type=thumbnail') : null,
+            'file_url' => $file_url,
+            'thumbnail_url' => $thumbnail_url,
             'is_published' => $d->is_published,
             'sort_order' => $d->sort_order,
             'created_at' => $d->created_at,

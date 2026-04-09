@@ -8,6 +8,7 @@ use App\Models\LeadDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Filesystem\FilesystemAdapter;
 
 class LeadDocumentController extends Controller
 {
@@ -26,12 +27,16 @@ class LeadDocumentController extends Controller
         $path = $document->file_path;
 
         // Try 'local' disk first (new secure storage), fallback to 'public' (legacy storage)
-        if (Storage::disk('local')->exists($path)) {
-            return Storage::disk('local')->download($path, $document->original_filename);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $local */
+        $local = Storage::disk('local');
+        if ($local->exists($path)) {
+            return $local->download($path, $document->original_filename);
         }
 
-        if (Storage::disk('public')->exists($path)) {
-            return Storage::disk('public')->download($path, $document->original_filename);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $public */
+        $public = Storage::disk('public');
+        if ($public->exists($path)) {
+            return $public->download($path, $document->original_filename);
         }
 
         abort(404, 'File not found on any disk.');
@@ -46,12 +51,21 @@ class LeadDocumentController extends Controller
         $this->authorizeDocument($request->user(), $lead);
 
         $url = URL::temporarySignedRoute(
-            'api.v1.leads.documents.signed-view',
-            now()->addMinutes(30),
+            'leads.documents.signed-view',
+            now()->addMinutes(120),
             ['ulid' => $ulid, 'id' => $id]
         );
 
-        return response()->json(['url' => $url]);
+        // Force HTTPS if the application is accessed over HTTPS
+        if ($request->isSecure()) {
+            $url = str_replace('http://', 'https://', $url);
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['url' => $url]);
+        }
+
+        return redirect($url);
     }
 
     /**
@@ -67,12 +81,16 @@ class LeadDocumentController extends Controller
             ->firstOrFail();
         $path = $document->file_path;
 
-        if (Storage::disk('local')->exists($path)) {
-            return Storage::disk('local')->response($path, $document->original_filename);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $local */
+        $local = Storage::disk('local');
+        if ($local->exists($path)) {
+            return $local->response($path, $document->original_filename);
         }
 
-        if (Storage::disk('public')->exists($path)) {
-            return Storage::disk('public')->response($path, $document->original_filename);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $public */
+        $public = Storage::disk('public');
+        if ($public->exists($path)) {
+            return $public->response($path, $document->original_filename);
         }
 
         abort(404, 'File not found');
@@ -83,7 +101,8 @@ class LeadDocumentController extends Controller
         $isAuthorized = $user->isAdmin() ||
                         ($user->id === (int) $lead->assigned_agent_id) ||
                         ($user->id === (int) $lead->assigned_super_agent_id) ||
-                        ($user->id === (int) $lead->submitted_by_agent_id);
+                        ($user->id === (int) $lead->submitted_by_agent_id) ||
+                        ($user->id === (int) $lead->submitted_by_enumerator_id);
 
         if (! $isAuthorized) {
             abort(403, 'Unauthorized access to this document.');
