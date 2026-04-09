@@ -212,6 +212,43 @@ class AgentService
     }
 
     /**
+     * Generic enumerator creation logic for public registration.
+     */
+    public function createEnumeratorPublic(array $data, string $status = 'pending'): User
+    {
+        return DB::transaction(function () use ($data, $status) {
+            $data['role'] = 'enumerator';
+            $data['status'] = $status;
+            
+            $data['password'] = Hash::make($data['password'] ?? 'Welcome@123');
+            
+            // Handle File Uploads (Uses the same agent path logic for enumerators for now, 
+            // or we could change handleFileUploads to support a different folder if we wanted to).
+            // By default `handleFileUploads` saves nicely to storage/app/public/agents/...
+            $data = $this->handleFileUploads($data);
+
+            $enumerator = User::forceCreate($data);
+
+            // Notify admin if pending
+            if ($status === 'pending') {
+                /** @var User|null $admin */
+                $admin = User::query()->where(fn ($q) => $q->where('role', 'admin'))->first();
+                if ($admin) {
+                    $this->notificationService->send(
+                        $admin->id,
+                        'new_enumerator_pending',
+                        'New Enumerator Pending Approval',
+                        "New Enumerator registration: {$enumerator->name}. Awaiting your approval.",
+                        ['enumerator_id' => $enumerator->id]
+                    );
+                }
+            }
+
+            return $enumerator;
+        });
+    }
+
+    /**
      * Admin assigns (or reassigns) an existing agent to a super agent.
      * Requires force=true to override origin SA.
      */

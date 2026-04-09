@@ -185,4 +185,15 @@ class PortalLeadController extends Controller
             'data' => ['reference' => substr($agent->mobile, -4).'_'.time()],
         ], 201);
     }
+
+    public function registerEnumerator(\App\Http\Requests\EnumeratorRegistrationRequest $request)
+    {
+        $enumerator = $this->agentService->createEnumeratorPublic($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Enumerator registration received successfully. We will contact you soon.',
+            'data' => ['reference' => substr($enumerator->mobile, -4).'_'.time()],
+        ], 201);
+    }
 }

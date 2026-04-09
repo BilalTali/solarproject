@@ -94,6 +94,7 @@ const EnumeratorProfilePage = lazy(() => import('@/pages/enumerator/EnumeratorPr
 const EnumeratorCommissionsPage = lazy(() => import('@/pages/enumerator/EnumeratorCommissionsPage'));
 const EnumeratorNotificationsPage = lazy(() => import('@/pages/enumerator/EnumeratorNotificationsPage'));
 const EnumeratorLoginPage = lazy(() => import('@/pages/enumerator/EnumeratorLoginPage'));
+const EnumeratorRegisterPage = lazy(() => import('@/pages/enumerator/EnumeratorRegisterPage'));
 const EnumeratorWithdrawalsPage = lazy(() => import('@/pages/enumerator/EnumeratorWithdrawalsPage').then(module => ({ default: module.EnumeratorWithdrawalsPage })));
 
 // Super Admin Pages
@@ -256,6 +257,7 @@ export default function App() {
 
           {/* Enumerator Auth */}
           <Route path="/enumerator/login" element={<EnumeratorLoginPage />} />
+          <Route path="/enumerator/register" element={<EnumeratorRegisterPage />} />
 
           {/* Super Admin Auth */}
           <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />

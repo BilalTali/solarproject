@@ -39,6 +39,12 @@ export const enumeratorApi = {
         const res = await api.put(`/enumerator/notifications/${id}/read`);
         return res.data;
     },
+    publicRegister: async (data: FormData) => {
+        const res = await api.post('/public/enumerator-register', data, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return res.data;
+    },
 };
 
 // For agents to manage their enumerators

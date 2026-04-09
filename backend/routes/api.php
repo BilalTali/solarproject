@@ -76,6 +76,7 @@ $api->as('api.v1.')->group(function () {
     Route::post('/public/leads', [PublicLeadController::class, 'store'])->middleware('throttle:forms');
     Route::get('/public/leads/track', [PublicLeadController::class, 'track']);
     Route::post('/public/agent-register', [PublicLeadController::class, 'registerAgent'])->middleware('throttle:forms');
+    Route::post('/public/enumerator-register', [PublicLeadController::class, 'registerEnumerator'])->middleware('throttle:forms');
     Route::get('/public/eligibility', [EligibilityController::class, 'index'])->middleware(\App\Http\Middleware\CacheResponse::class);
     // Route::get('/public/commission-slabs', [AdminCommissionSlabController::class, 'index']);
     Route::get('/public/incentive-offers', [AdminOfferController::class, 'index'])->middleware(\App\Http\Middleware\CacheResponse::class);
