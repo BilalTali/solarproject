@@ -20,7 +20,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        if ($this->app->environment('production')) {
+        // Force HTTPS for the live production domain
+        if (str_contains(request()->getHost(), 'andleebsurya.in')) {
             URL::forceScheme('https');
         }
 

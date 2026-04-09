@@ -11,7 +11,7 @@ set local_frontend "/Users/computergallery/Documents/pmsuryaghar/frontend/dist/"
 set remote_frontend "/home/u335000182/domains/andleebsurya.in/public_html/"
 
 puts "\n--- Starting Backend Sync ---\n"
-spawn rsync -avz --progress -e "ssh -p $port -o StrictHostKeyChecking=no" --exclude ".git" --exclude "node_modules" --exclude "vendor" --exclude ".env" $local_backend $user@$host:$remote_backend
+spawn rsync -avz --progress -e "ssh -p $port -o StrictHostKeyChecking=no" --exclude ".git" --exclude "node_modules" --exclude "vendor" --exclude ".env" --exclude "bootstrap/cache/*" $local_backend $user@$host:$remote_backend
 expect {
     "password:" {
         send "$pass\r"
