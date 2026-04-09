@@ -182,8 +182,8 @@ export default function AgentRegisterPage() {
     // ── Success screen ──────────────────────────────────────────────────────
     if (submitted) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-primary/5 to-neutral-100 flex items-center justify-center p-4">
-                <div className="w-full max-w-lg text-center">
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+                <div className="w-full max-w-lg text-center relative z-10">
                     <div className="inline-flex items-center gap-2 mb-6">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center shadow-md">
                             <Sun className="w-6 h-6 text-white" />
@@ -232,9 +232,13 @@ export default function AgentRegisterPage() {
 
     // ── Registration form ───────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary/5 to-neutral-100 flex items-center justify-center p-4 py-10">
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 py-10 relative overflow-hidden">
+            {/* Ambient effects */}
+            <div className="fixed top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent" />
+            <div className="fixed top-20 right-10 w-96 h-96 bg-sky-200/20 blur-[100px] rounded-full pointer-events-none" />
+            
             <SEOHead title={`Business Development Executive Registration | ${companyName}`} description={`Join ${companyName} and start earning by promoting PM Surya Ghar Yojana.`} />
-            <div className="w-full max-w-2xl">
+            <div className="w-full max-w-2xl relative z-10">
                 {/* Logo */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center gap-2 mb-2">
@@ -264,7 +268,10 @@ export default function AgentRegisterPage() {
                     </div>
                 </div>
 
-                <div className="card shadow-xl">
+                <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-10 shadow-premium border border-slate-100 relative">
+                    {/* Top Accent Line */}
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-500 to-sky-400 rounded-t-[2rem]" />
+                    
                     {/* ── STEP 1: Personal Info ─────────────────────────────────────── */}
                     {step === 1 && (
                         <div className="flex flex-col gap-5">

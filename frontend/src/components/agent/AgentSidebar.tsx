@@ -36,19 +36,19 @@ export default function AgentSidebar({ onClose }: { onClose?: () => void }) {
     });
 
     return (
-        <aside className="sidebar w-64 h-full flex flex-col shadow-2xl" aria-label="Agent Sidebar">
+        <aside className="w-64 h-full flex flex-col bg-slate-50 border-r border-slate-200 shadow-xl" aria-label="Agent Sidebar">
             {/* Logo */}
-            <div className="flex items-center gap-2 p-5 border-b border-white/10">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center" aria-hidden="true">
+            <div className="flex items-center gap-2 p-5 border-b border-slate-200 bg-white">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center shadow-sm" aria-hidden="true">
                     <Sun className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-display font-bold text-white">{companyName}</span>
+                <span className="font-display font-black tracking-tight text-slate-800">{companyName}</span>
             </div>
 
             {/* Business Development Executive Profile */}
-            <div className="p-4 border-b border-white/10">
+            <div className="p-4 border-b border-slate-200 bg-white">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center text-white font-bold text-sm overflow-hidden border-2 border-white/20">
+                    <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-700 font-bold text-sm overflow-hidden border-2 border-white shadow-sm ring-1 ring-slate-100">
                         {user?.profile_photo_url ? (
                             <img src={user.profile_photo_url} alt={`Profile photo of ${user.name}`} className="w-full h-full object-cover" />
                         ) : (
@@ -56,11 +56,11 @@ export default function AgentSidebar({ onClose }: { onClose?: () => void }) {
                         )}
                     </div>
                     <div className="min-w-0">
-                        <p className="text-white font-semibold text-sm truncate">{user?.name}</p>
+                        <p className="text-slate-800 font-bold text-sm bg-clip-text truncate">{user?.name}</p>
                         {user?.agent_id && (
-                            <div className="flex items-center gap-1">
-                                <BadgeCheck className="w-3 h-3 text-accent" aria-hidden="true" />
-                                <span className="text-accent text-xs font-mono" aria-label={`Executive ID: ${user.agent_id}`}>{user.agent_id}</span>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                                <BadgeCheck className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
+                                <span className="text-emerald-600 font-semibold text-xs font-mono" aria-label={`Executive ID: ${user.agent_id}`}>{user.agent_id}</span>
                             </div>
                         )}
                     </div>
@@ -68,7 +68,7 @@ export default function AgentSidebar({ onClose }: { onClose?: () => void }) {
             </div>
 
             {/* Nav */}
-            <nav className="flex-1 p-3 flex flex-col gap-1 overflow-y-auto" aria-label="Main Navigation">
+            <nav className="flex-1 p-3 flex flex-col gap-1 overflow-y-auto bg-slate-50/50" aria-label="Main Navigation">
                 {NAV.map((item) => {
                     const isActive = location.pathname === item.to;
                     return (
@@ -76,29 +76,34 @@ export default function AgentSidebar({ onClose }: { onClose?: () => void }) {
                             key={item.to}
                             to={item.to}
                             onClick={onClose}
-                            className={`sidebar-item group ${isActive ? 'sidebar-item-active' : ''}`}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition-all duration-300 group
+                                ${isActive 
+                                    ? 'bg-white shadow-sm border border-slate-200/60 text-sky-600 translate-x-1' 
+                                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800 cursor-pointer'}`}
                             aria-current={isActive ? 'page' : undefined}
                         >
-                            <span aria-hidden="true">{item.icon}</span>
+                            <span className={`${isActive ? 'text-sky-500 scale-110 drop-shadow-sm' : 'text-slate-400 group-hover:scale-110 transition-transform'}`} aria-hidden="true">
+                                {item.icon}
+                            </span>
                             <span className="text-sm">{item.label}</span>
                         </Link>
                     );
                 })}
 
-                <div className="px-3 mt-2">
-                    <DownloadIdCardButton className="w-full justify-start !shadow-none !bg-white/5 hover:!bg-white/10 !border !border-white/10" />
+                <div className="px-3 mt-4">
+                    <DownloadIdCardButton className="w-full justify-start !shadow-sm !bg-white hover:!bg-slate-50 !border !border-slate-200 !text-slate-700 !font-bold" />
                 </div>
             </nav>
 
             {/* Logout */}
-            <div className="p-3 border-t border-white/10">
+            <div className="p-3 border-t border-slate-200 bg-white">
                 <button
                     onClick={() => logoutMutation.mutate()}
-                    className="sidebar-item w-full text-danger hover:text-danger hover:bg-danger/10"
+                    className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl font-bold text-rose-500 hover:bg-rose-50 transition-colors"
                     aria-label="Logout from Agent Portal"
                 >
                     <LogOut className="w-5 h-5" aria-hidden="true" />
-                    <span className="text-sm">Logout</span>
+                    <span className="text-sm">Logout safely</span>
                 </button>
             </div>
         </aside>

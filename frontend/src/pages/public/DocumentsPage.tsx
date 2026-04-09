@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { FileText, Download, Search, FolderOpen, ExternalLink } from 'lucide-react';
+import { FileText, Download, Search, FolderOpen, ExternalLink, Box } from 'lucide-react';
+import Navbar from '@/components/public/Navbar';
+import Footer from '@/components/public/Footer';
 import SEOHead from '@/components/shared/SEOHead';
 import { publicApi, type PublicDocument } from '@/services/public.api';
 
@@ -33,124 +35,143 @@ export default function DocumentsPage() {
     const categories = Object.keys(grouped).sort();
 
     return (
-        <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #fff8f0 0%, #ffffff 60%, #f0f4ff 100%)' }}>
+        <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-orange-100 selection:text-orange-900">
             <SEOHead
-                title="Document Download Centre — PM Surya Ghar"
-                description="Download official forms, guidelines and templates for PM Surya Ghar Muft Bijli Yojana."
+                title="Public Documents & Downloads — PM Surya Ghar"
+                description="Download official forms, guidelines and templates for PM Surya Ghar Muft Bijli Yojana integrations."
                 breadcrumbs={[
                     { name: 'Home', url: window.location.origin },
                     { name: 'Documents', url: window.location.origin + '/documents' }
                 ]}
             />
 
-            {/* Hero */}
-            <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white pt-16 pb-24 px-4">
-                <div className="max-w-4xl mx-auto text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-2xl mb-4 backdrop-blur-sm ring-2 ring-white/30">
-                        <FileText className="w-8 h-8" />
-                    </div>
-                    <h1 className="text-3xl md:text-4xl font-display font-black tracking-tight mb-3">
-                        Document Download Centre
-                    </h1>
-                    <p className="text-orange-100 text-base max-w-xl mx-auto">
-                        Official forms, guidelines and templates for PM Surya Ghar Muft Bijli Yojana
-                    </p>
+            <Navbar />
 
-                    {/* Search */}
-                    <div className="mt-8 max-w-lg mx-auto relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-300" />
-                        <input
-                            type="text"
-                            placeholder="Search documents..."
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            className="w-full pl-12 pr-5 py-3.5 rounded-2xl text-slate-800 text-sm font-medium
-                                       bg-white/95 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/60
-                                       placeholder:text-slate-400 shadow-xl"
-                        />
-                    </div>
-                </div>
-            </div>
+            <main className="flex-grow w-full relative pb-20">
+                {/* Decorative Background */}
+                <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:24px_24px] opacity-30 pointer-events-none" />
+                <div className="absolute top-0 right-1/2 translate-x-1/2 w-[80%] h-96 bg-gradient-to-b from-sky-200/40 via-white/10 to-transparent pointer-events-none blur-3xl rounded-b-full" />
 
-            {/* Content */}
-            <div className="max-w-5xl mx-auto px-4 -mt-10 pb-20">
-                {isLoading ? (
-                    <div className="flex flex-col items-center gap-3 py-24 text-slate-400">
-                        <div className="w-10 h-10 border-4 border-orange-100 border-t-orange-500 rounded-full animate-spin" />
-                        <p className="text-sm font-medium">Loading documents...</p>
-                    </div>
-                ) : categories.length === 0 ? (
-                    <div className="text-center py-24 bg-white rounded-3xl shadow-sm border border-slate-100">
-                        <FolderOpen className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-                        <p className="font-bold text-slate-600">No documents found</p>
-                        <p className="text-sm text-slate-400">
-                            {search ? 'Try a different search term' : 'Documents will appear here once published'}
+                <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
+                    
+                    {/* Header */}
+                    <div className="text-center max-w-3xl mx-auto mb-16 mt-8">
+                        <div className="inline-flex items-center gap-2 bg-sky-50 border border-sky-200/60 rounded-full px-5 py-1.5 text-xs uppercase tracking-widest text-sky-600 font-black mb-6 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            <Box className="w-4 h-4" />
+                            Resource Center
+                        </div>
+                        <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight leading-tight animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            Public <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-indigo-600">Documents</span>
+                        </h1>
+                        <p className="text-lg md:text-xl text-slate-500 font-medium leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 max-w-2xl mx-auto">
+                            Access official forms, procedural guidelines, and application templates for seamless navigation of the PM Surya Ghar Muft Bijli Yojana.
                         </p>
-                    </div>
-                ) : (
-                    <div className="space-y-8">
-                        {categories.map(cat => (
-                            <section key={cat}>
-                                <h2 className="flex items-center gap-2 text-sm font-black text-slate-500 uppercase tracking-widest mb-3">
-                                    <FolderOpen className="w-4 h-4 text-orange-400" />
-                                    {cat}
-                                    <span className="text-[10px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-bold">
-                                        {grouped[cat].length}
-                                    </span>
-                                </h2>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {grouped[cat].map(doc => (
-                                        <div
-                                            key={doc.id}
-                                            className="group bg-white rounded-2xl border border-slate-100 shadow-sm p-5
-                                                       hover:border-orange-200 hover:shadow-md transition-all duration-200 flex flex-col gap-3"
-                                        >
-                                            {/* Icon + Title */}
-                                            <div className="flex items-start gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center shrink-0 group-hover:bg-orange-100 transition-colors">
-                                                    {doc.thumbnail_url
-                                                        ? <img src={doc.thumbnail_url} alt="" className="w-8 h-8 object-cover rounded-lg" />
-                                                        : <FileText className="w-5 h-5 text-orange-500" />
-                                                    }
+                        {/* Search Bar */}
+                        <div className="mt-10 max-w-lg mx-auto relative animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                <Search className="w-5 h-5 text-slate-400" />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Search guidelines, forms, PDFs..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                className="w-full pl-12 pr-6 py-4 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200/80 text-slate-800 text-base font-medium shadow-[0_8px_30px_rgb(0,0,0,0.04)] focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all placeholder:text-slate-400"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Content Area */}
+                    <div className="animate-in fade-in zoom-in-95 duration-700">
+                        {isLoading ? (
+                            <div className="flex flex-col items-center justify-center py-24 bg-white/50 backdrop-blur-xl rounded-[2.5rem] border border-slate-200/60 shadow-sm">
+                                <div className="w-12 h-12 rounded-full border-4 border-slate-100 border-t-sky-500 animate-spin mb-4" />
+                                <p className="text-slate-500 font-bold tracking-widest uppercase text-sm">Fetching Legal Resources...</p>
+                            </div>
+                        ) : categories.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-24 bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-slate-200/60 shadow-xl shadow-slate-200/50 text-center">
+                                <div className="w-20 h-20 bg-slate-100 text-slate-400 rounded-3xl flex items-center justify-center mb-6 shadow-inner">
+                                    <FolderOpen className="w-10 h-10" />
+                                </div>
+                                <h3 className="text-2xl font-black text-slate-800 mb-2">No Documents Found</h3>
+                                <p className="text-slate-500 font-medium">
+                                    {search ? `No resources match your search "${search}".` : 'Our repository is currently being updated. Check back soon.'}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-200/60 p-8 md:p-12">
+                                <div className="space-y-12">
+                                    {categories.map(cat => (
+                                        <section key={cat}>
+                                            <div className="flex items-center gap-3 mb-6 pb-2 border-b border-slate-100">
+                                                <div className="p-2 bg-slate-100 rounded-xl text-slate-500 shrink-0">
+                                                    <FolderOpen className="w-5 h-5 pointer-events-none" />
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="font-bold text-slate-800 leading-tight text-sm truncate">{doc.title}</h3>
-                                                    {doc.description && (
-                                                        <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">{doc.description}</p>
-                                                    )}
-                                                </div>
+                                                <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest">
+                                                    {cat}
+                                                </h2>
+                                                <span className="ml-auto bg-slate-100 border border-slate-200 text-slate-500 font-black px-3 py-1 rounded-full text-xs shadow-inner">
+                                                    {grouped[cat].length}
+                                                </span>
                                             </div>
 
-                                            {/* Download button */}
-                                            {doc.file_url ? (
-                                                <a
-                                                    href={doc.file_url}
-                                                    target="_blank"
-                                                    rel="noreferrer noopener"
-                                                    className="mt-auto flex items-center justify-center gap-2 px-4 py-2 rounded-xl
-                                                               bg-orange-50 text-orange-600 font-bold text-xs
-                                                               border border-orange-100 hover:bg-orange-500 hover:text-white hover:border-orange-500
-                                                               transition-all duration-200 group/btn"
-                                                >
-                                                    <Download className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
-                                                    Download
-                                                    <ExternalLink className="w-3 h-3 opacity-50" />
-                                                </a>
-                                            ) : (
-                                                <span className="mt-auto flex items-center justify-center gap-2 px-4 py-2 rounded-xl
-                                                               bg-slate-50 text-slate-400 font-bold text-xs border border-slate-100 cursor-not-allowed">
-                                                    Not available
-                                                </span>
-                                            )}
-                                        </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                                {grouped[cat].map(doc => (
+                                                    <div
+                                                        key={doc.id}
+                                                        className="group bg-slate-50 border border-slate-200/60 rounded-[1.5rem] p-6 flex flex-col gap-4 transition-all duration-300 hover:shadow-lg hover:border-sky-200 hover:-translate-y-1 hover:bg-white"
+                                                    >
+                                                        {/* Icon + Title */}
+                                                        <div className="flex items-start gap-4">
+                                                            <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center shrink-0 group-hover:bg-sky-50 group-hover:border-sky-100 transition-colors">
+                                                                {doc.thumbnail_url ? (
+                                                                    <img src={doc.thumbnail_url} alt="" className="w-10 h-10 object-cover rounded-lg" />
+                                                                ) : (
+                                                                    <FileText className="w-6 h-6 text-slate-400 group-hover:text-sky-500 transition-colors" />
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <h3 className="font-black text-slate-800 leading-tight text-base mb-1 line-clamp-2">{doc.title}</h3>
+                                                                {doc.description && (
+                                                                    <p className="text-sm text-slate-500 font-medium line-clamp-2">{doc.description}</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Download Action */}
+                                                        {doc.file_url ? (
+                                                            <a
+                                                                href={doc.file_url}
+                                                                target="_blank"
+                                                                rel="noreferrer noopener"
+                                                                className="mt-auto flex items-center justify-between w-full px-5 py-3 rounded-xl bg-white border border-slate-200 font-bold text-sm text-slate-700 hover:bg-sky-500 hover:text-white hover:border-sky-500 transition-all duration-300 shadow-sm"
+                                                            >
+                                                                <span className="flex items-center gap-2">
+                                                                    <Download className="w-4 h-4" />
+                                                                    Download File
+                                                                </span>
+                                                                <ExternalLink className="w-4 h-4 opacity-50" />
+                                                            </a>
+                                                        ) : (
+                                                            <span className="mt-auto flex items-center justify-center w-full px-5 py-3 rounded-xl bg-slate-100/50 border border-slate-200/50 font-bold text-sm text-slate-400 cursor-not-allowed">
+                                                                File Not Available
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </section>
                                     ))}
                                 </div>
-                            </section>
-                        ))}
+                            </div>
+                        )}
                     </div>
-                )}
-            </div>
+
+                </div>
+            </main>
+
+            <Footer />
         </div>
     );
 }

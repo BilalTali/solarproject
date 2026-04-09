@@ -36,15 +36,15 @@ export default function AgentLayout() {
             {/* Main */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
                 {/* Top Bar (mobile) */}
-                <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-dark shadow-sm border-b border-white/5">
+                <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white/80 backdrop-blur-md shadow-sm border-b border-slate-200 sticky top-0 z-40">
                     <button
                         onClick={() => setSidebarOpen(true)}
-                        className="p-2 text-white/80 hover:bg-white/10 rounded-xl transition-colors"
+                        className="p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-colors"
                         aria-label="Open sidebar"
                     >
                         <Menu className="w-5 h-5" />
                     </button>
-                    <span className="font-display font-bold text-white tracking-wide">{companyName} <span className="text-accent text-xs font-medium ml-1">BDE</span></span>
+                    <span className="font-display font-bold text-slate-800 tracking-wide">{companyName} <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full text-[10px] font-black uppercase ml-1">BDE</span></span>
                 </header>
 
                 {/* Content Area with subtle background pattern */}

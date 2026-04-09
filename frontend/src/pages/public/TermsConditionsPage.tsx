@@ -3,6 +3,7 @@ import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
 import { useQuery } from '@tanstack/react-query';
 import { publicApi } from '@/services/public.api';
+import { ScrollText, AlertTriangle, ShieldCheck, FileWarning, EyeOff, Gavel, Scale, Mail } from 'lucide-react';
 
 const getSetting = (settingsObj: any, key: string, fallback: string) => {
     return settingsObj?.[key] || fallback;
@@ -14,140 +15,162 @@ export default function TermsConditionsPage() {
         queryFn: publicApi.getSettings,
     });
 
-    const companyName = getSetting(settings, 'company_name', 'SuryaMitra');
+    const companyName = getSetting(settings, 'company_name', 'AndleebSurya');
     const companyEmail = getSetting(settings, 'company_email', 'admin@suryamitra.in');
 
     return (
-        <div className="min-h-screen bg-neutral-50 flex flex-col">
+        <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-orange-100 selection:text-orange-900">
             <Helmet>
-                <title>Terms & Conditions — {companyName} | PM Surya Ghar Facilitation</title>
-                <meta name="description" content={`Read ${companyName}'s Terms & Conditions. ${companyName} is a private facilitation company helping J&K and Ladakh residents register for PM Surya Ghar Muft Bijli Yojana.`} />
+                <title>Terms & Conditions — {companyName} | PM Surya Ghar Integration</title>
+                <meta name="description" content={`Read ${companyName}'s Terms & Conditions. ${companyName} is a private facilitation company helping citizens register for PM Surya Ghar.`} />
                 <meta name="robots" content="noindex, follow" />
             </Helmet>
             <Navbar />
-            <main className="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
-                <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100">
-                    <h1 className="text-3xl font-display font-bold text-dark mb-2">Terms &amp; Conditions</h1>
-                    <p className="text-sm text-neutral-500 mb-8 pb-6 border-b border-gray-100">
-                        Last Updated: March 10, 2026
-                    </p>
+            
+            <main className="flex-grow w-full relative pb-20">
+                {/* Decorative Background */}
+                <div className="absolute inset-x-0 top-0 h-96 bg-gradient-to-b from-slate-200/50 to-transparent pointer-events-none" />
+                <div className="absolute top-20 right-20 w-72 h-72 bg-rose-200/20 blur-3xl rounded-full pointer-events-none" />
 
-                    <div className="prose prose-blue max-w-none text-neutral-700 space-y-8">
+                <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
+                    
+                    {/* Header */}
+                    <div className="text-center mb-12 mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="inline-flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-full px-5 py-1.5 text-xs uppercase tracking-widest text-slate-600 font-black mb-6 shadow-sm">
+                            <ScrollText className="w-4 h-4 text-rose-500" />
+                            Terms of Service
+                        </div>
+                        <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight text-slate-800">
+                            Terms &amp; Conditions
+                        </h1>
+                        <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">
+                            Last Updated: March 10, 2026
+                        </p>
+                    </div>
 
-                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
-                            <strong>Important:</strong> {companyName} is a <strong>PRIVATE FACILITATION SERVICE</strong>. We are NOT affiliated with or endorsed by the Government of India, MNRE (Ministry of New and Renewable Energy), or any government body. The PM Surya Ghar Muft Bijli Yojana is a Government of India scheme — {companyName} merely facilitates the application process.
+                    <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-200/60 p-8 md:p-12 animate-in fade-in zoom-in-95 duration-1000">
+
+                        <div className="bg-rose-50 text-rose-800 border border-rose-200/80 rounded-2xl p-5 md:p-6 mb-10 flex gap-4 items-start shadow-sm">
+                            <div className="bg-rose-100 p-2 rounded-xl shrink-0 mt-0.5 text-rose-600">
+                                <AlertTriangle className="w-5 h-5" />
+                            </div>
+                            <div className="text-sm leading-relaxed">
+                                <strong>Important Declaration:</strong> {companyName} operates as a <strong>PRIVATE FACILITATION SERVICE</strong>. We are absolutely NOT affiliated with or endorsed by the Government of India, MNRE, or any state nodal body. The PM Surya Ghar Muft Bijli Yojana is a government initiative — {companyName} purely assists in the digital application lifecycle.
+                            </div>
                         </div>
 
-                        <section>
-                            <h2 className="text-xl font-bold text-dark mb-3">1. Service Description</h2>
-                            <p>{companyName} provides a <strong>free facilitation service</strong> to help residents of Jammu &amp; Kashmir and Ladakh register for the PM Surya Ghar Muft Bijli Yojana — a Government of India scheme providing free solar electricity and subsidies for rooftop solar installations. Our agents (Business Development Executives: SM-XXXX) and Business Development Managers (SSM-XXXX) guide beneficiaries through the application process on the official government portal (<a href="https://pmsuryaghar.gov.in" target="_blank" rel="noopener noreferrer" className="text-primary underline">pmsuryaghar.gov.in</a>).</p>
-                        </section>
+                        <div className="prose prose-slate prose-lg md:prose-xl max-w-none text-slate-600 font-medium">
 
-                        <section>
-                            <h2 className="text-xl font-bold text-dark mb-3">2. No Fee Policy — CRITICAL</h2>
-                            <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-3">
-                                <p className="font-bold text-green-800">{companyName} does NOT charge beneficiaries (citizens) any fee whatsoever for facilitation services.</p>
-                            </div>
-                            <p>The PM Surya Ghar Muft Bijli Yojana provides free solar installation — <strong>no payment is required from you as a beneficiary</strong>. If anyone claiming to represent {companyName} demands money from you, please report it immediately to <a href={`mailto:${companyEmail}`} className="text-primary underline">{companyEmail}</a> or call our support line. This constitutes fraud and will be reported to authorities.</p>
-                        </section>
+                            <section className="mb-12">
+                                <h2 className="flex items-center gap-3 text-2xl font-black text-slate-800 mb-6 pb-2 border-b border-slate-100">
+                                    <ShieldCheck className="w-6 h-6 text-emerald-500" /> 1. Service Description & Scope
+                                </h2>
+                                <p>
+                                    {companyName} provides a <strong>free facilitation desk</strong> helping residents across operational states securely track and register for the PM Surya Ghar Muft Bijli Yojana. Our certified Business Executives navigate households through the complex documentation mapping without levying software usage charges to the beneficiary.
+                                </p>
+                            </section>
 
-                        <section>
-                            <h2 className="text-xl font-bold text-dark mb-3">3. Eligibility &amp; Service Area</h2>
-                            <p>{companyName} operates exclusively in <strong>Jammu &amp; Kashmir and Ladakh</strong>. Our facilitation services are available to:</p>
-                            <ul className="list-disc pl-5 space-y-1">
-                                <li>Residential electricity consumers with an active connection</li>
-                                <li>Individuals who own the property (or have owner's consent)</li>
-                                <li>Citizens of Jammu &amp; Kashmir or Ladakh Union Territories</li>
-                            </ul>
-                        </section>
+                            <section className="mb-12">
+                                <h2 className="flex items-center gap-3 text-2xl font-black text-slate-800 mb-6 pb-2 border-b border-slate-100">
+                                    <FileWarning className="w-6 h-6 text-red-500" /> 2. No Fee Policy — CRITICAL
+                                </h2>
+                                <div className="bg-emerald-50 border border-emerald-200 rounded-[1rem] p-5 mb-4 shadow-inner">
+                                    <p className="font-black text-emerald-800 text-base m-0 flex items-center gap-2">
+                                        <ShieldCheck className="w-5 h-5" />
+                                        {companyName} does NOT charge beneficiaries any direct monetary fee for portal facilitation processing.
+                                    </p>
+                                </div>
+                                <p>
+                                    The PM Surya Ghar Muft Bijli Yojana provides solar subsidization — <strong>upfront processing payments are entirely prohibited</strong>. Should anyone demanding representation invoke fees, report them immediately to <a href={`mailto:${companyEmail}`} className="text-red-500 underline">{companyEmail}</a>. This is classified as fraud.
+                                </p>
+                            </section>
 
-                        <section>
-                            <h2 className="text-xl font-bold text-dark mb-3">4. Agent Code of Conduct</h2>
-                            <p className="mb-3">Our agents (SM-XXXX) and Business Development Managers (SSM-XXXX) operate under a strict code of conduct. They will <strong>never</strong>:</p>
-                            <ul className="list-disc pl-5 space-y-1">
-                                <li>Demand any payment from beneficiaries for facilitation services</li>
-                                <li>Promise guaranteed installation timelines (these depend on government processing and vendor availability)</li>
-                                <li>Claim to be government officials or employees</li>
-                                <li>Misrepresent the subsidy amounts or scheme terms</li>
-                                <li>Collect original documents from beneficiaries (copies only)</li>
-                            </ul>
-                            <p className="mt-3">You can verify any {companyName} agent by scanning their QR code or visiting our verification page. Report misconduct immediately.</p>
-                        </section>
+                            <section className="mb-12">
+                                <h2 className="flex items-center gap-3 text-2xl font-black text-slate-800 mb-6 pb-2 border-b border-slate-100">
+                                    <EyeOff className="w-6 h-6 text-purple-500" /> 3. Agent Code of Conduct
+                                </h2>
+                                <p className="mb-4">
+                                   Agents registered into our hierarchy operate under profound strictness. They will never:
+                                </p>
+                                <div className="grid sm:grid-cols-2 gap-4 text-base">
+                                    <div className="bg-slate-50 border border-slate-100 p-4 rounded-[1rem]">
+                                        <p className="font-bold text-slate-700 m-0 text-sm">Demand applicant payment for simple portal submission tasks.</p>
+                                    </div>
+                                    <div className="bg-slate-50 border border-slate-100 p-4 rounded-[1rem]">
+                                        <p className="font-bold text-slate-700 m-0 text-sm">Promise aggressive or unrealistic vendor installation turnarounds.</p>
+                                    </div>
+                                    <div className="bg-slate-50 border border-slate-100 p-4 rounded-[1rem]">
+                                        <p className="font-bold text-slate-700 m-0 text-sm">Impersonate direct authorities or central MNRE operatives.</p>
+                                    </div>
+                                    <div className="bg-slate-50 border border-slate-100 p-4 rounded-[1rem]">
+                                        <p className="font-bold text-slate-700 m-0 text-sm">Possess or harvest original hardcopy identity documents.</p>
+                                    </div>
+                                </div>
+                            </section>
 
-                        <section>
-                            <h2 className="text-xl font-bold text-dark mb-3">5. Subsidy Disclaimer</h2>
-                            <p>Subsidy amounts under PM Surya Ghar Muft Bijli Yojana are <strong>determined by the Government of India and MNRE</strong> and are subject to change without notice. Currently indicative rates are:</p>
-                            <ul className="list-disc pl-5 space-y-1 mt-2">
-                                {(() => {
-                                    try {
-                                        const json = (settings as any).calculator_values_json;
-                                        if (json) {
-                                            const parsed = JSON.parse(json);
-                                            if (Array.isArray(parsed)) {
-                                                return parsed.map((item: any) => (
-                                                    <li key={item.id}>
-                                                        {item.label}: ₹{((Number(item.central) || 0) + (Number(item.state) || 0)).toLocaleString()} subsidy {item.id.includes('above') ? '(maximum)' : ''}
-                                                    </li>
-                                                ));
+                            <section className="mb-12">
+                                <h2 className="flex items-center gap-3 text-2xl font-black text-slate-800 mb-6 pb-2 border-b border-slate-100">
+                                    <Scale className="w-6 h-6 text-amber-500" /> 4. Subsidy Disclaimers
+                                </h2>
+                                <p className="mb-4">
+                                    Exact subvention capital under the Yojana is directly authorized by MNRE benchmarks and state treasury pipelines. Our generic calculations display idealized slabs:
+                                </p>
+                                <ul className="space-y-2">
+                                    {(() => {
+                                        try {
+                                            const json = (settings as any).calculator_values_json;
+                                            if (json) {
+                                                const parsed = JSON.parse(json);
+                                                if (Array.isArray(parsed)) {
+                                                    return parsed.map((item: any) => (
+                                                        <li key={item.id} className="flex items-center gap-3 text-base">
+                                                            <div className="w-2 h-2 rounded-full bg-amber-400"></div>
+                                                            {item.label}: ₹{((Number(item.central) || 0) + (Number(item.state) || 0)).toLocaleString()} {item.id.includes('above') ? '(Max Expected Ceiling)' : ''}
+                                                        </li>
+                                                    ));
+                                                }
                                             }
-                                        }
-                                    } catch (e) { }
-                                    return (
-                                        <>
-                                            <li>3 kW & Above: ₹94,800 subsidy (maximum for residential)</li>
-                                        </>
-                                    );
-                                })()}
-                            </ul>
-                            <p className="mt-3">{companyName} does <strong>not guarantee</strong> specific subsidy amounts. Always verify current rates at <a href="https://pmsuryaghar.gov.in" target="_blank" rel="noopener noreferrer" className="text-primary underline">pmsuryaghar.gov.in</a>.</p>
-                        </section>
+                                        } catch (e) { }
+                                        return (
+                                            <li className="flex items-center gap-3 text-base">
+                                                <div className="w-2 h-2 rounded-full bg-amber-400"></div>
+                                                3 kW & Above Parameter: ₹94,800 subsidy expected threshold
+                                            </li>
+                                        );
+                                    })()}
+                                </ul>
+                            </section>
 
-                        <section>
-                            <h2 className="text-xl font-bold text-dark mb-3">6. Data Accuracy</h2>
-                            <p>You are responsible for providing accurate and truthful information when submitting a lead or registering as an agent. Incorrect information may result in rejection of your application by the government portal. {companyName} is not liable for rejections caused by inaccurate data provided by the user.</p>
-                        </section>
+                            <section className="mb-12">
+                                <h2 className="flex items-center gap-3 text-2xl font-black text-slate-800 mb-6 pb-2 border-b border-slate-100">
+                                    <Gavel className="w-6 h-6 text-blue-500" /> 5. Liability Capping
+                                </h2>
+                                <p className="mb-4">
+                                    As pure integration mediators, {companyName} relinquishes liability concerning:
+                                </p>
+                                <ul className="space-y-3">
+                                    <li>Rejections dispatched by governmental backend validation logic.</li>
+                                    <li>Volatile adjustments enacted against the overall PM Surya Ghar mandate.</li>
+                                    <li>SLA failures by physical installation vendor franchisees.</li>
+                                    <li>Disruptive outages experienced against the central pmsuryaghar.gov.in domain.</li>
+                                </ul>
+                            </section>
 
-                        <section>
-                            <h2 className="text-xl font-bold text-dark mb-3">7. Limitation of Liability</h2>
-                            <p>{companyName} facilitates the application process only. We are <strong>not responsible</strong> for:</p>
-                            <ul className="list-disc pl-5 space-y-1">
-                                <li>Government processing delays or rejection of applications by official portals</li>
-                                <li>Changes in scheme eligibility criteria, subsidy amounts, or policy by MNRE</li>
-                                <li>Vendor delays in solar panel installation after government approval</li>
-                                <li>Technical outages on the official pmsuryaghar.gov.in portal</li>
-                            </ul>
-                        </section>
+                            <section>
+                                <h2 className="flex items-center gap-3 text-2xl font-black text-slate-800 mb-6 pb-2 border-b border-slate-100">
+                                    <Mail className="w-6 h-6 text-slate-500" /> 6. Governance & Contact
+                                </h2>
+                                <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-[1.5rem] p-6 text-base shadow-inner">
+                                    <p className="font-black text-slate-800 mb-2">{companyName} — Legal Compliance Desk</p>
+                                    <p className="mb-1"><strong>Email Protocol:</strong> <a href={`mailto:${companyEmail}`} className="text-slate-600 underline font-bold">{companyEmail}</a></p>
+                                    <p className="text-sm text-slate-500">Notice to Cure: 14 business days</p>
+                                    <p className="text-xs text-slate-400 mt-4 leading-relaxed">
+                                        Use of this portal signifies unequivocal adherence to the aforementioned clauses. Disputes fall exclusively under the jurisdiction of standard Indian arbitration protocols.
+                                    </p>
+                                </div>
+                            </section>
 
-                        <section>
-                            <h2 className="text-xl font-bold text-dark mb-3">8. Agent Registration Terms</h2>
-                            <p>Individuals registering as Business Development Executives or Managers acknowledge that:</p>
-                            <ul className="list-disc pl-5 space-y-1">
-                                <li>They are independent contractors, not employees of {companyName}</li>
-                                <li>KYC documents submitted must be authentic; fraudulent documents will result in immediate termination and legal action</li>
-                                <li>Commission payments are subject to verification and successful lead conversion</li>
-                                {companyName} reserves the right to suspend or terminate accounts that violate platform guidelines
-                            </ul>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-bold text-dark mb-3">9. Intellectual Property</h2>
-                            <p>All content on {companyName}'s platform — including the portal, iCards, and agent verification system — is the proprietary property of {companyName}. Unauthorized reproduction, distribution, or misuse of our brand, agent codes, or verification system constitutes infringement.</p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-bold text-dark mb-3">10. Governing Law</h2>
-                            <p>These Terms are governed by the laws of India. Any disputes arising from these Terms shall be subject to the jurisdiction of courts in Jammu, Jammu &amp; Kashmir, India.</p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-bold text-dark mb-3">11. Contact</h2>
-                            <div className="bg-neutral-50 rounded-xl p-4 text-sm space-y-1">
-                                <p><strong>{companyName}</strong></p>
-                                <p>Email: <a href={`mailto:${companyEmail}`} className="text-primary underline">{companyEmail}</a></p>
-                                <p>For reporting fraud or agent misconduct, contact us immediately.</p>
-                            </div>
-                        </section>
-
+                        </div>
                     </div>
                 </div>
             </main>
