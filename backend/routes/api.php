@@ -104,14 +104,7 @@ $api->as('api.v1.')->group(function () {
     Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
     Route::post('/auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
 
-    // ── Signed Download Routes (No sanctum needed, signature is the key) ────
-    Route::get('/icard/download/{userId?}', [ICardController::class, 'download'])
-        ->middleware('signed')
-        ->name('icard.download');
-
-    Route::get('/joining-letter/download/{userId}', [JoiningLetterController::class, 'download'])
-        ->middleware('signed')
-        ->name('joining-letter.download');
+    // Note: ICard and Joining Letter downloads moved to web.php for consistent browser handling
 
     Route::middleware(['auth:sanctum', 'throttle:auth'])->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);

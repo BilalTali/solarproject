@@ -72,7 +72,7 @@ class ICardController extends Controller
         }
 
         $url = URL::temporarySignedRoute(
-            'api.v1.icard.download',
+            'icard.download',
             now()->addMinutes(10),
             ['userId' => $targetUserId]
         );

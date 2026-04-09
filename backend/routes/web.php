@@ -57,3 +57,11 @@ Route::get('/document-view/{id}/{type}', [DocumentController::class, 'viewSigned
 Route::get('/lead-document-view/{ulid}/{id}', [LeadDocumentController::class, 'viewSigned'])
     ->name('leads.documents.signed-view')
     ->middleware('signed');
+
+Route::get('/icard-download/{userId?}', [ICardController::class, 'download'])
+    ->name('icard.download')
+    ->middleware('signed');
+
+Route::get('/joining-letter-download/{userId}', [JoiningLetterController::class, 'download'])
+    ->name('joining-letter.download')
+    ->middleware('signed');
