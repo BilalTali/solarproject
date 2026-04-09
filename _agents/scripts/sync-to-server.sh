@@ -46,7 +46,8 @@ RSYNC_BACKEND="${RSYNC_BASE} \
   --exclude 'storage/logs/*' \
   --exclude 'storage/framework/cache/*' \
   --exclude 'storage/framework/sessions/*' \
-  --exclude 'storage/framework/views/*'"
+  --exclude 'storage/framework/views/*' \
+  --exclude 'bootstrap/cache/*'"
 
 RSYNC_FRONTEND="${RSYNC_BASE}"
 

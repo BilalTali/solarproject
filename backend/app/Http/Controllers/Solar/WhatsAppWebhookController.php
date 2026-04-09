@@ -42,6 +42,8 @@ class WhatsAppWebhookController extends Controller
     {
         try {
             $data = $request->all();
+            Log::info('WhatsApp Webhook Incoming:', ['payload' => $data]);
+
 
             // Structure expected:
             // "entry" -> 0 -> "changes" -> 0 -> "value" -> "messages" -> 0 -> "from" & "text"/"interactive" etc
