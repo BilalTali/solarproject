@@ -120,11 +120,6 @@ class DocumentController extends Controller
             ['id' => $id, 'type' => $type]
         );
 
-        // Force HTTPS if the application is accessed over HTTPS
-        if ($request->isSecure()) {
-            $url = str_replace('http://', 'https://', $url);
-        }
-
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['url' => $url]);
         }
@@ -164,9 +159,6 @@ class DocumentController extends Controller
                 now()->addMinutes(120),
                 ['id' => $d->id, 'type' => 'file']
             );
-            if (request()->isSecure()) {
-                $file_url = str_replace('http://', 'https://', $file_url);
-            }
         }
 
         $thumbnail_url = null;
@@ -176,9 +168,6 @@ class DocumentController extends Controller
                 now()->addMinutes(120),
                 ['id' => $d->id, 'type' => 'thumbnail']
             );
-            if (request()->isSecure()) {
-                $thumbnail_url = str_replace('http://', 'https://', $thumbnail_url);
-            }
         }
 
         return [

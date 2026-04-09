@@ -56,11 +56,6 @@ class LeadDocumentController extends Controller
             ['ulid' => $ulid, 'id' => $id]
         );
 
-        // Force HTTPS if the application is accessed over HTTPS
-        if ($request->isSecure()) {
-            $url = str_replace('http://', 'https://', $url);
-        }
-
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['url' => $url]);
         }
