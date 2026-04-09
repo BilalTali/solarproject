@@ -48,12 +48,15 @@ class ICardService
 
         // ── Branding Assets (Dynamic) ─────────────────────────────
         // Logo 1: Admin's own company logo (overridable)
-        $logoPath = Setting::getValue('company_logo', null, $adminId);
-        // Logo 2: FORCE Global Platform Logo (Affiliate Partner)
-        $logoPath2 = Setting::getValue('company_logo', null, null); 
+        $logoPath = Setting::getValue('company_logo', null, $adminId, false);
         
-        $signaturePath = Setting::getValue('company_signature', null, $adminId);
-        $sealPath = Setting::getValue('company_seal', null, $adminId);
+        // Logo 2: Affiliate Partner Logo
+        // Prioritize Admin's secondary logo (company_logo_2), fallback to Global company_logo
+        $logoPath2 = Setting::getValue('company_logo_2', null, $adminId, false)
+                     ?? Setting::getValue('company_logo', null, null, false);
+        
+        $signaturePath = Setting::getValue('company_signature', null, $adminId, false);
+        $sealPath = Setting::getValue('company_seal', null, $adminId, false);
 
         $logoBase64 = $this->getBase64Image($logoPath);
         $logoBase64_2 = $this->getBase64Image($logoPath2);
@@ -108,7 +111,8 @@ class ICardService
             ? ($user->approved_at ?? $user->joining_date)->format('d M Y')
             : now()->format('d M Y');
 
-        $affiliatedPartner = Setting::getValue('company_name', 'AndleebSurya Platform', null);
+        $affiliatedPartner = Setting::getValue('company_affiliated_with', null, $adminId)
+                             ?: Setting::getValue('company_name', 'AndleebSurya Platform', null);
 
         return compact(
             'user',
@@ -290,7 +294,27 @@ class ICardService
             return null;
         }
 
-        // Try public path first
+        // Handle full URLs if they were passed through (strip prefix to get relative path)
+        if (str_starts_with($path, 'http')) {
+            $storageUrl = asset('storage/');
+            if (str_starts_with($path, $storageUrl)) {
+                $path = str_replace($storageUrl, '', $path);
+            } else {
+                // External URL: try to download or fallback to placeholder
+                try {
+                    $content = file_get_contents($path);
+                    if ($content) {
+                        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                        $mimeType = $finfo->buffer($content);
+                        return 'data:' . $mimeType . ';base64,' . base64_encode($content);
+                    }
+                } catch (\Throwable $e) {
+                    // Fallback to placeholder if download fails
+                }
+            }
+        }
+
+        // 1. Try public path first (for assets/images)
         $fullPath = public_path($path);
         if (file_exists($fullPath) && ! is_dir($fullPath)) {
             $type = pathinfo($fullPath, PATHINFO_EXTENSION);
@@ -298,7 +322,7 @@ class ICardService
             return 'data:image/'.$type.';base64,'.base64_encode(file_get_contents($fullPath));
         }
 
-        // Try storage disk next
+        // 2. Try storage disk (for user uploads)
         if (Storage::disk('public')->exists($path)) {
             $content = Storage::disk('public')->get($path);
             $type = pathinfo($path, PATHINFO_EXTENSION);

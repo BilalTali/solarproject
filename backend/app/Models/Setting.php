@@ -82,7 +82,7 @@ class Setting extends Model
         return asset('storage/' . $value);
     }
 
-    public static function getValue(string $key, $default = null, $userId = null): mixed
+    public static function getValue(string $key, $default = null, $userId = null, bool $transform = true): mixed
     {
         // If no userId provided, attempt to use authenticated user's root admin context
         if ($userId === null && auth()->check()) {
@@ -112,8 +112,8 @@ class Setting extends Model
 
         $finalValue = $value !== null ? $value : $default;
 
-        // Auto-transform media keys
-        if (in_array($key, self::MEDIA_KEYS)) {
+        // Auto-transform media keys if transform is enabled
+        if ($transform && in_array($key, self::MEDIA_KEYS)) {
             return self::transformMediaUrl($finalValue);
         }
 

@@ -71,6 +71,7 @@ class SettingController extends Controller
         'authorized_signatory',
         'authorized_signatory_title',
         'icard_clearance',
+        'company_affiliated_with',
     ];
 
     public function index()
