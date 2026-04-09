@@ -15,9 +15,17 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $documents = Document::query()->orderBy('sort_order')->orderBy('created_at', 'desc')->get()
+        $user = $request->user();
+        $query = Document::query();
+
+        // Non-admins only see published documents
+        if (!$user || !$user->isAdmin()) {
+            $query->where('is_published', true);
+        }
+
+        $documents = $query->orderBy('sort_order')->orderBy('created_at', 'desc')->get()
             ->map(function (Document $d) {
                 return $this->format($d);
             });
