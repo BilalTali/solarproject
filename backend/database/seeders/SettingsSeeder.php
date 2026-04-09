@@ -19,6 +19,7 @@ class SettingsSeeder extends Seeder
             // ── Company / Letterhead ──────────────────────────────────────────
             ['key' => 'company_name',             'value' => 'SuryaMitra Solar Network',       'group' => 'company'],
             ['key' => 'company_slogan',           'value' => 'Empowering India with Free Solar Energy', 'group' => 'company'],
+            ['key' => 'company_tagline',          'value' => 'Empowering India with Free Solar Energy', 'group' => 'company'],
             ['key' => 'company_registration_no',  'value' => 'REG/SMS/2026/0892', 'group' => 'company'],
             ['key' => 'company_affiliated_with',  'value' => 'Government of India / MNRE', 'group' => 'company'],
             ['key' => 'company_address',          'value' => 'Basement Suite 4, Residency Road, Near Regal Chowk, Srinagar, J&K - 190001', 'group' => 'company'],
@@ -92,20 +93,28 @@ class SettingsSeeder extends Seeder
             ['key' => 'footer_about_text', 'value' => 'AndleebSurya is a dedicated facilitator for the PM Surya Ghar scheme, empowering the people of Jammu & Kashmir and Ladakh with clean, free energy solutions.', 'group' => 'company'],
             ['key' => 'footer_copyright', 'value' => '© 2024 AndleebSurya. Not an official Govt website.', 'group' => 'company'],
             ['key' => 'footer_disclaimer', 'value' => '⚠️ Disclaimer: All subsidies are subject to MNRE guidelines and National Portal approvals.', 'group' => 'company'],
+            ['key' => 'footer_section_quick_links', 'value' => 'Quick Links', 'group' => 'company'],
+            ['key' => 'footer_section_legal', 'value' => 'Legal & Support', 'group' => 'company'],
+            ['key' => 'footer_link_about', 'value' => '/about', 'group' => 'company'],
+            ['key' => 'footer_link_scheme', 'value' => 'https://pmsuryaghar.gov.in', 'group' => 'company'],
+            ['key' => 'footer_link_contact', 'value' => '/contact', 'group' => 'company'],
+            ['key' => 'footer_link_faq', 'value' => '/faq', 'group' => 'company'],
+            ['key' => 'footer_link_privacy', 'value' => '/privacy', 'group' => 'company'],
+            ['key' => 'footer_link_terms', 'value' => '/terms', 'group' => 'company'],
+            ['key' => 'footer_link_refund', 'value' => '/refund', 'group' => 'company'],
 
             // Navigation Labels
             ['key' => 'nav_home', 'value' => 'Home', 'group' => 'homepage'],
+            ['key' => 'nav_rewards', 'value' => 'Rewards', 'group' => 'homepage'],
             ['key' => 'nav_portal_login', 'value' => 'Portal Login', 'group' => 'homepage'],
             ['key' => 'nav_cta_electricity', 'value' => 'Show Subsidy', 'group' => 'homepage'],
+            ['key' => 'nav_calculator', 'value' => 'Calculator', 'group' => 'homepage'],
+            ['key' => 'nav_track_status', 'value' => 'Track Status', 'group' => 'homepage'],
+            ['key' => 'nav_guide', 'value' => 'Guide', 'group' => 'homepage'],
             ['key' => 'label_how_it_works', 'value' => 'How It Works', 'group' => 'homepage'],
             ['key' => 'label_eligibility_checker', 'value' => 'Check Your Eligibility', 'group' => 'homepage'],
             ['key' => 'label_subsidy_calculator', 'value' => 'Solar Subsidy Calculator', 'group' => 'homepage'],
             ['key' => 'label_whatsapp_text', 'value' => 'Chat with Solar Expert', 'group' => 'homepage'],
-
-            // Navigation Labels
-            ['key' => 'nav_calculator', 'value' => 'Calculator', 'group' => 'homepage'],
-            ['key' => 'nav_track_status', 'value' => 'Track Status', 'group' => 'homepage'],
-            ['key' => 'nav_guide', 'value' => 'Guide', 'group' => 'homepage'],
 
             // ── Offers & Points ────────────────────────────────────────────────
             ['key' => 'capacity_points_json', 'value' => '{"3kw":1,"3.3kw":1.1,"4kw":1.5,"5kw":2,"5.5kw":2.2,"6kw":2.5,"7kw":3,"8kw":3.5,"9kw":4,"10kw":5,"above_10kw":6,"above_3kw":1.5}', 'group' => 'offer'],
