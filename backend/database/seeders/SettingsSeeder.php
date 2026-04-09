@@ -78,6 +78,17 @@ class SettingsSeeder extends Seeder
             // Eligibility Checker Settings
             ['key' => 'eligibility_headline', 'value' => 'Check Your Eligibility', 'group' => 'homepage'],
             ['key' => 'eligibility_subheadline', 'value' => 'Answer 4 quick questions to find out if you qualify', 'group' => 'homepage'],
+
+            // Subsidy Calculator Settings
+            ['key' => 'calculator_headline', 'value' => 'Solar Subsidy Calculator', 'group' => 'homepage'],
+            ['key' => 'calculator_subheadline', 'value' => 'Find out the exact government subsidy for your rooftop solar installation', 'group' => 'homepage'],
+            ['key' => 'calculator_values_json', 'value' => json_encode([
+                ['id' => '1kw',  'label' => '1 kW',  'central' => 30000,  'state' => 0,     'savings' => 800,  'payback' => 36],
+                ['id' => '2kw',  'label' => '2 kW',  'central' => 60000,  'state' => 0,     'savings' => 1600, 'payback' => 38],
+                ['id' => '3kw',  'label' => '3 kW',  'central' => 78000,  'state' => 0,     'savings' => 2400, 'payback' => 40],
+                ['id' => '5kw',  'label' => '5 kW',  'central' => 78000,  'state' => 0,     'savings' => 4000, 'payback' => 45],
+                ['id' => '10kw', 'label' => '10 kW', 'central' => 78000,  'state' => 0,     'savings' => 8000, 'payback' => 48],
+            ]), 'group' => 'homepage'],
             ['key' => 'eligibility_questions_json', 'value' => json_encode([
                 ['id' => 'q1', 'text' => 'Do you own the house where solar panels will be installed?', 'expected' => 'yes'],
                 ['id' => 'q2', 'text' => 'Do you have an active electricity connection in your name?', 'expected' => 'yes'],
