@@ -44,8 +44,13 @@ export default function SuperAdminSidebar({ onClose }: { onClose?: () => void })
             {/* Logo */}
             <div className="flex items-center gap-2 p-5 border-b border-white/10 bg-black/20">
                 <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center overflow-hidden shrink-0 shadow-lg" aria-hidden="true">
-                    {masterLogo || logo ? (
-                        <img src={masterLogo || logo || ''} alt={companyName || 'Master identity'} className="w-full h-full object-contain" />
+                    {logo || masterLogo ? (
+                        <img 
+                            src={logo || masterLogo || ''} 
+                            alt={companyName || 'Master identity'} 
+                            className="w-full h-full object-contain" 
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
                     ) : (
                         <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center">
                             <Shield className="w-5 h-5 text-white" />

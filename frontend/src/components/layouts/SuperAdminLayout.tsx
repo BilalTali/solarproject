@@ -38,8 +38,13 @@ export default function SuperAdminLayout() {
                         </button>
                         <div className="flex items-center gap-2">
                              <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center overflow-hidden shrink-0">
-                                {masterLogo || logo ? (
-                                    <img src={masterLogo || logo || ''} alt={companyName || 'Master identity'} className="w-full h-full object-contain" />
+                                {logo || masterLogo ? (
+                                    <img 
+                                        src={logo || masterLogo || ''} 
+                                        alt={companyName || 'Master identity'} 
+                                        className="w-full h-full object-contain" 
+                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                    />
                                 ) : (
                                     <div className="w-full h-full bg-indigo-600 flex items-center justify-center">
                                         <Shield className="w-4 h-4 text-white" />
