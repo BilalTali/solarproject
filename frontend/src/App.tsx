@@ -14,7 +14,6 @@ import { useAuthStore } from '@/hooks/store/authStore';
 
 // Public Pages
 const MediaPage = lazy(() => import('@/pages/public/MediaPage'));
-const PublicDocumentsPage = lazy(() => import('@/pages/public/DocumentsPage'));
 const VerifyAgentPage = lazy(() => import('@/pages/public/VerifyAgentPage'));
 const PrivacyPolicyPage = lazy(() => import('@/pages/public/PrivacyPolicyPage'));
 const TermsConditionsPage = lazy(() => import('@/pages/public/TermsConditionsPage'));
@@ -146,7 +145,6 @@ export default function App() {
           {/* Public */}
           <Route path="/" element={<HomePage />} />
           <Route path="/media" element={<MediaPage />} />
-          <Route path="/documents" element={<PublicDocumentsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/verify/:token" element={<VerifyAgentPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />

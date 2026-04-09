@@ -89,7 +89,6 @@ $api->as('api.v1.')->group(function () {
     Route::get('/public/feedbacks', [PublicController::class, 'feedbacks'])->middleware(\App\Http\Middleware\CacheResponse::class);
     Route::get('/public/media', [MediaController::class, 'index'])->middleware(\App\Http\Middleware\CacheResponse::class); // Public Reward Winners
     Route::get('/public/feedback', [FeedbackController::class, 'store'])->middleware('throttle:forms');
-    Route::get('/public/documents', [DocumentController::class, 'publicIndex'])->middleware(\App\Http\Middleware\CacheResponse::class);
     Route::get('/public/verify-agent/{token}', [PublicController::class, 'verifyAgent']);
     Route::get('/public/help', [PublicController::class, 'help']);
     Route::get('/public/support-contacts', [SAChatbotController::class, 'publicContacts'])->middleware(\App\Http\Middleware\CacheResponse::class);

@@ -69,7 +69,6 @@ export default function Footer() {
                         <h4 className="font-black text-slate-50 mb-5 tracking-wide text-lg">Quick Links</h4>
                         <ul className="flex flex-col gap-3 font-medium">
                             <li><Link to="/about" className="text-sm text-slate-400 hover:text-sky-400 transition-colors inline-block hover:translate-x-1 transform duration-200">About Our Mission</Link></li>
-                            <li><Link to="/documents" className="text-sm text-slate-400 hover:text-sky-400 transition-colors inline-block hover:translate-x-1 transform duration-200">Public Documents</Link></li>
                             <li><Link to="/contact" className="text-sm text-slate-400 hover:text-sky-400 transition-colors inline-block hover:translate-x-1 transform duration-200">Help & Support</Link></li>
                             <li><Link to="/scheme" className="text-sm text-slate-400 hover:text-sky-400 transition-colors inline-block hover:translate-x-1 transform duration-200">Scheme Information</Link></li>
                             <li><Link to="/faq" className="text-sm text-slate-400 hover:text-sky-400 transition-colors inline-block hover:translate-x-1 transform duration-200">Frequently Asked (FAQ)</Link></li>

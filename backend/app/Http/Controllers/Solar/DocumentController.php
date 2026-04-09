@@ -25,17 +25,7 @@ class DocumentController extends Controller
         return response()->json(['success' => true, 'data' => $documents]);
     }
 
-    /** Public endpoint — returns only published documents */
-    public function publicIndex()
-    {
-        $documents = Document::query()->where(fn($q) => $q->where('is_published', true))
-            ->orderBy('sort_order')->orderBy('created_at', 'desc')->get()
-            ->map(function (Document $d) {
-                return $this->format($d);
-            });
 
-        return response()->json(['success' => true, 'data' => $documents]);
-    }
 
     public function store(StoreDocumentRequest $request)
     {
