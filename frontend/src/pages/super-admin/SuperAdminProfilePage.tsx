@@ -282,7 +282,7 @@ export default function SuperAdminProfilePage() {
                                             fields={[
                                                 { key: 'id', label: 'Unique ID (e.g. q1)', type: 'text' },
                                                 { key: 'text', label: 'Question', type: 'text' },
-                                                { key: 'expected', label: 'Required Answer (yes/no)', type: 'text' }
+                                                { key: 'expected', label: 'Required Answer', type: 'radio', options: ['yes', 'no'] }
                                             ]}
                                         />
                                     </div>

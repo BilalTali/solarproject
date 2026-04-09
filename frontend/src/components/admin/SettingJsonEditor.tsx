@@ -4,8 +4,9 @@ import { Plus, Trash2 } from 'lucide-react';
 interface FieldDefinition {
     key: string;
     label: string;
-    type: 'text' | 'textarea' | 'number';
+    type: 'text' | 'textarea' | 'number' | 'radio';
     placeholder?: string;
+    options?: string[];  // For radio type: e.g. ['yes', 'no']
 }
 
 interface SettingJsonEditorProps {
@@ -86,6 +87,23 @@ export const SettingJsonEditor: React.FC<SettingJsonEditorProps> = ({
                                             placeholder={f.placeholder}
                                             className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:border-indigo-500 outline-none transition-all h-24"
                                         />
+                                    ) : f.type === 'radio' ? (
+                                        <div className="flex gap-2 mt-1">
+                                            {(f.options ?? ['yes', 'no']).map(opt => (
+                                                <button
+                                                    key={opt}
+                                                    type="button"
+                                                    onClick={() => handleItemChange(idx, f.key, opt)}
+                                                    className={`px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest border-2 transition-all ${
+                                                        item[f.key] === opt
+                                                            ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100'
+                                                            : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600'
+                                                    }`}
+                                                >
+                                                    {opt}
+                                                </button>
+                                            ))}
+                                        </div>
                                     ) : (
                                         <input
                                             type={f.type}
