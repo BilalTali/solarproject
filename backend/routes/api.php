@@ -39,6 +39,8 @@ use App\Http\Controllers\Admin\SuperAgentDashboardController as SADashboardContr
 use App\Http\Controllers\Admin\SuperAgentLeadController as SALeadController;
 use App\Http\Controllers\Admin\SuperAgentNotificationController as SANotificationController;
 use App\Http\Controllers\Admin\SuperAgentOfferController as SAOfferController;
+use App\Http\Controllers\SuperAdmin\ChatbotController as SAChatbotController;
+use App\Http\Controllers\SuperAdmin\FAQController as SAFAQController;
 use Illuminate\Support\Facades\Route;
 
 // Health check — no auth required — used by uptime monitoring
@@ -377,19 +379,7 @@ $api->as('api.v1.')->group(function () {
             Route::patch('/documents/{document}', [DocumentController::class, 'update']);
             Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
 
-            // FAQs (admin)
-            Route::apiResource('faqs', AdminFAQController::class);
-            Route::patch('/faqs/{faq}/toggle-status', [AdminFAQController::class, 'toggleStatus']);
 
-            // Chatbot
-            Route::apiResource('chatbot/categories', \App\Http\Controllers\Admin\ChatbotController::class)->except(['show']);
-            Route::patch('chatbot/categories/{id}/toggle', [\App\Http\Controllers\Admin\ChatbotController::class, 'toggleActive']);
-            Route::get('chatbot/registration-fields',      [\App\Http\Controllers\Admin\ChatbotController::class, 'getRegistrationFields']);
-            Route::put('chatbot/registration-fields',       [\App\Http\Controllers\Admin\ChatbotController::class, 'setRegistrationFields']);
-            Route::get('chatbot/sessions',                  [\App\Http\Controllers\Admin\ChatbotController::class, 'sessions']);
-            Route::get('chatbot/contacts',                  [\App\Http\Controllers\Admin\ChatbotController::class, 'contacts']);
-            Route::get('chatbot/all-contacts',              [\App\Http\Controllers\Admin\ChatbotController::class, 'allContacts']);
-            Route::post('chatbot/contacts/{id}/toggle',     [\App\Http\Controllers\Admin\ChatbotController::class, 'toggleContact']);
         });
 
         // ==============================
@@ -405,23 +395,31 @@ $api->as('api.v1.')->group(function () {
             Route::delete('/admins/{id}', [AdminManagementController::class, 'destroy']);
             Route::put('/admins/{id}/status', [AdminManagementController::class, 'toggleStatus']);
 
-            // Monitoring (Read-only)
-            Route::get('/monitor/super-agents', [MonitoringController::class, 'superAgents']);
-            Route::get('/monitor/agents', [MonitoringController::class, 'agents']);
-            Route::get('/monitor/enumerators', [MonitoringController::class, 'enumerators']);
-            Route::get('/monitor/leads', [MonitoringController::class, 'leads']);
-            Route::get('/monitor/commissions', [MonitoringController::class, 'commissions']);
-
             // WA Handlers
-            Route::get('chatbot/wa-handlers',              [\App\Http\Controllers\Admin\ChatbotController::class, 'waHandlers']);
-            Route::post('chatbot/wa-handlers/{id}/toggle', [\App\Http\Controllers\Admin\ChatbotController::class, 'toggleWaHandler']);
-            Route::post('chatbot/wa-handlers/reset-counters', [\App\Http\Controllers\Admin\ChatbotController::class, 'resetCounters']);
+            Route::get('chatbot/wa-handlers',              [SAChatbotController::class, 'waHandlers']);
+            Route::post('chatbot/wa-handlers/{id}/toggle', [SAChatbotController::class, 'toggleWaHandler']);
+            Route::post('chatbot/wa-handlers/reset-counters', [SAChatbotController::class, 'resetCounters']);
+
+            // Chatbot Management (Moved to Super Admin)
+            Route::apiResource('chatbot/categories', SAChatbotController::class)->except(['show']);
+            Route::patch('chatbot/categories/{id}/toggle', [SAChatbotController::class, 'toggleActive']);
+            Route::get('chatbot/registration-fields',      [SAChatbotController::class, 'getRegistrationFields']);
+            Route::put('chatbot/registration-fields',       [SAChatbotController::class, 'setRegistrationFields']);
+            Route::get('chatbot/sessions',                  [SAChatbotController::class, 'sessions']);
+            Route::get('chatbot/contacts',                  [SAChatbotController::class, 'contacts']);
+            Route::get('chatbot/all-contacts',              [SAChatbotController::class, 'allContacts']);
+            Route::post('chatbot/contacts/{id}/toggle',     [SAChatbotController::class, 'toggleContact']);
+
+            // FAQ Management (Moved to Super Admin)
+            Route::apiResource('faqs', SAFAQController::class);
+            Route::patch('/faqs/{faq}/toggle-status', [SAFAQController::class, 'toggleStatus']);
 
             // Commission Settlement (Super Admin pays Admins)
             Route::get('/commissions/summary', [MonitoringController::class, 'commissionsSummary']);
             Route::get('/commissions', [MonitoringController::class, 'commissionsList']);
             Route::put('/commissions/{id}/settle', [MonitoringController::class, 'settleCommission']);
         });
+
 
 
         // ==============================

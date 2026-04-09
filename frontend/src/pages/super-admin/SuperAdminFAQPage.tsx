@@ -9,7 +9,7 @@ import { faqApi, type FAQ } from '@/services/faqs.api';
 import { chatbotApi, type WaChatbotCategory } from '@/services/chatbot.api';
 import { Link } from 'react-router-dom';
 
-const AdminFAQPage: React.FC = () => {
+const SuperAdminFAQPage: React.FC = () => {
     const queryClient = useQueryClient();
     const [waCategories, setWaCategories] = useState<WaChatbotCategory[]>([]);
     const [faqForm, setFaqForm] = useState<Partial<FAQ>>({ 
@@ -34,7 +34,7 @@ const AdminFAQPage: React.FC = () => {
     }, []);
 
     const { data: faqs = [], isLoading } = useQuery({
-        queryKey: ['admin-faqs'],
+        queryKey: ['super-admin-faqs'],
         queryFn: async () => {
             const res = await faqApi.getFaqs();
             return res.data || [];
@@ -44,7 +44,7 @@ const AdminFAQPage: React.FC = () => {
     const createMutation = useMutation({
         mutationFn: faqApi.createFaq,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['admin-faqs'] });
+            queryClient.invalidateQueries({ queryKey: ['super-admin-faqs'] });
             toast.success('FAQ created successfully');
             resetForm();
         },
@@ -54,7 +54,7 @@ const AdminFAQPage: React.FC = () => {
     const updateMutation = useMutation({
         mutationFn: ({ id, data }: { id: number; data: Partial<FAQ> }) => faqApi.updateFaq(id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['admin-faqs'] });
+            queryClient.invalidateQueries({ queryKey: ['super-admin-faqs'] });
             toast.success('FAQ updated successfully');
             setEditingFaq(null);
             resetForm();
@@ -65,7 +65,7 @@ const AdminFAQPage: React.FC = () => {
     const deleteMutation = useMutation({
         mutationFn: faqApi.deleteFaq,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['admin-faqs'] });
+            queryClient.invalidateQueries({ queryKey: ['super-admin-faqs'] });
             toast.success('FAQ deleted');
         },
         onError: () => toast.error('Failed to delete FAQ'),
@@ -74,7 +74,7 @@ const AdminFAQPage: React.FC = () => {
     const toggleStatusMutation = useMutation({
         mutationFn: faqApi.toggleStatus,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['admin-faqs'] });
+            queryClient.invalidateQueries({ queryKey: ['super-admin-faqs'] });
             toast.success('Status updated');
         },
     });
@@ -145,7 +145,7 @@ const AdminFAQPage: React.FC = () => {
                             <div className="space-y-1.5">
                                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center justify-between">
                                     <span>Category</span>
-                                    <Link to="/admin/chatbot" className="text-[10px] text-blue-500 hover:underline font-semibold flex items-center gap-1 normal-case tracking-normal">
+                                    <Link to="/super-admin/chatbot" className="text-[10px] text-blue-500 hover:underline font-semibold flex items-center gap-1 normal-case tracking-normal">
                                         <MessageSquare className="w-3 h-3" /> Manage Categories
                                     </Link>
                                 </label>
@@ -164,7 +164,7 @@ const AdminFAQPage: React.FC = () => {
                                 ) : (
                                     <div className="w-full px-4 py-3 rounded-2xl border border-orange-200 bg-orange-50 text-orange-700 text-xs font-semibold flex items-center gap-2">
                                         <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                                        <span>No chatbot categories yet. <Link to="/admin/chatbot" className="underline">Create one first →</Link></span>
+                                        <span>No chatbot categories yet. <Link to="/super-admin/chatbot" className="underline">Create one first →</Link></span>
                                     </div>
                                 )}
                             </div>
@@ -301,4 +301,4 @@ const AdminFAQPage: React.FC = () => {
     );
 };
 
-export default AdminFAQPage;
+export default SuperAdminFAQPage;

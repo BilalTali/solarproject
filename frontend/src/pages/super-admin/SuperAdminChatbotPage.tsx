@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function AdminChatbotPage() {
+export default function SuperAdminChatbotPage() {
     const { user } = useAuthStore();
     const isSuperAdmin = user?.role === 'super_admin';
     const [activeTab, setActiveTab] = useState('categories');
@@ -206,7 +206,7 @@ function CategoriesTab() {
             <div className="lg:col-span-2 space-y-4">
                 <div className="flex justify-between items-center bg-blue-50 text-blue-800 p-4 rounded-xl border border-blue-100">
                     <p className="text-sm">Categories map to FAQ topics. Users select a category to view matched questions.</p>
-                    <Link to="/admin/help-center" className="text-sm font-medium bg-white px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm hover:bg-blue-50 transition-colors flex items-center gap-1">
+                    <Link to="/super-admin/help-center" className="text-sm font-medium bg-white px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm hover:bg-blue-50 transition-colors flex items-center gap-1">
                         Manage Q&A <ExternalLink className="w-3 h-3" />
                     </Link>
                 </div>

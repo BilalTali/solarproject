@@ -82,8 +82,7 @@ const AdminRedemptionsPage = lazy(() => import('@/pages/admin/AdminRedemptionsPa
 const AdminAbsorptionsPage = lazy(() => import('@/pages/admin/AdminAbsorptionsPage').then(module => ({ default: module.AdminAbsorptionsPage })));
 const AdminWithdrawalsPage = lazy(() => import('@/pages/admin/AdminWithdrawalsPage').then(module => ({ default: module.AdminWithdrawalsPage })));
 const AdminOperatorsPage = lazy(() => import('@/pages/admin/AdminOperatorsPage'));
-const AdminFAQPage = lazy(() => import('@/pages/admin/AdminFAQPage'));
-const AdminChatbotPage = lazy(() => import('@/pages/admin/AdminChatbotPage'));
+const AdminOperatorsPage = lazy(() => import('@/pages/admin/AdminOperatorsPage'));
 
 // Enumerator Pages
 import EnumeratorLayout from '@/components/layouts/EnumeratorLayout';
@@ -109,6 +108,8 @@ const SuperAdminReportsPage = lazy(() => import('@/pages/admin/AdminReportsPage'
 const SuperAdminLoginPage = lazy(() => import('@/pages/super-admin/SuperAdminLoginPage'));
 const SuperAdminCommissionsPage = lazy(() => import('@/pages/super-admin/SuperAdminCommissionsPage'));
 const SuperAdminProfilePage = lazy(() => import('@/pages/super-admin/SuperAdminProfilePage'));
+const SuperAdminFAQPage = lazy(() => import('@/pages/super-admin/SuperAdminFAQPage'));
+const SuperAdminChatbotPage = lazy(() => import('@/pages/super-admin/SuperAdminChatbotPage'));
 
 /** Redirect admin to dashboard; operators straight to leads */
 function AdminIndexRedirect() {
@@ -250,8 +251,6 @@ export default function App() {
             <Route path="settings" element={<AdminSettingsPage />} />
             <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
             <Route path="operators" element={<AdminOperatorsPage />} />
-            <Route path="help-center" element={<AdminFAQPage />} />
-            <Route path="chatbot" element={<AdminChatbotPage />} />
             <Route index element={<AdminIndexRedirect />} />
           </Route>
 
@@ -298,8 +297,8 @@ export default function App() {
             <Route path="monitor/agents" element={<SuperAdminMonitorAgentsPage />} />
             <Route path="monitor/enumerators" element={<SuperAdminMonitorEnumeratorsPage />} />
             <Route path="monitor/leads" element={<SuperAdminMonitorLeadsPage />} />
-            <Route path="help-center" element={<AdminFAQPage />} />
-            <Route path="chatbot" element={<AdminChatbotPage />} />
+            <Route path="help-center" element={<SuperAdminFAQPage />} />
+            <Route path="chatbot" element={<SuperAdminChatbotPage />} />
             <Route path="reports" element={<SuperAdminReportsPage />} />
             <Route path="profile" element={<SuperAdminProfilePage />} />
             <Route path="settings" element={<SuperAdminProfilePage />} />

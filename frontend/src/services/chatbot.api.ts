@@ -35,21 +35,21 @@ export interface WaHandler {
 
 export const chatbotApi = {
     // Categories
-    getCategories:  () => axiosInstance.get<WaChatbotCategory[]>('/admin/chatbot/categories'),
-    createCategory: (data: Partial<WaChatbotCategory>) => axiosInstance.post<WaChatbotCategory>('/admin/chatbot/categories', data),
-    updateCategory: (id: number, data: Partial<WaChatbotCategory>) => axiosInstance.put<WaChatbotCategory>(`/admin/chatbot/categories/${id}`, data),
-    deleteCategory: (id: number) => axiosInstance.delete(`/admin/chatbot/categories/${id}`),
-    toggleCategory: (id: number) => axiosInstance.patch<WaChatbotCategory>(`/admin/chatbot/categories/${id}/toggle`),
+    getCategories:  () => axiosInstance.get<WaChatbotCategory[]>('/super-admin/chatbot/categories'),
+    createCategory: (data: Partial<WaChatbotCategory>) => axiosInstance.post<WaChatbotCategory>('/super-admin/chatbot/categories', data),
+    updateCategory: (id: number, data: Partial<WaChatbotCategory>) => axiosInstance.put<WaChatbotCategory>(`/super-admin/chatbot/categories/${id}`, data),
+    deleteCategory: (id: number) => axiosInstance.delete(`/super-admin/chatbot/categories/${id}`),
+    toggleCategory: (id: number) => axiosInstance.patch<WaChatbotCategory>(`/super-admin/chatbot/categories/${id}/toggle`),
 
     // Registration fields
-    getRegistrationFields: () => axiosInstance.get<WaRegistrationField[]>('/admin/chatbot/registration-fields'),
-    setRegistrationFields: (fields: WaRegistrationField[]) => axiosInstance.put('/admin/chatbot/registration-fields', { fields }),
+    getRegistrationFields: () => axiosInstance.get<WaRegistrationField[]>('/super-admin/chatbot/registration-fields'),
+    setRegistrationFields: (fields: WaRegistrationField[]) => axiosInstance.put('/super-admin/chatbot/registration-fields', { fields }),
 
     // Sessions & contacts
-    getSessions: (page=1) => axiosInstance.get<{ data: WaChatbotSession[], current_page: number, last_page: number, total: number }>('/admin/chatbot/sessions', { params: { page } }),
-    getContacts: () => axiosInstance.get('/admin/chatbot/contacts'),
-    getAllContacts: () => axiosInstance.get('/admin/chatbot/all-contacts'),
-    toggleContact: (id: number) => axiosInstance.post(`/admin/chatbot/contacts/${id}/toggle`),
+    getSessions: (page=1) => axiosInstance.get<{ data: WaChatbotSession[], current_page: number, last_page: number, total: number }>('/super-admin/chatbot/sessions', { params: { page } }),
+    getContacts: () => axiosInstance.get('/super-admin/chatbot/contacts'),
+    getAllContacts: () => axiosInstance.get('/super-admin/chatbot/all-contacts'),
+    toggleContact: (id: number) => axiosInstance.post(`/super-admin/chatbot/contacts/${id}/toggle`),
 
     // WA Handlers (super-admin only)
     getWaHandlers:    () => axiosInstance.get<WaHandler[]>('/super-admin/chatbot/wa-handlers'),
