@@ -82,7 +82,6 @@ const AdminRedemptionsPage = lazy(() => import('@/pages/admin/AdminRedemptionsPa
 const AdminAbsorptionsPage = lazy(() => import('@/pages/admin/AdminAbsorptionsPage').then(module => ({ default: module.AdminAbsorptionsPage })));
 const AdminWithdrawalsPage = lazy(() => import('@/pages/admin/AdminWithdrawalsPage').then(module => ({ default: module.AdminWithdrawalsPage })));
 const AdminOperatorsPage = lazy(() => import('@/pages/admin/AdminOperatorsPage'));
-const AdminOperatorsPage = lazy(() => import('@/pages/admin/AdminOperatorsPage'));
 
 // Enumerator Pages
 import EnumeratorLayout from '@/components/layouts/EnumeratorLayout';

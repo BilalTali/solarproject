@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     Sun, LayoutDashboard, List, Users, DollarSign, BarChart3,
-    Settings, LogOut, Shield, Star, Award, FileText, Gift, Inbox, Wallet, HelpCircle, MessageSquare
+    Settings, LogOut, Shield, Star, Award, FileText, Gift, Inbox, Wallet
 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
