@@ -72,8 +72,8 @@ class JoiningLetterService
         $companyTagline = Setting::getValue('company_tagline', 'Empowering Sustainable Futures', $adminId);
 
         // ── Branding Assets (Dynamic) ─────────────────────────────
-        // Logo 1: Admin's own company logo
-        $logoPath = Setting::getValue('company_logo', null, $adminId);
+        // Logo 1: Admin's specialized team logo (ID Cards / Letters)
+        $logoPath = Setting::getValue('company_logo_2', null, $adminId);
         // Logo 2: FORCE Global Platform Logo (Affiliate Partner)
         $logoPath2 = Setting::getValue('company_logo', null, null);
 

@@ -334,14 +334,19 @@
     </p>
 
     <div class="signature-section">
-        <div class="sig-container">
-            @if($sigBase64)
-                <img src="{{ $sigBase64 }}" class="sig-image">
-            @else
-                <div style="height: 50px;"></div>
-            @endif
-            <div class="sig-name">{{ $authorizedSignatory }}</div>
-            <div class="sig-title">{{ $signatoryTitle }}</div>
+        <div class="sig-container" style="position: relative;">
+            <div style="position: relative; height: 65px; margin-bottom: 5px;">
+                @if($sealBase64)
+                    <img src="{{ $sealBase64 }}" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: 75px; width: auto; opacity: 0.8; z-index: 5;">
+                @endif
+                @if($sigBase64)
+                    <img src="{{ $sigBase64 }}" class="sig-image" style="position: relative; z-index: 10;">
+                @else
+                    <div style="height: 50px;"></div>
+                @endif
+            </div>
+            <div class="sig-name" style="position: relative; z-index: 15;">{{ $authorizedSignatory }}</div>
+            <div class="sig-title" style="position: relative; z-index: 15;">{{ $signatoryTitle }}</div>
         </div>
     </div>
 
