@@ -69,6 +69,7 @@ const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage')
 const AdminSuperAgentsPage = lazy(() => import('@/pages/admin/AdminSuperAgentsPage'));
 const AdminSuperAgentDetailPage = lazy(() => import('@/pages/admin/AdminSuperAgentDetailPage'));
 const AdminAgentsPage = lazy(() => import('@/pages/admin/AdminAgentsPage'));
+const AdminAgentDetailPage = lazy(() => import('@/pages/admin/AdminAgentDetailPage'));
 const AdminEnumeratorsPage = lazy(() => import('@/pages/admin/AdminEnumeratorsPage'));
 const AdminLeadsPage = lazy(() => import('@/pages/admin/AdminLeadsPage'));
 const AdminCommissionsPage = lazy(() => import('@/pages/admin/AdminCommissionsPage'));
@@ -237,7 +238,7 @@ export default function App() {
             <Route path="leads/:ulid" element={<AdminLeadsPage />} />
             <Route path="agents" element={<AdminAgentsPage />} />
             <Route path="enumerators" element={<AdminEnumeratorsPage />} />
-            <Route path="agents/:id" element={<div className="p-8 text-center text-slate-500">This module is currently disabled for maintenance.</div>} />
+            <Route path="agents/:id" element={<AdminAgentDetailPage />} />
             <Route path="commissions" element={<AdminCommissionsPage />} />
             <Route path="reports" element={<AdminReportsPage />} />
             <Route path="media" element={<AdminMediaPage />} />

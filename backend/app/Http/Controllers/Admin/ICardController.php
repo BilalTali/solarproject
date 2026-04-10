@@ -59,15 +59,17 @@ class ICardController extends Controller
     {
         $user = Auth::user();
         $targetUserId = $request->query('userId', $user?->id);
+        
+        $isAdmin = $user && in_array($user->role, ['admin', 'super_admin', 'operator']);
 
         // Security check: only admins can request other users' iCards
-        // Non-admins must be active and have 100% profile completion
-        if ($user?->role !== 'admin') {
+        // Non-admins must be active and have 75% profile completion
+        if (!$isAdmin) {
             if ($targetUserId != $user?->id) {
                 abort(403, 'Unauthorized to download this ID card');
             }
-            if ($user?->status !== 'active' || $user?->profile_completion < 75) {
-                abort(403, 'ID card is available only for approved users with at least 75% complete profiles.');
+            if ($user?->status !== 'active' || $user?->profile_completion < 60) {
+                abort(403, 'ID card is available only for approved users with at least 60% complete profiles.');
             }
         }
 

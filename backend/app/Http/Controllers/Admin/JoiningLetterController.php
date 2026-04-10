@@ -22,12 +22,20 @@ class JoiningLetterController extends Controller
      */
     public function getDownloadUrl(Request $request)
     {
-        $user = $request->user();
+        $authUser = $request->user();
+        $targetUserId = $request->query('userId');
+        
+        // If userId is provided and requester is an admin, use that. Otherwise use auth user.
+        $isAdmin = in_array($authUser->role, ['admin', 'super_admin', 'operator']);
+        
+        $user = ($targetUserId && $isAdmin) 
+            ? User::findOrFail($targetUserId) 
+            : $authUser;
 
-        // Check if approved and profile is 100% complete
-        if ($user->role !== 'admin' && ($user->status !== 'active' || $user->profile_completion < 75)) {
+        // Check if approved and profile is 60% complete (bypass for admins viewing others, OR if requester is admin themselves)
+        if (!$isAdmin && ($user->status !== 'active' || $user->profile_completion < 60)) {
             return response()->json([
-                'message' => 'Joining letter is available only for approved users with at least 75% complete profiles.',
+                'message' => 'Joining letter is available only for approved users with at least 60% complete profiles.',
             ], 403);
         }
 
@@ -60,12 +68,13 @@ class JoiningLetterController extends Controller
 
         // 2. Security Check (Admin or the user themselves)
         $authUser = $request->user() ?: auth('sanctum')->user();
-        if ($authUser && $authUser->role !== 'admin' && $authUser->id !== $user->id) {
+        $isAdmin = $authUser && in_array($authUser->role, ['admin', 'super_admin', 'operator']);
+        if ($authUser && !$isAdmin && $authUser->id !== $user->id) {
             abort(403, 'Unauthorized access to this document.');
         }
 
         // 3. Status Check
-        if (! $user->approved_at && ($authUser && $authUser->role !== 'admin')) {
+        if (! $user->approved_at && !$isAdmin) {
             // We fallback to generated logic if approved_at is missing for legacy but status is active
             if ($user->status !== 'active') {
                 abort(403, 'Document not yet generated.');
@@ -81,7 +90,8 @@ class JoiningLetterController extends Controller
     public function preview(Request $request, User $user)
     {
         $authUser = $request->user();
-        if (! $authUser || $authUser->role !== 'admin') {
+        $isAdmin = $authUser && in_array($authUser->role, ['admin', 'super_admin', 'operator']);
+        if (!$isAdmin) {
             abort(403);
         }
 

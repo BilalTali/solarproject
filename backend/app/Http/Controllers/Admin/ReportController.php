@@ -13,14 +13,36 @@ class ReportController extends Controller
 {
     public function pipelineSummary(Request $request)
     {
+        $user = $request->user();
         $query = Lead::select('status', DB::raw('count(*) as total'));
+
+        if (!$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $query->where(function ($q) use ($managedIds) {
+                $q->whereIn('created_by_super_agent_id', $managedIds)
+                  ->orWhereIn('submitted_by_agent_id', $managedIds)
+                  ->orWhereIn('assigned_super_agent_id', $managedIds)
+                  ->orWhereIn('assigned_agent_id', $managedIds);
+            });
+        }
+
         if ($request->has('status')) {
             $query->where(fn ($q) => $q->where('status', (string) $request->status));
         }
         $statusCounts = $query->groupBy('status')
             ->pluck('total', 'status');
 
-        $total = Lead::count();
+        $total = Lead::query();
+        if (!$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $total->where(function ($q) use ($managedIds) {
+                $q->whereIn('created_by_super_agent_id', $managedIds)
+                  ->orWhereIn('submitted_by_agent_id', $managedIds)
+                  ->orWhereIn('assigned_super_agent_id', $managedIds)
+                  ->orWhereIn('assigned_agent_id', $managedIds);
+            });
+        }
+        $total = $total->count();
 
         // Define funnel steps to calculate drop-offs
         $funnel = [
@@ -42,7 +64,14 @@ class ReportController extends Controller
 
     public function agentPerformance(Request $request)
     {
-        $agents = User::query()->where(fn($q) => $q->where('role', 'agent'))
+        $user = $request->user();
+        $agentsQuery = User::query()->where('role', 'agent');
+        if (!$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $agentsQuery->whereIn('id', $managedIds);
+        }
+
+        $agents = $agentsQuery
             ->select('id', 'name', 'agent_id')
             ->withCount('submittedLeads as total_source_leads')
             ->withCount('assignedLeads as total_assigned_leads')
@@ -88,12 +117,24 @@ class ReportController extends Controller
 
     public function geographicDistribution(Request $request)
     {
-        $byState = Lead::select('beneficiary_state as state', DB::raw('count(*) as count'))
+        $user = $request->user();
+        $leadQuery = Lead::query();
+        if (!$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $leadQuery->where(function ($q) use ($managedIds) {
+                $q->whereIn('created_by_super_agent_id', $managedIds)
+                  ->orWhereIn('submitted_by_agent_id', $managedIds)
+                  ->orWhereIn('assigned_super_agent_id', $managedIds)
+                  ->orWhereIn('assigned_agent_id', $managedIds);
+            });
+        }
+
+        $byState = (clone $leadQuery)->select('beneficiary_state as state', DB::raw('count(*) as count'))
             ->groupBy('beneficiary_state')
             ->orderByDesc('count')
             ->get();
 
-        $topDistricts = Lead::select('beneficiary_district as district', 'beneficiary_state as state', DB::raw('count(*) as count'))
+        $topDistricts = (clone $leadQuery)->select('beneficiary_district as district', 'beneficiary_state as state', DB::raw('count(*) as count'))
             ->groupBy('beneficiary_state', 'beneficiary_district')
             ->orderByDesc('count')
             ->take(10)
@@ -110,17 +151,29 @@ class ReportController extends Controller
 
     public function monthlyTrend(Request $request)
     {
+        $user = $request->user();
+        $leadQuery = Lead::query();
+        if (!$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $leadQuery->where(function ($q) use ($managedIds) {
+                $q->whereIn('created_by_super_agent_id', $managedIds)
+                  ->orWhereIn('submitted_by_agent_id', $managedIds)
+                  ->orWhereIn('assigned_super_agent_id', $managedIds)
+                  ->orWhereIn('assigned_agent_id', $managedIds);
+            });
+        }
+
         $months = 12;
         $trend = collect();
 
         for ($i = $months - 1; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
 
-            $newLeads = Lead::query()->whereMonth('created_at', $date->month)
+            $newLeads = (clone $leadQuery)->whereMonth('created_at', $date->month)
                 ->whereYear('created_at', $date->year)
                 ->count();
 
-            $installations = Lead::query()->where(fn($q) => $q->whereIn('status', ['REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED']))
+            $installations = (clone $leadQuery)->where(fn($q) => $q->whereIn('status', ['REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED']))
                 ->whereMonth('updated_at', $date->month)
                 ->whereYear('updated_at', $date->year)
                 ->count();
@@ -141,7 +194,14 @@ class ReportController extends Controller
 
     public function superAgentPerformance(Request $request)
     {
-        $superAgents = User::query()->where(fn($q) => $q->where('role', 'super_agent'))
+        $user = $request->user();
+        $saQuery = User::query()->where('role', 'super_agent');
+        if (!$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $saQuery->whereIn('id', $managedIds);
+        }
+
+        $superAgents = $saQuery
             ->select('id', 'name', 'agent_id', 'super_agent_code')
             ->withCount('managedAgents as team_size')
             ->get();

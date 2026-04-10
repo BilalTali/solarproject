@@ -34,11 +34,11 @@ class MonitoringController extends Controller
     /** Monitor Super Agents (BDMs) */
     public function superAgents(Request $request): JsonResponse
     {
-        $query = User::roleSuperAgent()
+        $query = User::query()->roleSuperAgent()
             ->withCount(['managedAgents', 'assignedSuperAgentLeads'])
             ->latest();
 
-        if ($request->search) {
+        if ($request->filled('search')) {
             $search = "%{$request->search}%";
             $query->where(fn($q) => $q->where('name', 'like', $search)->orWhere('super_agent_code', 'like', $search));
         }
@@ -49,12 +49,12 @@ class MonitoringController extends Controller
     /** Monitor Agents (BDEs) */
     public function agents(Request $request): JsonResponse
     {
-        $query = User::roleAgent()
+        $query = User::query()->roleAgent()
             ->with(['superAgent'])
             ->withCount(['assignedLeads', 'enumerators'])
             ->latest();
 
-        if ($request->search) {
+        if ($request->filled('search')) {
             $search = "%{$request->search}%";
             $query->where(fn($q) => $q->where('name', 'like', $search)->orWhere('agent_id', 'like', $search));
         }
@@ -65,12 +65,12 @@ class MonitoringController extends Controller
     /** Monitor Enumerators (ENMs) */
     public function enumerators(Request $request): JsonResponse
     {
-        $query = User::roleEnumerator()
+        $query = User::query()->roleEnumerator()
             ->with(['parentAgent'])
             ->withCount(['enumeratorLeads'])
             ->latest();
 
-        if ($request->search) {
+        if ($request->filled('search')) {
             $search = "%{$request->search}%";
             $query->where(fn($q) => $q->where('name', 'like', $search)->orWhere('enumerator_id', 'like', $search));
         }
@@ -81,15 +81,15 @@ class MonitoringController extends Controller
     /** Monitor Leads (Read-only) */
     public function leads(Request $request): JsonResponse
     {
-        $query = Lead::with(['assignedAgent', 'assignedSuperAgent'])
+        $query = Lead::query()->with(['assignedAgent', 'assignedSuperAgent'])
             ->latest();
 
-        if ($request->search) {
+        if ($request->filled('search')) {
             $search = "%{$request->search}%";
             $query->where(fn($q) => $q->where('beneficiary_name', 'like', $search)->orWhere('consumer_number', 'like', $search));
         }
 
-        if ($request->status) {
+        if ($request->filled('status')) {
             $status = $request->status;
             $query->where(fn($q) => $q->where('status', '=', $status));
         }
@@ -100,11 +100,12 @@ class MonitoringController extends Controller
     /** Monitor Commissions (Read-only) */
     public function commissions(Request $request): JsonResponse
     {
-        $query = Commission::with(['payee', 'lead'])
+        $query = Commission::query()->with(['payee', 'lead'])
             ->latest();
 
         return response()->json(['success' => true, 'data' => $query->paginate($request->per_page ?? 20)]);
     }
+
 
     // ══════════════════════════════════════════════════════════════
     // SUPER ADMIN — ADMIN COMMISSION SETTLEMENT

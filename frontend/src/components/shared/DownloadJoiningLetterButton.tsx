@@ -4,6 +4,7 @@ import { User } from '@/types';
 import { joiningLetterApi } from '@/services/joiningLetter.api';
 import { toast } from 'react-hot-toast';
 import { useSettings } from '@/hooks/useSettings';
+import { useAuthStore } from '@/hooks/store/authStore';
 
 interface DownloadJoiningLetterButtonProps {
     user: User;
@@ -18,13 +19,16 @@ const DownloadJoiningLetterButton: React.FC<DownloadJoiningLetterButtonProps> = 
 }) => {
     const [isDownloading, setIsDownloading] = useState(false);
     const { companyName } = useSettings();
+    const { user: authUser } = useAuthStore();
+    const isAdmin = ['admin', 'super_admin', 'operator'].includes(authUser?.role || '');
 
-    // Is the user approved and profile complete (>= 75%)?
-    const isProfileComplete = (user?.profile_completion ?? 0) >= 75;
-    const isApproved = user?.role === 'admin' || (user?.status === 'active' && isProfileComplete);
+    // Is the target user approved and profile complete (>= 60%)?
+    // If authUser is an admin, they can bypass the lock for any user (including themselves)
+    const isProfileComplete = (user?.profile_completion ?? 0) >= 60;
+    const isApproved = isAdmin || (user?.status === 'active' && isProfileComplete);
 
     const lockTitle = !isProfileComplete
-        ? "Please complete your profile (75%) to download"
+        ? "Please complete your profile (60%) to download"
         : "Waiting for Admin approval";
 
     const handleDownload = async () => {
@@ -32,7 +36,8 @@ const DownloadJoiningLetterButton: React.FC<DownloadJoiningLetterButtonProps> = 
 
         try {
             setIsDownloading(true);
-            const downloadUrl = await joiningLetterApi.getDownloadUrl();
+            // If it's an admin viewing potentially another user, pass the target userId
+            const downloadUrl = await joiningLetterApi.getDownloadUrl(isAdmin ? user.id : undefined);
 
             // Fetch as blob to bypass PWA navigation cache interception
             const fileResponse = await fetch(downloadUrl);

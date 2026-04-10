@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm';
 import DownloadJoiningLetterButton from '@/components/shared/DownloadJoiningLetterButton';
+import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import MobileInput from '@/components/shared/MobileInput';
 import { User } from '@/types';
 
@@ -130,7 +131,8 @@ const AgentProfilePage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <DownloadJoiningLetterButton user={user!} variant="outline" className="h-12 px-6" />
+                    <DownloadJoiningLetterButton user={user!} variant="button" className="h-12 px-6" />
+                    <DownloadIdCardButton userId={user?.id} variant="button" className="h-12 px-6" />
                     {!editing ? (
                         <button
                             onClick={() => setEditing(true)}
@@ -237,8 +239,8 @@ const AgentProfilePage: React.FC = () => {
                             </div>
 
                             <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                                {completion < 100
-                                    ? `Reach 100% profile completion to unlock your Appointment Letter and ID Card download.`
+                                {completion < 60
+                                    ? `Reach 60% profile completion to unlock your Appointment Letter and ID Card download.`
                                     : `Your profile strength is great! You can now download your official documents.`
                                 }
                             </p>

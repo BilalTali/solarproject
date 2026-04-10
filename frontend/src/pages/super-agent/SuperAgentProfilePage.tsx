@@ -1,45 +1,28 @@
 // @ts-nocheck
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import {
-    ArrowLeft, User, Phone, MapPin, Hash, Building2, FileText,
-    Calendar, AlertCircle, FileDigit, Download, Image as ImageIcon,
-    Camera, Mail, Shield, BadgeCheck, Save
+    User, Phone, MapPin, Building2, 
+    Calendar, Shield, BadgeCheck, Save,
+    Camera, Mail, FileText, Lock, Download,
+    Briefcase, Star, Check, RefreshCcw
 } from 'lucide-react';
 import { superAgentApi } from '@/services/superAgent.api';
-import { superAgentCommissionsApi } from '@/services/commissions.api';
-import { openAuthenticatedFile } from '@/utils/documentUtils';
 import { authApi } from '@/services/auth.api';
 import { useAuthStore } from '@/hooks/store/authStore';
 import toast from 'react-hot-toast';
-import type { Lead, CommissionPrompt } from '@/types';
-import CommissionInlineEntryForAgent from '@/components/super-agent/CommissionInlineEntryForAgent';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm';
+import DownloadJoiningLetterButton from '@/components/shared/DownloadJoiningLetterButton';
+import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 
-const STATUS_BADGE: Record<string, string> = {
-    new: 'bg-blue-100 text-blue-700',
-    contacted: 'bg-purple-100 text-purple-700',
-    documents_collected: 'bg-indigo-100 text-indigo-700',
-    registered: 'bg-cyan-100 text-cyan-700',
-    site_survey: 'bg-teal-100 text-teal-700',
-    installation_pending: 'bg-orange-100 text-orange-700',
-    installed: 'bg-green-100 text-green-700',
-    subsidy_applied: 'bg-lime-100 text-lime-700',
-    completed: 'bg-emerald-100 text-emerald-700',
-    rejected: 'bg-red-100 text-red-700',
-    on_hold: 'bg-yellow-100 text-yellow-700',
-};
-
-
-
-function label(status: string) { return status.replace(/_/g, ' '); }
-function fmt(iso: string) { return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); }
+type ProfileTab = 'identity' | 'location' | 'documents' | 'security';
 
 export function SuperAgentProfilePage() {
     const { user, setUser } = useAuthStore();
     const [editing, setEditing] = useState(false);
+    const [activeTab, setActiveTab] = useState<ProfileTab>('identity');
+    
     const [editForm, setEditForm] = useState({
         whatsapp_number: user?.whatsapp_number ?? '',
         father_name: (user as any)?.father_name ?? '',
@@ -49,6 +32,20 @@ export function SuperAgentProfilePage() {
         district: user?.district ?? '',
         area: user?.area ?? '',
     });
+
+    useEffect(() => {
+        if (user) {
+            setEditForm({
+                whatsapp_number: user.whatsapp_number ?? '',
+                father_name: (user as any).father_name ?? '',
+                dob: (user as any).dob ? (user as any).dob.split('T')[0] : '',
+                blood_group: (user as any).blood_group ?? '',
+                state: user.state ?? '',
+                district: user.district ?? '',
+                area: user.area ?? '',
+            });
+        }
+    }, [user]);
 
     const uploadPhotoMutation = useMutation({
         mutationFn: authApi.uploadProfilePhoto,
@@ -68,7 +65,7 @@ export function SuperAgentProfilePage() {
         onSuccess: (res) => {
             if (res.success) {
                 setUser(res.data);
-                toast.success('Profile updated');
+                toast.success('Profile credentials synchronized');
                 setEditing(false);
             }
         },
@@ -78,204 +75,291 @@ export function SuperAgentProfilePage() {
         }
     });
 
-    const startEdit = () => {
-        setEditForm({
-            whatsapp_number: user?.whatsapp_number ?? '',
-            father_name: (user as any)?.father_name ?? '',
-            dob: (user as any)?.dob ? (user as any).dob.split('T')[0] : '',
-            blood_group: (user as any)?.blood_group ?? '',
-            state: user?.state ?? '',
-            district: user?.district ?? '',
-            area: user?.area ?? '',
-        });
-        setEditing(true);
-    };
-
     const handleSave = () => {
         updateProfileMutation.mutate(editForm);
     };
 
     return (
-        <div className="max-w-4xl mx-auto py-8 px-4">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Manager Profile</h1>
-                    <p className="text-slate-500 text-sm">View and manage your personal details and branding</p>
+        <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-700 pb-20">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-200">
+                <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center shadow-2xl shadow-indigo-100">
+                        <Briefcase className="text-white w-7 h-7" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-display font-black text-slate-900 tracking-tight leading-none">Manager Command Center</h1>
+                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Professional Identity & Resources</p>
+                    </div>
                 </div>
                 {!editing ? (
-                    <button
-                        onClick={startEdit}
-                        className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-orange-700 transition-shadow hover:shadow-lg active:scale-95 transition-all"
-                    >
-                        Edit Profile
+                    <button onClick={() => setEditing(true)} className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 hover:scale-105 transition-all shadow-xl">
+                        Edit Manager Profile
                     </button>
                 ) : (
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setEditing(false)}
-                            className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleSave}
+                    <div className="flex gap-3">
+                        <button onClick={() => setEditing(false)} className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 rounded-2xl transition-all">Cancel</button>
+                        <button 
                             disabled={updateProfileMutation.isPending}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-green-700 transition-shadow hover:shadow-lg disabled:opacity-50"
+                            onClick={handleSave} 
+                            className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-indigo-700 shadow-xl transition-all"
                         >
-                            <Save size={16} /> {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
+                            {updateProfileMutation.isPending ? <RefreshCcw size={14} className="animate-spin" /> : <Save size={14} />}
+                            {updateProfileMutation.isPending ? 'Saving...' : 'Save Profile'}
                         </button>
                     </div>
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Left: Avatar Column */}
-                <div className="md:col-span-1">
-                    <div className="bg-white rounded-3xl border border-slate-200 p-8 flex flex-col items-center relative overflow-hidden shadow-sm">
-                        <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-br from-orange-50 to-transparent" />
-
-                        <div className="relative z-10">
-                            <div className="w-32 h-32 rounded-[2rem] bg-slate-50 flex items-center justify-center overflow-hidden border-4 border-white shadow-xl relative group">
-                                {user?.profile_photo_url ? (
-                                    <img src={user.profile_photo_url} alt={user.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
-                                ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center">
-                                        <User size={60} className="text-orange-300" />
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                {/* Left Sidebar: Profile Identity */}
+                <div className="lg:col-span-1 space-y-4">
+                    <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-indigo-100">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+                        <div className="relative z-10 flex flex-col items-center">
+                            <div className="relative group">
+                                <div className="w-32 h-32 rounded-3xl bg-slate-800 border-4 border-slate-800 overflow-hidden shadow-2xl mb-6 relative">
+                                    {user?.profile_photo_url ? (
+                                        <img src={user.profile_photo_url} alt={user.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-indigo-600/20 text-indigo-400 font-black text-4xl">
+                                            {user?.name.charAt(0)}
+                                        </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Camera className="text-white" size={24} />
+                                        <input 
+                                            type="file" 
+                                            className="absolute inset-0 opacity-0 cursor-pointer" 
+                                            accept="image/*" 
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) uploadPhotoMutation.mutate(file);
+                                            }} 
+                                        />
                                     </div>
-                                )}
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Camera size={24} className="text-white" />
                                 </div>
-                                <input
-                                    type="file"
-                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) uploadPhotoMutation.mutate(file);
-                                    }}
-                                />
                             </div>
-                        </div>
-
-                        <div className="mt-6 text-center z-10">
-                            <h3 className="text-xl font-bold text-slate-800">{user?.name}</h3>
-                            <div className="flex items-center justify-center gap-1.5 mt-1">
-                                <BadgeCheck size={14} className="text-orange-500" />
-                                <span className="text-sm font-mono font-bold text-orange-600 uppercase tracking-wider">{user?.super_agent_code}</span>
-                            </div>
-                        </div>
-
-                        <div className="mt-8 w-full space-y-3 z-10">
-                            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Status</span>
-                                <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-black rounded-lg uppercase tracking-wider">
-                                    {user?.status}
-                                </span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Role</span>
-                                <span className="text-xs font-bold text-slate-700 capitalize">
-                                    {user?.role?.replace('_', ' ')}
-                                </span>
+                            <h3 className="text-xl font-display font-black tracking-tight text-center">{user?.name}</h3>
+                            <div className="mt-2 bg-indigo-600/30 px-3 py-1 rounded-full border border-indigo-500/30 flex items-center gap-1.5">
+                                <BadgeCheck size={12} className="text-indigo-400" />
+                                <span className="text-[8px] font-black uppercase tracking-widest text-indigo-100">{user?.super_agent_code || 'Senior Manager'}</span>
                             </div>
                         </div>
                     </div>
+
+                    <nav className="bg-white rounded-[2rem] border border-slate-200 p-2 shadow-sm space-y-1">
+                        <NavTab id="identity" label="Manager Identity" icon={<User size={16} />} active={activeTab === 'identity'} onClick={setActiveTab} />
+                        <NavTab id="location" label="Serving Location" icon={<MapPin size={16} />} active={activeTab === 'location'} onClick={setActiveTab} />
+                        <NavTab id="documents" label="Official Resources" icon={<FileText size={16} />} active={activeTab === 'documents'} onClick={setActiveTab} />
+                        <NavTab id="security" label="System Security" icon={<Lock size={16} />} active={activeTab === 'security'} onClick={setActiveTab} />
+                    </nav>
                 </div>
 
-                {/* Right: Info Column */}
-                <div className="md:col-span-2 space-y-6">
-                    <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-                        <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/30">
-                            <h3 className="font-bold text-slate-800 text-sm uppercase tracking-widest">
-                                {editing ? 'Edit Personal Information' : 'Manager Identity'}
-                            </h3>
-                        </div>
-                        <div className="p-8">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-8">
-                                {!editing ? (
-                                    <>
-                                        <InfoBlock icon={<User size={14} />} label="Full Name" value={user?.name} />
-                                        <InfoBlock icon={<Phone size={14} />} label="Primary Mobile" value={user?.mobile} />
-                                        <InfoBlock icon={<Phone size={14} />} label="WhatsApp Number" value={user?.whatsapp_number || 'Not Provided'} />
-                                        <InfoBlock icon={<Mail size={14} />} label="Email Address" value={user?.email || 'Not Provided'} />
-                                        <InfoBlock icon={<User size={14} />} label="Father's Name" value={(user as any)?.father_name || 'Not Provided'} />
-                                        <InfoBlock icon={<Calendar size={14} />} label="Date of Birth" value={(user as any)?.dob ? new Date((user as any).dob).toLocaleDateString() : 'Not Provided'} />
-                                        <InfoBlock icon={<Shield size={14} />} label="Blood Group" value={(user as any)?.blood_group || 'Not Provided'} />
-                                        <div className="sm:col-span-2">
-                                            <InfoBlock icon={<MapPin size={14} />} label="Primary Location" value={[user?.area, user?.district, user?.state].filter(Boolean).join(', ') || 'Not Provided'} />
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <EditBlock label="WhatsApp Number" value={editForm.whatsapp_number} onChange={v => setEditForm({ ...editForm, whatsapp_number: v })} placeholder="10-digit mobile" />
-                                        <EditBlock label="Father's Name" value={editForm.father_name} onChange={v => setEditForm({ ...editForm, father_name: v })} placeholder="S/o or D/o Name" />
-                                        <EditBlock label="Date of Birth" value={editForm.dob} type="date" onChange={v => setEditForm({ ...editForm, dob: v })} />
+                {/* Right: Tab Content Area */}
+                <div className="lg:col-span-3 space-y-8">
+                    <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden min-h-[500px]">
+                        <div className="p-8 lg:p-10">
+                            {activeTab === 'identity' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><User size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Personal Credentials</h2>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <DisplayField label="Full Legal Name" value={user?.name} icon={<User size={14} />} />
+                                        <DisplayField label="Primary Mobile" value={user?.mobile} icon={<Phone size={14} />} />
+                                        
+                                        <EditField 
+                                            label="WhatsApp Number" 
+                                            value={editForm.whatsapp_number} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, whatsapp_number: v }))} 
+                                            icon={<Phone size={14} />} 
+                                            placeholder="10-digit number"
+                                        />
+                                        <EditField 
+                                            label="Father's Name" 
+                                            value={editForm.father_name} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, father_name: v }))} 
+                                            icon={<User size={14} />} 
+                                            placeholder="S/o or D/o name"
+                                        />
+                                        
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Blood Group</label>
-                                            <select
-                                                value={editForm.blood_group}
-                                                onChange={e => setEditForm({ ...editForm, blood_group: e.target.value })}
-                                                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 text-slate-800 font-bold focus:border-orange-500 outline-none transition-colors shadow-inner"
-                                            >
-                                                <option value="">Select...</option>
-                                                {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
-                                            </select>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Date of Birth</label>
+                                            {editing ? (
+                                                <input 
+                                                    type="date" 
+                                                    value={editForm.dob} 
+                                                    onChange={e => setEditForm(p => ({ ...p, dob: e.target.value }))}
+                                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all"
+                                                />
+                                            ) : (
+                                                <div className="px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl flex items-center gap-3 text-slate-800 font-bold">
+                                                    <Calendar size={14} className="text-slate-300" />
+                                                    {user?.dob ? new Date(user.dob).toLocaleDateString('en-IN') : 'Not Provided'}
+                                                </div>
+                                            )}
                                         </div>
+
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">State</label>
-                                            <select
-                                                value={editForm.state}
-                                                onChange={e => setEditForm({ ...editForm, state: e.target.value, district: '' })}
-                                                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 text-slate-800 font-bold focus:border-orange-500 outline-none transition-colors shadow-inner"
-                                            >
-                                                <option value="">Select State</option>
-                                                {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                                            </select>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Blood Group</label>
+                                            {editing ? (
+                                                <select 
+                                                    value={editForm.blood_group} 
+                                                    onChange={e => setEditForm(p => ({ ...p, blood_group: e.target.value }))}
+                                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all appearance-none"
+                                                >
+                                                    <option value="">Select...</option>
+                                                    {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
+                                                </select>
+                                            ) : (
+                                                <div className="px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl flex items-center gap-3 text-slate-800 font-bold">
+                                                    <Star size={14} className="text-slate-300" />
+                                                    {(user as any)?.blood_group || 'Not Provided'}
+                                                </div>
+                                            )}
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'location' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><MapPin size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Serving Territory Authority</h2>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">District</label>
-                                            <select
-                                                value={editForm.district}
-                                                onChange={e => setEditForm({ ...editForm, district: e.target.value })}
-                                                disabled={!editForm.state}
-                                                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 text-slate-800 font-bold focus:border-orange-500 outline-none transition-colors shadow-inner disabled:opacity-50"
-                                            >
-                                                <option value="">Select District</option>
-                                                {(STATE_DISTRICTS[editForm.state] || []).map(d => <option key={d} value={d}>{d}</option>)}
-                                            </select>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">State Authority</label>
+                                            {editing ? (
+                                                <select 
+                                                    value={editForm.state} 
+                                                    onChange={e => setEditForm(p => ({ ...p, state: e.target.value, district: '' }))}
+                                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all"
+                                                >
+                                                    <option value="">Select State</option>
+                                                    {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                                                </select>
+                                            ) : (
+                                                <div className="px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-slate-800 font-bold">{user?.state || 'Not Provided'}</div>
+                                            )}
                                         </div>
-                                        <div className="sm:col-span-2">
-                                            <EditBlock label="Serving Area" value={editForm.area} onChange={v => setEditForm({ ...editForm, area: v })} />
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">District Boundary</label>
+                                            {editing ? (
+                                                <select 
+                                                    value={editForm.district} 
+                                                    onChange={e => setEditForm(p => ({ ...p, district: e.target.value }))}
+                                                    disabled={!editForm.state}
+                                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all disabled:opacity-50"
+                                                >
+                                                    <option value="">Select District</option>
+                                                    {(STATE_DISTRICTS[editForm.state] || []).map(d => <option key={d} value={d}>{d}</option>)}
+                                                </select>
+                                            ) : (
+                                                <div className="px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-slate-800 font-bold">{user?.district || 'Not Provided'}</div>
+                                            )}
                                         </div>
-                                    </>
-                                )}
-                            </div>
+
+                                        <div className="md:col-span-2">
+                                            <EditField 
+                                                label="Assigned Serving Area" 
+                                                value={editForm.area} 
+                                                editing={editing} 
+                                                onChange={v => setEditForm(p => ({ ...p, area: v }))} 
+                                                icon={<MapPin size={14} />} 
+                                                placeholder="Block, Taluka or Area Name"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'documents' && (
+                                <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><FileText size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Official Credentials Vault</h2>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {/* ID Card Block */}
+                                        <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 space-y-6 flex flex-col items-center text-center">
+                                            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl flex items-center justify-center text-indigo-600">
+                                                <Download size={32} />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-xl font-display font-black text-slate-900 tracking-tight">Professional I-Card</h4>
+                                                <p className="text-slate-500 text-xs font-bold leading-relaxed mt-2">
+                                                    Download your official platform identity card with secure QR verification.
+                                                </p>
+                                            </div>
+                                            <DownloadIdCardButton className="w-full h-14 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl" />
+                                        </div>
+
+                                        {/* Joining Letter Block */}
+                                        <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 space-y-6 flex flex-col items-center text-center">
+                                            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl flex items-center justify-center text-indigo-600">
+                                                <FileText size={32} />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-xl font-display font-black text-slate-900 tracking-tight">Joining Authorization</h4>
+                                                <p className="text-slate-500 text-xs font-bold leading-relaxed mt-2">
+                                                    Official appointment letter authorizing your position as a registered Senior Manager.
+                                                </p>
+                                            </div>
+                                            <DownloadJoiningLetterButton user={user!} variant="primary" className="w-full h-14 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl" />
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6 bg-indigo-50 rounded-3xl flex items-start gap-4 border border-indigo-100 italic">
+                                        <Shield className="text-indigo-600 shrink-0 mt-1" size={18} />
+                                        <p className="text-xs text-indigo-800 font-bold leading-relaxed">
+                                            These documents are cryptographically signed. Any tampering with the printed details or QR codes will invalidate the credentials during field verification.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'security' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><Lock size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Account Access & Security</h2>
+                                    </div>
+                                    <div className="max-w-md">
+                                        <ChangePasswordForm />
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {!editing && (
-                        <>
-                            <ChangePasswordForm />
-
-                            <div className="bg-gradient-to-r from-orange-400 to-orange-600 rounded-3xl p-8 text-white shadow-xl shadow-orange-100 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
-                                <div className="flex items-start gap-4 relative z-10">
-                                    <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-                                        <AlertCircle className="text-white" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-lg mb-2">Notice for Profile Updates</h4>
-                                        <p className="text-white/80 text-sm leading-relaxed mb-6">
-                                            Major identity changes (Name, Email, Mobile) require verification. To change these, please submit a request to the Admin portal for security auditing.
-                                        </p>
-                                        <button className="flex items-center gap-2 px-6 py-3 bg-white text-orange-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:shadow-lg transition-all active:scale-95">
-                                            Help Center
-                                        </button>
+                    {!editing && activeTab === 'identity' && (
+                        <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-indigo-200 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl transition-transform group-hover:scale-110" />
+                            <div className="relative z-10 flex items-start gap-6">
+                                <div className="p-4 bg-white/10 rounded-3xl backdrop-blur-md">
+                                    <Shield className="text-indigo-200 w-8 h-8" />
+                                </div>
+                                <div className="space-y-4">
+                                    <h4 className="text-2xl font-display font-black tracking-tight">Profile Integrity Sync</h4>
+                                    <p className="text-indigo-100 text-sm leading-relaxed max-w-xl font-medium opacity-80">
+                                        Your identity is professional and verified. Ensuring your Father's Name and DOB matches your IDs is critical for the generation of valid official documents.
+                                    </p>
+                                    <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-indigo-300">
+                                        <Check size={14} /> End-to-end Encrypted
+                                        <span className="opacity-30">|</span>
+                                        <Check size={14} /> Verified Professional
                                     </div>
                                 </div>
                             </div>
-                        </>
+                        </div>
                     )}
                 </div>
             </div>
@@ -283,25 +367,42 @@ export function SuperAgentProfilePage() {
     );
 }
 
-const InfoBlock = ({ icon, label, value }: { icon: React.ReactNode, label: string, value?: string }) => (
+const NavTab = ({ id, label, icon, active, onClick }: { id: any, label: string, icon: React.ReactNode, active: boolean, onClick: (id: any) => void }) => (
+    <button 
+        onClick={() => onClick(id)}
+        className={`w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${active ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50'}`}
+    >
+        {icon}
+        <span>{label}</span>
+    </button>
+);
+
+const DisplayField = ({ label, value, icon }: { label: string, value?: string, icon: React.ReactNode }) => (
     <div className="space-y-2">
-        <div className="flex items-center gap-2 text-slate-500">
-            {icon}
-            <label className="text-[10px] font-black uppercase tracking-[0.2em]">{label}</label>
+        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
+        <div className="px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl flex items-center gap-3 text-slate-800 font-bold overflow-hidden">
+            <span className="text-slate-300">{icon}</span>
+            <span className="truncate">{value || '---'}</span>
         </div>
-        <p className="font-bold text-slate-800 text-lg border-b-2 border-slate-50 pb-2">{value}</p>
     </div>
 );
 
-const EditBlock = ({ label, value, onChange, placeholder, type = "text" }: { label: string, value: string, onChange: (v: string) => void, placeholder?: string, type?: string }) => (
+const EditField = ({ label, value, editing, onChange, icon, placeholder, type = "text" }: { label: string, value: string, editing: boolean, onChange: (v: string) => void, icon: React.ReactNode, placeholder?: string, type?: string }) => (
     <div className="space-y-2">
-        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{label}</label>
-        <input
-            type={type}
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            placeholder={placeholder}
-            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 text-slate-800 font-bold focus:border-orange-500 outline-none transition-colors shadow-inner"
-        />
+        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
+        {editing ? (
+            <input 
+                type={type} 
+                value={value} 
+                onChange={e => onChange(e.target.value)} 
+                placeholder={placeholder}
+                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all" 
+            />
+        ) : (
+            <div className="px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl flex items-center gap-3 text-slate-800 font-bold overflow-hidden">
+                <span className="text-slate-300">{icon}</span>
+                <span className="truncate">{value || 'Not Provided'}</span>
+            </div>
+        )}
     </div>
 );

@@ -24,33 +24,38 @@ class AdminCommissionController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $user = $request->user();
         $query = Commission::query()->with(['lead', 'payee', 'enteredBy', 'paidBy']);
 
+        if (!$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $query->whereIn('payee_id', $managedIds);
+        }
         if ($request->filled('filter')) {
             $filter = $request->filter;
             if ($filter === 'super_agent_pending') {
-                $query->where(fn ($q) => $q->where('payee_role', 'super_agent'))->where(fn ($q) => $q->where('payment_status', 'unpaid'));
+                $query->where(fn($q) => $q->where('payee_role', 'super_agent'))->where(fn($q) => $q->where('payment_status', 'unpaid'));
             } elseif ($filter === 'super_agent_paid') {
-                $query->where(fn ($q) => $q->where('payee_role', 'super_agent'))->where(fn ($q) => $q->where('payment_status', 'paid'));
+                $query->where(fn($q) => $q->where('payee_role', 'super_agent'))->where(fn($q) => $q->where('payment_status', 'paid'));
             } elseif ($filter === 'super_agent_all') {
-                $query->where(fn ($q) => $q->where('payee_role', 'super_agent'));
+                $query->where(fn($q) => $q->where('payee_role', 'super_agent'));
             } elseif ($filter === 'agent_direct_pending') {
-                $query->where(fn ($q) => $q->where('payee_role', 'agent'))->whereHas('enteredBy', fn ($q) => $q->where(fn ($q2) => $q2->where('role', 'admin')))->where(fn ($q) => $q->where('payment_status', 'unpaid'));
+                $query->where(fn($q) => $q->where('payee_role', 'agent'))->whereHas('enteredBy', fn($q) => $q->where(fn($q2) => $q2->where('role', 'admin')))->where(fn($q) => $q->where('payment_status', 'unpaid'));
             } elseif ($filter === 'agent_direct_paid') {
-                $query->where(fn ($q) => $q->where('payee_role', 'agent'))->whereHas('enteredBy', fn ($q) => $q->where(fn ($q2) => $q2->where('role', 'admin')))->where(fn ($q) => $q->where('payment_status', 'paid'));
+                $query->where(fn($q) => $q->where('payee_role', 'agent'))->whereHas('enteredBy', fn($q) => $q->where(fn($q2) => $q2->where('role', 'admin')))->where(fn($q) => $q->where('payment_status', 'paid'));
             } elseif ($filter === 'agent_direct_all') {
-                $query->where(fn ($q) => $q->where('payee_role', 'agent'))->whereHas('enteredBy', fn ($q) => $q->where(fn ($q2) => $q2->where('role', 'admin')));
+                $query->where(fn($q) => $q->where('payee_role', 'agent'))->whereHas('enteredBy', fn($q) => $q->where(fn($q2) => $q2->where('role', 'admin')));
             } elseif ($filter === 'all_pending') {
-                $query->where(fn ($q) => $q->where('payment_status', 'unpaid'));
+                $query->where(fn($q) => $q->where('payment_status', 'unpaid'));
             } elseif ($filter === 'all_paid') {
-                $query->where(fn ($q) => $q->where('payment_status', 'paid'));
+                $query->where(fn($q) => $q->where('payment_status', 'paid'));
             }
         } else {
             if ($request->filled('payee_role')) {
-                $query->where(fn ($q) => $q->where('payee_role', $request->payee_role));
+                $query->where(fn($q) => $q->where('payee_role', $request->payee_role));
             }
             if ($request->filled('payment_status')) {
-                $query->where(fn ($q) => $q->where('payment_status', $request->payment_status));
+                $query->where(fn($q) => $q->where('payment_status', $request->payment_status));
             }
         }
 
@@ -67,31 +72,40 @@ class AdminCommissionController extends Controller
         ]);
     }
 
-    public function summary(): JsonResponse
+    public function summary(Request $request): JsonResponse
     {
+        $user = $request->user();
+        $isSuperAdmin = $user->isSuperAdmin();
+        $managedIds = $isSuperAdmin ? [] : $user->getManagedUserIds();
+
+        $query = Commission::query();
+        if (!$isSuperAdmin) {
+            $query->whereIn('payee_id', $managedIds);
+        }
+
         return response()->json([
             'success' => true,
             'data' => [
-                'super_agent_unpaid_count' => Commission::query()->forSuperAgents()->unpaid()->count(),
-                'super_agent_unpaid_amount' => (float) Commission::query()->forSuperAgents()->unpaid()->sum('amount'),
-                'super_agent_paid_amount' => (float) Commission::query()->forSuperAgents()->paid()->sum('amount'),
-                'direct_agent_unpaid_count' => Commission::query()->forAgents()->whereHas('enteredBy', fn ($q) => $q->where(fn ($q2) => $q2->where('role', 'admin')))->unpaid()->count(),
-                'direct_agent_unpaid_amount' => (float) Commission::query()->forAgents()->whereHas('enteredBy', fn ($q) => $q->where(fn ($q2) => $q2->where('role', 'admin')))->unpaid()->sum('amount'),
-                'all_time_disbursed' => (float) Commission::query()->paid()->sum('amount'),
+                'super_agent_unpaid_count' => (clone $query)->forSuperAgents()->unpaid()->count(),
+                'super_agent_unpaid_amount' => (float) (clone $query)->forSuperAgents()->unpaid()->sum('amount'),
+                'super_agent_paid_amount' => (float) (clone $query)->forSuperAgents()->paid()->sum('amount'),
+                'direct_agent_unpaid_count' => (clone $query)->forAgents()->whereHas('enteredBy', fn($q) => $q->where('role', 'admin'))->unpaid()->count(),
+                'direct_agent_unpaid_amount' => (float) (clone $query)->forAgents()->whereHas('enteredBy', fn($q) => $q->where('role', 'admin'))->unpaid()->sum('amount'),
+                'all_time_disbursed' => (float) (clone $query)->paid()->sum('amount'),
             ],
         ]);
     }
 
     public function enterSuperAgentCommission(EnterSuperAgentCommissionRequest $request, string $ulid): JsonResponse
     {
-        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
+        $lead = Lead::query()->where(fn($q) => $q->where('ulid', $ulid))->firstOrFail();
         $payee = $lead->assignedSuperAgent;
-        
+
         if (!$payee) {
             return response()->json(['success' => false, 'message' => 'No super agent assigned to this lead.'], 422);
         }
 
-        $commission = $this->commissionService->enterCommission($lead, $payee, (float)$request->amount, $request->user());
+        $commission = $this->commissionService->enterCommission($lead, $payee, (float) $request->amount, $request->user());
 
         $lead->refresh();
 
@@ -116,10 +130,10 @@ class AdminCommissionController extends Controller
             'amount' => 'required|numeric|min:0',
         ]);
 
-        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
+        $lead = Lead::query()->where(fn($q) => $q->where('ulid', $ulid))->firstOrFail();
         $payee = \App\Models\User::findOrFail($request->payee_id);
 
-        $commission = $this->commissionService->enterCommission($lead, $payee, (float)$request->amount, $request->user());
+        $commission = $this->commissionService->enterCommission($lead, $payee, (float) $request->amount, $request->user());
 
         $lead->refresh();
 
@@ -135,14 +149,14 @@ class AdminCommissionController extends Controller
 
     public function enterDirectAgentCommission(EnterAgentCommissionRequest $request, string $ulid): JsonResponse
     {
-        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
+        $lead = Lead::query()->where(fn($q) => $q->where('ulid', $ulid))->firstOrFail();
         $payee = $lead->assignedAgent;
 
         if (!$payee) {
             return response()->json(['success' => false, 'message' => 'No agent assigned to this lead.'], 422);
         }
 
-        $commission = $this->commissionService->enterCommission($lead, $payee, (float)$request->amount, $request->user());
+        $commission = $this->commissionService->enterCommission($lead, $payee, (float) $request->amount, $request->user());
 
         $lead->refresh();
 
@@ -159,14 +173,14 @@ class AdminCommissionController extends Controller
     public function enterEnumeratorCommission(Request $request, string $ulid): JsonResponse
     {
         $request->validate(['amount' => 'required|numeric|min:0']);
-        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
+        $lead = Lead::query()->where(fn($q) => $q->where('ulid', $ulid))->firstOrFail();
         $payee = $lead->submittedByEnumerator;
 
         if (!$payee) {
             return response()->json(['success' => false, 'message' => 'No enumerator associated with this lead submission.'], 422);
         }
-        
-        $commission = $this->commissionService->enterCommission($lead, $payee, (float)$request->amount, $request->user());
+
+        $commission = $this->commissionService->enterCommission($lead, $payee, (float) $request->amount, $request->user());
 
         return response()->json([
             'success' => true,
@@ -203,7 +217,7 @@ class AdminCommissionController extends Controller
 
     public function getLeadCommissions(string $ulid): JsonResponse
     {
-        $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
+        $lead = Lead::query()->where(fn($q) => $q->where('ulid', $ulid))->firstOrFail();
         $data = $this->commissionService->getLeadCommissions($lead);
 
         return response()->json([

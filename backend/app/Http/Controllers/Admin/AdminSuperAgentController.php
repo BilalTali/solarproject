@@ -24,7 +24,13 @@ class AdminSuperAgentController extends Controller
     /** List all super agents with team stats */
     public function index(Request $request): JsonResponse
     {
+        $user = $request->user();
         $query = User::query()->superAgents()->withCount('managedAgents as agent_count');
+
+        if (!$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $query->whereIn('id', $managedIds);
+        }
 
         if ($request->status) {
             $query->where('status', $request->status);
@@ -47,12 +53,18 @@ class AdminSuperAgentController extends Controller
     }
 
     /** Get a single super agent's full detail */
-    public function show(int $id): JsonResponse
+    public function show(int $id, Request $request): JsonResponse
     {
-        $superAgent = User::query()->superAgents()
+        $user = $request->user();
+        $query = User::query()->superAgents()
             ->with(['managedAgents'])
-            ->withCount('managedAgents as agent_count')
-            ->findOrFail($id);
+            ->withCount('managedAgents as agent_count');
+
+        if (!$user->isSuperAdmin()) {
+            $query->where('parent_id', $user->id);
+        }
+
+        $superAgent = $query->findOrFail($id);
 
         $stats = $this->superAgentService->getTeamStats($superAgent);
 
@@ -97,7 +109,12 @@ class AdminSuperAgentController extends Controller
     /** Update super agent info */
     public function update(UpdateSuperAgentRequest $request, int $id): JsonResponse
     {
-        $superAgent = User::query()->superAgents()->findOrFail($id);
+        $user = $request->user();
+        $query = User::query()->superAgents();
+        if (!$user->isSuperAdmin()) {
+            $query->where('parent_id', $user->id);
+        }
+        $superAgent = $query->findOrFail($id);
         $superAgent->update($request->validated());
 
         return response()->json(['success' => true, 'data' => $superAgent->fresh(), 'message' => 'Updated.']);
@@ -107,7 +124,12 @@ class AdminSuperAgentController extends Controller
     public function updateStatus(Request $request, int $id): JsonResponse
     {
         $request->validate(['status' => ['required', 'in:active,inactive']]);
-        $superAgent = User::query()->superAgents()->findOrFail($id);
+        $user = $request->user();
+        $query = User::query()->superAgents();
+        if (!$user->isSuperAdmin()) {
+            $query->where('parent_id', $user->id);
+        }
+        $superAgent = $query->findOrFail($id);
 
         $updateData = ['status' => $request->status];
 
@@ -123,9 +145,14 @@ class AdminSuperAgentController extends Controller
     }
 
     /** Soft delete super agent */
-    public function destroy(int $id): JsonResponse
+    public function destroy(int $id, Request $request): JsonResponse
     {
-        $superAgent = User::query()->superAgents()->findOrFail($id);
+        $user = $request->user();
+        $query = User::query()->superAgents();
+        if (!$user->isSuperAdmin()) {
+            $query->where('parent_id', $user->id);
+        }
+        $superAgent = $query->findOrFail($id);
         if ($superAgent->managedAgents()->exists()) {
             return response()->json([
                 'success' => false,
@@ -218,6 +245,11 @@ class AdminSuperAgentController extends Controller
     /** List all unassigned active agents */
     public function unassignedAgents(Request $request): JsonResponse
     {
+        $user = $request->user();
+        if (!$user->isSuperAdmin()) {
+            return response()->json(['success' => true, 'data' => ['data' => [], 'total' => 0]]);
+        }
+
         $search = $request->search ? str_replace(['%', '_'], ['\%', '\_'], $request->search) : null;
         $agents = User::query()->agents()->active()->whereNull('super_agent_id')
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%")

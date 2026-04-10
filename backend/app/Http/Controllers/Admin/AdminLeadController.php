@@ -20,7 +20,22 @@ class AdminLeadController extends Controller
 
         $user = $request->user();
 
-        // ── WA LEAD VISIBILITY GATE ───────────────────────────────────────
+        // ── RECURSIVE TEAM ISOLATION ──
+        if (!$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $query->where(function ($q) use ($user, $managedIds) {
+                // Core team ownership (recursive)
+                $q->whereIn('created_by_super_agent_id', $managedIds)
+                  ->orWhereIn('submitted_by_agent_id', $managedIds)
+                  ->orWhereIn('submitted_by_enumerator_id', $managedIds)
+                  ->orWhereIn('assigned_agent_id', $managedIds)
+                  ->orWhereIn('assigned_super_agent_id', $managedIds)
+                  // Directly handled by this admin
+                  ->orWhere('wa_handler_admin_id', $user->id);
+            });
+        }
+
+        // ── WA LEAD VISIBILITY GATE ──
         if ($user->is_wa_lead_handler) {
             $query->where(function ($q) use ($user) {
                 $q->where('source', '!=', 'whatsapp_chatbot')
@@ -29,7 +44,7 @@ class AdminLeadController extends Controller
         } else {
             $query->where('source', '!=', 'whatsapp_chatbot');
         }
-        // ── END GATE ─────────────────────────────────────────────────────
+        // ── END GATES ──
 
         if ($request->filled('status')) {
             $query->where(fn ($q) => $q->whereIn('status', explode(',', $request->status)));

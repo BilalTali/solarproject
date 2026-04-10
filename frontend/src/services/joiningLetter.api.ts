@@ -5,8 +5,10 @@ export const joiningLetterApi = {
     /**
      * Get a temporary signed URL for downloading the joining letter
      */
-    getDownloadUrl: async (): Promise<string> => {
-        const response = await axios.get<ApiResponse<{ download_url: string }>>('/joining-letter/download-url');
+    getDownloadUrl: async (userId?: number): Promise<string> => {
+        const response = await axios.get<ApiResponse<{ download_url: string }>>('/joining-letter/download-url', {
+            params: { userId }
+        });
         return response.data.data.download_url;
     },
 

@@ -404,6 +404,7 @@ export default function SuperAdminProfilePage() {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <InputBlock label="Platform Name" value={localAuthority.company_name || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_name: v }))} />
+                                        <InputBlock label="Global Affiliation Partner" value={localAuthority.company_affiliated_with || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_affiliated_with: v }))} />
                                         <InputBlock label="Govt Registration No" value={localAuthority.company_registration_no || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_registration_no: v }))} />
                                         <div className="md:col-span-2">
                                             <InputBlock label="Platform Slogan" value={localAuthority.company_slogan || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_slogan: v }))} />
@@ -429,7 +430,7 @@ export default function SuperAdminProfilePage() {
                                             <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Browser tab icon</p>
                                         </div>
                                     </div>
-                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['company_name', 'company_registration_no', 'company_slogan', 'company_logo', 'company_favicon'])} />
+                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['company_name', 'company_affiliated_with', 'company_registration_no', 'company_slogan', 'company_logo', 'company_favicon'])} />
                                 </div>
                             )}
 

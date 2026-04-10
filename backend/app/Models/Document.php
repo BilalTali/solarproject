@@ -41,9 +41,15 @@ class Document extends Model
         'thumbnail_path',
         'is_published',
         'sort_order',
+        'admin_id',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
     ];
+
+    public function admin()
+    {
+        return $this->belongsTo(User::class, 'admin_id');
+    }
 }

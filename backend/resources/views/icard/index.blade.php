@@ -1,5 +1,11 @@
     /** @var string|null $logoBase64 */
-    /** @var string|null $logoBase64_2 */
+    /** @var string|null $sigBase64 */
+    /** @var string|null $sealBase64 */
+    /** @var string|null $globalLogoBase64 */
+    /** @var string|null $globalSigBase64 */
+    /** @var string|null $globalAffiliatedPartner */
+    /** @var string|null $globalRegNo */
+    /** @var string|null $globalName */
     /** @var string|null $profilePhotoBase64 */
     /** @var string|null $initials */
     /** @var string|null $designation */
@@ -9,7 +15,6 @@
     /** @var string|null $mobile */
     /** @var string|null $address */
     /** @var string|null $barcodeBase64 */
-    /** @var string|null $sigBase64 */
     /** @var string|null $companyWebsite */
     /** @var string|null $companyAffiliatedWith */
     /** @var string|null $companyRegNo */
@@ -118,7 +123,7 @@
     /* ══════ PHOTO (DYNAMIC) ══════ */
     .photo-anchor {
       position: absolute;
-      top: 85px; 
+      top: 130px; 
       left: 110px;
       width: 140px;
       height: 140px;
@@ -131,6 +136,8 @@
       width: 140px; 
       height: 140px; 
       object-fit: cover;
+      clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+      z-index: 20;
     }
     
     .initials-avatar {
@@ -142,7 +149,7 @@
 
     /* ══════ MAIN CONTENT ══════ */
     .card-body {
-      padding: 45px 30px 10px; 
+      padding: 85px 30px 10px; 
       text-align: center;
     }
 
@@ -314,10 +321,6 @@
           @if($logoBase64)
             <img src="{{ $logoBase64 }}" class="brand-logo-img" alt="Logo">
           @endif
-          @if($logoBase64_2)
-             <div style="width: 2px; height: 30px; background: rgba(255,255,255,0.2); margin: 0 5px;"></div>
-             <img src="{{ $logoBase64_2 }}" class="brand-logo-img" alt="Affiliate" style="width: 35px; height: 35px; opacity: 0.8;">
-          @endif
         </div>
         <div style="padding-top: 60px;">
           <div class="brand-name">{{ $companyName ?? 'SURYAMITRA' }}</div>
@@ -328,12 +331,16 @@
       </div>
 
       <div class="photo-anchor">
+        <svg width="140" height="140" viewBox="0 0 140 140" style="position: absolute; top:0; left:0; z-index: 25;">
+          <polygon points="70,3 135,36 135,104 70,137 5,104 5,36" fill="none" stroke="#0A1931" stroke-width="6" />
+        </svg>
+
         @if($profilePhotoBase64)
           <img class="user-crop-img" src="{{ $profilePhotoBase64 }}" alt="Photo">
         @else
           <div class="initials-avatar">
             <svg width="140" height="140" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="70,3 135,36 135,104 70,137 5,104 5,36" fill="#F7B100" stroke="#0A1931" stroke-width="4" />
+              <polygon points="70,3 135,36 135,104 70,137 5,104 5,36" fill="#F7B100" />
               <text x="70" y="85" font-family="Arial" font-size="45" font-weight="900" fill="#0A1931" text-anchor="middle">{{ $initials ?? 'SM' }}</text>
             </svg>
           </div>
@@ -388,11 +395,16 @@
           @endif
           <span class="label-tag" style="font-size: 6px;">{{ $cardNumber ?? '' }}</span>
         </div>
-        <div class="status-wrap" style="top: 10px;">
-          @if($sigBase64)
-            <img src="{{ $sigBase64 }}" class="sig-footer-img" alt="Signature">
-          @endif
-          <span class="verified-text" style="font-size: 8.5px;">VERIFIED IDENTITY</span>
+        <div class="status-wrap" style="top: 13px; right: 15px; width: 140px; height: 65px;">
+          <div style="position: relative; height: 35px; margin-bottom: 2px;">
+            @if($sealBase64)
+              <img src="{{ $sealBase64 }}" alt="Seal" style="position: absolute; right: 40px; top: -10px; height: 45px; width: auto; opacity: 0.8; z-index: 5;">
+            @endif
+            @if($sigBase64)
+              <img src="{{ $sigBase64 }}" alt="Signature" style="position: absolute; right: 0; top: 0; height: 32px; width: auto; z-index: 10;">
+            @endif
+          </div>
+          <span class="verified-text" style="font-size: 8.5px; position: relative; z-index: 15;">VERIFIED IDENTITY</span>
         </div>
 
         <div class="card-footer">
@@ -405,20 +417,20 @@
   <!-- Back Side -->
   <div class="pdf-page">
     <div class="id-card">
-      @if($logoBase64)
-        <img src="{{ $logoBase64 }}" class="watermark-bg" alt="">
+      @if($globalLogoBase64)
+        <img src="{{ $globalLogoBase64 }}" class="watermark-bg" alt="">
       @endif
 
       <div class="header-zone">
         <div class="header-curve"></div>
-        @if($logoBase64)
-          <img src="{{ $logoBase64 }}" class="brand-logo-img" alt="Logo">
+        @if($globalLogoBase64)
+          <img src="{{ $globalLogoBase64 }}" class="brand-logo-img" alt="Logo">
         @endif
-        @if($companyAffiliatedWith)
-          <div class="brand-name">{{ $companyAffiliatedWith }}</div>
+        @if($globalAffiliatedPartner)
+          <div class="brand-name">{{ $globalAffiliatedPartner }}</div>
         @endif
-        @if($companyRegNo)
-          <div class="brand-meta">Reg No: {{ $companyRegNo }}</div>
+        @if($globalRegNo)
+          <div class="brand-meta">Reg No: {{ $globalRegNo }}</div>
         @endif
       </div>
 
@@ -446,8 +458,8 @@
               </div>
             </td>
             <td style="width: 52%; padding-right: 20px; text-align: right; vertical-align: middle;">
-              @if($sigBase64)
-                <img src="{{ $sigBase64 }}" class="sig-footer-img" alt="Signature" style="margin-bottom: -15px;">
+              @if($globalSigBase64)
+                <img src="{{ $globalSigBase64 }}" class="sig-footer-img" alt="Signature" style="margin-bottom: -15px;">
               @endif
               <span class="label-tag" style="font-size: 7px; color: #555E70; font-weight: 800;">Verified By</span>
               <div style="font-size: 10px; font-weight: 800; color: #0A1931;">

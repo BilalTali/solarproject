@@ -12,54 +12,92 @@ class AdminDashboardController extends Controller
 {
     public function stats()
     {
+        $user = auth()->user();
+        $isSuperAdmin = $user->isSuperAdmin();
         $today = now()->startOfDay();
         $thisMonth = now()->startOfMonth();
 
-        // 1. Total Leads
-        $totalLeads = Lead::query()->count();
-        $newLeadsToday = Lead::query()->where(fn ($q) => $q->where('created_at', '>=', $today))->count();
-        $leadsThisMonth = Lead::query()->where(fn ($q) => $q->where('created_at', '>=', $thisMonth))->count();
+        // Multi-tenant Isolation: Get all managed IDs for recursive team visibility
+        $managedIds = $isSuperAdmin ? [] : $user->getManagedUserIds();
+
+        // 1. Leads
+        $leadQuery = Lead::query();
+        if (!$isSuperAdmin) {
+            $leadQuery->where(function ($q) use ($managedIds) {
+                $q->whereIn('created_by_super_agent_id', $managedIds)
+                  ->orWhereIn('submitted_by_agent_id', $managedIds)
+                  ->orWhereIn('submitted_by_enumerator_id', $managedIds)
+                  ->orWhereIn('assigned_agent_id', $managedIds)
+                  ->orWhereIn('assigned_super_agent_id', $managedIds);
+            });
+        }
+
+        $totalLeads = (clone $leadQuery)->count();
+        $newLeadsToday = (clone $leadQuery)->where('created_at', '>=', $today)->count();
+        $leadsThisMonth = (clone $leadQuery)->where('created_at', '>=', $thisMonth)->count();
 
         $installedStatuses = ['REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'];
-        $totalInstallations = Lead::query()->where(fn ($q) => $q->whereIn('status', $installedStatuses))->count();
-        $installationsThisMonth = Lead::query()->where(fn ($q) => $q->whereIn('status', $installedStatuses))
-            ->where(fn ($q) => $q->where('updated_at', '>=', $thisMonth))->count();
+        $totalInstallations = (clone $leadQuery)->whereIn('status', $installedStatuses)->count();
+        $installationsThisMonth = (clone $leadQuery)->whereIn('status', $installedStatuses)
+            ->where('updated_at', '>=', $thisMonth)->count();
 
         // 2. Agents
-        $activeAgents = User::query()->where(fn ($q) => $q->where('role', 'agent'))->where(fn ($q) => $q->where('status', 'active'))->count();
-        $pendingAgents = User::query()->where(fn ($q) => $q->where('role', 'agent'))->where(fn ($q) => $q->where('status', 'pending'))->count();
+        $agentQuery = User::query()->where('role', 'agent');
+        if (!$isSuperAdmin) {
+            $agentQuery->whereIn('id', $managedIds);
+        }
 
-        // 3. Commissions (Dual Track)
-        $totalAgentPaid = Commission::query()->where(fn ($q) => $q->where('payee_role', 'agent'))->where(fn ($q) => $q->where('payment_status', 'paid'))->sum('amount');
-        $totalSuperAgentPaid = Commission::query()->where(fn ($q) => $q->where('payee_role', 'super_agent'))->where(fn ($q) => $q->where('payment_status', 'paid'))->sum('amount');
+        $activeAgents = (clone $agentQuery)->where('status', 'active')->count();
+        $pendingAgents = (clone $agentQuery)->where('status', 'pending')->count();
+
+        // 3. Commissions
+        $commQuery = Commission::query();
+        if (!$isSuperAdmin) {
+            $commQuery->whereIn('payee_id', $managedIds);
+        }
+
+        $totalAgentPaid = (clone $commQuery)->where('payee_role', 'agent')->where('payment_status', 'paid')->sum('amount');
+        $totalSuperAgentPaid = (clone $commQuery)->where('payee_role', 'super_agent')->where('payment_status', 'paid')->sum('amount');
         $totalCommissionPaid = $totalAgentPaid + $totalSuperAgentPaid;
 
-        $pendingAgent = Commission::query()->where(fn ($q) => $q->where('payee_role', 'agent'))->where(fn ($q) => $q->where('payment_status', 'unpaid'))->sum('amount');
-        $pendingSuperAgent = Commission::query()->where(fn ($q) => $q->where('payee_role', 'super_agent'))->where(fn ($q) => $q->where('payment_status', 'unpaid'))->sum('amount');
+        $pendingAgent = (clone $commQuery)->where('payee_role', 'agent')->where('payment_status', 'unpaid')->sum('amount');
+        $pendingSuperAgent = (clone $commQuery)->where('payee_role', 'super_agent')->where('payment_status', 'unpaid')->sum('amount');
         $pendingCommission = $pendingAgent + $pendingSuperAgent;
 
         // 4. Super Agents & Unassigned
-        $activeSuperAgents = User::query()->where(fn ($q) => $q->where('role', 'super_agent'))->where(fn ($q) => $q->where('status', 'active'))->count();
-        $unassignedAgentsCount = User::query()->where(fn ($q) => $q->where('role', 'agent'))
-            ->where(fn ($q) => $q->where('status', 'active'))
-            ->where(fn ($q) => $q->whereNull('super_agent_id'))->count();
+        $saQuery = User::query()->where('role', 'super_agent');
+        if (!$isSuperAdmin) {
+            $saQuery->whereIn('id', $managedIds);
+        }
+        $activeSuperAgents = $saQuery->where('status', 'active')->count();
 
-        // 3. Pipeline Funnel Counts
-        $statusCounts = Lead::select('status', DB::raw('count(*) as total'))
+        // Unassigned count (only show public pool to Super Admin, or team-pool?)
+        // User stated public enumerators report to admin. Unassigned agents usually for Super Admin.
+        $unassignedAgentsCount = User::query()->where('role', 'agent')
+            ->where('status', 'active')
+            ->whereNull('super_agent_id')
+            ->when(!$isSuperAdmin, fn($q) => $q->where('parent_id', $user->id)) // Only show their direct unassigned
+            ->count();
+
+        // 5. Pipeline Funnel Counts
+        $statusCounts = (clone $leadQuery)
+            ->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
 
-        // 4. District Distribution
-        $districtDistribution = Lead::select('beneficiary_district', DB::raw('count(*) as total'))
+        // 6. District Distribution
+        $districtDistribution = (clone $leadQuery)
+            ->select('beneficiary_district', DB::raw('count(*) as total'))
             ->whereNotNull('beneficiary_district')
             ->groupBy('beneficiary_district')
             ->orderBy('total', 'desc')
             ->take(8)
             ->get();
 
-        // 5. Daily Lead Trends (Last 14 Days)
-        $trends = Lead::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+        // 7. Daily Lead Trends (Last 14 Days)
+        $trends = (clone $leadQuery)
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
             ->where('created_at', '>=', now()->subDays(14))
             ->groupBy('date')
             ->orderBy('date', 'asc')
@@ -84,12 +122,12 @@ class AdminDashboardController extends Controller
                 'pipeline' => $statusCounts,
                 'trends' => $trends,
                 'district_distribution' => $districtDistribution,
-                'recent_leads' => Lead::query()->with(['assignedAgent'])
+                'recent_leads' => (clone $leadQuery)->with(['assignedAgent'])
                     ->orderBy('created_at', 'desc')
                     ->take(10)
                     ->get(),
-                'pending_approvals' => User::query()->where(fn ($q) => $q->where('role', 'agent'))
-                    ->where(fn ($q) => $q->where('status', 'pending'))
+                'pending_approvals' => (clone $agentQuery)
+                    ->where('status', 'pending')
                     ->orderBy('created_at', 'desc')
                     ->take(5)
                     ->get(),

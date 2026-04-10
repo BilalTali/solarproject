@@ -1,13 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Menu, DollarSign } from 'lucide-react';
 import EnumeratorSidebar from '@/components/enumerator/EnumeratorSidebar';
 import { useSettings } from '@/hooks/useSettings';
+import { useAuthStore } from '@/hooks/store/authStore';
+import { authApi } from '@/services/auth.api';
 
 export default function EnumeratorLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { companyName } = useSettings();
     const location = useLocation();
+    const { setUser } = useAuthStore();
+
+    // Proactively fetch user profile if session exists but user state is missing or stale
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const res = await authApi.me();
+                if (res.success) {
+                    setUser(res.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch user:', error);
+            }
+        };
+
+        // Always fetch on initial load of layout to ensure the profile is fresh
+        fetchUser();
+    }, [setUser]);
 
     return (
         <div className="flex h-screen bg-neutral-100 overflow-hidden font-display">

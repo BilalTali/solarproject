@@ -17,11 +17,12 @@ const SUPER_ADMIN_NAV = [
     { icon: <Users className="w-5 h-5" />, label: 'Monitor BDEs (Agent)', to: '/super-admin/monitor/agents' },
     { icon: <Users className="w-5 h-5" />, label: 'Monitor Enumerators', to: '/super-admin/monitor/enumerators' },
     { icon: <FileText className="w-5 h-5" />, label: 'Monitor Leads', to: '/super-admin/monitor/leads' },
-    { icon: <HelpCircle className="w-5 h-5" />, label: 'Help Center', to: '/super-admin/help-center' },
-    { icon: <MessageSquare className="w-5 h-5" />, label: 'WhatsApp Chatbot', to: '/super-admin/chatbot' },
+    { icon: <hr className="border-white/10 my-2" />, label: '', to: '', divider: true },
+    { icon: <HelpCircle className="w-5 h-5" />, label: 'Global Help Center', to: '/super-admin/help-center' },
+    { icon: <MessageSquare className="w-5 h-5" />, label: 'Global WhatsApp Chatbot', to: '/super-admin/chatbot' },
     { icon: <Shield className="w-5 h-5" />, label: 'Global Reports', to: '/super-admin/reports' },
     { icon: <Globe className="w-5 h-5" />, label: 'Global Homepage Presence', to: '/super-admin/settings' },
-    { icon: <Settings className="w-5 h-5" />, label: 'Global Settings', to: '/super-admin/settings' },
+    { icon: <Settings className="w-5 h-5" />, label: 'Global Console Settings', to: '/super-admin/settings' },
 ];
 
 export default function SuperAdminSidebar({ onClose }: { onClose?: () => void }) {

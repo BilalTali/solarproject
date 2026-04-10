@@ -5,24 +5,37 @@ import api from '@/services/axios';
 import { useAuthStore } from '@/hooks/store/authStore';
 import { useSettings } from '@/hooks/useSettings';
 
+import { User } from '@/types';
+
 interface Props {
     variant?: 'button' | 'card'; // 'button' = inline button, 'card' = full card widget
     className?: string;
     userId?: number;
+    user?: User; // Optional target user object
 }
 
-export const DownloadIdCardButton = ({ variant = 'button', className, userId }: Props) => {
+export const DownloadIdCardButton = ({ variant = 'button', className, userId, user: targetUser }: Props) => {
     const [loading, setLoading] = useState(false);
-    const { user } = useAuthStore();
+    const { user: authUser } = useAuthStore();
     const { companyName } = useSettings();
 
-    // Is the user approved and profile complete (>= 75%)?
-    const isProfileComplete = (user?.profile_completion ?? 0) >= 75;
-    const isApproved = user?.role === 'admin' || (user?.status === 'active' && isProfileComplete);
+    // Authentication context: Is the LOGGED-IN user an admin?
+    const isRequesterAdmin = ['admin', 'super_admin', 'operator'].includes(authUser?.role || '');
+    
+    // Target user context: Whose card are we downloading?
+    const userToDisplay = targetUser || authUser;
+    
+    // Is the target user approved and profile complete (>= 60%)?
+    const isProfileComplete = (userToDisplay?.profile_completion ?? 0) >= 60;
+    
+    // Admins can ALWAYS download any user's ID card (including their own)
+    // Regular users need to be active and have 60% profile completion
+    const isApproved = isRequesterAdmin || (userToDisplay?.status === 'active' && isProfileComplete);
 
+    // Lock title logic refined
     const lockTitle = !isProfileComplete
-        ? "Please complete your profile (75%) to download"
-        : "Waiting for Admin approval";
+        ? (isRequesterAdmin ? "Profile incomplete, but Admin download available" : "Please complete your profile (60%) to download")
+        : (userToDisplay?.status !== 'active' ? "Waiting for Admin approval" : "Available for download");
 
     const handleDownload = async () => {
         if (!isApproved) return;

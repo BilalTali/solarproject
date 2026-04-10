@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -571,5 +572,28 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         }
 
         return null;
+    }
+
+    /**
+     * Get all user IDs within this user's team hierarchy (recursive).
+     * Works for Admins to find all their team members.
+     * Uses MariaDB Recursive CTE for performance.
+     */
+    public function getManagedUserIds(): array
+    {
+        $userId = (int) $this->id;
+        
+        $results = DB::select("
+            WITH RECURSIVE team_hierarchy AS (
+                SELECT id FROM users WHERE id = :start_id
+                UNION ALL
+                SELECT u.id FROM users u
+                INNER JOIN team_hierarchy th ON u.parent_id = th.id
+                WHERE u.deleted_at IS NULL
+            )
+            SELECT id FROM team_hierarchy
+        ", ['start_id' => $userId]);
+
+        return collect($results)->pluck('id')->toArray();
     }
 }

@@ -34,8 +34,8 @@ warn() { echo -e "${YELLOW}[WARN]${NC}  $1"; }
 err()  { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 info() { echo -e "${CYAN}[INFO]${NC}  $1"; }
 
-SSH_CMD="sshpass -p '${SSH_PASS}' ssh -p ${SSH_PORT} -o StrictHostKeyChecking=no"
-RSYNC_BASE="sshpass -p '${SSH_PASS}' rsync -avz --progress -e 'ssh -p ${SSH_PORT} -o StrictHostKeyChecking=no'"
+SSH_CMD="/Users/computergallery/Documents/pmsuryaghar/_agents/scripts/expect_wrapper.exp '${SSH_PASS}' ssh -p ${SSH_PORT} -o StrictHostKeyChecking=no"
+RSYNC_BASE="/Users/computergallery/Documents/pmsuryaghar/_agents/scripts/expect_wrapper.exp '${SSH_PASS}' rsync -avz --progress -e 'ssh -p ${SSH_PORT} -o StrictHostKeyChecking=no'"
 
 RSYNC_BACKEND="${RSYNC_BASE} \
   --exclude '.git' \
@@ -59,7 +59,8 @@ echo "  ║     Domain: andleebsurya.in                  ║"
 echo "  ╚══════════════════════════════════════════════╝"
 echo ""
 
-command -v sshpass &>/dev/null || err "sshpass not found. Install via: brew install sshpass"
+chmod +x /Users/computergallery/Documents/pmsuryaghar/_agents/scripts/expect_wrapper.exp
+# command -v sshpass &>/dev/null || err "sshpass not found. Install via: brew install sshpass"
 command -v rsync   &>/dev/null || err "rsync not found."
 
 # Test connection

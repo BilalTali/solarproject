@@ -16,13 +16,25 @@ class AdminEnumeratorController extends Controller
      */
     public function index(Request $request)
     {
-        $enumerators = \App\Models\User::query()->enumerators()
+        $user = $request->user();
+        $query = \App\Models\User::query()->enumerators()
             ->with([
                 'parentAgent:id,name,agent_id,super_agent_id',
                 'createdBySuperAgent:id,name,super_agent_code',
             ])
-            ->withCount('enumeratorLeads')
-            ->get()
+            ->withCount('enumeratorLeads');
+
+        if (!$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $query->where(function ($q) use ($user, $managedIds) {
+                $q->whereIn('parent_id', $managedIds)
+                  ->orWhereNull('parent_id') // Publicly registered enumerators
+                  ->orWhereIn('created_by_agent_id', $managedIds)
+                  ->orWhereIn('created_by_super_agent_id', $managedIds);
+            });
+        }
+
+        $enumerators = $query->get()
             ->map(function ($e) {
                 return [
                     'id'                     => $e->id,

@@ -9,9 +9,20 @@ use Illuminate\Support\Facades\Storage;
 
 class MediaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $media = Media::orderBy('sort_order')->orderBy('date', 'desc')->get()
+        $user = $request->user();
+        $query = Media::query();
+
+        if ($user && !$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $query->where(function ($q) use ($managedIds) {
+                $q->whereIn('admin_id', $managedIds)
+                  ->orWhereNull('admin_id'); // Global/Super Admin items
+            });
+        }
+
+        $media = $query->orderBy('sort_order')->orderBy('date', 'desc')->get()
             ->map(fn (Media $m) => $this->format($m));
 
         return response()->json(['success' => true, 'data' => $media]);
@@ -34,6 +45,7 @@ class MediaController extends Controller
         }
         unset($data['image']);
 
+        $data['admin_id'] = $request->user()->id;
         $media = Media::create($data);
 
         return response()->json(['success' => true, 'data' => $this->format($media)], 201);

@@ -248,10 +248,19 @@ class SettingController extends Controller
             'whatsapp_number' => ['nullable', 'string', 'max:20'],
             'father_name' => ['nullable', 'string', 'max:255'],
             'dob' => ['nullable', 'date'],
+            'gender' => ['nullable', 'string', 'in:male,female,other'],
+            'marital_status' => ['nullable', 'string', 'in:single,married,divorced,widowed'],
             'blood_group' => ['nullable', 'string', 'max:10'],
+            'religion' => ['nullable', 'string', 'max:100'],
             'state' => ['nullable', 'string'],
             'district' => ['nullable', 'string'],
             'area' => ['nullable', 'string'],
+            'pincode' => ['nullable', 'string', 'max:10'],
+            'landmark' => ['nullable', 'string', 'max:255'],
+            'permanent_address' => ['nullable', 'string'],
+            'current_address' => ['nullable', 'string'],
+            'occupation' => ['nullable', 'string', 'max:255'],
+            'qualification' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user->update($validated);

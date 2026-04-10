@@ -20,8 +20,18 @@ class DocumentController extends Controller
         $user = $request->user();
         $query = Document::query();
 
-        // Non-admins only see published documents
-        if (!$user || !$user->isAdmin()) {
+        if ($user && !$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $query->where(function ($q) use ($managedIds) {
+                $q->whereIn('admin_id', $managedIds)
+                  ->orWhereNull('admin_id'); // Global/Super Admin resources
+            });
+
+            // Agents/Enumerators only see published
+            if (!$user->isSuperAdmin() && !in_array($user->role, ['admin', 'operator'])) {
+                $query->where('is_published', true);
+            }
+        } elseif (!$user) {
             $query->where('is_published', true);
         }
 
@@ -47,6 +57,7 @@ class DocumentController extends Controller
         }
         unset($data['file'], $data['thumbnail']);
 
+        $data['admin_id'] = $request->user()->id;
         $document = Document::query()->create($data);
 
         return response()->json(['success' => true, 'data' => $this->format($document)], 201);

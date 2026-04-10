@@ -35,7 +35,7 @@ export function useAdminSettings() {
         settings,
         isLoading,
         companyName: settings.company_name || publicSettings.companyName || 'SuryaMitra',
-        logo: settings.company_logo ? getFileUrl(settings.company_logo) : publicSettings.logo,
+        logo: settings.company_logo_2 ? getFileUrl(settings.company_logo_2) : (settings.company_logo ? getFileUrl(settings.company_logo) : publicSettings.logo),
         favicon: settings.company_favicon ? getFileUrl(settings.company_favicon) : publicSettings.favicon,
     };
 }

@@ -48,28 +48,32 @@ class ICardService
 
         $adminId = $user->getRootAdminId();
 
-        // ── Branding Assets (Dynamic) ─────────────────────────────
-        // Logo 1: Admin's own company logo (overridable)
-        $logoPath = Setting::getValue('company_logo', null, $adminId, false);
+        // ── Admin-Specific Branding (Front Side) ──────────────────
+        $adminLogoPath = Setting::getValue('company_logo_2', null, $adminId, false);
+        $adminSignaturePath = Setting::getValue('company_signature', null, $adminId, false);
+        $adminSealPath = Setting::getValue('company_seal', null, $adminId, false);
         
-        // Logo 2: Affiliate Partner Logo
-        // Prioritize Admin's secondary logo (company_logo_2), fallback to Global company_logo
-        $logoPath2 = Setting::getValue('company_logo_2', null, $adminId, false)
-                     ?? Setting::getValue('company_logo', null, null, false);
-        
-        $signaturePath = Setting::getValue('company_signature', null, $adminId, false);
-        $sealPath = Setting::getValue('company_seal', null, $adminId, false);
+        $logoBase64 = $this->getBase64Image($adminLogoPath);
+        $sigBase64 = $this->getBase64Image($adminSignaturePath);
+        $sealBase64 = $this->getBase64Image($adminSealPath);
 
-        $logoBase64 = $this->getBase64Image($logoPath);
-        $logoBase64_2 = $this->getBase64Image($logoPath2);
-        $sigBase64 = $this->getBase64Image($signaturePath);
-        $sealBase64 = $this->getBase64Image($sealPath);
+        // ── Global/Super Admin Branding (Back Side) ───────────────
+        $fetchGlobal = fn($key) => Setting::query()->where('key', $key)->whereNull('user_id')->first()?->value;
+
+        $globalLogoPath = $fetchGlobal('company_logo');
+        $globalSignaturePath = $fetchGlobal('company_signature');
+        $globalAffiliatedPartner = $fetchGlobal('company_affiliated_with') ?? 'GOVERNMENT OF INDIA / MNRE';
+        $globalRegNo = $fetchGlobal('company_registration_no');
+        $globalName = $fetchGlobal('company_name') ?? 'SURYAMITRA SOLAR INFRA';
+
+        $globalLogoBase64 = $this->getBase64Image($globalLogoPath);
+        $globalSigBase64 = $this->getBase64Image($globalSignaturePath);
 
         // ── Company Settings ──────────────────────────────────────
-        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK', null);
+        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK', $adminId);
         $companyAddress = Setting::getValue('company_address', 'Srinagar, Jammu & Kashmir', $adminId);
         $companyEmail = Setting::getValue('company_email', 'info@suryamitra.in', $adminId);
-        $companyRegNo = Setting::getValue('company_registration_no', '', null);
+        $companyRegNo = Setting::getValue('company_registration_no', '', $adminId);
         $websiteUrl = Setting::getValue('company_website', 'suryamitra.in', $adminId);
         $companyWebsite = preg_replace('#^https?://#', '', $websiteUrl);
         $companyPhone = Setting::getValue('company_phone', '', $adminId);
@@ -158,9 +162,13 @@ class ICardService
             'icardVerifiedBy',
             'icardWarningText',
             'logoBase64',
-            'logoBase64_2',
             'sigBase64',
             'sealBase64',
+            'globalLogoBase64',
+            'globalSigBase64',
+            'globalAffiliatedPartner',
+            'globalRegNo',
+            'globalName',
             'barcodeBase64',
             'qrCodeBase64',
             'qrBase64',

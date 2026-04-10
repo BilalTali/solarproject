@@ -39,10 +39,16 @@ class Media extends Model
         'date',
         'is_published',
         'sort_order',
+        'admin_id',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'date' => 'date',
     ];
+
+    public function admin()
+    {
+        return $this->belongsTo(User::class, 'admin_id');
+    }
 }

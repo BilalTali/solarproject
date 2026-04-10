@@ -52,8 +52,17 @@ class SharedProfileController extends Controller
     {
         $user = $request->user();
 
-        $validated = $request->validate([
-            'email' => ['sometimes', 'email', 'unique:users,email,'.$user->id],
+        // Pre-process empty strings to null for nullable fields to avoid validation errors
+        // (especially for strict rules like 'size:12')
+        $data = $request->all();
+        foreach (['aadhaar_number', 'pan_number', 'bank_account_number', 'voter_id', 'email'] as $field) {
+            if (isset($data[$field]) && $data[$field] === '') {
+                $data[$field] = null;
+            }
+        }
+
+        $validated = \Illuminate\Support\Facades\Validator::make($data, [
+            'email' => ['sometimes', 'nullable', 'email', 'unique:users,email,'.$user->id],
             'whatsapp_number' => ['nullable', 'string', 'max:20'],
             'father_name' => ['nullable', 'string', 'max:255'],
             'dob' => ['nullable', 'date'],
@@ -85,7 +94,7 @@ class SharedProfileController extends Controller
             'bank_account_number' => ['nullable', 'string', 'max:30'],
             // Special cases for admins
             'name' => ['sometimes', 'string', 'max:255'],
-        ]);
+        ])->validate();
 
         // Remove empty strings for sensitive fields to avoid overwriting with null
         // since these fields are hidden in the frontend and would be sent as empty strings

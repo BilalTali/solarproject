@@ -143,6 +143,7 @@ $api->as('api.v1.')->group(function () {
             
             Route::get('/withdrawals', [\App\Http\Controllers\Admin\WithdrawalRequestController::class, 'index']);
             Route::post('/withdrawals', [\App\Http\Controllers\Admin\WithdrawalRequestController::class, 'store']);
+            Route::get('/offers', [AdminOfferController::class, 'index']);
         });
 
         // ==============================
@@ -372,6 +373,13 @@ $api->as('api.v1.')->group(function () {
         // ==============================
         Route::middleware('super_admin')->prefix('super-admin')->group(function () {
             Route::get('/dashboard/stats', [MonitoringController::class, 'stats']);
+
+            // Monitoring Views
+            Route::get('/monitor/super-agents', [MonitoringController::class, 'superAgents']);
+            Route::get('/monitor/agents',       [MonitoringController::class, 'agents']);
+            Route::get('/monitor/enumerators',  [MonitoringController::class, 'enumerators']);
+            Route::get('/monitor/leads',        [MonitoringController::class, 'leads']);
+
 
             // Admin Management
             Route::get('/admins', [AdminManagementController::class, 'index']);

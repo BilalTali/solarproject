@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import {
     Search, Users, CheckCircle, XCircle, Clock, Phone, MapPin,
     ChevronLeft, ChevronRight, X, UserCheck, UserX, Link2, Unlink,
@@ -33,6 +34,7 @@ function fmt(iso: string) {
 
 // ── Component ─────────────────────────────────────────────────────────────
 export default function AdminAgentsPage() {
+    const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [page, setPage] = useState(1);
@@ -214,8 +216,8 @@ export default function AdminAgentsPage() {
                                                 return (
                                                     <div 
                                                         style={{...style, display: 'flex', borderBottom: '1px solid #f1f5f9'}}
-                                                        className="hover:bg-slate-50 transition-colors group px-4 py-3 items-center"
-                                                        onClick={() => { setDetailAgent(agent); setSelectedSA(''); }}
+                                                        className="hover:bg-slate-50 cursor-pointer transition-colors group px-4 py-3 items-center"
+                                                        onClick={() => navigate(`/admin/agents/${agent.id}`)}
                                                     >
                                                         <div className="w-[150px] shrink-0">
                                                             {agent.agent_id

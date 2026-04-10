@@ -14,11 +14,17 @@ class AdminAgentController extends Controller
 
     public function index(Request $request)
     {
+        $user = $request->user();
         $query = User::query()->where(fn ($q) => $q->where('role', 'agent'))
             ->withCount(['submittedLeads as total_leads',
                 'submittedLeads as installed_leads' => function ($q) {
                     $q->where(fn ($query) => $query->whereIn('status', ['REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED']));
                 }]);
+
+        if (!$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $query->whereIn('super_agent_id', $managedIds);
+        }
 
         if ($request->has('status')) {
             $query->where(fn ($q) => $q->where('status', $request->status));
@@ -47,9 +53,10 @@ class AdminAgentController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show($id, Request $request)
     {
-        $agent = User::query()->where(fn ($q) => $q->where('role', 'agent'))
+        $user = $request->user();
+        $query = User::query()->where(fn ($q) => $q->where('role', 'agent'))
             ->with([
                 'commissions' => function ($q) {
                     $q->orderBy('created_at', 'desc');
@@ -57,8 +64,14 @@ class AdminAgentController extends Controller
                 'superAgent:id,name,super_agent_code',
                 'createdBySuperAgent:id,name,super_agent_code',
             ])
-            ->withCount('submittedLeads')
-            ->findOrFail($id);
+            ->withCount('submittedLeads');
+
+        if (!$user->isSuperAdmin()) {
+            $managedIds = $user->getManagedUserIds();
+            $query->whereIn('super_agent_id', $managedIds);
+        }
+
+        $agent = $query->findOrFail($id);
 
         return response()->json([
             'success' => true,
