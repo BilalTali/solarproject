@@ -282,11 +282,6 @@
                 <h1 class="company-name">{{ $companyName }}</h1>
                 <div class="company-tagline">{{ $companyTagline }}</div>
                 <div class="affiliation-partner">AN AFFILIATION PARTNER OF {{ $globalName }}</div>
-                <div class="company-contact">
-                    {{ $companyAddress }}<br>
-                    Phone: {{ $companyPhone }} &nbsp;|&nbsp; Email: {{ $companyEmail }}<br>
-                    <span class="footer-site">Website: {{ $companyWebsite }}</span>
-                </div>
             </td>
             <td width="20%" valign="middle" align="right">
                 @if($logoBase64_2)

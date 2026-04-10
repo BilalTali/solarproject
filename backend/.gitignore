@@ -26,3 +26,20 @@ Thumbs.db
 **/caddy
 frankenphp
 frankenphp-worker.php
+
+# Cleanup Patterns
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/bootstrap/cache/*
+public/js/chunk-*
+public/css/chunk-*
+*.swp
+*~
+.env.old
+*_old.*
+*_backup.*
+*_temp.*
+temp_*
+debug.php
+test.php
