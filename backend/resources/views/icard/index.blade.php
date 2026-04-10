@@ -458,11 +458,16 @@
               </div>
             </td>
             <td style="width: 52%; padding-right: 20px; text-align: right; vertical-align: middle;">
-              @if($globalSigBase64)
-                <img src="{{ $globalSigBase64 }}" class="sig-footer-img" alt="Signature" style="margin-bottom: -15px;">
-              @endif
-              <span class="label-tag" style="font-size: 7px; color: #555E70; font-weight: 800;">Verified By</span>
-              <div style="font-size: 10px; font-weight: 800; color: #0A1931;">
+              <div style="position: relative; height: 40px; margin-bottom: 5px;">
+                @if($sealBase64)
+                  <img src="{{ $sealBase64 }}" alt="Seal" style="position: absolute; right: 45px; top: -15px; height: 50px; width: auto; opacity: 0.8; z-index: 5;">
+                @endif
+                @if($sigBase64)
+                  <img src="{{ $sigBase64 }}" alt="Signature" style="position: absolute; right: 0; top: 0; height: 35px; width: auto; z-index: 10;">
+                @endif
+              </div>
+              <span class="label-tag" style="font-size: 7px; color: #555E70; font-weight: 800; position: relative; z-index: 15;">Verified By</span>
+              <div style="font-size: 10px; font-weight: 800; color: #0A1931; position: relative; z-index: 15;">
                 {{ $icardVerifiedBy ?? 'CHIEF OPERATIONS OFFICER' }}
               </div>
             </td>
