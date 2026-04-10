@@ -270,7 +270,7 @@ export default function AdminLeadsPage() {
                                 {[
                                     'Ref', 'Beneficiary', 'Mobile', 'Referral ID', 'State', 'District', 'Address',
                                     'DISCOM', 'Consumer No.', 'Capacity', 'Roof Size', 'Monthly Bill',
-                                    'Source', 'Business Development Manager', 'Business Development Executive', 'Status', 'Date', 'Action'
+                                    'Source', 'Business Development Manager', 'Business Development Executive', 'Status', 'Receipt', 'Date', 'Action'
                                 ].map(h => (
                                     <th key={h} scope="col" className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide whitespace-nowrap">{h}</th>
                                 ))}
@@ -278,17 +278,17 @@ export default function AdminLeadsPage() {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {isLoading ? (
-                                <tr><td colSpan={18} className="text-center py-12 text-slate-400">Loading leads…</td></tr>
+                                <tr><td colSpan={19} className="text-center py-12 text-slate-400">Loading leads…</td></tr>
                             ) : leads.length === 0 ? (
                                 <tr>
-                                    <td colSpan={18} className="text-center py-12">
+                                    <td colSpan={19} className="text-center py-12">
                                         <FileText size={32} className="mx-auto text-slate-300 mb-2" />
                                         <p className="text-slate-400">No leads found{search || status || source ? ' matching your filters' : ''}.</p>
                                     </td>
                                 </tr>
                             ) : (
                                 <tr className="contents">
-                                    <td colSpan={18} className="p-0">
+                                    <td colSpan={19} className="p-0">
                                         <List<object>
                                             style={{ height: 600, width: '100%' }}
                                             rowCount={leads.length}
@@ -331,6 +331,21 @@ export default function AdminLeadsPage() {
                                                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ${getLeadStatusColor(lead.status)}`}>
                                                                 {getLeadStatusLabel(lead.status)}
                                                             </span>
+                                                        </div>
+                                                        <div className="px-4 py-3 whitespace-nowrap w-[100px] flex items-center">
+                                                            {lead.documents?.find(d => d.document_type === 'receipt') ? (
+                                                                <a 
+                                                                    href={lead.documents.find(d => d.document_type === 'receipt')?.download_url} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer"
+                                                                    onClick={e => e.stopPropagation()}
+                                                                    className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded-md border border-blue-100 transition-colors uppercase tracking-tight"
+                                                                >
+                                                                    <Download size={10} /> Receipt
+                                                                </a>
+                                                            ) : (
+                                                                <span className="text-[10px] text-slate-300 italic">No receipt</span>
+                                                            )}
                                                         </div>
                                                         <div className="px-4 py-3 text-slate-600 text-[10px] whitespace-nowrap w-[120px] flex items-center">{fmt(lead.created_at)}</div>
                                                         <div className="px-4 py-3 w-[100px] flex items-center">

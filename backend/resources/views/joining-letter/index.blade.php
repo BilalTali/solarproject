@@ -50,20 +50,20 @@
             margin: 0;
         }
         body {
-            font-family: 'DM Sans', 'Times New Roman', Times, serif;
-            font-size: 10.5pt;
-            line-height: 1.5;
+            font-family: 'DM Sans', 'Times New Roman', Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.45;
             color: #04111F;
             margin: 0;
-            padding: 1.5cm 2.0cm;
+            padding: 1.4cm 1.8cm;
             background: #fff;
         }
 
         .header-section {
             width: 100%;
-            border-bottom: 3px solid #0A1931;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+            border-bottom: 2.5px solid #0A1931;
+            padding-bottom: 12px;
+            margin-bottom: 25px;
             position: relative;
         }
 
@@ -120,28 +120,13 @@
         }
 
         .affiliation-partner {
-            font-size: 8.5pt;
-            font-weight: bold;
-            color: #555;
-            margin-top: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-            color: #F7B100;
-            margin: 4px 0;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-
-        .affiliation-partner {
             font-family: 'DM Sans', sans-serif;
             font-size: 8pt;
             color: #64748B;
             font-weight: 700;
-            margin-top: 5px;
+            margin-top: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
         }
 
         .company-contact {
@@ -169,12 +154,12 @@
         }
         .subject {
             text-align: center;
-            margin: 15px 0;
+            margin: 12px 0;
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 10.5pt;
             text-decoration: underline;
             text-transform: uppercase;
-            line-height: 1.4;
+            line-height: 1.3;
             color: #0A1931;
         }
         .content {
@@ -185,10 +170,10 @@
 
         .terms-box {
             background: #F8FAFC;
-            padding: 12px 15px;
+            padding: 8px 12px;
             border-radius: 8px;
-            border-left: 4px solid #0A1931;
-            margin: 15px 0;
+            border-left: 3px solid #0A1931;
+            margin: 12px 0;
         }
 
         .terms-title {
@@ -210,9 +195,9 @@
         }
         
         .signature-section {
-            margin-top: 30px;
+            margin-top: 25px;
             width: 100%;
-            height: 120px;
+            height: 110px;
         }
 
         .sig-container {
@@ -255,14 +240,14 @@
         
         .footer {
             position: absolute;
-            bottom: 1.5cm;
-            left: 2.0cm;
-            right: 2.0cm;
+            bottom: 1.4cm;
+            left: 1.8cm;
+            right: 1.8cm;
             text-align: center;
-            font-size: 8pt;
+            font-size: 7.5pt;
             color: #94A3B8;
-            border-top: 1.2px solid #E2E8F0;
-            padding-top: 12px;
+            border-top: 1px solid #E2E8F0;
+            padding-top: 10px;
             font-family: 'Helvetica', Arial, sans-serif;
         }
         
@@ -403,11 +388,6 @@
         We welcome you to the <strong>{{ $companyName }}</strong> family and are confident that your contribution will be instrumental in our mission. We look forward to a mutually beneficial association.
     </div>
 
-    <p class="body-para" style="font-size: 10.5px; color: #555; margin-top: 12px; margin-left: 45px; margin-right: 45px;">
-        For verification of this letter, visit
-        <strong style="color: #0A3D7A;">{{ $companyWebsite ?? 'suryamitra.in' }}</strong>
-        or contact our office.
-    </p>
 
     <div class="signature-section">
         <div class="sig-container">
