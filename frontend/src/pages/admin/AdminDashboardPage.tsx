@@ -44,7 +44,7 @@ export default function AdminDashboardPage() {
         { icon: <TrendingUp className="w-6 h-6" />, label: 'Total Leads', value: kpis?.total_leads ?? 0, color: 'border-primary text-primary', sub: `${kpis?.new_leads_today ?? 0} today` },
         { icon: <CheckCircle2 className="w-6 h-6" />, label: 'Installations', value: kpis?.total_installations ?? 0, color: 'border-success text-success', sub: `${kpis?.installations_this_month ?? 0} this month` },
         { icon: <Users className="w-6 h-6" />, label: 'Active Business Development Executives', value: kpis?.active_agents ?? 0, color: 'border-accent text-accent', sub: `${kpis?.pending_agents ?? 0} pending` },
-        { icon: <IndianRupee className="w-6 h-6" />, label: 'Commission Paid', value: formatCurrency(kpis?.total_commission_paid ?? 0), color: 'border-warning text-warning', sub: `${formatCurrency(kpis?.pending_commission ?? 0)} pending` },
+        { icon: <IndianRupee className="w-6 h-6" />, label: 'Total Commission', value: formatCurrency((kpis?.total_commission_paid ?? 0) + (kpis?.pending_commission ?? 0)), color: 'border-warning text-warning', sub: `${formatCurrency(kpis?.pending_commission ?? 0)} pending` },
     ];
 
     // Pipeline chart data

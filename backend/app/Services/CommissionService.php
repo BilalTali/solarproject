@@ -185,24 +185,9 @@ class CommissionService
         $lead->refresh();
         $submitter = $lead->submittedByEnumerator ?? $lead->submittedByAgent ?? $lead->createdBySuperAgent;
 
-        // --- PUBLIC REFERRAL LEAD CASE ---
-        // Public form leads have no submitter user, but may have a referral SA assigned.
-        // Treat the assigned super agent as the single required payee.
-        if (! $submitter && $lead->assigned_super_agent_id && $lead->referral_agent_id) {
-            $requiredPayees = [$lead->assigned_super_agent_id];
-            $enteredCount = Commission::query()
-                ->where('lead_id', $lead->id)
-                ->whereIn('payee_id', $requiredPayees)
-                ->count();
-            $status = match (true) {
-                $enteredCount === 0 => 'none',
-                $enteredCount >= count($requiredPayees) => 'all_entered',
-                default => 'partially_entered',
-            };
-            $lead->update(['commission_entry_status' => $status]);
-            return;
-        }
-        
+        // COMMISSION REDESIGN v1.0:
+        // All leads (including public referral leads) now have proper submitter fields set.
+        // No special-case needed for "public referral with no submitter".
         if (! $submitter) {
             $lead->update(['commission_entry_status' => 'none']);
             return;
@@ -210,8 +195,8 @@ class CommissionService
 
         $hierarchyService = app(HierarchyService::class);
         $chain = $hierarchyService->getCommissionChain($submitter, $lead);
-        
-        // Subject (Submitter) often gets commission too (if Enum)
+
+        // The submitter (enumerator) also gets a commission entry
         $requiredPayees = [];
         if ($submitter->role === 'enumerator') {
             $requiredPayees[] = $submitter->id;
@@ -221,7 +206,7 @@ class CommissionService
         }
 
         $enteredCount = Commission::query()->where(fn($q) => $q->where('lead_id', $lead->id))->whereIn('payee_id', $requiredPayees)->count();
-        
+
         $status = match (true) {
             $enteredCount === 0 => 'none',
             $enteredCount === count($requiredPayees) => 'all_entered',
@@ -245,17 +230,12 @@ class CommissionService
         $prompts = [];
         $processedPayeeIds = [];
 
-        // --- SPECIAL CASE: PUBLIC REFERRAL LEAD ---
-        // Public form leads submitted via referral link have no agent/enumerator submitter.
-        // The referral BDM (assigned_super_agent) IS the payee, and Admin is the payer.
-        $hasNoSubmitter = ! $lead->submittedByEnumerator && ! $lead->submittedByAgent && ! $lead->createdBySuperAgent && ! $lead->assignedAgent;
-        if ($hasNoSubmitter && $lead->assigned_super_agent_id && $lead->referral_agent_id) {
-            $referralSA = User::find($lead->assigned_super_agent_id);
-            if ($referralSA && ! $referralSA->isAdmin()) {
-                $prompts[] = $this->buildReferralPrompt($lead, $referralSA);
-            }
-            return $prompts;
-        }
+        // COMMISSION REDESIGN v1.0:
+        // Referral leads now correctly have submitted_by_agent_id or created_by_super_agent_id
+        // set during lead creation (fixed in LeadService::createFromPublicForm).
+        // All leads — including public referral leads — now resolve their commission chain
+        // through the standard hierarchy traversal below.
+        // The old special-case block for "no submitter + referral" has been removed.
 
         // 1. Identify all potential payees (Submitter, Assignee, Enumerator)
         $potentialPayees = collect([
@@ -268,15 +248,18 @@ class CommissionService
         foreach ($potentialPayees as $payee) {
             /** @var User $payee */
             if ($payee->isAdmin()) continue;
-            
+
             $prompts[] = $this->buildPrompt($lead, $payee, $payee->role);
             $processedPayeeIds[] = $payee->id;
         }
 
-        // 2. Upstream Hierarchy (BDM/Super Agent level and above)
-        // We look at the submitter's chain if available, otherwise the assignee's chain.
-        $startingUser = $lead->submittedByEnumerator ?? $lead->submittedByAgent ?? $lead->assignedAgent ?? $lead->createdBySuperAgent;
-        
+        // 2. Walk the upstream hierarchy chain from the submitter to Admin
+        // This ensures Super Agents and intermediate actors get their commission prompts
+        $startingUser = $lead->submittedByEnumerator
+            ?? $lead->submittedByAgent
+            ?? $lead->assignedAgent
+            ?? $lead->createdBySuperAgent;
+
         if ($startingUser) {
             $chain = $hierarchyService->getCommissionChain($startingUser, $lead);
             foreach ($chain as $user) {

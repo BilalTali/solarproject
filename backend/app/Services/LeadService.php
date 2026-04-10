@@ -29,32 +29,48 @@ class LeadService
     {
         return DB::transaction(function () use ($data) {
             $referralCode = isset($data['referral_agent_id']) ? strtoupper(trim($data['referral_agent_id'])) : null;
-            $referringAgent = null;
+            $referringUser = null;
 
             if ($referralCode) {
-                $referringAgent = User::query()->where(fn($q) => $q->where('agent_id', $referralCode))
-                    ->where(fn($q) => $q->where('status', 'active'))
-                    ->where(fn($q) => $q->whereIn('role', ['agent', 'super_agent']))
+                // COMMISSION REDESIGN v1.0:
+                // Resolve referral by BOTH agent_id (for Agents) AND super_agent_code (for Super Agents)
+                // Previously only agent_id was checked — Super Agent referrals were silently ignored
+                $referringUser = User::query()
+                    ->where(fn($q) => $q
+                        ->where('agent_id', $referralCode)
+                        ->orWhere('super_agent_code', $referralCode)
+                    )
+                    ->where('status', 'active')
+                    ->whereIn('role', ['agent', 'super_agent'])
                     ->first();
-                /** @var User|null $referringAgent */
+                /** @var User|null $referringUser */
             }
 
             $leadData = collect($data)->except(['aadhaar_front', 'aadhaar_back', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook', 'referral_agent_id'])->toArray();
 
             $createData = [
                 ...$leadData,
-                'source' => 'public_form',
-                'referral_agent_id' => $referralCode,
-                'status' => 'NEW',
+                'source'           => 'public_form',
+                'referral_agent_id'=> $referralCode,
+                'status'           => 'NEW',
             ];
 
-            if ($referringAgent) {
-                $createData['assigned_agent_id'] = $referringAgent->id;
-                $createData['assigned_super_agent_id'] = $referringAgent->super_agent_id;
-                $createData['owner_type'] = 'agent_pool';
-                $createData['verification_status'] = 'not_required';
+            if ($referringUser) {
+                // Use HierarchyService to correctly determine pool, verification_status,
+                // and SA assignment — exactly the same logic as agent/enumerator submissions
+                $routing = $this->hierarchyService->resolveInitialRouting($referringUser);
+
+                // Track who the referral came from (for commission chain resolution)
+                if ($referringUser->isAgent()) {
+                    $routing['submitted_by_agent_id'] = $referringUser->id;
+                } elseif ($referringUser->isSuperAgent()) {
+                    $routing['created_by_super_agent_id'] = $referringUser->id;
+                }
+
+                $createData = array_merge($createData, $routing);
             } else {
-                $createData['owner_type'] = 'admin_pool';
+                // No valid referral — straight to Admin Pool, no commission chain
+                $createData['owner_type']          = 'admin_pool';
                 $createData['verification_status'] = 'not_required';
             }
 
@@ -63,14 +79,21 @@ class LeadService
 
             $this->logStatusChange($lead, null, null, 'NEW', 'Lead received from public form'.($referralCode ? " (Ref: {$referralCode})" : ''));
 
-            if ($referringAgent) {
-                /** @var User $referringAgent */
-                $this->notifyAgentNewReferralLead($lead, $referringAgent);
-                if ($referringAgent->super_agent_id) {
-                    $sa = User::find($referringAgent->super_agent_id);
-                    if ($sa) {
-                        $this->notifySuperAgentNewReferralLead($lead, $sa, $referringAgent);
+            if ($referringUser) {
+                /** @var User $referringUser */
+                if ($referringUser->isAgent()) {
+                    $this->notifyAgentNewReferralLead($lead, $referringUser);
+                    // Notify the Agent's Super Agent too (if they have one)
+                    $saId = $this->hierarchyService->findAscendantSuperAgentId($referringUser);
+                    if ($saId) {
+                        $sa = User::find($saId);
+                        if ($sa) {
+                            $this->notifySuperAgentNewReferralLead($lead, $sa, $referringUser);
+                        }
                     }
+                } elseif ($referringUser->isSuperAgent()) {
+                    // Notify the Super Agent directly
+                    $this->notifySuperAgentLeadPendingVerification($lead, $referringUser);
                 }
             } else {
                 $this->notifyAdminNewPublicLead($lead);

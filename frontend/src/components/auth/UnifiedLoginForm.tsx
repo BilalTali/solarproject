@@ -39,6 +39,7 @@ export default function UnifiedLoginForm() {
     const [step, setStep]             = useState<1 | 2>(1);
     const [credentials, setCredentials] = useState<Step1Data | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
 
     const step1Form = useForm<Step1Data>({ resolver: zodResolver(step1Schema) });
     const step2Form = useForm<Step2Data>({ resolver: zodResolver(step2Schema) });
@@ -51,6 +52,14 @@ export default function UnifiedLoginForm() {
             setTimeout(() => step2Form.setValue('otp', ''), 300);
         }
     }, [step]);
+    
+    // Timer for Resend
+    useEffect(() => {
+        if (cooldown > 0) {
+            const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [cooldown]);
 
     /* ── Step 1: verify credentials + request OTP ─────────────────────── */
     const sendOtpMutation = useMutation({
@@ -61,6 +70,7 @@ export default function UnifiedLoginForm() {
 
                 setCredentials(variables);
                 setStep(2);
+                setCooldown(60); // Start 60s cooldown
                 toast.success('Credentials verified. OTP sent to your email.');
             } else {
                 toast.error(res.message || 'Failed to verify credentials');
@@ -70,6 +80,12 @@ export default function UnifiedLoginForm() {
             toast.error(err?.response?.data?.message || 'Invalid email or password');
         },
     });
+
+    const handleResendOtp = () => {
+        if (credentials && cooldown === 0) {
+            sendOtpMutation.mutate(credentials);
+        }
+    };
 
     /* ── Step 2: verify OTP, store auth, redirect by role ─────────────── */
     const loginMutation = useMutation({
@@ -206,6 +222,18 @@ export default function UnifiedLoginForm() {
                 {loginMutation.isPending ? 'Signing In...' : 'Sign In'}
                 {!loginMutation.isPending && <ShieldCheck className="w-5 h-5" />}
             </button>
+
+            {/* Resend OTP */}
+            <div className="text-center pt-2">
+                <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={cooldown > 0 || sendOtpMutation.isPending}
+                    className={`text-sm font-bold transition-all ${cooldown > 0 ? 'text-slate-400' : 'text-primary hover:text-primary-dark underline underline-offset-4'}`}
+                >
+                    {sendOtpMutation.isPending ? 'Sending...' : cooldown > 0 ? `Resend OTP in ${cooldown}s` : 'Resend OTP'}
+                </button>
+            </div>
         </form>
     );
 }

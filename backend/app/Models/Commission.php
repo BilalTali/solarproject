@@ -116,6 +116,11 @@ class Commission extends Model
         return $q->where(fn ($q) => $q->where('payee_role', 'agent'));
     }
 
+    public function scopeForEnumerators(Builder $q): Builder
+    {
+        return $q->where(fn ($q) => $q->where('payee_role', 'enumerator'));
+    }
+
     public function scopeUnpaid(Builder $q): Builder
     {
         return $q->where(fn ($q) => $q->where('payment_status', 'unpaid'));
@@ -151,6 +156,11 @@ class Commission extends Model
     public function isForAgent(): bool
     {
         return $this->payee_role === 'agent';
+    }
+
+    public function isForEnumerator(): bool
+    {
+        return $this->payee_role === 'enumerator';
     }
 
     public function isPaid(): bool

@@ -129,22 +129,22 @@ export default function AdminCommissionsPage() {
                 <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
                     <div className="flex justify-between items-start">
                         <div className="p-2 bg-blue-50 rounded-xl text-blue-600"><CreditCard size={20} /></div>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Unpaid (Direct Agents)</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Commission Pending</span>
                     </div>
                     <div className="mt-4">
-                        <div className="text-2xl font-black text-slate-800 tracking-tight">₹{Number(summary?.direct_agent_unpaid_amount || 0).toLocaleString('en-IN')}</div>
-                        <div className="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-tighter text-blue-600">{summary?.direct_agent_unpaid_count || 0} Direct Payouts</div>
+                        <div className="text-2xl font-black text-slate-800 tracking-tight">₹{Number(summary?.all_time_pending || 0).toLocaleString('en-IN')}</div>
+                        <div className="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-tighter text-blue-600">All pending payouts</div>
                     </div>
                 </div>
 
                 <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
                     <div className="flex justify-between items-start">
                         <div className="p-2 bg-slate-50 rounded-xl text-slate-400"><IndianRupee size={20} /></div>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total System Disbursement</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Commission</span>
                     </div>
                     <div className="mt-4">
-                        <div className="text-2xl font-black text-slate-800 tracking-tight">₹{Number(summary?.all_time_disbursed || 0).toLocaleString('en-IN')}</div>
-                        <div className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-tighter italic">Incl. Team Payouts</div>
+                        <div className="text-2xl font-black text-slate-800 tracking-tight">₹{Number(summary?.all_time_total || 0).toLocaleString('en-IN')}</div>
+                        <div className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-tighter italic">Incl. all levels</div>
                     </div>
                 </div>
             </div>

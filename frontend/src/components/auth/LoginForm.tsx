@@ -33,6 +33,7 @@ export default function LoginForm({ role, redirectPath }: LoginFormProps) {
     const [credentials, setCredentials] = useState<Step1Data | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [isForgot, setIsForgot] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
 
     const step1Form = useForm<Step1Data>({ resolver: zodResolver(step1Schema) });
     const step2Form = useForm<Step2Data>({ resolver: zodResolver(step2Schema) });
@@ -46,6 +47,14 @@ export default function LoginForm({ role, redirectPath }: LoginFormProps) {
         }
     }, [step]);
 
+    // Timer for Resend
+    useEffect(() => {
+        if (cooldown > 0) {
+            const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [cooldown]);
+
     const sendOtpMutation = useMutation({
         mutationFn: (data: Step1Data) => authApi.sendOtp({ 
             identifier: data.email, 
@@ -56,6 +65,7 @@ export default function LoginForm({ role, redirectPath }: LoginFormProps) {
             if (res.success) {
                 setCredentials(variables);
                 setStep(2);
+                setCooldown(60); // Start 60s cooldown
                 toast.success('Credentials verified. OTP sent to your email.');
             } else {
                 toast.error(res.message || 'Failed to verify credentials');
@@ -65,6 +75,12 @@ export default function LoginForm({ role, redirectPath }: LoginFormProps) {
             toast.error(err?.response?.data?.message || 'Invalid email or password');
         }
     });
+
+    const handleResendOtp = () => {
+        if (credentials && cooldown === 0) {
+            sendOtpMutation.mutate(credentials);
+        }
+    };
 
     const loginMutation = useMutation({
         mutationFn: (data: { otp: string }) => authApi.loginOtp(credentials?.email || '', data.otp, role),
@@ -198,6 +214,18 @@ export default function LoginForm({ role, redirectPath }: LoginFormProps) {
                 {loginMutation.isPending ? 'Authenticating...' : 'Sign In Now'}
                 {!loginMutation.isPending && <ShieldCheck className="w-5 h-5" />}
             </button>
+
+            {/* Resend OTP */}
+            <div className="text-center pt-2">
+                <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={cooldown > 0 || sendOtpMutation.isPending}
+                    className={`text-sm font-bold transition-all ${cooldown > 0 ? 'text-slate-400' : 'text-primary hover:text-primary-dark underline underline-offset-4'}`}
+                >
+                    {sendOtpMutation.isPending ? 'Sending...' : cooldown > 0 ? `Resend OTP in ${cooldown}s` : 'Resend OTP'}
+                </button>
+            </div>
         </form>
     );
 }

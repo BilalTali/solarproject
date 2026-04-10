@@ -76,28 +76,45 @@ class AuthController extends Controller
         }
 
         $throttleKey = 'send-otp:'.$user->mobile;
-        if (RateLimiter::tooManyAttempts($throttleKey, 3)) {
+        $cooldownKey = 'otp-cooldown:'.$user->mobile;
+
+        // Strict 60-second cooldown between individual OTP requests
+        if (RateLimiter::tooManyAttempts($cooldownKey, 1)) {
+            $seconds = RateLimiter::availableIn($cooldownKey);
+            return response()->json([
+                'success' => false,
+                'message' => 'Please wait ' . $seconds . ' seconds before requesting another OTP.'
+            ], 429);
+        }
+
+        // Allow 5 attempts per 15 minutes overall
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
             return response()->json([
                 'success' => false,
                 'message' => 'Too many OTP requests. Please try again after ' . ceil($seconds / 60) . ' minutes.'
             ], 429);
         }
-        RateLimiter::hit($throttleKey, 15 * 60); // 15 minutes window
+
+        RateLimiter::hit($throttleKey, 15 * 60); // 15 minutes window overall
+        RateLimiter::hit($cooldownKey, 60);      // 60 seconds tight cooldown
 
         $otp = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         
-        \Illuminate\Support\Facades\DB::table('login_otps')->updateOrInsert(
-            ['email' => $user->email],
-            [
-                'otp' => Hash::make($otp),
-                'expires_at' => now()->addMinutes(5),
-                'attempts' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-        );
+        // STEP 1: Invalidate previous OTPs to ensure no DB block from unexpired old OTPs
+        \Illuminate\Support\Facades\DB::table('login_otps')->where('email', $user->email)->delete();
 
+        // STEP 2 & 3: Save fresh OTP
+        \Illuminate\Support\Facades\DB::table('login_otps')->insert([
+            'email' => $user->email,
+            'otp' => Hash::make($otp),
+            'expires_at' => now()->addMinutes(5),
+            'attempts' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // STEP 4: Send direct immediately (synchronously)
         Mail::to($user->email)->send(new \App\Mail\LoginOtpMail($otp));
 
 

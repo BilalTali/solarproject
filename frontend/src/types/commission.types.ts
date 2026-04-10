@@ -5,7 +5,9 @@ export type CommissionStatus = 'pending' | 'approved' | 'paid';
 export type CommissionPayeeRole = 'super_agent' | 'agent' | 'enumerator';
 export type CommissionPaymentStatus = 'unpaid' | 'paid';
 export type CommissionPaymentMethod = 'bank_transfer' | 'upi' | 'cash' | 'cheque';
-export type LeadCommissionEntryStatus = 'none' | 'super_agent_entered' | 'agent_entered' | 'both_entered';
+// COMMISSION REDESIGN v1.0: Updated to match new DB enum values
+export type LeadCommissionEntryStatus = 'none' | 'partially_entered' | 'all_entered';
+
 export interface Commission {
     id: number;
     lead_id: number;
@@ -75,6 +77,8 @@ export interface AdminCommissionSummary {
     direct_agent_unpaid_count: number;
     direct_agent_unpaid_amount: number;
     all_time_disbursed: number;
+    all_time_pending: number;
+    all_time_total: number;
 }
 
 export interface SuperAgentCommissionSummary {

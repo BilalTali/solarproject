@@ -107,11 +107,17 @@ export const leadsApi = {
         });
         return res.data;
     },
+    // Unified commission entry
+    enterCommission: async (ulid: string, payload: { payee_id: number; amount: number }) => {
+        const res = await api.post<ApiResponse<unknown>>(`/admin/leads/${ulid}/commission/enter`, payload);
+        return res.data;
+    },
     /** @deprecated Use assignLeadToSuperAgent or assignLeadToAgent */
     assignLead: async (ulid: string, super_agent_id: number) => {
         const res = await api.put<ApiResponse<Lead>>(`/admin/leads/${ulid}/assign`, { super_agent_id });
         return res.data;
     },
+
     assignLeadToSuperAgent: async (ulid: string, super_agent_id: number) => {
         const res = await api.put<ApiResponse<Lead>>(`/admin/leads/${ulid}/assign-super-agent`, { super_agent_id });
         return res.data;

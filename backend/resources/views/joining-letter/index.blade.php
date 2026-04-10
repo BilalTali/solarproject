@@ -51,53 +51,13 @@
         }
         body {
             font-family: 'DM Sans', 'Times New Roman', Helvetica, Arial, sans-serif;
-            font-size: 10pt;
-            line-height: 1.45;
+            font-size: 9.5pt;
+            line-height: 1.35;
             color: #04111F;
             margin: 0;
-            padding: 1.4cm 1.8cm;
+            padding: 1cm 1.5cm;
             background: #fff;
         }
-
-        .header-section {
-            width: 100%;
-            border-bottom: 2.5px solid #0A1931;
-            padding-bottom: 12px;
-            margin-bottom: 25px;
-            position: relative;
-        }
-
-        .header-logos {
-            float: left;
-            width: 90px;
-            position: relative;
-        }
-        
-        .header-logo-primary {
-            width: 80px;
-            height: 80px;
-            z-index: 2;
-            position: relative;
-        }
-        
-        .header-logo-secondary {
-            width: 50px;
-            height: 50px;
-            position: absolute;
-            top: 45px;
-            left: 35px;
-            z-index: 1;
-            opacity: 0.85;
-            border: 2px solid #fff;
-            border-radius: 50%;
-            background: #fff;
-        }
-
-        .header-branding {
-            margin-left: 100px;
-            text-align: right;
-        }
-
         .company-name {
             font-family: 'Cinzel', serif;
             font-size: 26pt;
@@ -311,26 +271,30 @@
 <body>
     <div class="watermark">{{ $companyName }}</div>
 
-    <div class="header-section">
-        <div class="header-logos">
-            @if($logoBase64)
-                <img src="{{ $logoBase64 }}" class="header-logo-primary" alt="Primary Logo">
-            @endif
-            @if($logoBase64_2)
-                <img src="{{ $logoBase64_2 }}" class="header-logo-secondary" alt="Admin Logo">
-            @endif
-        </div>
-        <div class="header-branding">
-            <h1 class="company-name">{{ $companyName }}</h1>
-            <div class="company-tagline">{{ $companyTagline }}</div>
-            <div class="affiliation-partner">AN AFFILIATION PARTNER OF {{ $globalName }}</div>
-            <div class="company-contact">
-                {{ $companyAddress }}<br>
-                Phone: {{ $companyPhone }} &nbsp;|&nbsp; Email: {{ $companyEmail }}<br>
-                <span class="footer-site">Website: {{ $companyWebsite }}</span>
-            </div>
-        </div>
-    </div>
+    <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 20px; border-bottom: 2.5px solid #0A1931; padding-bottom: 12px;">
+        <tr>
+            <td width="20%" valign="middle" align="left">
+                @if($logoBase64)
+                    <img src="{{ $logoBase64 }}" style="max-width: 80px; max-height: 80px;" alt="Primary Logo">
+                @endif
+            </td>
+            <td width="60%" valign="middle" align="center">
+                <h1 class="company-name">{{ $companyName }}</h1>
+                <div class="company-tagline">{{ $companyTagline }}</div>
+                <div class="affiliation-partner">AN AFFILIATION PARTNER OF {{ $globalName }}</div>
+                <div class="company-contact">
+                    {{ $companyAddress }}<br>
+                    Phone: {{ $companyPhone }} &nbsp;|&nbsp; Email: {{ $companyEmail }}<br>
+                    <span class="footer-site">Website: {{ $companyWebsite }}</span>
+                </div>
+            </td>
+            <td width="20%" valign="middle" align="right">
+                @if($logoBase64_2)
+                    <img src="{{ $logoBase64_2 }}" style="max-width: 80px; max-height: 80px;" alt="Secondary Logo">
+                @endif
+            </td>
+        </tr>
+    </table>
 
     <table class="metadata-table" cellspacing="0" cellpadding="0">
         <tr>

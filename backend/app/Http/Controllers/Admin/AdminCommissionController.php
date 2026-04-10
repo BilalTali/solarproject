@@ -92,6 +92,8 @@ class AdminCommissionController extends Controller
                 'direct_agent_unpaid_count' => (clone $query)->forAgents()->whereHas('enteredBy', fn($q) => $q->where('role', 'admin'))->unpaid()->count(),
                 'direct_agent_unpaid_amount' => (float) (clone $query)->forAgents()->whereHas('enteredBy', fn($q) => $q->where('role', 'admin'))->unpaid()->sum('amount'),
                 'all_time_disbursed' => (float) (clone $query)->paid()->sum('amount'),
+                'all_time_pending' => (float) (clone $query)->unpaid()->sum('amount'),
+                'all_time_total' => (float) (clone $query)->sum('amount'),
             ],
         ]);
     }

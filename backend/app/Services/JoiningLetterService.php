@@ -76,17 +76,17 @@ class JoiningLetterService
 
         // ── Branding Assets (Dynamic) ─────────────────────────────
         // Logo 1: Admin's specialized team logo
-        $logoPath = Setting::getValue('company_logo_2', null, $adminId);
+        $logoPath = Setting::getValue('company_logo_2', null, $adminId, false);
         // Logo 2: Global Platform Logo (Affiliate Partner)
         $logoPath2 = Setting::query()->where('key', 'company_logo')->whereNull('user_id')->first()?->value;
 
-        $signaturePath = Setting::getValue('company_signature', null, $adminId);
-        $sealPath = Setting::getValue('company_seal', null, $adminId);
+        $signaturePath = Setting::getValue('company_signature', null, $adminId, false);
+        $sealPath = Setting::getValue('company_seal', null, $adminId, false);
 
-        $logoBase64 = $this->getBase64Image($logoPath);
-        $logoBase64_2 = $this->getBase64Image($logoPath2);
-        $sigBase64 = $this->getBase64Image($signaturePath);
-        $sealBase64 = $this->getBase64Image($sealPath);
+        $logoBase64 = $this->getBase64Image($logoPath, true);
+        $logoBase64_2 = $this->getBase64Image($logoPath2, true);
+        $sigBase64 = $this->getBase64Image($signaturePath, false);
+        $sealBase64 = $this->getBase64Image($sealPath, false);
 
         // ── Legacy Setting Fetch for Other Text ────────────────────
         $settings = Setting::getMergedSettings($adminId)
@@ -272,37 +272,51 @@ class JoiningLetterService
     /**
      * Helper to get base64 image (Robust sync with ICardService)
      */
-    private function getBase64Image(?string $path)
+    private function getBase64Image(?string $path, bool $useFallback = true): ?string
     {
-        if (!$path) return null;
+        if (! $path) {
+            return null;
+        }
 
-        $content = null;
-        $mimeType = 'image/png';
-
-        // 1. Check if public path directly
-        if (!str_starts_with($path, 'http')) {
-            $fullPath = public_path($path);
-            if (file_exists($fullPath) && !is_dir($fullPath)) {
-                $content = file_get_contents($fullPath);
-                $mimeType = 'image/' . pathinfo($fullPath, PATHINFO_EXTENSION);
-            } 
-            // 2. Check storage/app/public
-            elseif (Storage::disk('public')->exists($path)) {
-                $content = Storage::disk('public')->get($path);
-                $mimeType = 'image/' . pathinfo($path, PATHINFO_EXTENSION);
-            }
-            // 3. Check local disk (for Lead Documents)
-            elseif (Storage::disk('local')->exists($path)) {
-                $content = Storage::disk('local')->get($path);
-                $mimeType = 'image/' . pathinfo($path, PATHINFO_EXTENSION);
+        // Handle full URLs if they were passed through (strip prefix to get relative path)
+        if (str_starts_with($path, 'http')) {
+            $storageUrl = asset('storage/');
+            if (str_starts_with($path, $storageUrl)) {
+                $path = str_replace($storageUrl, '', $path);
+            } else {
+                // External URL: try to download or fallback to placeholder
+                try {
+                    $content = file_get_contents($path);
+                    if ($content) {
+                        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                        $mimeType = $finfo->buffer($content);
+                        return 'data:' . $mimeType . ';base64,' . base64_encode($content);
+                    }
+                } catch (\Throwable $e) {
+                    // Fall down to fallback
+                }
             }
         }
 
-        if (!$content) {
-            // Fallback for ID Card Logo (Circular AS Logo)
-            return 'data:image/svg+xml;base64,'.base64_encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#0A1931"/><text x="50" y="65" font-family="Arial" font-size="40" font-weight="bold" fill="#F7B100" text-anchor="middle">AS</text></svg>');
+        // 1. Try public path first (for assets/images)
+        $fullPath = public_path($path);
+        if (file_exists($fullPath) && ! is_dir($fullPath)) {
+            $type = pathinfo($fullPath, PATHINFO_EXTENSION);
+            return 'data:image/'.$type.';base64,'.base64_encode(file_get_contents($fullPath));
         }
 
-        return 'data:' . $mimeType . ';base64,' . base64_encode($content);
+        // 2. Try storage disk (for user uploads)
+        if (Storage::disk('public')->exists($path)) {
+            $content = Storage::disk('public')->get($path);
+            $type = pathinfo($path, PATHINFO_EXTENSION);
+            return 'data:image/'.$type.';base64,'.base64_encode($content);
+        }
+
+        if (!$useFallback) {
+            return null;
+        }
+
+        // Fallback placeholder logo (Simple SVG Circle with initials if file missing)
+        return 'data:image/svg+xml;base64,'.base64_encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#0A1931"/><text x="50" y="65" font-family="Arial" font-size="40" font-weight="bold" fill="#F7B100" text-anchor="middle">AS</text></svg>');
     }
 }
