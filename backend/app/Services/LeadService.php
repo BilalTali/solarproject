@@ -39,7 +39,7 @@ class LeadService
                 /** @var User|null $referringAgent */
             }
 
-            $leadData = collect($data)->except(['aadhaar', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook', 'referral_agent_id'])->toArray();
+            $leadData = collect($data)->except(['aadhaar_front', 'aadhaar_back', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook', 'referral_agent_id'])->toArray();
 
             $createData = [
                 ...$leadData,
@@ -86,7 +86,7 @@ class LeadService
     {
         return DB::transaction(function () use ($data, $agent) {
             $routing = $this->hierarchyService->resolveInitialRouting($agent);
-            $leadData = collect($data)->except(['aadhaar', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook'])->toArray();
+            $leadData = collect($data)->except(['aadhaar_front', 'aadhaar_back', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook'])->toArray();
 
             /** @var Lead $lead */
             $lead = Lead::forceCreate([
@@ -117,7 +117,7 @@ class LeadService
     {
         return DB::transaction(function () use ($data, $enumerator) {
             $routing = $this->hierarchyService->resolveInitialRouting($enumerator);
-            $leadData = collect($data)->except(['aadhaar', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook'])->toArray();
+            $leadData = collect($data)->except(['aadhaar_front', 'aadhaar_back', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook'])->toArray();
 
             $lead = Lead::forceCreate([
                 ...$leadData,
@@ -152,7 +152,7 @@ class LeadService
     {
         return DB::transaction(function () use ($data, $sa) {
             $routing = $this->hierarchyService->resolveInitialRouting($sa);
-            $leadData = collect($data)->except(['aadhaar', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook'])->toArray();
+            $leadData = collect($data)->except(['aadhaar_front', 'aadhaar_back', 'electricity_bill', 'photo', 'other', 'solar_roof_photo', 'bank_passbook'])->toArray();
 
             $lead = Lead::forceCreate([
                 ...$leadData,
@@ -472,7 +472,7 @@ class LeadService
     // METHOD 9: updateStatus()
     // Core propagation: notifies SA + Agent automatically
     // ────────────────────────────────────────────────────────────────
-    public function updateStatus(Lead $lead, string $newStatus, int $changedById, ?string $notes = null): void
+    public function updateStatus(Lead $lead, string $newStatus, int $changedById, ?string $notes = null, ?UploadedFile $receipt = null): void
     {
         $allStatuses = [
             'NEW', 'ON_HOLD', 'INVALID', 'DUPLICATE', 'REJECTED',
@@ -488,7 +488,7 @@ class LeadService
             return;
         }
 
-        DB::transaction(function () use ($lead, $newStatus, $changedById, $notes) {
+        DB::transaction(function () use ($lead, $newStatus, $changedById, $notes, $receipt) {
             $oldStatus = $lead->status;
             $changer = User::find($changedById);
 
@@ -501,6 +501,11 @@ class LeadService
 
             $lead->status = $newStatus;
             $lead->save();
+
+            // UPLOAD RECEIPT if provided
+            if ($newStatus === 'COMPLETED' && $receipt) {
+                $this->uploadDocument($lead, $receipt, 'receipt', $changedById);
+            }
 
             // AUTO-PROPAGATION: Admin/SA changes → notify downstream parties
             if ($changer) {

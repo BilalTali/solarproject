@@ -16,6 +16,7 @@ class UpdateLeadStatusRequest extends FormRequest
         return [
             'status' => 'required|in:NEW,ON_HOLD,INVALID,DUPLICATE,REJECTED,REGISTERED,SITE_SURVEY,AT_BANK,COMPLETED,PROJECT_COMMISSIONING,SUBSIDY_REQUEST,SUBSIDY_APPLIED,SUBSIDY_DISBURSED',
             'notes' => 'nullable|string',
+            'receipt' => 'nullable|file|max:5120|mimes:pdf,jpg,jpeg,png',
         ];
     }
 }

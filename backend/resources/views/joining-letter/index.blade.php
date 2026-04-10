@@ -61,43 +61,72 @@
 
         .header-section {
             width: 100%;
-            border-bottom: 2.5px solid #0A1931;
-            padding-bottom: 12px;
-            margin-bottom: 25px;
+            border-bottom: 3px solid #0A1931;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
             position: relative;
         }
 
-        .header-logo {
+        .header-logos {
             float: left;
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            position: relative;
         }
         
-        .header-logo img {
-            max-width: 80px;
-            max-height: 80px;
-            object-fit: contain;
+        .header-logo-primary {
+            width: 80px;
+            height: 80px;
+            z-index: 2;
+            position: relative;
+        }
+        
+        .header-logo-secondary {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            top: 45px;
+            left: 35px;
+            z-index: 1;
+            opacity: 0.85;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            background: #fff;
         }
 
         .header-branding {
-            margin-left: 95px;
+            margin-left: 100px;
             text-align: right;
         }
 
         .company-name {
             font-family: 'Cinzel', serif;
-            font-size: 22pt;
+            font-size: 26pt;
             font-weight: bold;
             color: #0A1931;
             text-transform: uppercase;
             margin: 0;
             padding: 0;
-            line-height: 1.0;
+            line-height: 0.9;
         }
         
         .company-tagline {
             font-family: 'DM Sans', sans-serif;
-            font-size: 9pt;
+            font-size: 10pt;
+            font-weight: bold;
+            color: #F7B100;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 4px;
+        }
+
+        .affiliation-partner {
+            font-size: 8.5pt;
+            font-weight: bold;
+            color: #555;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
             color: #F7B100;
             margin: 4px 0;
             font-weight: 800;
@@ -298,9 +327,12 @@
     <div class="watermark">{{ $companyName }}</div>
 
     <div class="header-section">
-        <div class="header-logo">
+        <div class="header-logos">
             @if($logoBase64)
-                <img src="{{ $logoBase64 }}" alt="Logo">
+                <img src="{{ $logoBase64 }}" class="header-logo-primary" alt="Primary Logo">
+            @endif
+            @if($logoBase64_2)
+                <img src="{{ $logoBase64_2 }}" class="header-logo-secondary" alt="Admin Logo">
             @endif
         </div>
         <div class="header-branding">
@@ -379,15 +411,15 @@
 
     <div class="signature-section">
         <div class="sig-container">
-            <div style="position: relative; height: 80px; margin-bottom: 5px;">
+            <div style="position: relative; height: 100px; margin-bottom: 5px;">
                 @if($sealBase64)
-                    <img src="{{ $sealBase64 }}" class="seal-image">
+                    <img src="{{ $sealBase64 }}" class="seal-image" style="width: 100px; height: 100px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); opacity: 0.85; z-index: 5;">
                 @endif
                 @if($sigBase64)
-                    <img src="{{ $sigBase64 }}" class="sig-image" style="position: relative; z-index: 10;">
+                    <img src="{{ $sigBase64 }}" class="sig-image" style="width: 140px; height: auto; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 10;">
                 @endif
             </div>
-            <div class="sig-name">{{ $authorizedSignatory }}</div>
+            <div class="sig-name" style="margin-top: 10px;">{{ $authorizedSignatory }}</div>
             <div class="sig-title">{{ $signatoryTitle }}</div>
         </div>
     </div>

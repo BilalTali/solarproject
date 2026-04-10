@@ -34,6 +34,7 @@ export default function AdminLeadsPage() {
     // for status-update panel
     const [newStatus, setNewStatus] = useState('');
     const [statusNote, setStatusNote] = useState('');
+    const [receiptFile, setReceiptFile] = useState<File | null>(null);
     // for assign panel
     const [assignSuperAgent, setAssignSuperAgent] = useState<number | string>('');
     const [activePrompts, setActivePrompts] = useState<Record<string, CommissionPrompt>>({});
@@ -99,8 +100,8 @@ export default function AdminLeadsPage() {
 
     // ── mutations ─────────────────────────────────────────────────────────────
     const statusMut = useMutation({
-        mutationFn: ({ ulid, status, notes }: { ulid: string; status: string; notes?: string }) =>
-            leadsApi.updateLeadStatus(ulid, { status, notes }),
+        mutationFn: ({ ulid, formData }: { ulid: string; formData: FormData }) =>
+            leadsApi.updateLeadStatus(ulid, formData),
         onSuccess: (res: any) => {
             const returnedData = res?.data;
             if (returnedData?.commission_prompts?.length > 0 && role === 'admin') {
@@ -120,7 +121,7 @@ export default function AdminLeadsPage() {
             qc.invalidateQueries({ queryKey: ['admin-leads'] });
             qc.invalidateQueries({ queryKey: ['admin-lead-detail'] });
             toast.success('Lead status updated');
-            setNewStatus(''); setStatusNote('');
+            setNewStatus(''); setStatusNote(''); setReceiptFile(null);
         },
         onError: () => toast.error('Failed to update status.'),
     });
@@ -153,6 +154,7 @@ export default function AdminLeadsPage() {
         setNewStatus(lead.status);
         setStatusNote('');
         setAssignSuperAgent('');
+        setReceiptFile(null);
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -620,18 +622,24 @@ export default function AdminLeadsPage() {
                                                     {fullLead.documents.map(doc => {
                                                         const labelMap: Record<string, string> = {
                                                             aadhaar: 'Aadhaar Card',
+                                                            aadhaar_front: 'Aadhaar Front',
+                                                            aadhaar_back: 'Aadhaar Back',
                                                             electricity_bill: 'Electricity Bill',
                                                             photo: 'Beneficiary Photo',
                                                             solar_roof_photo: 'Solar Roof Photo',
                                                             bank_passbook: 'Bank Passbook',
+                                                            receipt: 'Completion Receipt',
                                                             other: 'PAN / Other'
                                                         };
                                                         const iconMap: Record<string, React.ReactNode> = {
                                                             aadhaar: <FileBadge size={16} />,
+                                                            aadhaar_front: <FileBadge size={16} />,
+                                                            aadhaar_back: <FileBadge size={16} />,
                                                             electricity_bill: <FileText size={16} />,
                                                             photo: <ImageIcon size={16} />,
                                                             solar_roof_photo: <ImageIcon size={16} />,
                                                             bank_passbook: <CreditCard size={16} />,
+                                                            receipt: <CheckCircle size={16} />,
                                                             other: <FileText size={16} />
                                                         };
 
@@ -684,9 +692,29 @@ export default function AdminLeadsPage() {
                                                     placeholder="Optional note for this status change…"
                                                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
                                                 />
+                                                {newStatus === 'COMPLETED' && (
+                                                    <div className="space-y-1.5 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                                                        <label className="text-[10px] font-bold text-blue-700 uppercase flex items-center gap-1">
+                                                            <Download size={10} /> Upload Completion Receipt (PDF/Image)
+                                                        </label>
+                                                        <input 
+                                                            type="file" 
+                                                            accept=".pdf,.jpg,.jpeg,.png"
+                                                            onChange={e => setReceiptFile(e.target.files?.[0] || null)}
+                                                            className="text-[11px] text-slate-600 block w-full file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                                                        />
+                                                        {receiptFile && <p className="text-[10px] text-green-600 font-medium truncate">Selected: {receiptFile.name}</p>}
+                                                    </div>
+                                                )}
                                                 <button
                                                     disabled={newStatus === fullLead?.status || statusMut.isPending}
-                                                    onClick={() => statusMut.mutate({ ulid: fullLead!.ulid, status: newStatus, notes: statusNote || undefined })}
+                                                    onClick={() => {
+                                                        const fd = new FormData();
+                                                        fd.append('status', newStatus);
+                                                        if (statusNote) fd.append('notes', statusNote);
+                                                        if (receiptFile) fd.append('receipt', receiptFile);
+                                                        statusMut.mutate({ ulid: fullLead!.ulid, formData: fd });
+                                                    }}
                                                     className="w-full py-2 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 disabled:opacity-40 transition-colors"
                                                 >
                                                     {statusMut.isPending ? 'Saving…' : 'Save Status Change'}

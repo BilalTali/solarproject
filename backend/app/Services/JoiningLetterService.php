@@ -75,10 +75,10 @@ class JoiningLetterService
         $globalName = Setting::query()->where('key', 'company_name')->whereNull('user_id')->first()?->value ?? 'MALIK SURYA';
 
         // ── Branding Assets (Dynamic) ─────────────────────────────
-        // Logo 1: Admin's specialized team logo (ID Cards / Letters)
+        // Logo 1: Admin's specialized team logo
         $logoPath = Setting::getValue('company_logo_2', null, $adminId);
-        // Logo 2: FORCE Global Platform Logo (Affiliate Partner)
-        $logoPath2 = Setting::getValue('company_logo', null, null);
+        // Logo 2: Global Platform Logo (Affiliate Partner)
+        $logoPath2 = Setting::query()->where('key', 'company_logo')->whereNull('user_id')->first()?->value;
 
         $signaturePath = Setting::getValue('company_signature', null, $adminId);
         $sealPath = Setting::getValue('company_seal', null, $adminId);
@@ -143,8 +143,8 @@ class JoiningLetterService
             'settings' => $settings,
             'affiliatedPartner' => $globalName,
             'globalName' => $globalName,
-            'authorizedSignatory' => $settings['signatory_name'] ?? 'Authorized Signatory',
-            'signatoryTitle' => $settings['signatory_title'] ?? 'Manager',
+            'authorizedSignatory' => Setting::getValue('authorized_signatory', 'Authorized Signatory', $adminId),
+            'signatoryTitle' => Setting::getValue('icard_verified_by', 'CHIEF OPERATIONS OFFICER', $adminId),
             'barcodeBase64' => $this->generateBarcode($letterNumber),
             'qrBase64' => $this->generateQrCode($user),
             'verifyUrl' => $user->qr_token ? (rtrim(config('app.frontend_url') ?? env('APP_FRONTEND_URL', 'https://andleebsurya.in'), '/').'/verify/'.$user->qr_token) : null,
@@ -270,31 +270,39 @@ class JoiningLetterService
     }
 
     /**
-     * Helper to get base64 image
+     * Helper to get base64 image (Robust sync with ICardService)
      */
     private function getBase64Image(?string $path)
     {
-        if (! $path) {
-            return null;
+        if (!$path) return null;
+
+        $content = null;
+        $mimeType = 'image/png';
+
+        // 1. Check if public path directly
+        if (!str_starts_with($path, 'http')) {
+            $fullPath = public_path($path);
+            if (file_exists($fullPath) && !is_dir($fullPath)) {
+                $content = file_get_contents($fullPath);
+                $mimeType = 'image/' . pathinfo($fullPath, PATHINFO_EXTENSION);
+            } 
+            // 2. Check storage/app/public
+            elseif (Storage::disk('public')->exists($path)) {
+                $content = Storage::disk('public')->get($path);
+                $mimeType = 'image/' . pathinfo($path, PATHINFO_EXTENSION);
+            }
+            // 3. Check local disk (for Lead Documents)
+            elseif (Storage::disk('local')->exists($path)) {
+                $content = Storage::disk('local')->get($path);
+                $mimeType = 'image/' . pathinfo($path, PATHINFO_EXTENSION);
+            }
         }
 
-        $fullPath = public_path($path);
-        if (! file_exists($fullPath)) {
-            // Check storage if not in public
-            if (Storage::disk('public')->exists($path)) {
-                $content = Storage::disk('public')->get($path);
-                $mime = mime_content_type(Storage::disk('public')->path($path)) ?: 'image/png';
-
-                return 'data:'.$mime.';base64,'.base64_encode($content);
-            }
-
+        if (!$content) {
+            // Fallback for ID Card Logo (Circular AS Logo)
             return 'data:image/svg+xml;base64,'.base64_encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#0A1931"/><text x="50" y="65" font-family="Arial" font-size="40" font-weight="bold" fill="#F7B100" text-anchor="middle">AS</text></svg>');
         }
 
-
-        $type = pathinfo($fullPath, PATHINFO_EXTENSION);
-        $data = file_get_contents($fullPath);
-
-        return 'data:image/'.$type.';base64,'.base64_encode($data);
+        return 'data:' . $mimeType . ';base64,' . base64_encode($content);
     }
 }

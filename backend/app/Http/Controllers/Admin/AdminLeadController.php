@@ -137,7 +137,8 @@ class AdminLeadController extends Controller
             $lead,
             $request->status,
             $request->user()->id,
-            $request->notes
+            $request->notes,
+            $request->file('receipt')
         );
 
         $commissionStatus = app(\App\Services\CommissionService::class)->getCommissionStatus($lead);
@@ -231,7 +232,7 @@ class AdminLeadController extends Controller
     {
         $request->validate([
             'document' => 'required|file|max:5120|mimes:jpg,png,pdf',
-            'type' => 'required|in:aadhaar,electricity_bill,photo,other',
+            'type' => 'required|in:aadhaar,aadhaar_front,aadhaar_back,electricity_bill,photo,solar_roof_photo,bank_passbook,receipt,other',
         ]);
 
         $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();

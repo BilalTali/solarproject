@@ -247,7 +247,8 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
         referral_agent_id: '',
     });
 
-    const [aadhaar, setAadhaar] = useState<FileUploadState>({ file: null, preview: null, name: '' });
+    const [aadhaarFront, setAadhaarFront] = useState<FileUploadState>({ file: null, preview: null, name: '' });
+    const [aadhaarBack, setAadhaarBack] = useState<FileUploadState>({ file: null, preview: null, name: '' });
     const [electricityBill, setElectricityBill] = useState<FileUploadState>({ file: null, preview: null, name: '' });
     const [pan, setPan] = useState<FileUploadState>({ file: null, preview: null, name: '' });
     const [photo, setPhoto] = useState<FileUploadState>({ file: null, preview: null, name: '' });
@@ -269,7 +270,8 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
         mutationFn: async () => {
             const fd = new FormData();
             Object.entries(form).forEach(([k, v]) => { if (v !== '') fd.append(k, v); });
-            if (aadhaar.file) fd.append('aadhaar', aadhaar.file);
+            if (aadhaarFront.file) fd.append('aadhaar_front', aadhaarFront.file);
+            if (aadhaarBack.file) fd.append('aadhaar_back', aadhaarBack.file);
             if (electricityBill.file) fd.append('electricity_bill', electricityBill.file);
             if (photo.file) fd.append('photo', photo.file);
             if (pan.file) fd.append('other', pan.file); // PAN stored as 'other'
@@ -325,7 +327,8 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
         }
         if (step === 4) {
             // Documents are required
-            if (!aadhaar.file) { toast.error('Aadhaar card is required'); return false; }
+            if (!aadhaarFront.file) { toast.error('Aadhaar Front is required'); return false; }
+            if (!aadhaarBack.file) { toast.error('Aadhaar Back is required'); return false; }
             if (!electricityBill.file) { toast.error('Electricity bill is required'); return false; }
             return true;
         }
@@ -545,7 +548,11 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
                             </div>
                             <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <div className="relative">
-                                    <FileUploadBox label="Aadhaar Card" accept=".jpg,.jpeg,.png,.pdf" icon={Hash} value={aadhaar} onChange={setAadhaar} />
+                                    <FileUploadBox label="Aadhaar Front" accept=".jpg,.jpeg,.png,.pdf" icon={Hash} value={aadhaarFront} onChange={setAadhaarFront} />
+                                    <span className="absolute top-0 right-0 text-danger font-bold text-xs mt-1 mr-1">*</span>
+                                </div>
+                                <div className="relative">
+                                    <FileUploadBox label="Aadhaar Back" accept=".jpg,.jpeg,.png,.pdf" icon={Hash} value={aadhaarBack} onChange={setAadhaarBack} />
                                     <span className="absolute top-0 right-0 text-danger font-bold text-xs mt-1 mr-1">*</span>
                                 </div>
                                 <div className="relative">

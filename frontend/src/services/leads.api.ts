@@ -99,8 +99,12 @@ export const leadsApi = {
         const res = await api.put<ApiResponse<Lead>>(`/admin/leads/${ulid}`, data);
         return res.data;
     },
-    updateLeadStatus: async (ulid: string, data: { status: string; notes?: string }) => {
-        const res = await api.put<ApiResponse<Lead>>(`/admin/leads/${ulid}/status`, data);
+    updateLeadStatus: async (ulid: string, data: FormData) => {
+        // Handle PUT workaround for multipart/form-data in Laravel
+        if (!data.has('_method')) data.append('_method', 'PUT');
+        const res = await api.post<ApiResponse<Lead>>(`/admin/leads/${ulid}/status`, data, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
         return res.data;
     },
     /** @deprecated Use assignLeadToSuperAgent or assignLeadToAgent */
