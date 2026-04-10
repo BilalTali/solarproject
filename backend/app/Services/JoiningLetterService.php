@@ -62,14 +62,17 @@ class JoiningLetterService
         $adminId = $user->getRootAdminId();
 
         // ── Company Settings (Shared with ICard) ──────────────────
-        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK', null);
+        $companyName = Setting::getValue('company_name', 'SURYAMITRA SOLAR NETWORK', $adminId);
         $companyAddress = Setting::getValue('company_address', 'Srinagar, Jammu & Kashmir', $adminId);
         $companyEmail = Setting::getValue('company_email', 'info@suryamitra.in', $adminId);
         $companyWebsite = Setting::getValue('company_website', 'https://suryamitra.in', $adminId);
         $companyPhone = Setting::getValue('company_phone', '', $adminId);
-        $companyRegNo = Setting::getValue('company_registration_no', '', null);
+        $companyRegNo = Setting::getValue('company_registration_no', '', $adminId);
         $companyAffiliatedWith = Setting::getValue('company_affiliated_with', '', $adminId);
         $companyTagline = Setting::getValue('company_tagline', 'Empowering Sustainable Futures', $adminId);
+
+        // Global Platform Name (Affiliation)
+        $globalName = Setting::query()->where('key', 'company_name')->whereNull('user_id')->first()?->value ?? 'MALIK SURYA';
 
         // ── Branding Assets (Dynamic) ─────────────────────────────
         // Logo 1: Admin's specialized team logo (ID Cards / Letters)
@@ -138,7 +141,8 @@ class JoiningLetterService
             'body' => $body,
             'terms' => $terms,
             'settings' => $settings,
-            'affiliatedPartner' => Setting::getValue('company_name', 'AndleebSurya Platform', null),
+            'affiliatedPartner' => $globalName,
+            'globalName' => $globalName,
             'authorizedSignatory' => $settings['signatory_name'] ?? 'Authorized Signatory',
             'signatoryTitle' => $settings['signatory_title'] ?? 'Manager',
             'barcodeBase64' => $this->generateBarcode($letterNumber),
