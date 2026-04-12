@@ -29,867 +29,688 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ $companyName ?? 'SuryaMitra' }} iCard – {{ isset($user) ? $user->name : 'User' }}</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8">
+  <title>SuryaMitra iCard – {{ $user->name ?? 'User' }}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  :root {
-    --navy: #04111F;
-    --navy-mid: #0a1f35;
-    --gold: #FF9500;
-    --gold-light: #FFB340;
-    --gold-dim: rgba(255,149,0,0.15);
-    --white: #ffffff;
-    --offwhite: #f5f3ee;
-    --text-muted: #8a9bb0;
-    --card-w: 360px;
-    --card-h: 620px;
-  }
+    body, h1, h2, h3, p, span, div, strong, table, td, tr {
+      font-family: Helvetica, Arial, sans-serif !important;
+    }
 
-  body {
-    min-height: 100vh;
-    background: #0d1b2a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 40px;
-    flex-wrap: wrap;
-    padding: 0;
-    margin: 0;
-    font-family: 'DM Sans', sans-serif;
-    /* Removed body background for PDF generation */
-    background: transparent;
-  }
+    /* Paper size match DomPDF settings: width 270pt (~360px), height 465pt (~620px) */
+    @page { 
+      size: 270pt 465pt;
+      margin: 0; 
+    }
 
-  @page {
-    size: 360px 620px;
-    margin: 0;
-  }
+    body {
+      background: #f5f3ee;
+      margin: 0; 
+      padding: 0;
+    }
 
-  .pdf-page {
-    width: 360px;
-    height: 620px;
-    page-break-after: always;
-    position: relative;
-    overflow: hidden;
-  }
-  .pdf-page:last-child {
-    page-break-after: auto;
-  }
-
-  /* ── CARD WRAPPER ── */
-  .card-scene {
-    perspective: 1200px;
-  }
-
-  .card {
-    width: var(--card-w);
-    height: var(--card-h);
-    position: relative;
-    border-radius: 20px;
-    overflow: hidden;
-    /* Box shadow removed for PDF */
-    background: var(--offwhite);
-  }
-
-  /* ── FRONT ── */
-  .front {
-    width: 100%;
-    height: 100%;
-    background: var(--offwhite);
-    display: flex;
-    flex-direction: column;
-    position: relative;
-  }
-
-  /* Gold border frame */
-  .front::before {
-    content: '';
-    position: absolute;
-    inset: 6px;
-    border: 1px solid rgba(255,149,0,0.25);
-    border-radius: 15px;
-    pointer-events: none;
-    z-index: 10;
-  }
-
-  /* ── HEADER BAND ── */
-  .front-header {
-    background: var(--navy);
-    padding: 18px 22px 16px;
-    position: relative;
-    overflow: hidden;
-    flex-shrink: 0;
-    height: 80px;
-  }
-
-  .front-header::before {
-    content: '';
-    position: absolute;
-    bottom: -1px; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  }
-
-  .header-top {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .logo-box {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    background: var(--gold);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
-    float: left;
-    margin-right: 10px;
-  }
-
-  .logo-box svg {
-    width: 26px;
-    height: 26px;
-  }
-
-  .company-text {
-      width: 260px;
-      float: left;
-  }
-
-  .company-text h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--white);
-    letter-spacing: 0.08em;
-    line-height: 1.3;
-  }
-
-  .company-text p {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 9px;
-    font-weight: 400;
-    color: var(--gold);
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    margin-top: 2px;
-  }
-
-  /* ── PHOTO AREA ── */
-  .photo-section {
-    background: var(--navy);
-    padding: 20px 0 28px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    flex-shrink: 0;
-    height: 180px;
-    text-align: center;
-  }
-
-  /* curved bottom transition */
-  .photo-section::after {
-    content: '';
-    position: absolute;
-    bottom: -20px; left: -10vw; width: 120vw;
-    height: 40px;
-    background: var(--offwhite);
-    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-    z-index: 2;
-  }
-
-  .photo-ring {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    background: conic-gradient(var(--gold) 0deg, var(--gold-light) 90deg, var(--gold) 180deg, rgba(255,149,0,0.3) 270deg, var(--gold) 360deg);
-    padding: 3px;
-    position: relative;
-    z-index: 1;
-    margin: 0 auto;
-  }
-
-  .photo-inner {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: var(--navy-mid);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 3px solid var(--navy);
-  }
-
-  .photo-inner svg {
-    width: 64px;
-    height: 64px;
-    opacity: 0.5;
-  }
-
-  .photo-inner img {
+    .page {
       width: 100%;
       height: 100%;
-      object-fit: cover;
-  }
-
-  /* role badge */
-  .role-badge {
-    margin: 12px auto 0;
-    background: #FF9500;
-    color: #04111F;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    padding: 5px 18px;
-    border-radius: 20px;
-    position: relative;
-    z-index: 1;
-    display: inline-block;
-  }
-
-  /* ── NAME ── */
-  .name-block {
-    text-align: center;
-    padding: 28px 20px 8px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .name-block h2 {
-    font-family: 'Cinzel', serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--navy);
-    letter-spacing: 0.04em;
-    line-height: 1.2;
-  }
-
-  /* ── DIVIDER ── */
-  .divider {
-    text-align: center;
-    padding: 0 24px;
-    margin: 6px 0 14px;
-  }
-
-  .divider-inner {
-      display: inline-block;
-      width: 100%;
       position: relative;
-      height: 5px;
-  }
+      overflow: hidden;
+    }
 
-  .divider-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--gold);
-    display: inline-block;
-    position: absolute;
-    left: 49%;
-    top: 0;
-  }
+    .page-back {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      background: #04111F;
+      page-break-before: always;
+    }
 
-  .divider-line {
-      width: 45%;
+    .gold-border {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      right: 6px;
+      bottom: 6px;
+      border: 1px solid rgba(255,149,0,0.3);
+      border-radius: 15px;
+      z-index: 50; /* Above back items */
+    }
+
+    /* ════ FRONT PAGE ════ */
+
+    .front-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 55px; /* Adjust height slightly for points mapping */
+      background: #04111F;
+      border-bottom: 3px solid #FF9500;
+      z-index: 10;
+    }
+
+    .header-logo-box {
+      position: absolute;
+      top: 10px;
+      left: 15px;
+      width: 35px;
+      height: 35px;
+      background: #FF9500;
+      border-radius: 8px;
+    }
+
+    .header-logo-img {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 27px;
+      height: 27px;
+      object-fit: contain;
+    }
+
+    .header-text-box {
+      position: absolute;
+      top: 13px;
+      left: 60px;
+      color: #FFF;
+    }
+
+    .header-text-h1 {
+      font-size: 11px;
+      font-weight: bold;
+      color: #FFFFFF;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .header-text-p {
+      font-size: 8px;
+      color: #FF9500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .photo-section-bg {
+      position: absolute;
+      top: 55px;
+      left: 0;
+      width: 100%;
+      height: 120px;
+      background: #04111F;
+      z-index: 8;
+    }
+
+    .photo-section-curve {
+      position: absolute;
+      top: 150px;
+      left: -20px;
+      width: 320px; /* Overflows width a bit to flatten curve */
+      height: 60px;
+      background: #f5f3ee;
+      border-radius: 50%;
+      z-index: 9;
+    }
+
+    .photo-holder-outer {
+      position: absolute;
+      top: 65px;
+      left: 95px; /* Center approx 270pt/2 - width/2 */
+      width: 80px;
+      height: 80px;
+      background: #FF9500;
+      border-radius: 50%;
+      z-index: 15;
+    }
+
+    .photo-holder-inner {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 72px;
+      height: 72px;
+      border: 2px solid #04111F;
+      background: #0a1f35;
+      border-radius: 50%;
+      overflow: hidden;
+    }
+
+    .profile-photo {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .initials-avatar {
+      width: 72px;
+      height: 72px;
+      line-height: 72px;
+      text-align: center;
+      background: #0a1f35;
+      color: #FF9500;
+      font-size: 26px;
+      font-weight: bold;
+      border-radius: 50%;
+    }
+
+    .role-badge-box {
+      position: absolute;
+      top: 155px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      z-index: 20;
+    }
+
+    .role-badge {
+      display: inline-block;
+      background: #FF9500;
+      color: #04111F;
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 12px;
+    }
+
+    .name-h2 {
+      position: absolute;
+      top: 185px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #04111F;
+    }
+
+    .divider-line {
+      position: absolute;
+      top: 215px;
+      left: 20px;
+      right: 20px;
       height: 1px;
       background: rgba(255,149,0,0.4);
-      display: inline-block;
+    }
+
+    .divider-dot {
       position: absolute;
-      top: 2px;
-  }
+      top: 212px;
+      left: 132px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #FF9500;
+      z-index: 10;
+    }
 
-  /* ── INFO GRID ── */
-  .info-grid {
-    width: 100%;
-    padding: 0 22px;
-    margin-bottom: 20px;
-  }
+    /* Table Grid */
+    .info-table {
+      position: absolute;
+      top: 230px;
+      left: 15px;
+      width: 240px; /* Within 270pt width */
+      border-collapse: separate;
+      border-spacing: 6px;
+    }
 
-  .info-row {
-      margin-bottom: 5px;
-      clear: both;
-      overflow: hidden;
-  }
+    .info-td {
+      background: #FFFFFF;
+      border: 1px solid rgba(4,17,31,0.07);
+      border-radius: 8px;
+      padding: 6px 8px;
+      vertical-align: top;
+      position: relative;
+      width: 50%;
+    }
 
-  .info-cell {
-    background: var(--white);
-    border-radius: 10px;
-    padding: 10px 12px;
-    border: 1px solid rgba(4,17,31,0.07);
-    position: relative;
-    overflow: hidden;
-    width: 48%;
-    float: left;
-    height: 48px;
-    box-sizing: border-box;
-  }
+    .info-td-border {
+      position: absolute;
+      left: 0;
+      top: 5px;
+      bottom: 5px;
+      width: 2px;
+      background: #FF9500;
+      border-radius: 2px;
+    }
 
-  .info-row .info-cell:nth-child(2) {
-      margin-left: 4%;
-  }
+    .info-label {
+      font-size: 7px;
+      font-weight: bold;
+      color: #8a9bb0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
 
-  .info-cell::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 20%; bottom: 20%;
-    width: 2px;
-    background: var(--gold);
-    border-radius: 2px;
-  }
+    .info-val {
+      font-size: 10px;
+      font-weight: bold;
+      color: #04111F;
+    }
 
-  .info-cell label {
-    display: block;
-    font-size: 8.5px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 3px;
-  }
+    .info-val-gold {
+      font-size: 11px;
+      font-weight: bold;
+      color: #FF9500;
+      letter-spacing: 0.5px;
+    }
 
-  .info-cell span {
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--navy);
-    line-height: 1.2;
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+    /* Barcode */
+    .barcode-area {
+      position: absolute;
+      bottom: 45px;
+      left: 20px;
+      width: 230px;
+      height: 40px;
+    }
 
-  /* employee id gets gold accent */
-  .info-cell.highlight span {
-    color: var(--gold);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
-    letter-spacing: 0.05em;
-  }
-
-  /* full-width cell */
-  .info-cell.full {
-    width: 100%;
-  }
-
-  /* ── FOOTER BAR ── */
-  .front-footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--navy);
-    padding: 10px 22px;
-    height: 40px;
-    overflow: hidden;
-  }
-
-  .verified-tag {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--gold);
-    float: left;
-    display: block;
-    margin-top: 4px;
-  }
-
-  .verified-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #22c55e;
-    display: inline-block;
-    margin-right: 6px;
-    position: relative;
-    top: 1px;
-  }
-
-  .website {
-    font-size: 9px;
-    color: var(--text-muted);
-    letter-spacing: 0.06em;
-    float: right;
-    display: block;
-    margin-top: 4px;
-  }
-
-  /* ── BARCODE ── */
-  .barcode-row {
-    padding: 0 22px;
-    text-align: left;
-    margin-top: 5px;
-  }
-
-  .barcode-svg {
-    height: 32px;
-    max-width: 150px;
-    display: inline-block;
-    vertical-align: middle;
-  }
-
-  .emp-id-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 0.12em;
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 10px;
-  }
-
-  /* ══════════════════════════════
-     BACK CARD
-  ══════════════════════════════ */
-  .back {
-    width: 100%;
-    height: 100%;
-    background: var(--navy);
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* gold frame */
-  .back::after {
-    content: '';
-    position: absolute;
-    inset: 6px;
-    border: 1px solid rgba(255,149,0,0.2);
-    border-radius: 15px;
-    pointer-events: none;
-    z-index: 10;
-  }
-
-  .back-header {
-    padding: 22px 24px 16px;
-    border-bottom: 1px solid rgba(255,149,0,0.15);
-    position: relative;
-    z-index: 1;
-    overflow: hidden;
-  }
-
-  .back-logo {
-    width: 40px; height: 40px;
-    border-radius: 9px;
-    background: var(--gold);
-    display: flex; align-items: center; justify-content: center;
-    float: left;
-    margin-right: 14px;
-  }
-
-  .back-logo svg { width: 22px; height: 22px; }
-  .back-logo img { width: 100%; height: 100%; object-fit: contain; }
-
-  .back-brand {
+    .barcode-img {
+      width: 140px;
+      height: 25px;
       float: left;
-      width: 250px;
-      margin-top: 5px;
-  }
+    }
 
-  .back-brand h2 {
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--gold);
-    letter-spacing: 0.1em;
-  }
-
-  .back-brand p {
-    font-size: 9px;
-    color: var(--text-muted);
-    letter-spacing: 0.12em;
-    margin-top: 2px;
-  }
-
-  /* QR area */
-  .qr-section {
-    padding: 20px 24px 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    z-index: 1;
-    text-align: center;
-  }
-
-  .qr-frame {
-    background: var(--white);
-    border-radius: 14px;
-    padding: 12px;
-    position: relative;
-    display: inline-block;
-  }
-
-  /* corner accents */
-  .qr-frame::before, .qr-frame::after {
-    content: '';
-    position: absolute;
-    width: 14px; height: 14px;
-    border-color: var(--gold);
-    border-style: solid;
-  }
-
-  .qr-frame::before {
-    top: -2px; left: -2px;
-    border-width: 2px 0 0 2px;
-    border-radius: 4px 0 0 0;
-  }
-
-  .qr-frame::after {
-    bottom: -2px; right: -2px;
-    border-width: 0 2px 2px 0;
-    border-radius: 0 0 4px 0;
-  }
-
-  .qr-placeholder {
-    width: 120px;
-    height: 120px;
-    background: #1a1a1a;
-  }
-  
-  .qr-placeholder img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-  }
-
-  .qr-label {
-    margin-top: 10px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    color: var(--text-muted);
-    text-transform: uppercase;
-  }
-
-  /* notice block */
-  .notice-block {
-    margin: 0 20px;
-    padding: 14px 16px;
-    background: rgba(255,149,0,0.07);
-    border: 1px solid rgba(255,149,0,0.18);
-    border-radius: 10px;
-    position: relative;
-    z-index: 1;
-    text-align: center;
-  }
-
-  .notice-block p {
-    font-size: 10px;
-    color: #c8d8e8;
-    line-height: 1.65;
-    text-align: center;
-    letter-spacing: 0.02em;
-  }
-
-  .notice-block strong {
-    color: var(--white);
-  }
-
-  /* emergency pill */
-  .emergency-row {
-    padding: 14px 20px 0;
-    text-align: center;
-    position: relative;
-    z-index: 1;
-  }
-
-  .emergency-pill {
-    display: inline-block;
-    border: 1.5px solid var(--gold);
-    border-radius: 30px;
-    padding: 7px 18px;
-  }
-
-  .emergency-pill span {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: var(--gold);
-  }
-
-  /* signatures */
-  .sig-row {
-    padding: 14px 24px 0;
-    position: relative;
-    z-index: 1;
-    height: 60px;
-  }
-
-  .sig-block {
-    text-align: center;
-    width: 50%;
-  }
-
-  .sig-block-left {
-      float: left;
-  }
-  .sig-block-right {
+    .emp-id-label {
       float: right;
-  }
+      font-size: 10px;
+      font-weight: bold;
+      color: #555E70;
+      letter-spacing: 1px;
+      margin-top: 8px;
+    }
 
-  .sig-line {
-    width: 80px;
-    height: 1px;
-    background: rgba(255,149,0,0.4);
-    margin: 30px auto 4px;
-  }
-  
-  .sig-img {
-      max-height: 35px;
+    /* Footer border */
+    .front-footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 35px;
+      background: #04111F;
+    }
+
+    .footer-left {
+      position: absolute;
+      left: 15px;
+      top: 11px;
+      font-size: 9px;
+      font-weight: bold;
+      color: #FF9500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .verified-circle {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      margin-right: 4px;
+    }
+
+    .footer-right {
+      position: absolute;
+      right: 15px;
+      top: 11px;
+      font-size: 8px;
+      color: #8a9bb0;
+      letter-spacing: 0.5px;
+    }
+
+
+    /* ════ BACK PAGE ════ */
+
+    .back-header-box {
+      border-bottom: 1px solid rgba(255,149,0,0.15);
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 230px;
+      height: 45px;
+    }
+
+    .back-logo-box {
+      float: left;
+      width: 32px;
+      height: 32px;
+      background: #FF9500;
+      border-radius: 6px;
+      margin-right: 10px;
+      margin-top: 3px;
+    }
+
+    .back-logo-img {
+      width: 20px;
+      height: 20px;
+      margin: 6px;
+      object-fit: contain;
+    }
+
+    .back-text-box {
+      float: left;
+      padding-top: 4px;
+    }
+
+    .back-text-h2 {
+      font-size: 11px;
+      font-weight: bold;
+      color: #FF9500;
+      letter-spacing: 0.5px;
+    }
+
+    .back-text-p {
+      font-size: 7px;
+      color: #8a9bb0;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    .qr-area {
+      position: absolute;
+      top: 85px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+    }
+
+    .qr-box {
+      display: inline-block;
+      background: #FFFFFF;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #FF9500;
+    }
+
+    .qr-img {
+      width: 80px;
+      height: 80px;
+    }
+
+    .qr-label {
+      margin-top: 6px;
+      font-size: 8px;
+      font-weight: bold;
+      color: #8a9bb0;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .notice-box {
+      position: absolute;
+      top: 220px;
+      left: 20px;
+      width: 210px; /* padding included: 230px */
+      background: rgba(255,149,0,0.07);
+      border: 1px solid rgba(255,149,0,0.18);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .notice-p {
+      font-size: 8.5px;
+      color: #c8d8e8;
+      line-height: 1.5;
+    }
+
+    .emergency-box {
+      position: absolute;
+      top: 300px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+    }
+
+    .emergency-pill {
+      display: inline-block;
+      border: 1.5px solid #FF9500;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 10px;
+      font-weight: bold;
+      color: #FF9500;
+      letter-spacing: 0.5px;
+    }
+
+    .sig-table {
+      position: absolute;
+      top: 345px;
+      left: 20px;
+      width: 230px;
+      border-collapse: collapse;
+    }
+
+    .sig-td {
+      width: 50%;
+      text-align: center;
+      position: relative;
+      height: 40px;
+    }
+
+    .sig-line {
+      width: 60px;
+      height: 1px;
+      background: rgba(255,149,0,0.4);
+      margin: 0 auto;
+    }
+
+    .sig-label {
+      font-size: 7px;
+      color: #8a9bb0;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .sig-img {
+      height: 25px;
       width: auto;
-      margin: 0 auto 4px;
-      display: block;
-  }
+      margin-bottom: 2px;
+    }
 
-  .sig-block p {
-    font-size: 8px;
-    color: var(--text-muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    line-height: 1.5;
-  }
+    .seal-img {
+      position: absolute;
+      right: 15px;
+      bottom: 8px;
+      height: 40px;
+      width: auto;
+      opacity: 0.6;
+    }
 
-  /* back footer */
-  .back-footer {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    padding: 12px 22px;
-    border-top: 1px solid rgba(255,149,0,0.12);
-    text-align: center;
-    position: relative;
-    z-index: 1;
-  }
+    .back-footer {
+      position: absolute;
+      bottom: 10px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      border-top: 1px solid rgba(255,149,0,0.12);
+      padding-top: 8px;
+    }
 
-  .back-footer p {
-    font-size: 9px;
-    color: var(--text-muted);
-    letter-spacing: 0.06em;
-    text-align: center;
-    line-height: 1.6;
-    margin-bottom: 4px;
-  }
+    .back-footer-p {
+      font-size: 7px;
+      color: #8a9bb0;
+      line-height: 1.4;
+      margin-bottom: 2px;
+    }
 
-  .back-footer .reg {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 10px;
-    color: rgba(255,149,0,0.6);
-    letter-spacing: 0.14em;
-    display: block;
-  }
+    .back-footer-reg {
+      font-size: 8px;
+      color: rgba(255,149,0,0.6);
+      letter-spacing: 1px;
+    }
 
-</style>
+  </style>
 </head>
 <body>
 
-<!-- ════════ FRONT ════════ -->
-<div class="pdf-page">
-  <div class="card">
-    <div class="front">
+  <!-- ════════ FRONT ════════ -->
+  <div class="page">
+    <div class="gold-border"></div>
 
-      <!-- Header -->
-      <div class="front-header">
-        <div class="header-top">
-          <div class="logo-box">
-             @if($logoBase64)
-                 <img src="{{ $logoBase64 }}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;">
-             @else
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="5" fill="#04111F"/>
-                  <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#04111F" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-             @endif
-          </div>
-          <div class="company-text">
-            <h1>{{ $companyName ?? 'SURYAMITRA SOLAR NETWORK' }}</h1>
-            @if(isset($affiliatedPartner))
-              <p>Affiliated with: {{ $affiliatedPartner }}</p>
-            @endif
-          </div>
-        </div>
-      </div>
-
-      <!-- Photo -->
-      <div class="photo-section">
-        <div class="photo-ring">
-          <div class="photo-inner">
-            @if($profilePhotoBase64)
-                <img src="{{ $profilePhotoBase64 }}" alt="Photo">
-            @else
-                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="32" cy="26" r="12" fill="rgba(255,149,0,0.4)"/>
-                  <path d="M8 56c0-13.255 10.745-24 24-24s24 10.745 24 24" fill="rgba(255,149,0,0.2)"/>
-                </svg>
-            @endif
-          </div>
-        </div>
-        <div class="role-badge">{{ $designation ?? 'Member' }}</div>
-      </div>
-
-      <!-- Name -->
-      <div class="name-block">
-        <h2>{{ $user->name ?? 'User Name' }}</h2>
-      </div>
-
-      <div class="divider">
-        <div class="divider-inner">
-            <div class="divider-line" style="left: 0;"></div>
-            <div class="divider-dot"></div>
-            <div class="divider-line" style="right: 0;"></div>
-        </div>
-      </div>
-
-      <!-- Info Grid -->
-      <div class="info-grid">
-        <div class="info-row">
-            <div class="info-cell highlight">
-              <label>Employee ID</label>
-              <span>{{ $cardNumber ?? 'N/A' }}</span>
-            </div>
-            <div class="info-cell">
-              <label>Date of Birth</label>
-              <span>{{ $dob }}</span>
-            </div>
-        </div>
-        
-        <div class="info-row">
-            <div class="info-cell">
-              <label>Father's Name</label>
-              <span>{{ $user->father_name ?? 'N/A' }}</span>
-            </div>
-            <div class="info-cell">
-              <label>Joining Date</label>
-              <span>{{ $joiningDate }}</span>
-            </div>
-        </div>
-
-        <div class="info-row">
-            <div class="info-cell">
-              <label>Contact</label>
-              <span>{{ $mobile }}</span>
-            </div>
-            <div class="info-cell">
-              <label>Address</label>
-              <span>{{ $address }}</span>
-            </div>
-        </div>
-      </div>
-
-      <!-- Barcode row -->
-      <div class="barcode-row">
-        @if($barcodeBase64)
-            <img src="{{ $barcodeBase64 }}" class="barcode-svg" alt="Barcode">
+    <div class="front-header">
+      <div class="header-logo-box">
+        @if($logoBase64)
+          <img src="{{ $logoBase64 }}" class="header-logo-img" alt="Logo">
         @endif
-        <span class="emp-id-label">{{ $cardNumber ?? '' }}</span>
       </div>
-
-      <!-- Footer -->
-      <div class="front-footer">
-        <div class="verified-tag">
-          <div class="verified-dot"></div>
-          Verified Identity
-        </div>
-        <span class="website">{{ $companyWebsite ?? 'suryamitra.in' }}</span>
+      <div class="header-text-box">
+        <div class="header-text-h1">{{ $companyName ?? 'SURYAMITRA' }}</div>
+        <div class="header-text-p">Affiliated with: {{ $affiliatedPartner ?? 'Malik Surya Tech Agency' }}</div>
       </div>
-
     </div>
+
+    <div class="photo-section-bg"></div>
+    <div class="photo-section-curve"></div>
+
+    <div class="photo-holder-outer">
+      <div class="photo-holder-inner">
+        @if($profilePhotoBase64)
+          <img src="{{ $profilePhotoBase64 }}" class="profile-photo" alt="Photo">
+        @else
+          <div class="initials-avatar">{{ $initials ?? 'SM' }}</div>
+        @endif
+      </div>
+    </div>
+
+    <div class="role-badge-box">
+      <div class="role-badge">{{ $designation ?? 'Administrator' }}</div>
+    </div>
+
+    <div class="name-h2">{{ $user->name ?? 'User Name' }}</div>
+
+    <div class="divider-line"></div>
+    <div class="divider-dot"></div>
+
+    <table class="info-table">
+      <tr>
+        <td class="info-td">
+          <div class="info-td-border"></div>
+          <div class="info-label">Employee ID</div>
+          <div class="info-val info-val-gold">{{ $cardNumber ?? 'N/A' }}</div>
+        </td>
+        <td class="info-td">
+          <div class="info-td-border"></div>
+          <div class="info-label">Joining Date</div>
+          <div class="info-val">{{ $joiningDate }}</div>
+        </td>
+      </tr>
+      <tr>
+        <td class="info-td">
+          <div class="info-td-border"></div>
+          <div class="info-label">Date of Birth</div>
+          <div class="info-val">{{ $dob }}</div>
+        </td>
+        <td class="info-td">
+          <div class="info-td-border"></div>
+          <div class="info-label">Contact</div>
+          <div class="info-val">{{ $mobile }}</div>
+        </td>
+      </tr>
+      <tr>
+        <td class="info-td">
+          <div class="info-td-border"></div>
+          <div class="info-label">Father's Name</div>
+          <div class="info-val" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $user->father_name ?? 'N/A' }}</div>
+        </td>
+        <td class="info-td">
+          <div class="info-td-border"></div>
+          <div class="info-label">Address</div>
+          <div class="info-val" style="font-size: 8px;">{{ $address }}</div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="barcode-area">
+      @if($barcodeBase64)
+        <img src="{{ $barcodeBase64 }}" class="barcode-img" alt="Barcode">
+      @endif
+      <div class="emp-id-label">{{ $cardNumber ?? '' }}</div>
+    </div>
+
+    <div class="front-footer">
+      <div class="footer-left">
+        <span class="verified-circle"></span> Verified Identity
+      </div>
+      <div class="footer-right">{{ $companyWebsite ?? 'andleebsurya.in' }}</div>
+    </div>
+
   </div>
-</div>
 
-<!-- ════════ BACK ════════ -->
-<div class="pdf-page">
-  <div class="card card-back">
-    <div class="back">
+  <!-- ════════ BACK ════════ -->
+  <div class="page-back">
+    <div class="gold-border"></div>
 
-      <!-- Back Header -->
-      <div class="back-header">
-        <div class="back-logo">
-            @if($globalLogoBase64 || $logoBase64)
-                <img src="{{ $globalLogoBase64 ?? $logoBase64 }}" alt="Logo">
-            @else
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="5" fill="#04111F"/>
-                  <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#04111F" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            @endif
-        </div>
-        <div class="back-brand">
-          <h2>{{ $globalAffiliatedPartner ?? $companyName ?? 'SURYAMITRA SOLAR INFRA' }}</h2>
-          @if($globalRegNo)
-            <p>Reg No: {{ $globalRegNo }}</p>
-          @endif
-        </div>
+    <div class="back-header-box">
+      <div class="back-logo-box">
+        @if($globalLogoBase64)
+          <img src="{{ $globalLogoBase64 }}" class="back-logo-img" alt="Logo">
+        @endif
       </div>
-
-      <!-- QR area -->
-      <div class="qr-section">
-        <div class="qr-frame">
-          <div class="qr-placeholder">
-             @if($qrBase64)
-                <img src="{{ $qrBase64 }}" alt="QR">
-             @endif
-          </div>
-        </div>
-        <div class="qr-label">Scan to Verify</div>
+      <div class="back-text-box">
+        <div class="back-text-h2">{{ $companyName ?? 'ANDLEEB CLUSTER' }}</div>
+        <div class="back-text-p">Affiliated with: {{ $globalAffiliatedPartner ?? 'Malik Surya Tech Agency' }}</div>
       </div>
+    </div>
 
-      <!-- notice block -->
-      <div class="notice-block">
-        <p>THIS IDENTITY INSTRUMENT IS ISSUED BY <br><strong>{{ $companyName ?? 'Suryamitra Solar Infrastructure' }}</strong>. <br>ISSUED FOR SECURE ACCESS ONLY. <br><br>IF FOUND, PLEASE RETURN TO A REGIONAL FACILITY.</p>
+    <div class="qr-area">
+      <div class="qr-box">
+        @if($qrBase64)
+          <img src="{{ $qrBase64 }}" class="qr-img" alt="QR">
+        @endif
       </div>
+      <div class="qr-label">Scan to Verify</div>
+    </div>
 
-      <!-- emergency pill -->
-      <div class="emergency-row">
-        <div class="emergency-pill">
-          <span>EMERGENCY: {{ $companyEmergency ?? '9906766655' }}</span>
-        </div>
+    <div class="notice-box">
+      <div class="notice-p">
+        THIS IDENTITY INSTRUMENT IS ISSUED BY <br>
+        <strong style="color: #FFF;">{{ $companyName ?? 'Suryamitra Solar Infrastructure' }}</strong>.<br>
+        ISSUED FOR SECURE ACCESS ONLY.<br><br>
+        IF FOUND, PLEASE RETURN TO A REGIONAL FACILITY OR THE RESIDENCY ROAD HQ.
       </div>
+    </div>
 
-      <!-- signatures -->
-      <div class="sig-row">
-        <div class="sig-block sig-block-left">
-          @if($sigBase64)
-            <img src="{{ $sigBase64 }}" alt="Signature" class="sig-img">
-          @else
-            <div class="sig-line"></div>
-          @endif
-          <p>{{ $icardVerifiedBy ?? 'CHIEF OPERATIONS OFFICER' }}</p>
-        </div>
-        <div class="sig-block sig-block-right">
+    <div class="emergency-box">
+      <div class="emergency-pill">EMERGENCY: {{ $companyEmergency ?? '9906766655' }}</div>
+    </div>
+
+    <table class="sig-table">
+      <tr>
+        <td class="sig-td" style="vertical-align: bottom;">
+          <!-- Left side signature / holder signature -->
           <div class="sig-line"></div>
-          <p>HOLDER'S SIGNATURE</p>
-        </div>
-      </div>
+          <div class="sig-label">HOLDER'S SIGNATURE</div>
+        </td>
+        <td class="sig-td" style="vertical-align: bottom;">
+          <!-- Right side signature / authorizer -->
+          @if($sealBase64)
+            <img src="{{ $sealBase64 }}" class="seal-img" alt="Seal">
+          @endif
+          @if($sigBase64)
+            <img src="{{ $sigBase64 }}" class="sig-img" alt="Signature">
+          @endif
+          <div class="sig-line"></div>
+          <div class="sig-label">AUTHORIZED SIGNATORY</div>
+        </td>
+      </tr>
+    </table>
 
-      <!-- back footer -->
-      <div class="back-footer">
-        <p>{{ $companyAddress ?? 'Srinagar, Jammu & Kashmir' }}<br>Phone: {{ $companyPhone ?? '+91 99067 66655' }} | Email: {{ $companyEmail ?? 'info@suryamitra.in' }}</p>
-        @if($companyRegNo)
-          <span class="reg">REG NO: {{ $companyRegNo }}</span>
-        @endif
+    <div class="back-footer">
+      <div class="back-footer-p">
+        {{ $companyAddress ?? 'Srinagar, Jammu & Kashmir' }}
       </div>
-
+      <div class="back-footer-p">
+        Phone: {{ $companyPhone ?? '+91 99067 66655' }} &nbsp; | &nbsp; Email: {{ $companyEmail ?? 'info@suryamitra.in' }}
+      </div>
+      <div class="back-footer-reg">REG NO: {{ $globalRegNo ?? '123456789' }}</div>
     </div>
+
   </div>
-</div>
 
 </body>
 </html>
