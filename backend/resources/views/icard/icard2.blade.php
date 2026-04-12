@@ -392,19 +392,16 @@
          <div style="margin: 0 25px; border-bottom: 1px solid rgba(255,149,0,0.15); padding-bottom: 50px; position: relative;">
             <table style="width: 100%; text-align: center;">
                <tr>
-                  <td style="width: 50%; vertical-align: bottom;">
-                     <div style="font-size: 8px; color: #8a9bb0; letter-spacing: 1px; text-transform: uppercase; line-height: 1.4;">
-                        Issuing Authority<br>Principal Seal
-                     </div>
-                  </td>
-                  <td style="width: 50%; vertical-align: bottom;">
-                     <div style="position: relative; height: 35px; width: 100%; margin-bottom: 4px;">
-                        @if($sigBase64)
-                          <img src="{{ $sigBase64 }}" style="position: absolute; right: 15px; top: 10px; height: 25px; width: auto; z-index: 10;">
-                        @endif
-                        @if($sealBase64)
-                          <img src="{{ $sealBase64 }}" style="position: absolute; right: 35px; top: 0; height: 35px; width: auto; opacity: 0.6; z-index: 5;">
-                        @endif
+                  <td style="width: 100%; vertical-align: bottom;">
+                     <div style="position: relative; height: 35px; width: 100%; margin-bottom: 4px; text-align: center;">
+                        <div style="display: inline-block; position: relative; width: 80px; height: 35px;">
+                           @if($sigBase64)
+                             <img src="{{ $sigBase64 }}" style="position: absolute; left: 10px; top: 10px; height: 25px; width: auto; z-index: 10;">
+                           @endif
+                           @if($sealBase64)
+                             <img src="{{ $sealBase64 }}" style="position: absolute; left: 30px; top: 0; height: 35px; width: auto; opacity: 0.6; z-index: 5;">
+                           @endif
+                        </div>
                      </div>
                      <div style="font-size: 8px; color: #8a9bb0; letter-spacing: 1px; text-transform: uppercase; line-height: 1.4;">
                         Verified By<br>Chief Operations Officer
