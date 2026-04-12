@@ -27,9 +27,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 40px;
-    flex-wrap: wrap;
-    padding: 48px 24px;
+    gap: 60px;
+    padding: 48px;
     font-family: 'DM Sans', sans-serif;
     background-image:
       radial-gradient(ellipse at 20% 50%, rgba(255,149,0,0.06) 0%, transparent 60%),
@@ -382,6 +381,32 @@
     letter-spacing: 0.12em;
   }
 
+  /* ── SIGNATURES SHARED ── */
+  .sig-block {
+    text-align: center;
+  }
+  .sig-line {
+    width: 80px;
+    height: 1px;
+    background: rgba(255,149,0,0.4);
+    margin: 0 auto 4px;
+  }
+  .sig-block p {
+    font-size: 8px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1.5;
+  }
+  .sig-row {
+    padding: 10px 24px 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+  }
+
   /* ══════════════════════════════
      BACK CARD
   ══════════════════════════════ */
@@ -721,6 +746,18 @@
         </div>
       </div>
 
+      <!-- Signatures row -->
+      <div class="sig-row">
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <p>Issuing Authority<br>Principal Seal</p>
+        </div>
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <p>Verified By<br>Officer</p>
+        </div>
+      </div>
+
       <!-- Barcode row -->
       <div class="barcode-row">
         <svg class="barcode-svg" height="32" viewBox="0 0 200 32" xmlns="http://www.w3.org/2000/svg">
@@ -805,4 +842,123 @@
           </svg>
         </div>
         <div class="back-brand">
-          <h2>MALIK
+          <h2>MALIK SURYA</h2>
+          <p>REG NO: REG/SMS/2026/0892</p>
+        </div>
+      </div>
+
+      <!-- QR Code -->
+      <div class="qr-section">
+        <div class="qr-frame">
+          <!-- Decorative QR placeholder — replace with actual QR image -->
+          <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <!-- Finder patterns -->
+            <rect x="4" y="4" width="28" height="28" rx="3" fill="#04111F"/>
+            <rect x="8" y="8" width="20" height="20" rx="1" fill="white"/>
+            <rect x="12" y="12" width="12" height="12" rx="1" fill="#04111F"/>
+
+            <rect x="88" y="4" width="28" height="28" rx="3" fill="#04111F"/>
+            <rect x="92" y="8" width="20" height="20" rx="1" fill="white"/>
+            <rect x="96" y="12" width="12" height="12" rx="1" fill="#04111F"/>
+
+            <rect x="4" y="88" width="28" height="28" rx="3" fill="#04111F"/>
+            <rect x="8" y="92" width="20" height="20" rx="1" fill="white"/>
+            <rect x="12" y="96" width="12" height="12" rx="1" fill="#04111F"/>
+
+            <!-- Data modules (representative pattern) -->
+            <rect x="40" y="4"  width="8" height="8" fill="#04111F"/>
+            <rect x="52" y="4"  width="8" height="8" fill="#04111F"/>
+            <rect x="68" y="4"  width="8" height="8" fill="#04111F"/>
+            <rect x="40" y="16" width="8" height="8" fill="#04111F"/>
+            <rect x="56" y="16" width="8" height="8" fill="#04111F"/>
+            <rect x="72" y="16" width="8" height="8" fill="#04111F"/>
+            <rect x="40" y="28" width="8" height="8" fill="#04111F"/>
+            <rect x="60" y="28" width="8" height="8" fill="#04111F"/>
+            <rect x="4"  y="40" width="8" height="8" fill="#04111F"/>
+            <rect x="16" y="40" width="8" height="8" fill="#04111F"/>
+            <rect x="28" y="40" width="8" height="8" fill="#04111F"/>
+            <rect x="44" y="40" width="8" height="8" fill="#04111F"/>
+            <rect x="60" y="40" width="8" height="8" fill="#04111F"/>
+            <rect x="72" y="40" width="8" height="8" fill="#04111F"/>
+            <rect x="88" y="40" width="8" height="8" fill="#04111F"/>
+            <rect x="108" y="40" width="8" height="8" fill="#04111F"/>
+            <rect x="4"  y="52" width="8" height="8" fill="#04111F"/>
+            <rect x="24" y="52" width="8" height="8" fill="#04111F"/>
+            <rect x="40" y="52" width="8" height="8" fill="#04111F"/>
+            <rect x="56" y="52" width="8" height="8" fill="#04111F"/>
+            <rect x="68" y="52" width="8" height="8" fill="#04111F"/>
+            <rect x="84" y="52" width="8" height="8" fill="#04111F"/>
+            <rect x="100" y="52" width="8" height="8" fill="#04111F"/>
+            <rect x="4"  y="64" width="8" height="8" fill="#04111F"/>
+            <rect x="20" y="64" width="8" height="8" fill="#04111F"/>
+            <rect x="44" y="64" width="8" height="8" fill="#04111F"/>
+            <rect x="60" y="64" width="8" height="8" fill="#04111F"/>
+            <rect x="76" y="64" width="8" height="8" fill="#04111F"/>
+            <rect x="108" y="64" width="8" height="8" fill="#04111F"/>
+            <rect x="40" y="76" width="8" height="8" fill="#04111F"/>
+            <rect x="56" y="76" width="8" height="8" fill="#04111F"/>
+            <rect x="72" y="76" width="8" height="8" fill="#04111F"/>
+            <rect x="88" y="76" width="8" height="8" fill="#04111F"/>
+            <rect x="104" y="76" width="8" height="8" fill="#04111F"/>
+            <rect x="40" y="88" width="8" height="8" fill="#04111F"/>
+            <rect x="60" y="88" width="8" height="8" fill="#04111F"/>
+            <rect x="76" y="100" width="8" height="8" fill="#04111F"/>
+            <rect x="92" y="100" width="8" height="8" fill="#04111F"/>
+            <rect x="108" y="100" width="8" height="8" fill="#04111F"/>
+            <rect x="40" y="108" width="8" height="8" fill="#04111F"/>
+            <rect x="56" y="108" width="8" height="8" fill="#04111F"/>
+            <rect x="68" y="108" width="8" height="8" fill="#04111F"/>
+            <rect x="84" y="108" width="8" height="8" fill="#04111F"/>
+            <rect x="100" y="108" width="8" height="8" fill="#04111F"/>
+          </svg>
+        </div>
+        <div class="qr-label">Scan to Verify</div>
+      </div>
+
+      <!-- Notice -->
+      <div class="notice-block">
+        <p>
+          This identity instrument is issued by<br>
+          <strong>Andleeb Cluster of Services Pvt. Ltd.</strong><br>
+          Issued for secure access only.<br>
+          If found, please return to a regional facility<br>
+          or the <strong>Residency Road HQ.</strong>
+        </p>
+      </div>
+
+      <!-- Emergency -->
+      <div class="emergency-row">
+        <div class="emergency-pill">
+          <svg class="em-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.22.01h3A2 2 0 017.2 1.72c.13.96.36 1.9.71 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.35 1.85.58 2.81.71A2 2 0 0122 14.92z"/>
+          </svg>
+          <span>Emergency: 9906766655</span>
+        </div>
+      </div>
+
+      <!-- Signatures -->
+      <div class="sig-row">
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <p>Issuing Authority<br>Principal Seal</p>
+        </div>
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <p>Verified By<br>Chief Operations Officer</p>
+        </div>
+      </div>
+
+      <!-- Back Footer -->
+      <div class="back-footer">
+        <span class="reg">REG/SMS/2026/0892</span>
+        <p>Tali Mohallah Sugin, Khag, Budgam – 193411<br>
+        +91-9797287817 &nbsp;|&nbsp; info@andleebsurya.in</p>
+      </div>
+
+    </div>
+  </div>
+  <div class="card-label">Back</div>
+</div>
+
+</body>
+</html>

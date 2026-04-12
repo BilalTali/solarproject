@@ -38,7 +38,7 @@
     }
 
     @page { 
-      size: 360px 620px;
+      size: 760px 650px;
       margin: 0; 
     }
 
@@ -48,15 +48,26 @@
       padding: 0;
     }
 
+    .main-container {
+      width: 760px;
+      height: 650px;
+      padding: 15px;
+      background: #0d1b2a; /* Dark background like the screenshot */
+    }
+
     .pdf-page {
       width: 360px;
       height: 620px;
-      page-break-after: always;
+      float: left;
       position: relative;
       overflow: hidden;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
-    .pdf-page:last-child {
-      page-break-after: avoid;
+    .pdf-page-gap {
+      width: 40px;
+      height: 620px;
+      float: left;
     }
 
     /* ─── FRONT CARD ─── */
@@ -195,14 +206,14 @@
     /* Barcode Area */
     .barcode-area {
       position: absolute;
-      top: 510px;
+      top: 535px;
       left: 22px;
       width: 316px;
       height: 40px;
       z-index: 10;
     }
-    .barcode-img { float: left; width: 180px; height: 32px; }
-    .barcode-val { float: right; color: #8a9bb0; font-size: 10px; padding-top: 10px; }
+    .barcode-img { float: left; width: 140px; height: 32px; }
+    .barcode-val { float: right; color: #8a9bb0; font-size: 9px; padding-top: 10px; }
 
     /* Footer */
     .footer-bar {
@@ -288,16 +299,27 @@
       top: 480px;
       left: 20px;
       width: 320px;
-      height: 100px;
+      height: 60px;
       z-index: 10;
       border-top: 1px solid rgba(255,149,0,0.15);
-      padding-top: 15px;
+      padding-top: 5px;
     }
-    .sig-block { width: 100%; text-align: center; }
-    .sig-line { width: 100px; height: 1px; background: rgba(255,149,0,0.4); margin: 0 auto 5px; }
-    .sig-img-wrap { position: relative; height: 40px; width: 120px; margin: 0 auto; }
-    .sig-img { position: absolute; left: 10px; top: 5px; height: 30px; z-index: 10; }
-    .seal-img { position: absolute; left: 35px; top: -5px; height: 45px; opacity: 0.6; z-index: 5; }
+    .sig-footer-front {
+      position: absolute;
+      top: 468px;
+      left: 20px;
+      width: 320px;
+      height: 60px;
+      z-index: 10;
+      border-top: 1px solid rgba(255,149,0,0.1);
+      padding-top: 5px;
+    }
+    .sig-block { width: 48%; float: left; text-align: center; }
+    .sig-line { width: 100%; height: 1px; background: rgba(255,149,0,0.4); margin: 0 auto 3px; }
+    .sig-img-wrap { position: relative; height: 30px; width: 100%; margin: 0 auto; }
+    .sig-img { position: absolute; left: 50%; margin-left: -40px; top: 0; height: 25px; z-index: 10; }
+    .seal-img { position: absolute; left: 50%; margin-left: -20px; top: -10px; height: 40px; opacity: 0.6; z-index: 5; }
+    .sig-block p { font-size: 7px; color: #8a9bb0; text-transform: uppercase; line-height: 1.2; }
 
     .back-final {
       position: absolute;
@@ -312,6 +334,7 @@
 </head>
 <body>
 
+  <div class="main-container">
   <!-- FRONT -->
   <div class="pdf-page">
     <div class="front-bg">
@@ -385,6 +408,27 @@
          </div>
       </div>
 
+      <div class="sig-footer-front">
+         <div class="sig-block">
+            <div class="sig-img-wrap">
+               @if($sealBase64)
+                 <img src="{{ $sealBase64 }}" class="seal-img">
+               @endif
+            </div>
+            <div class="sig-line"></div>
+            <p>Principal Seal</p>
+         </div>
+         <div class="sig-block" style="float: right;">
+            <div class="sig-img-wrap">
+               @if($sigBase64)
+                 <img src="{{ $sigBase64 }}" class="sig-img">
+               @endif
+            </div>
+            <div class="sig-line"></div>
+            <p>Verified By</p>
+         </div>
+      </div>
+
       <div class="barcode-area">
          @if($barcodeBase64)
            <img src="{{ $barcodeBase64 }}" class="barcode-img">
@@ -397,7 +441,7 @@
          <div class="footer-right">{{ $companyWebsite ?? 'andleebsurya.in' }}</div>
       </div>
     </div>
-  </div>
+  <div class="pdf-page-gap"></div>
 
   <!-- BACK -->
   <div class="pdf-page">
@@ -440,15 +484,21 @@
       <div class="sig-footer">
          <div class="sig-block">
             <div class="sig-img-wrap">
-               @if($sigBase64)
-                 <img src="{{ $sigBase64 }}" class="sig-img">
-               @endif
                @if($sealBase64)
                  <img src="{{ $sealBase64 }}" class="seal-img">
                @endif
             </div>
             <div class="sig-line"></div>
-            <p>Verified By<br>Chief Operations Officer</p>
+            <p>Issuing Authority</p>
+         </div>
+         <div class="sig-block" style="float: right;">
+            <div class="sig-img-wrap">
+               @if($sigBase64)
+                 <img src="{{ $sigBase64 }}" class="sig-img">
+               @endif
+            </div>
+            <div class="sig-line"></div>
+            <p>Verified By</p>
          </div>
       </div>
 
@@ -460,5 +510,6 @@
     </div>
   </div>
 
+  </div> <!-- end main-container -->
 </body>
 </html>
