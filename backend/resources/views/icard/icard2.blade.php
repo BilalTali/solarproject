@@ -31,485 +31,421 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    /* Reset & Fonts */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, p, span, div, strong, table, td, tr {
-      font-family: Helvetica, Arial, sans-serif !important;
+    /* Use fixed fonts for DOMPDF */
+    body {
+      font-family: Helvetica, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #0d1b2a;
     }
 
     @page { 
-      size: 760px 650px;
+      size: 570pt 490pt;
       margin: 0; 
     }
 
-    body {
-      background: #FFFFFF;
-      margin: 0; 
+    .main-table {
+      width: 100%;
+      border-spacing: 20px;
+      border-collapse: separate;
+    }
+
+    .card-cell {
+      width: 270pt;
       padding: 0;
+      vertical-align: top;
     }
 
-    .main-container {
-      width: 760px;
-      height: 650px;
-      padding: 15px;
-      background: #0d1b2a; /* Dark background like the screenshot */
-    }
-
-    .pdf-page {
-      width: 360px;
-      height: 620px;
-      float: left;
+    /* Standard Card Structure */
+    .card-box {
+      width: 270pt;
+      height: 465pt;
       position: relative;
+      background: #FFFFFF;
       overflow: hidden;
-      border-radius: 20px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    }
-    .pdf-page-gap {
-      width: 40px;
-      height: 620px;
-      float: left;
+      border-radius: 12pt; /* Keep it simpler to avoid bugs */
     }
 
     /* ─── FRONT CARD ─── */
     .front-bg {
       position: absolute;
       top: 0; left: 0;
-      width: 360px; height: 620px;
+      width: 270pt; height: 465pt;
       background: #f5f3ee;
-      z-index: 1;
     }
     .front-frame {
       position: absolute;
-      top: 6px; left: 6px;
-      width: 348px; height: 608px;
-      border: 1px solid rgba(255,149,0,0.25);
-      border-radius: 15px;
-      z-index: 100;
+      top: 5pt; left: 5pt;
+      width: 260pt; height: 455pt;
+      border: 1pt solid rgba(255,149,0,0.25);
+      border-radius: 10pt;
     }
 
     .navy-header {
       position: absolute;
       top: 0; left: 0;
-      width: 360px; height: 260px;
+      width: 270pt; height: 180pt;
       background: #04111F;
-      z-index: 2;
     }
-    .navy-header::after {
-      content: '';
+    .gold-line {
       position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 3px;
-      background: #FF9500; /* gold-line substitute */
-    }
-
-    .curve {
-      position: absolute;
-      top: 240px; 
-      left: -20px;
-      width: 400px;
-      height: 40px;
-      background: #f5f3ee;
-      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-      z-index: 5;
-    }
-
-    /* Photo Ring */
-    .photo-center {
-      position: absolute;
-      top: 90px;
-      left: 125px;
-      width: 110px;
-      height: 110px;
-      z-index: 10;
-    }
-    .ring-bg {
-      position: absolute;
-      top: 0; left: 0;
-      width: 110px; height: 110px;
-      border-radius: 50%;
+      top: 178pt; left: 0; width: 270pt; height: 2pt;
       background: #FF9500;
     }
 
-    /* Photo */
-    .photo-img {
+    /* Curve - simplified using an image or simple shape */
+    .curve-mask {
       position: absolute;
-      top: 4px; left: 4px;
-      width: 102px; height: 102px;
-      border-radius: 50%;
-      border: 3px solid #04111F;
-      z-index: 11;
+      top: 160pt; left: -15pt; width: 300pt; height: 40pt;
+      background: #f5f3ee;
+      border-radius: 100% 100% 0 0;
+    }
+
+    /* Photo - Simplified to avoid orange block bug */
+    .photo-area {
+      position: absolute;
+      top: 60pt; left: 95pt;
+      width: 80pt; height: 80pt;
+    }
+    .photo-ring {
+      width: 80pt; height: 80pt;
+      border-radius: 40pt;
+      background: #FF9500;
+      padding: 2pt;
+    }
+    .photo-img {
+      width: 76pt; height: 76pt;
+      border-radius: 38pt;
+      border: 2pt solid #04111F;
       background: #0a1f35;
     }
 
-    /* Role Badge */
     .badge {
       position: absolute;
-      top: 212px;
-      left: 100px;
-      width: 160px;
+      top: 145pt;
+      left: 75pt;
+      width: 120pt;
       text-align: center;
       background: #FF9500;
       color: #04111F;
-      font-size: 11px;
+      font-size: 8pt;
       font-weight: bold;
-      padding: 5px 0;
-      border-radius: 20px;
-      z-index: 50;
+      padding: 4pt 0;
+      border-radius: 15pt;
       text-transform: uppercase;
-      letter-spacing: 1px;
     }
 
-    /* Name Area */
     .name-text {
       position: absolute;
-      top: 265px;
-      left: 0;
-      width: 360px;
+      top: 195pt;
+      left: 0; width: 270pt;
       text-align: center;
-      font-size: 20px;
+      font-size: 15pt;
       font-weight: bold;
       color: #04111F;
       text-transform: uppercase;
-      z-index: 10;
     }
 
-    /* Divider */
-    .divider-wrap {
+    .divider {
       position: absolute;
-      top: 300px;
-      left: 30px;
-      width: 300px;
-      height: 10px;
-      z-index: 10;
+      top: 220pt; left: 20pt; width: 230pt;
+      height: 1pt; background: rgba(255,149,0,0.4);
     }
-    .line { height: 1px; background: rgba(255,149,0,0.4); margin-top: 5px; }
-    .dot { position: absolute; left: 147px; top: 3px; width: 5px; height: 5px; border-radius: 50%; background: #FF9500; }
-
-    /* Grid */
-    .grid-wrap {
+    .dot {
       position: absolute;
-      top: 325px;
-      left: 20px;
-      width: 320px;
-      z-index: 10;
+      top: 218pt; left: 133pt; width: 4pt; height: 4pt;
+      background: #FF9500; border-radius: 2pt;
     }
-    .grid-row { clear: both; margin-bottom: 10px; width: 100%; height: 45px; }
-    .grid-cell { 
-      float: left; width: 152px; height: 42px; background: #FFF; border: 1px solid rgba(4,17,31,0.07); 
-      border-radius: 8px; margin-right: 8px; border-left: 3px solid #FF9500; padding: 4px 8px;
-    }
-    .grid-cell:last-child { margin-right: 0; }
-    .lbl { color: #8a9bb0; font-size: 8px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
-    .val { color: #04111F; font-size: 11.5px; font-weight: bold; }
-    .val-gold { color: #FF9500; font-size: 14px; }
 
-    /* Barcode Area */
+    /* Grid Layout for PDF */
+    .info-table {
+      position: absolute;
+      top: 235pt; left: 15pt; width: 240pt;
+      border-collapse: separate;
+      border-spacing: 5pt;
+    }
+    .info-cell {
+      width: 110pt; height: 32pt;
+      background: #FFF; border: 0.5pt solid rgba(4,17,31,0.07);
+      border-left: 2pt solid #FF9500; border-radius: 6pt;
+      padding: 3pt 6pt;
+    }
+    .lbl { color: #8a9bb0; font-size: 6pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2pt; }
+    .val { color: #04111F; font-size: 8pt; font-weight: bold; }
+    .val-gold { color: #FF9500; font-size: 10pt; }
+
+    /* Verification Row (Front) */
+    .sig-row-front {
+      position: absolute;
+      top: 350pt; left: 15pt; width: 240pt;
+    }
+    .sig-box { width: 110pt; float: left; text-align: center; }
+    .sig-img-wrap { height: 25pt; position: relative; margin-bottom: 2pt; }
+    .sig-img { height: 20pt; vertical-align: middle; }
+    .seal-img { height: 35pt; position: absolute; left: 50%; transform: translateX(-50%); top: -5pt; opacity: 0.6; }
+    .sig-line { width: 100%; height: 0.5pt; background: #FF9500; opacity: 0.4; }
+    .sig-lbl { font-size: 5.5pt; color: #8a9bb0; text-transform: uppercase; margin-top: 2pt; }
+
     .barcode-area {
       position: absolute;
-      top: 535px;
-      left: 22px;
-      width: 316px;
-      height: 40px;
-      z-index: 10;
+      top: 395pt; left: 15pt; width: 240pt;
     }
-    .barcode-img { float: left; width: 140px; height: 32px; }
-    .barcode-val { float: right; color: #8a9bb0; font-size: 9px; padding-top: 10px; }
+    .barcode-img { height: 24pt; width: 130pt; }
+    .barcode-val { float: right; color: #8a9bb0; font-size: 7pt; margin-top: 8pt; }
 
-    /* Footer */
     .footer-bar {
       position: absolute;
-      top: 580px;
-      left: 0;
-      width: 360px;
-      height: 40px;
-      background: #04111F;
-      padding: 12px 22px;
-      z-index: 10;
+      top: 435pt; left: 0; width: 270pt; height: 30pt;
+      background: #04111F; color: #FF9500;
+      padding: 8pt 15pt;
     }
-    .footer-left { float: left; color: #FF9500; font-size: 10px; font-weight: bold; text-transform: uppercase; }
-    .footer-right { float: right; color: #8a9bb0; font-size: 9px; }
-    .pulse-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #22c55e; margin-right: 5px; }
+    .f-left { float: left; font-size: 7.5pt; font-weight: bold; }
+    .f-right { float: right; font-size: 6.5pt; color: #8a9bb0; }
 
     /* ─── BACK CARD ─── */
     .back-bg {
       position: absolute;
       top: 0; left: 0;
-      width: 360px; height: 620px;
+      width: 270pt; height: 465pt;
       background: #04111F;
-      z-index: 1;
     }
     .back-header {
       position: absolute;
-      top: 25px; left: 25px;
-      width: 310px; height: 50px;
-      border-bottom: 1px solid rgba(255,149,0,0.15);
-      z-index: 10;
+      top: 20pt; left: 20pt; width: 230pt;
+      border-bottom: 0.5pt solid rgba(255,149,0,0.15);
+      padding-bottom: 5pt;
     }
-    .back-logo { float: left; width: 40px; height: 40px; background: #FF9500; border-radius: 10px; text-align: center; }
-    .back-brand { float: left; margin-left: 12px; }
-    .back-brand h2 { color: #FF9500; font-size: 14px; font-weight: bold; }
-    .back-brand p { color: #8a9bb0; font-size: 8px; margin-top: 2px; }
+    .b-logo { float: left; width: 30pt; height: 30pt; background: #FF9500; border-radius: 8pt; text-align: center; }
+    .b-brand { float: left; margin-left: 10pt; }
+    .b-brand h2 { color: #FF9500; font-size: 11pt; margin: 0; }
+    .b-brand p { color: #8a9bb0; font-size: 6.5pt; margin: 0; }
 
     .qr-area {
       position: absolute;
-      top: 100px;
-      left: 0;
-      width: 360px;
+      top: 75pt; left: 0; width: 270pt;
       text-align: center;
-      z-index: 10;
     }
-    .qr-box { 
-      display: inline-block; background: #FFF; padding: 12px; border-radius: 15px; 
-      border: 3px solid #FF9500; /* simulating custom frame */
-    }
-    .qr-label { color: #8a9bb0; font-size: 9px; text-transform: uppercase; margin-top: 8px; letter-spacing: 1px; }
+    .qr-box { display: inline-block; background: #FFF; padding: 8pt; border-radius: 12pt; border: 2pt solid #FF9500; }
+    .qr-img { width: 90pt; height: 90pt; }
+    .qr-lbl { color: #8a9bb0; font-size: 7pt; text-transform: uppercase; margin-top: 6pt; }
 
     .notice-box {
       position: absolute;
-      top: 310px;
-      left: 30px;
-      width: 300px;
+      top: 235pt; left: 20pt; width: 230pt;
       background: rgba(255,149,0,0.07);
-      border: 1px solid rgba(255,149,0,0.18);
-      border-radius: 10px;
-      padding: 15px;
+      border: 0.5pt solid rgba(255,149,0,0.18);
+      border-radius: 8pt; padding: 12pt;
       text-align: center;
-      z-index: 10;
     }
-    .notice-box p { font-size: 10px; color: #c8d8e8; line-height: 1.6; }
+    .notice-box p { color: #c8d8e8; font-size: 7.5pt; line-height: 1.5; margin: 0; }
     .notice-box strong { color: #FFF; }
 
-    .emergency-btn {
+    .emergency-pill {
       position: absolute;
-      top: 420px;
-      left: 70px;
-      width: 220px;
-      border: 1.5px solid #FF9500;
-      border-radius: 30px;
-      padding: 8px;
-      text-align: center;
-      color: #FF9500;
-      font-size: 12px;
-      font-weight: bold;
-      z-index: 10;
+      top: 315pt; left: 55pt; width: 160pt;
+      border: 1pt solid #FF9500; border-radius: 20pt;
+      padding: 6pt; text-align: center;
+      color: #FF9500; font-size: 9pt; font-weight: bold;
     }
 
-    .sig-footer {
+    .sig-row-back {
       position: absolute;
-      top: 480px;
-      left: 20px;
-      width: 320px;
-      height: 60px;
-      z-index: 10;
-      border-top: 1px solid rgba(255,149,0,0.15);
-      padding-top: 5px;
+      top: 350pt; left: 15pt; width: 240pt;
+      border-top: 0.5pt solid rgba(255,149,0,0.15);
+      padding-top: 10pt;
     }
-    .sig-footer-front {
-      position: absolute;
-      top: 468px;
-      left: 20px;
-      width: 320px;
-      height: 60px;
-      z-index: 10;
-      border-top: 1px solid rgba(255,149,0,0.1);
-      padding-top: 5px;
-    }
-    .sig-block { width: 48%; float: left; text-align: center; }
-    .sig-line { width: 100%; height: 1px; background: rgba(255,149,0,0.4); margin: 0 auto 3px; }
-    .sig-img-wrap { position: relative; height: 30px; width: 100%; margin: 0 auto; }
-    .sig-img { position: absolute; left: 50%; margin-left: -40px; top: 0; height: 25px; z-index: 10; }
-    .seal-img { position: absolute; left: 50%; margin-left: -20px; top: -10px; height: 40px; opacity: 0.6; z-index: 5; }
-    .sig-block p { font-size: 7px; color: #8a9bb0; text-transform: uppercase; line-height: 1.2; }
 
-    .back-final {
+    .back-footer {
       position: absolute;
-      top: 575px;
-      width: 360px;
+      top: 420pt; width: 270pt;
       text-align: center;
-      color: #8a9bb0;
-      font-size: 8px;
-      z-index: 10;
+      color: #8a9bb0; font-size: 6.5pt; line-height: 1.4;
     }
   </style>
 </head>
 <body>
 
-  <div class="main-container">
-  <!-- FRONT -->
-  <div class="pdf-page">
-    <div class="front-bg">
-      <div class="front-frame"></div>
-      
-      <div class="navy-header">
-         <!-- Header Content -->
-         <div style="position: absolute; top: 18px; left: 22px; width: 316px;">
-            <div style="float: left; width: 44px; height: 44px; background: #FF9500; border-radius: 10px; text-align: center;">
-               @if($logoBase64)
-                 <img src="{{ $logoBase64 }}" style="width: 26px; height: 26px; margin-top: 9px;">
+  <table class="main-table">
+    <tr>
+      <!-- FRONT SIDE -->
+      <td class="card-cell">
+        <div class="card-box">
+          <div class="front-bg">
+            <div class="front-frame"></div>
+            
+            <div class="navy-header">
+               <div style="position: absolute; top: 15pt; left: 15pt; width: 240pt;">
+                  <div style="float: left; width: 34pt; height: 34pt; background: #FF9500; border-radius: 8pt; text-align: center;">
+                     @if($logoBase64)
+                       <img src="{{ $logoBase64 }}" style="width: 20pt; height: 20pt; margin-top: 7pt;">
+                     @endif
+                  </div>
+                  <div style="float: left; margin-left: 10pt; padding-top: 3pt;">
+                     <h1 style="color: #FFF; font-size: 8pt; margin: 0;">{{ $companyName ?? 'ANDLEEB CLUSTER OF SERVICES' }}</h1>
+                     <p style="color: #FF9500; font-size: 7pt; margin: 2pt 0 0 0;">Affiliated with: {{ $affiliatedPartner ?? 'Malik Surya Agency' }}</p>
+                  </div>
+               </div>
+               <div class="gold-line"></div>
+            </div>
+
+            <div class="curve-mask"></div>
+
+            <div class="photo-area">
+               <div class="photo-ring">
+                  @if($profilePhotoBase64)
+                    <img src="{{ $profilePhotoBase64 }}" class="photo-img">
+                  @else
+                    <div class="photo-img" style="text-align: center; line-height: 76pt; color: #FF9500; font-size: 24pt; font-weight: bold;">{{ $initials ?? 'SM' }}</div>
+                  @endif
+               </div>
+            </div>
+
+            <div class="badge">{{ $designation ?? 'Administrator' }}</div>
+
+            <div class="name-text">{{ $user->name ?? 'User Name' }}</div>
+
+            <div class="divider"></div>
+            <div class="dot"></div>
+
+            <table class="info-table">
+               <tr>
+                  <td class="info-cell">
+                     <div class="lbl">Employee ID</div>
+                     <div class="val val-gold">{{ $cardNumber ?? 'ADM-0002' }}</div>
+                  </td>
+                  <td class="info-cell">
+                     <div class="lbl">Date of Birth</div>
+                     <div class="val">{{ $dob ?? '02 Feb 1980' }}</div>
+                  </td>
+               </tr>
+               <tr>
+                  <td class="info-cell">
+                     <div class="lbl">Father's Name</div>
+                     <div class="val" style="overflow: hidden; white-space: nowrap;">{{ $user->father_name ?? 'Habib Ullah' }}</div>
+                  </td>
+                  <td class="info-cell">
+                     <div class="lbl">Joining Date</div>
+                     <div class="val">{{ $joiningDate ?? '11 Apr 2026' }}</div>
+                  </td>
+               </tr>
+               <tr>
+                  <td class="info-cell">
+                     <div class="lbl">Contact</div>
+                     <div class="val">{{ $mobile ?? '9797287817' }}</div>
+                  </td>
+                  <td class="info-cell">
+                     <div class="lbl">Address</div>
+                     <div class="val" style="font-size: 7pt;">{{ $address ?? 'Pampore, Pulwama' }}</div>
+                  </td>
+               </tr>
+            </table>
+
+            <div class="sig-row-front">
+               <div class="sig-box">
+                  <div class="sig-img-wrap">
+                     @if($sealBase64)
+                       <img src="{{ $sealBase64 }}" class="seal-img">
+                     @endif
+                  </div>
+                  <div class="sig-line"></div>
+                  <div class="sig-lbl">Principal Seal</div>
+               </div>
+               <div class="sig-box" style="float: right;">
+                  <div class="sig-img-wrap">
+                     @if($sigBase64)
+                       <img src="{{ $sigBase64 }}" class="sig-img">
+                     @endif
+                  </div>
+                  <div class="sig-line"></div>
+                  <div class="sig-lbl">Verified By</div>
+               </div>
+            </div>
+
+            <div class="barcode-area">
+               @if($barcodeBase64)
+                 <img src="{{ $barcodeBase64 }}" class="barcode-img">
                @endif
+               <div class="barcode-val">{{ $cardNumber ?? 'ADM-0002' }}</div>
             </div>
-            <div style="float: left; margin-left: 12px; padding-top: 4px;">
-               <h1 style="color: #FFF; font-size: 10.5px; font-weight: bold;">{{ $companyName ?? 'ANDLEEB CLUSTER OF SERVICES' }}</h1>
-               <p style="color: #FF9500; font-size: 9px; margin-top: 2px;">Affiliated with: {{ $affiliatedPartner ?? 'Malik Surya Agency' }}</p>
+
+            <div class="footer-bar">
+               <div class="f-left">Verified Identity</div>
+               <div class="f-right">{{ $companyWebsite ?? 'andleebsurya.in' }}</div>
             </div>
-         </div>
-      </div>
+          </div>
+        </div>
+      </td>
 
-      <div class="curve"></div>
+      <!-- BACK SIDE -->
+      <td class="card-cell">
+        <div class="card-box">
+          <div class="back-bg">
+            <div class="front-frame"></div> <!-- Reuse frame border -->
 
-      <div class="photo-center">
-         <div class="ring-bg"></div>
-         @if($profilePhotoBase64)
-           <img src="{{ $profilePhotoBase64 }}" class="photo-img">
-         @else
-           <div class="photo-img" style="text-align: center; line-height: 102px; color: #FF9500; font-size: 32px; font-weight: bold;">{{ $initials ?? 'SM' }}</div>
-         @endif
-      </div>
-
-      <div class="badge">{{ $designation ?? 'Administrator' }}</div>
-
-      <div class="name-text">{{ $user->name ?? 'User Name' }}</div>
-
-      <div class="divider-wrap">
-         <div class="line"></div>
-         <div class="dot"></div>
-      </div>
-
-      <div class="grid-wrap">
-         <div class="grid-row">
-            <div class="grid-cell">
-               <div class="lbl">Employee ID</div>
-               <div class="val val-gold">{{ $cardNumber ?? 'ADM-0002' }}</div>
+            <div class="back-header">
+               <div class="b-logo">
+                  @if($globalLogoBase64)
+                    <img src="{{ $globalLogoBase64 }}" style="width: 18pt; height: 18pt; margin-top: 6pt;">
+                  @endif
+               </div>
+               <div class="b-brand">
+                  <h2>{{ $globalName ?? 'MALIK SURYA' }}</h2>
+                  <p>REG NO: {{ $globalRegNo ?? 'REG/SMS/2026/0892' }}</p>
+               </div>
             </div>
-            <div class="grid-cell">
-               <div class="lbl">Date of Birth</div>
-               <div class="val">{{ $dob ?? '02 Feb 1980' }}</div>
+
+            <div class="qr-area">
+               <div class="qr-box">
+                  @if($qrBase64)
+                    <img src="{{ $qrBase64 }}" class="qr-img">
+                  @endif
+               </div>
+               <div class="qr-lbl">Scan to Verify</div>
             </div>
-         </div>
-         <div class="grid-row">
-            <div class="grid-cell">
-               <div class="lbl">Father's Name</div>
-               <div class="val" style="overflow: hidden; white-space: nowrap;">{{ $user->father_name ?? 'Habib Ullah' }}</div>
+
+            <div class="notice-box">
+               <p>
+                 This identity instrument is issued by<br>
+                 <strong>{{ $companyName ?? 'Andleeb Cluster of Services' }}</strong><br>
+                 Issued for secure access only.<br>
+                 If found, please return to a regional facility<br>
+                 or the <strong>Residency Road HQ.</strong>
+               </p>
             </div>
-            <div class="grid-cell">
-               <div class="lbl">Joining Date</div>
-               <div class="val">{{ $joiningDate ?? '11 Apr 2026' }}</div>
+
+            <div class="emergency-pill">Emergency: {{ $companyEmergency ?? '9906766655' }}</div>
+
+            <div class="sig-row-back">
+               <div class="sig-box">
+                  <div class="sig-img-wrap">
+                     @if($sealBase64)
+                       <img src="{{ $sealBase64 }}" class="seal-img">
+                     @endif
+                  </div>
+                  <div class="sig-line"></div>
+                  <div class="sig-lbl">Issuing Authority</div>
+               </div>
+               <div class="sig-box" style="float: right;">
+                  <div class="sig-img-wrap">
+                     @if($sigBase64)
+                       <img src="{{ $sigBase64 }}" class="sig-img">
+                     @endif
+                  </div>
+                  <div class="sig-line"></div>
+                  <div class="sig-lbl">Verified By</div>
+               </div>
             </div>
-         </div>
-         <div class="grid-row">
-            <div class="grid-cell">
-               <div class="lbl">Contact</div>
-               <div class="val">{{ $mobile ?? '9797287817' }}</div>
+
+            <div class="back-footer">
+               <span style="color: rgba(255,149,0,0.6);">{{ $globalRegNo ?? 'REG/SMS/2026/0892' }}</span><br>
+               {{ $companyAddress ?? 'Srinagar, J&K' }}<br>
+               {{ $companyPhone ?? '99067 66655' }} | {{ $companyEmail ?? 'info@andleebsurya.in' }}
             </div>
-            <div class="grid-cell">
-               <div class="lbl">Address</div>
-               <div class="val" style="font-size: 9px;">{{ $address ?? 'Pampore, Pulwama' }}</div>
-            </div>
-         </div>
-      </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </table>
 
-      <div class="sig-footer-front">
-         <div class="sig-block">
-            <div class="sig-img-wrap">
-               @if($sealBase64)
-                 <img src="{{ $sealBase64 }}" class="seal-img">
-               @endif
-            </div>
-            <div class="sig-line"></div>
-            <p>Principal Seal</p>
-         </div>
-         <div class="sig-block" style="float: right;">
-            <div class="sig-img-wrap">
-               @if($sigBase64)
-                 <img src="{{ $sigBase64 }}" class="sig-img">
-               @endif
-            </div>
-            <div class="sig-line"></div>
-            <p>Verified By</p>
-         </div>
-      </div>
-
-      <div class="barcode-area">
-         @if($barcodeBase64)
-           <img src="{{ $barcodeBase64 }}" class="barcode-img">
-         @endif
-         <div class="barcode-val">{{ $cardNumber ?? 'ADM-0002' }}</div>
-      </div>
-
-      <div class="footer-bar">
-         <div class="footer-left"><span class="pulse-dot"></span> Verified Identity</div>
-         <div class="footer-right">{{ $companyWebsite ?? 'andleebsurya.in' }}</div>
-      </div>
-    </div>
-  <div class="pdf-page-gap"></div>
-
-  <!-- BACK -->
-  <div class="pdf-page">
-    <div class="back-bg">
-      <div class="front-frame"></div> <!-- reuse border frame -->
-
-      <div class="back-header">
-         <div class="back-logo">
-            @if($globalLogoBase64)
-               <img src="{{ $globalLogoBase64 }}" style="width: 24px; height: 24px; margin-top: 8px;">
-            @endif
-         </div>
-         <div class="back-brand">
-            <h2>{{ $globalName ?? 'MALIK SURYA' }}</h2>
-            <p>REG NO: {{ $globalRegNo ?? 'REG/SMS/2026/0892' }}</p>
-         </div>
-      </div>
-
-      <div class="qr-area">
-         <div class="qr-box">
-            @if($qrBase64)
-              <img src="{{ $qrBase64 }}" style="width: 120px; height: 120px;">
-            @endif
-         </div>
-         <div class="qr-label">Scan to Verify</div>
-      </div>
-
-      <div class="notice-box">
-         <p>
-           This identity instrument is issued by<br>
-           <strong>{{ $companyName ?? 'Andleeb Cluster of Services' }}</strong><br>
-           Issued for secure access only.<br>
-           If found, please return to a regional facility<br>
-           or the <strong>Residency Road HQ.</strong>
-         </p>
-      </div>
-
-      <div class="emergency-btn">Emergency: {{ $companyEmergency ?? '9906766655' }}</div>
-
-      <div class="sig-footer">
-         <div class="sig-block">
-            <div class="sig-img-wrap">
-               @if($sealBase64)
-                 <img src="{{ $sealBase64 }}" class="seal-img">
-               @endif
-            </div>
-            <div class="sig-line"></div>
-            <p>Issuing Authority</p>
-         </div>
-         <div class="sig-block" style="float: right;">
-            <div class="sig-img-wrap">
-               @if($sigBase64)
-                 <img src="{{ $sigBase64 }}" class="sig-img">
-               @endif
-            </div>
-            <div class="sig-line"></div>
-            <p>Verified By</p>
-         </div>
-      </div>
-
-      <div class="back-final">
-         <span style="color: rgba(255,149,0,0.6);">{{ $globalRegNo ?? 'REG/SMS/2026/0892' }}</span><br>
-         {{ $companyAddress ?? 'Srinagar, J&K' }}<br>
-         {{ $companyPhone ?? '99067 66655' }} | {{ $companyEmail ?? 'info@andleebsurya.in' }}
-      </div>
-    </div>
-  </div>
-
-  </div> <!-- end main-container -->
 </body>
 </html>

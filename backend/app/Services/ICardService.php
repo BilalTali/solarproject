@@ -331,8 +331,8 @@ class ICardService
 
         $dompdf = new Dompdf($options);
         
-        // 360px x 620px is approximately 270pt x 465pt
-        $dompdf->setPaper([0, 0, 270, 465]); 
+        // landscape paper for side-by-side cards (approx 760px x 653px)
+        $dompdf->setPaper([0, 0, 570, 490]); 
 
         $dompdf->loadHtml($html);
         $dompdf->render();
