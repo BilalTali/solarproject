@@ -30,6 +30,7 @@ class OfferService
         // If this capacity earns 0 points (1kW or 2kW), skip offer processing entirely
         if ($points <= 0) return;
 
+        /** @var \App\Models\Offer $offer */
         foreach ($activeOffers as $offer) {
             // Idempotency guard — never double-count the same lead for the same offer
             if (OfferInstallationLog::where('offer_id', $offer->id)
@@ -339,6 +340,7 @@ class OfferService
 
         DB::transaction(function () use ($offer, $progressRows, &$stats) {
 
+            /** @var \App\Models\OfferProgress $progress */
             foreach ($progressRows as $progress) {
                 $stats['agents_processed']++;
                 $agent = $progress->user;
