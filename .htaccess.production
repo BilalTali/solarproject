@@ -12,6 +12,7 @@
   RewriteRule ^api/(.*)$ backend/public/index.php [L,QSA]
   RewriteRule ^document-view/(.*)$ backend/public/index.php [L,QSA]
   RewriteRule ^icard-download/(.*)$ backend/public/index.php [L,QSA]
+  RewriteRule ^icard-download2/(.*)$ backend/public/index.php [L,QSA]
   RewriteRule ^joining-letter-download/(.*)$ backend/public/index.php [L,QSA]
   RewriteRule ^verify/(.*)$ backend/public/index.php [L,QSA]
   RewriteRule ^sitemap\.xml$ backend/public/index.php [L,QSA]
@@ -27,7 +28,7 @@
   # instead of falling through to the React SPA index.html.
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteCond %{REQUEST_URI} ^/(api|storage|document-view|icard-download|joining-letter-download|verify|favicon\.ico|icons)
+  RewriteCond %{REQUEST_URI} ^/(api|storage|document-view|icard-download|icard-download2|joining-letter-download|verify|favicon\.ico|icons)
   RewriteRule ^ - [L,R=404]
 
   # ─────────────────────────────────────────────────────────────────────────────
