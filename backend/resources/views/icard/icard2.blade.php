@@ -1,20 +1,20 @@
 @php/** @var string|null $logoBase64 */ /** @var string|null $sigBase64 */ /** @var string|null $sealBase64 */ /** @var string|null $globalLogoBase64 */ /** @var string|null $globalSigBase64 */ /** @var string|null $globalAffiliatedPartner */ /** @var string|null $globalRegNo */ /** @var string|null $globalName */ /** @var string|null $profilePhotoBase64 */ /** @var string|null $initials */ /** @var string|null $designation */ /** @var string|null $cardNumber */ /** @var string|null $dob */ /** @var string|null $joiningDate */ /** @var string|null $mobile */ /** @var string|null $address */ /** @var string|null $barcodeBase64 */ /** @var string|null $companyWebsite */ /** @var string|null $companyAffiliatedWith */ /** @var string|null $companyRegNo */ /** @var string|null $qrBase64 */ /** @var string|null $companyEmergency */ /** @var string|null $icardVerifiedBy */ /** @var string|null $companyAddress */ /** @var string|null $companyPhone */ /** @var string|null $companyEmail */@endphp<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><style>
     html, body {
       margin: 0; padding: 0;
-      width: 570pt; height: 480pt;
+      width: 570pt; height: 500pt;
       overflow: hidden;
       background: #0d1b2a;
       font-family: Helvetica, sans-serif;
     }
 
     @page { 
-      size: 570pt 480pt;
+      size: 570pt 500pt;
       margin: 0; 
     }
 
     .main-table {
       width: 570pt;
-      height: 480pt;
+      height: 500pt;
       border-collapse: separate;
       border-spacing: 12pt;
       margin: 0;
@@ -143,10 +143,10 @@
 
     .sig-row-front {
       position: absolute;
-      top: 310pt; left: 15pt; width: 240pt;
+      top: 300pt; left: 15pt; width: 240pt;
     }
     .sig-box { width: 110pt; float: left; text-align: center; }
-    .sig-img-wrap { height: 26pt; position: relative; margin-bottom: 2pt; }
+    .sig-img-wrap { height: 26pt; position: relative; margin-bottom: 0px; }
     .sig-img { height: 20pt; vertical-align: middle; }
     .seal-img { height: 35pt; position: absolute; left: 50%; transform: translateX(-50%); top: -5pt; opacity: 0.5; }
     .sig-line { width: 100%; height: 0.5pt; background: #FF9500; opacity: 0.4; }
@@ -154,14 +154,14 @@
 
     .barcode-area {
       position: absolute;
-      top: 365pt; left: 15pt; width: 240pt;
+      top: 355pt; left: 15pt; width: 240pt;
     }
     .barcode-img { height: 24pt; width: 150pt; }
     .barcode-val { float: right; color: #8a9bb0; font-size: 7.5pt; margin-top: 6pt; }
 
     .footer-bar {
       position: absolute;
-      top: 415pt; left: 0; width: 270pt; height: 30pt;
+      top: 405pt; left: 0; width: 270pt; height: 28pt;
       background: #04111F; color: #FF9500;
       padding: 8pt 15pt;
     }
@@ -188,7 +188,7 @@
 
     .qr-area {
       position: absolute;
-      top: 75pt; left: 0; width: 270pt;
+      top: 70pt; left: 0; width: 270pt;
       text-align: center;
     }
     .qr-box { display: inline-block; background: #FFF; padding: 10pt; border-radius: 12pt; border: 2.5pt solid #FF9500; }
@@ -197,10 +197,10 @@
 
     .notice-box {
       position: absolute;
-      top: 220pt; left: 20pt; width: 230pt;
+      top: 200pt; left: 20pt; width: 230pt;
       background: rgba(255,149,0,0.08);
       border: 0.5pt solid rgba(255,149,0,0.18);
-      border-radius: 8pt; padding: 12pt;
+      border-radius: 8pt; padding: 10pt;
       text-align: center;
     }
     .notice-box p { color: #c8d8e8; font-size: 7.5pt; line-height: 1.5; margin: 0; }
@@ -208,7 +208,7 @@
 
     .emergency-pill {
       position: absolute;
-      top: 295pt; left: 55pt; width: 160pt;
+      top: 265pt; left: 55pt; width: 160pt;
       border: 1.5pt solid #FF9500; border-radius: 20pt;
       padding: 6pt; text-align: center;
       color: #FF9500; font-size: 9pt; font-weight: bold;
@@ -216,14 +216,14 @@
 
     .sig-row-back {
       position: absolute;
-      top: 335pt; left: 15pt; width: 240pt;
+      top: 305pt; left: 15pt; width: 240pt;
       border-top: 0.5pt solid rgba(255,149,0,0.15);
       padding-top: 10pt;
     }
 
     .back-footer {
       position: absolute;
-      top: 405pt; width: 270pt;
+      top: 375pt; width: 270pt;
       text-align: center;
       color: #8a9bb0; font-size: 6.5pt; line-height: 1.4;
     }

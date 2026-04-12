@@ -332,7 +332,7 @@ class ICardService
         $dompdf = new Dompdf($options);
         
         // landscape paper for side-by-side cards (approx 760px x 653px)
-        $dompdf->setPaper([0, 0, 570, 490]); 
+        $dompdf->setPaper([0, 0, 570, 500]); 
 
         $dompdf->loadHtml($html);
         $dompdf->render();
