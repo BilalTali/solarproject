@@ -24,7 +24,7 @@ export default function AgentSidebar({ onClose }: { onClose?: () => void }) {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, clearAuth } = useAuthStore();
-    const { companyName } = useSettings();
+    const { companyName, logo } = useSettings();
 
     const logoutMutation = useMutation({
         mutationFn: authApi.logout,
@@ -39,8 +39,14 @@ export default function AgentSidebar({ onClose }: { onClose?: () => void }) {
         <aside className="w-64 h-full flex flex-col bg-slate-50 border-r border-slate-200 shadow-xl" aria-label="Agent Sidebar">
             {/* Logo */}
             <div className="flex items-center gap-2 p-5 border-b border-slate-200 bg-white">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center shadow-sm" aria-hidden="true">
-                    <Sun className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden shrink-0 border border-slate-100 shadow-sm" aria-hidden="true">
+                    {logo ? (
+                        <img src={logo} alt={companyName} className="w-full h-full object-contain" />
+                    ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center">
+                            <Sun className="w-5 h-5 text-white" />
+                        </div>
+                    )}
                 </div>
                 <span className="font-display font-black tracking-tight text-slate-800">{companyName}</span>
             </div>

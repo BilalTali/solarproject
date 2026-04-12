@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     FileText, Trash2, ChevronDown, Check, RefreshCcw, Upload,
-    Image as ImageIcon, Download, Tag, Search
+    Image as ImageIcon, Download, Tag, Search, Eye
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { documentsApi, type AdminDocument } from '@/services/documents.api';
@@ -214,14 +214,24 @@ const AdminDocumentsPage: React.FC = () => {
                                         {d.category && <span className="inline-block px-2 py-0.5 bg-accent/10 text-accent font-black text-[9px] uppercase tracking-wider rounded-md mb-2">{d.category}</span>}
                                         <p className="text-xs text-slate-500 line-clamp-1">{d.description}</p>
                                     </div>
-                                    <div className="flex items-center justify-between mt-2">
+                                    <div className="flex items-center gap-4 mt-2">
                                         <a
                                             href={d.file_url!}
                                             target="_blank"
                                             rel="noreferrer"
                                             className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline"
+                                            title="View in Browser"
                                         >
-                                            <Download size={10} /> View / Download
+                                            <Eye size={12} /> View
+                                        </a>
+                                        <a
+                                            href={d.download_url!}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-[10px] font-bold text-emerald-600 flex items-center gap-1 hover:underline"
+                                            title="Download File"
+                                        >
+                                            <Download size={12} /> Download
                                         </a>
                                         <div className="flex items-center gap-1 opacity-10 md:opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button

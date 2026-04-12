@@ -42,10 +42,23 @@ class LeadDocument extends Model
 
     public function getDownloadUrlAttribute(): string
     {
-        return route('api.v1.leads.documents.download', [
-            'ulid' => $this->lead->ulid,
-            'id' => $this->id,
-        ]);
+        // Force the URL scheme to check if we are behind a proxy
+        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'api.v1.leads.documents.signed-view',
+            now()->addMinutes(120),
+            [
+                'ulid' => $this->lead->ulid,
+                'id' => $this->id,
+                'disposition' => 'attachment',
+                'v' => time() // Cache busting
+            ]
+        );
+
+        if (str_starts_with($url, 'http://') && env('APP_ENV') === 'production') {
+            $url = str_replace('http://', 'https://', $url);
+        }
+
+        return $url;
     }
 
     public function lead(): BelongsTo

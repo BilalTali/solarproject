@@ -4,15 +4,69 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Models\Commission;
 use App\Models\Lead;
 use App\Models\User;
 
 class AdminDashboardController extends Controller
 {
-    public function stats()
+    public function stats(Request $request): JsonResponse
     {
-        $user = auth()->user();
+        return $this->adminStats($request->user());
+    }
+
+    /**
+     * One-time repair for orphaned users to restore hierarchy branding.
+     */
+    public function fixHierarchy(Request $request): JsonResponse
+    {
+        if (!$request->user()->isSuperAdmin()) {
+            abort(403);
+        }
+
+        $fixed = 0;
+        $orphans = User::query()
+            ->whereNull('parent_id')
+            ->whereNotIn('role', ['super_admin', 'admin'])
+            ->get();
+
+        /** @var User $user */
+        foreach ($orphans as $user) {
+            // Attempt rescue from super_agent_id
+            if ($user->super_agent_id) {
+                $user->parent_id = $user->super_agent_id;
+                $user->save();
+                $fixed++;
+                continue;
+            }
+
+            // Attempt rescue from created_by_super_agent_id
+            if ($user->created_by_super_agent_id) {
+                $user->parent_id = $user->created_by_super_agent_id;
+                $user->save();
+                $fixed++;
+                continue;
+            }
+
+            // Attempt rescue from created_by_agent_id (for Enumerators)
+            if ($user->created_by_agent_id) {
+                $user->parent_id = $user->created_by_agent_id;
+                $user->save();
+                $fixed++;
+                continue;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Fixed {$fixed} orphaned users.",
+        ]);
+    }
+
+    public function adminStats($user)
+    {
         $isSuperAdmin = $user->isSuperAdmin();
         $today = now()->startOfDay();
         $thisMonth = now()->startOfMonth();
@@ -58,11 +112,13 @@ class AdminDashboardController extends Controller
 
         $totalAgentPaid = (clone $commQuery)->where('payee_role', 'agent')->where('payment_status', 'paid')->sum('amount');
         $totalSuperAgentPaid = (clone $commQuery)->where('payee_role', 'super_agent')->where('payment_status', 'paid')->sum('amount');
-        $totalCommissionPaid = $totalAgentPaid + $totalSuperAgentPaid;
+        $totalEnumeratorPaid = (clone $commQuery)->where('payee_role', 'enumerator')->where('payment_status', 'paid')->sum('amount');
+        $totalCommissionPaid = $totalAgentPaid + $totalSuperAgentPaid + $totalEnumeratorPaid;
 
         $pendingAgent = (clone $commQuery)->where('payee_role', 'agent')->where('payment_status', 'unpaid')->sum('amount');
         $pendingSuperAgent = (clone $commQuery)->where('payee_role', 'super_agent')->where('payment_status', 'unpaid')->sum('amount');
-        $pendingCommission = $pendingAgent + $pendingSuperAgent;
+        $pendingEnumerator = (clone $commQuery)->where('payee_role', 'enumerator')->where('payment_status', 'unpaid')->sum('amount');
+        $pendingCommission = $pendingAgent + $pendingSuperAgent + $pendingEnumerator;
 
         // 4. Super Agents & Unassigned
         $saQuery = User::query()->where('role', 'super_agent');

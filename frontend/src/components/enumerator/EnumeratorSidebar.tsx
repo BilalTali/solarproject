@@ -21,7 +21,7 @@ export default function EnumeratorSidebar({ onClose }: { onClose?: () => void })
     const location = useLocation();
     const navigate = useNavigate();
     const { user, clearAuth } = useAuthStore();
-    const { companyName } = useSettings();
+    const { companyName, logo } = useSettings();
 
     const logoutMutation = useMutation({
         mutationFn: authApi.logout,
@@ -40,10 +40,16 @@ export default function EnumeratorSidebar({ onClose }: { onClose?: () => void })
         >
             {/* Logo */}
             <div className="flex items-center gap-2 p-5 border-b border-white/10">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-300 to-emerald-600 flex items-center justify-center">
-                    <Sun className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                    {logo ? (
+                        <img src={logo} alt={companyName} className="w-full h-full object-contain" />
+                    ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-emerald-300 to-emerald-600 flex items-center justify-center">
+                            <Sun className="w-5 h-5 text-white" />
+                        </div>
+                    )}
                 </div>
-                <span className="font-display font-bold text-white">{companyName}</span>
+                <span className="font-display font-bold text-white leading-tight">{companyName}</span>
             </div>
 
             {/* Enumerator Profile */}

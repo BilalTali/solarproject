@@ -8,7 +8,7 @@ import { authApi } from '@/services/auth.api';
 
 export default function EnumeratorLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { companyName } = useSettings();
+    const { companyName, logo } = useSettings();
     const location = useLocation();
     const { setUser } = useAuthStore();
 
@@ -65,9 +65,16 @@ export default function EnumeratorLayout() {
                         >
                             <Menu className="w-5 h-5" />
                         </button>
-                        <span className="font-bold text-white lg:text-lg tracking-tight">
-                            {companyName} <span className="hidden sm:inline text-accent font-medium ml-1 text-xs">Enumerator</span>
-                        </span>
+                        <div className="flex items-center gap-2">
+                            {logo && (
+                                <div className="w-6 h-6 lg:w-7 lg:h-7 rounded-full overflow-hidden bg-white/10 shrink-0 border border-white/5">
+                                    <img src={logo} alt={companyName} className="w-full h-full object-contain" />
+                                </div>
+                            )}
+                            <span className="font-bold text-white lg:text-lg tracking-tight">
+                                {companyName} <span className="hidden sm:inline text-accent font-medium ml-1 text-xs">Enumerator</span>
+                            </span>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-2 lg:gap-4">

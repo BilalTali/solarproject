@@ -316,6 +316,38 @@ class ICardService
     }
 
     /**
+     * Generate PDF for iCard 2 and return as download response.
+     */
+    public function generateAndDownload2(User $user): Response
+    {
+        $data = $this->buildViewData($user);
+        $html = view('icard.icard2', $data)->render();
+        $filename = 'SuryaMitra-iCard2-'.Str::slug($user->name).'-'.$data['cardNumber'].'.pdf';
+
+        $options = new Options;
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('chroot', [base_path(), public_path(), storage_path()]);
+
+        $dompdf = new Dompdf($options);
+        
+        // 360px x 620px is approximately 270pt x 465pt
+        $dompdf->setPaper([0, 0, 270, 465]); 
+
+        $dompdf->loadHtml($html);
+        $dompdf->render();
+
+        return response(
+            $dompdf->output(),
+            200,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            ]
+        );
+    }
+
+    /**
      * Get base64 encoded image string for DOMPDF.
      */
     private function getBase64Image(?string $path): ?string

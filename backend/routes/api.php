@@ -93,6 +93,10 @@ $api->as('api.v1.')->group(function () {
     Route::get('/public/help', [PublicController::class, 'help']);
     Route::get('/public/support-contacts', [SAChatbotController::class, 'publicContacts'])->middleware(\App\Http\Middleware\CacheResponse::class);
 
+    // Signed Lead Document View (Publicly accessible via signature)
+    Route::get('/public/leads/{ulid}/documents/{id}/view', [LeadDocumentController::class, 'viewSigned'])
+         ->name('leads.documents.signed-view');
+
     // Note: Signed View routes moved to web.php to avoid JSON error responses in browser tabs
 
     // ==============================
@@ -112,6 +116,7 @@ $api->as('api.v1.')->group(function () {
         Route::post('/auth/profile-photo', [AuthController::class, 'uploadProfilePhoto']);
         Route::put('/profile/change-password', [\App\Http\Controllers\Auth\SharedProfileController::class, 'changePassword']);
         Route::get('/icard/download-url', [ICardController::class, 'getDownloadUrl']);
+        Route::get('/icard/download-url2', [ICardController::class, 'getDownloadUrl2']);
         Route::get('/joining-letter/download-url', [JoiningLetterController::class, 'getDownloadUrl']);
         Route::get('/documents', [DocumentController::class, 'index']); // Auth-only resources
         Route::get('/documents/{id}/view-url', [DocumentController::class, 'getSignedUrl']);
@@ -250,7 +255,8 @@ $api->as('api.v1.')->group(function () {
         // ADMIN ROUTES
         // ==============================
         Route::middleware('admin')->prefix('admin')->group(function () {
-            Route::get('/dashboard/stats', [AdminDashboardController::class, 'stats']);
+            Route::get('/dashboard/stats', [AdminDashboardController::class, 'stats'])->name('dashboard.stats');
+            Route::post('/dashboard/fix-hierarchy', [AdminDashboardController::class, 'fixHierarchy'])->name('dashboard.fix-hierarchy');
 
             // Agents
             Route::get('/agents', [AdminSuperAgentController::class, 'unassignedAgents']);

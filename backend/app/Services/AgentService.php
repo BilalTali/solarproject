@@ -99,6 +99,7 @@ class AgentService
                     ->where(fn ($q) => $q->where('role', 'super_agent'))
                     ->firstOrFail();
                 $updateData['super_agent_id'] = $superAgent->id;
+                $updateData['parent_id'] = $superAgent->id;
             }
             // If no explicit SA override, keep existing super_agent_id (set by SA at creation)
 

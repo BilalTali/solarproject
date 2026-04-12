@@ -564,10 +564,28 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
             return $this->id;
         }
 
+        // 1. Try recursive parent traversal first
         $chain = $this->hierarchyChain();
         foreach ($chain as $userObj) {
             if ($userObj->isAdmin() && !$userObj->isSuperAdmin()) {
                 return $userObj->id;
+            }
+        }
+
+        // 2. Fallback: Check direct relationship columns if parent_id chain is broken
+        // This handles cases where parent_id wasn't set during creation or approval
+        $relatedIds = array_filter([
+            $this->parent_id,
+            $this->super_agent_id,
+            $this->created_by_super_agent_id,
+            $this->created_by_agent_id
+        ]);
+
+        foreach ($relatedIds as $id) {
+            $relatedUser = User::find($id);
+            if ($relatedUser) {
+                $rootId = $relatedUser->getRootAdminId();
+                if ($rootId) return $rootId;
             }
         }
 

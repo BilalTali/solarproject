@@ -7,6 +7,7 @@ export interface AdminDocument {
     description: string | null;
     category: string | null;
     file_url: string | null;
+    download_url: string | null;
     thumbnail_url: string | null;
     is_published: boolean;
     sort_order: number;

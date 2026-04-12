@@ -104,8 +104,18 @@ class AdminEnumeratorController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate(['status' => 'required|in:active,inactive,pending']);
+        $user = $request->user();
         $enum = \App\Models\User::query()->enumerators()->findOrFail($id);
-        $enum->update(['status' => $request->status]);
+        
+        $updateData = ['status' => $request->status];
+
+        // If the approving user is an Admin (not Super Admin) and the enumerator is orphaned,
+        // adopt them into this Admin's branch.
+        if ($user->isAdmin() && !$user->isSuperAdmin() && !$enum->parent_id) {
+            $updateData['parent_id'] = $user->id;
+        }
+
+        $enum->update($updateData);
         return response()->json(['success' => true]);
     }
 }

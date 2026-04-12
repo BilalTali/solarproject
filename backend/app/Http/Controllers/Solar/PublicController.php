@@ -32,22 +32,19 @@ class PublicController extends Controller
             'footer_link_faq', 'footer_link_privacy', 'footer_link_terms', 'footer_link_refund'
         ];
 
-        // Super Admin manages the global Master Branding (user_id = null)
-        $settings = Setting::whereNull('user_id')
-            ->whereIn('key', $keys)
-            ->get();
+        // Determine context: Authenticated user's root admin or Global (null)
+        /** @var \App\Models\User|null $user */
+        $user = auth('sanctum')->user();
+        $userId = $user ? $user->getRootAdminId() : null;
+
+        // Use the model's helper to get merged (Specific > Global) settings
+        $mergedSettings = Setting::getMergedSettings($userId)
+            ->whereIn('key', $keys);
 
         $result = [];
         foreach ($keys as $key) {
-            $setting = $settings->firstWhere('key', $key);
-            $value = $setting ? (string) $setting->value : null;
-
-            // Auto-transform media keys (from Setting model)
-            if (in_array($key, Setting::MEDIA_KEYS)) {
-                $value = Setting::transformMediaUrl($value);
-            }
-
-            $result[$key] = $value;
+            $setting = $mergedSettings->firstWhere('key', $key);
+            $result[$key] = $setting ? (string) $setting->value : null;
         }
 
         return response()->json(['success' => true, 'data' => $result]);

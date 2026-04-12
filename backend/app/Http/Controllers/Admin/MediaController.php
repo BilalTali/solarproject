@@ -15,10 +15,12 @@ class MediaController extends Controller
         $query = Media::query();
 
         if ($user && !$user->isSuperAdmin()) {
-            $managedIds = $user->getManagedUserIds();
-            $query->where(function ($q) use ($managedIds) {
-                $q->whereIn('admin_id', $managedIds)
-                  ->orWhereNull('admin_id'); // Global/Super Admin items
+            $rootAdminId = $user->getRootAdminId();
+            $query->where(function ($q) use ($rootAdminId) {
+                if ($rootAdminId) {
+                    $q->where('admin_id', $rootAdminId);
+                }
+                $q->orWhereNull('admin_id'); // Global/Super Admin items
             });
         }
 

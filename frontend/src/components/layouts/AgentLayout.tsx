@@ -6,7 +6,7 @@ import { useSettings } from '@/hooks/useSettings';
 
 export default function AgentLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { companyName } = useSettings();
+    const { companyName, logo } = useSettings();
 
     return (
         <div className="flex h-screen bg-neutral-100 overflow-hidden">
@@ -44,7 +44,16 @@ export default function AgentLayout() {
                     >
                         <Menu className="w-5 h-5" />
                     </button>
-                    <span className="font-display font-bold text-slate-800 tracking-wide">{companyName} <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full text-[10px] font-black uppercase ml-1">BDE</span></span>
+                    <div className="flex items-center gap-2">
+                        {logo && (
+                            <div className="w-6 h-6 rounded-full overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+                                <img src={logo} alt={companyName} className="w-full h-full object-contain" />
+                            </div>
+                        )}
+                        <span className="font-display font-bold text-slate-800 tracking-wide">
+                            {companyName} <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full text-[10px] font-black uppercase ml-1">BDE</span>
+                        </span>
+                    </div>
                 </header>
 
                 {/* Content Area with subtle background pattern */}

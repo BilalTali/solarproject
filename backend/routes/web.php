@@ -51,15 +51,14 @@ Route::middleware(['web', 'auth:sanctum', 'admin'])->group(function () {
 
 // ── Shared Signed Document View Routes (In web.php to prevent JSON errors) ──
 Route::get('/document-view/{id}/{type}', [DocumentController::class, 'viewSigned'])
-    ->name('documents.signed-view')
-    ->middleware('signed');
-
-Route::get('/lead-document-view/{ulid}/{id}', [LeadDocumentController::class, 'viewSigned'])
-    ->name('leads.documents.signed-view')
-    ->middleware('signed');
+    ->name('documents.signed-view');
 
 Route::get('/icard-download/{userId?}', [ICardController::class, 'download'])
     ->name('icard.download')
+    ->middleware('signed');
+
+Route::get('/icard-download2/{userId?}', [ICardController::class, 'download2'])
+    ->name('icard.download2')
     ->middleware('signed');
 
 Route::get('/joining-letter-download/{userId}', [JoiningLetterController::class, 'download'])

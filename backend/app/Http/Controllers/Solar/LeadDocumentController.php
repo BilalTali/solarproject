@@ -68,7 +68,24 @@ class LeadDocumentController extends Controller
      */
     public function viewSigned(Request $request, string $ulid, int $id)
     {
-        // middleware('signed') handles the integrity check
+        \Illuminate\Support\Facades\Log::info('SIGNED_VIEW_HIT', [
+            'ulid' => $ulid,
+            'id' => $id,
+            'query' => $request->query(),
+            'url' => $request->fullUrl()
+        ]);
+
+        // Manual signature verification (better for production error handling)
+        if (! $request->hasValidSignature()) {
+            \Illuminate\Support\Facades\Log::warning('INVALID_SIGNATURE', [
+                'ulid' => $ulid,
+                'id' => $id,
+                'full_url' => $request->fullUrl(),
+                'ip' => $request->ip()
+            ]);
+            abort(403, 'Invalid or expired signature.');
+        }
+
         $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();
         $document = LeadDocument::query()
             ->where(fn ($q) => $q->where('id', $id))
@@ -76,16 +93,28 @@ class LeadDocumentController extends Controller
             ->firstOrFail();
         $path = $document->file_path;
 
+        $isDownload = $request->query('disposition') === 'attachment';
+        $filename = $document->original_filename ?: basename($path);
+
+        \Illuminate\Support\Facades\Log::info('FILE_PATH_RESOLVED', [
+            'path' => $path,
+            'is_download' => $isDownload
+        ]);
+
         /** @var \Illuminate\Filesystem\FilesystemAdapter $local */
         $local = Storage::disk('local');
         if ($local->exists($path)) {
-            return $local->response($path, $document->original_filename);
+            return $isDownload 
+                ? $local->download($path, $filename)
+                : $local->response($path);
         }
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $public */
         $public = Storage::disk('public');
         if ($public->exists($path)) {
-            return $public->response($path, $document->original_filename);
+            return $isDownload 
+                ? $public->download($path, $filename)
+                : $public->response($path);
         }
 
         abort(404, 'File not found');

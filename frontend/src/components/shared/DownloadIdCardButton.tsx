@@ -16,6 +16,7 @@ interface Props {
 
 export const DownloadIdCardButton = ({ variant = 'button', className, userId, user: targetUser }: Props) => {
     const [loading, setLoading] = useState(false);
+    const [loading2, setLoading2] = useState(false);
     const { user: authUser } = useAuthStore();
     const { companyName } = useSettings();
 
@@ -85,6 +86,51 @@ export const DownloadIdCardButton = ({ variant = 'button', className, userId, us
         }
     };
 
+    const handleDownload2 = async () => {
+        if (!isApproved) return;
+        setLoading2(true);
+        try {
+            const response = await api.get('/icard/download-url2', {
+                params: { userId }
+            });
+            const url = response.data.url;
+
+            const fileResponse = await fetch(url);
+            
+            if (!fileResponse.ok) throw new Error('Failed to download');
+            
+            const blob = await fileResponse.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            
+            const disposition = fileResponse.headers.get('content-disposition');
+            let filename = 'iCard2.pdf';
+            if (disposition && disposition.indexOf('attachment') !== -1) {
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(disposition);
+                if (matches != null && matches[1]) {
+                    filename = matches[1].replace(/['"]/g, '');
+                }
+            }
+            
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(blobUrl);
+
+            toast.success('iCard 2 downloaded successfully!');
+        } catch (error) {
+            if (import.meta.env.DEV) {
+                console.error('iCard 2 Download Error:', error);
+            }
+            toast.error('Failed to generate iCard 2. Please try again.');
+        } finally {
+            setLoading2(false);
+        }
+    };
+
     if (!isApproved) {
         if (variant === 'card') {
             return (
@@ -118,7 +164,7 @@ export const DownloadIdCardButton = ({ variant = 'button', className, userId, us
 
     if (variant === 'card') {
         return (
-            <div className={`bg-white rounded-2xl border border-slate-200 shadow-sm p-6 ${className}`}
+            <div className={`bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col gap-4 ${className}`}
                 style={{ borderLeft: '4px solid #FF9500' }}>
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-orange-50 text-orange-600">
@@ -130,19 +176,23 @@ export const DownloadIdCardButton = ({ variant = 'button', className, userId, us
                             Official {companyName} identity card for field use
                         </p>
                     </div>
+                </div>
+                <div className="flex items-center gap-3">
                     <button
                         onClick={handleDownload}
-                        disabled={loading}
-                        aria-label={loading ? "Generating ID Card PDF" : "Download ID Card PDF"}
-                        aria-busy={loading}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-sm bg-gradient-to-r from-orange-500 to-amber-500 text-white disabled:opacity-50"
+                        disabled={loading || loading2}
+                        className="flex-1 flex justify-center items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-sm bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50"
                     >
-                        {loading ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <Download className="w-4 h-4" />
-                        )}
-                        {loading ? 'Generating...' : 'Download PDF'}
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                        {loading ? 'Generating...' : 'Download ID Card'}
+                    </button>
+                    <button
+                        onClick={handleDownload2}
+                        disabled={loading || loading2}
+                        className="flex-1 flex justify-center items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-sm bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:shadow-lg disabled:opacity-50"
+                    >
+                        {loading2 ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                        {loading2 ? 'Generating...' : 'Download iCard 2'}
                     </button>
                 </div>
             </div>
@@ -151,17 +201,23 @@ export const DownloadIdCardButton = ({ variant = 'button', className, userId, us
 
     // Default: inline button
     return (
-        <button
-            onClick={handleDownload}
-            disabled={loading}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-md bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:shadow-lg disabled:opacity-50 ${className}`}
-        >
-            {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-                <CreditCard className="w-4 h-4" />
-            )}
-            <span>{loading ? '...' : 'ID Card'}</span>
-        </button>
+        <div className="flex items-center gap-2">
+            <button
+                onClick={handleDownload}
+                disabled={loading || loading2}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-md bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50 ${className}`}
+            >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                <span>{loading ? '...' : 'ID Card'}</span>
+            </button>
+            <button
+                onClick={handleDownload2}
+                disabled={loading || loading2}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-md bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:shadow-lg disabled:opacity-50 ${className}`}
+            >
+                {loading2 ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                <span>{loading2 ? '...' : 'iCard 2'}</span>
+            </button>
+        </div>
     );
 };

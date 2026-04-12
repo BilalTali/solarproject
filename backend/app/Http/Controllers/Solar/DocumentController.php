@@ -21,10 +21,12 @@ class DocumentController extends Controller
         $query = Document::query();
 
         if ($user && !$user->isSuperAdmin()) {
-            $managedIds = $user->getManagedUserIds();
-            $query->where(function ($q) use ($managedIds) {
-                $q->whereIn('admin_id', $managedIds)
-                  ->orWhereNull('admin_id'); // Global/Super Admin resources
+            $rootAdminId = $user->getRootAdminId();
+            $query->where(function ($q) use ($rootAdminId) {
+                if ($rootAdminId) {
+                    $q->where('admin_id', $rootAdminId);
+                }
+                $q->orWhereNull('admin_id'); // Global/Super Admin resources
             });
 
             // Agents/Enumerators only see published
@@ -126,7 +128,7 @@ class DocumentController extends Controller
         $url = URL::temporarySignedRoute(
             'documents.signed-view',
             now()->addMinutes(120),
-            ['id' => $id, 'type' => $type]
+            ['id' => $id, 'type' => $type, 'disposition' => $request->query('disposition')]
         );
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -138,6 +140,15 @@ class DocumentController extends Controller
 
     public function viewSigned(Request $request, $id, $type)
     {
+        if (!$request->hasValidSignature()) {
+            \Illuminate\Support\Facades\Log::warning('Invalid signature for document access', [
+                'id' => $id,
+                'url' => $request->fullUrl(),
+                'ip' => $request->ip()
+            ]);
+            abort(403, 'Invalid or expired signature.');
+        }
+
         $document = Document::findOrFail($id);
         
         $path = $type === 'thumbnail' ? $document->thumbnail_path : $document->file_path;
@@ -146,14 +157,20 @@ class DocumentController extends Controller
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $local */
         $local = Storage::disk('local');
+        $isDownload = $request->query('disposition') === 'attachment';
+
         if ($local->exists($path)) {
-            return $local->response($path);
+            return $isDownload 
+                ? $local->download($path, basename($path))
+                : $local->response($path);
         }
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $public */
         $public = Storage::disk('public');
         if ($public->exists($path)) {
-            return $public->response($path);
+            return $isDownload 
+                ? $public->download($path, basename($path))
+                : $public->response($path);
         }
 
         abort(404, 'File not found');
@@ -162,11 +179,17 @@ class DocumentController extends Controller
     private function format(Document $d): array
     {
         $file_url = null;
+        $download_url = null;
         if ($d->file_path) {
             $file_url = URL::temporarySignedRoute(
                 'documents.signed-view',
                 now()->addMinutes(120),
                 ['id' => $d->id, 'type' => 'file']
+            );
+            $download_url = URL::temporarySignedRoute(
+                'documents.signed-view',
+                now()->addMinutes(120),
+                ['id' => $d->id, 'type' => 'file', 'disposition' => 'attachment']
             );
         }
 
@@ -185,6 +208,7 @@ class DocumentController extends Controller
             'description' => $d->description,
             'category' => $d->category,
             'file_url' => $file_url,
+            'download_url' => $download_url,
             'thumbnail_url' => $thumbnail_url,
             'is_published' => $d->is_published,
             'sort_order' => $d->sort_order,

@@ -16,7 +16,7 @@ export default function SuperAgentSidebar({ onClose }: SuperAgentSidebarProps) {
     const { user, clearAuth } = useAuthStore();
     const navigate = useNavigate();
     const location = useLocation();
-    const { companyName } = useSettings();
+    const { companyName, logo } = useSettings();
 
     const isLeadActive = location.pathname.startsWith('/super-agent/leads');
     const [leadsOpen, setLeadsOpen] = useState(isLeadActive);
@@ -39,14 +39,16 @@ export default function SuperAgentSidebar({ onClose }: SuperAgentSidebarProps) {
             {/* Logo */}
             <div className="px-6 py-5 border-b border-slate-700">
                 <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden border-2 border-white/10 shadow-lg">
-                            {user?.profile_photo_url ? (
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center overflow-hidden shrink-0 border border-white/10 shadow-lg">
+                        {logo ? (
+                            <img src={logo} alt={companyName} className="w-full h-full object-contain" />
+                        ) : (
+                            user?.profile_photo_url ? (
                                 <img src={user.profile_photo_url} alt={`Profile photo of ${user.name}`} className="w-full h-full object-cover" />
                             ) : (
                                 <span aria-hidden="true">☀</span>
-                            )}
-                        </div>
+                            )
+                        )}
                     </div>
                     <div>
                         <p className="font-bold text-white leading-tight">{companyName}</p>
