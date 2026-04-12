@@ -18,7 +18,7 @@ class ICardService
     /**
      * Build all view data for the icard Blade template.
      */
-    public function buildViewData(User $user): array
+    public function buildViewData(User $user, string $photoShape = 'hexagon'): array
     {
         // ── Card Number ───────────────────────────────────────────
         // ── Card Number ───────────────────────────────────────────
@@ -128,7 +128,7 @@ class ICardService
             }
         }
 
-        $profilePhotoBase64 = $this->getProcessedProfilePhoto($photoPath);
+        $profilePhotoBase64 = $this->getProcessedProfilePhoto($photoPath, $photoShape);
         
         $validUntil = ($user->approved_at ?? $user->joining_date)
             ? ($user->approved_at ?? $user->joining_date)->addYear()->format('d M Y')
@@ -287,7 +287,7 @@ class ICardService
      */
     public function generateAndDownload(User $user): Response
     {
-        $data = $this->buildViewData($user);
+        $data = $this->buildViewData($user, 'hexagon');
         $html = view('icard.index', $data)->render();
         $filename = 'SuryaMitra-ID-Card-'.Str::slug($user->name).'-'.$data['cardNumber'].'.pdf';
 
@@ -320,7 +320,7 @@ class ICardService
      */
     public function generateAndDownload2(User $user): Response
     {
-        $data = $this->buildViewData($user);
+        $data = $this->buildViewData($user, 'circle');
         $html = view('icard.icard2', $data)->render();
         $filename = 'SuryaMitra-iCard2-'.Str::slug($user->name).'-'.$data['cardNumber'].'.pdf';
 
@@ -399,7 +399,7 @@ class ICardService
     /**
      * Process profile photo: Crop to square, resize, and apply hexagon mask if possible.
      */
-    private function getProcessedProfilePhoto(?string $path): ?string
+    private function getProcessedProfilePhoto(?string $path, string $shape = 'hexagon'): ?string
     {
         if (!$path) return null;
 
@@ -471,14 +471,19 @@ class ICardService
             imagesavealpha($resized, true);
             imagecopyresampled($resized, $cropped, 0, 0, 0, 0, $finalSize, $finalSize, imagesx($cropped), imagesy($cropped));
 
-            // 3. Apply Hexagon Mask
+            // 3. Apply Mask
             $mask = imagecreatetruecolor($finalSize, $finalSize);
             $magenta = imagecolorallocate($mask, 255, 0, 255);
             $white = imagecolorallocate($mask, 255, 255, 255);
             imagefill($mask, 0, 0, $magenta);
             
             $points = [125, 5, 242, 65, 242, 185, 125, 245, 8, 185, 8, 65];
-            imagefilledpolygon($mask, $points, 6, $white);
+            
+            if ($shape === 'hexagon') {
+                imagefilledpolygon($mask, $points, 6, $white);
+            } else {
+                imagefilledellipse($mask, 125, 125, 246, 246, $white);
+            }
 
             for ($x = 0; $x < $finalSize; $x++) {
                 for ($y = 0; $y < $finalSize; $y++) {
@@ -489,9 +494,14 @@ class ICardService
             }
 
             // 4. Draw Border
-            $navy = imagecolorallocate($resized, 10, 25, 49);
+            $navy = imagecolorallocate($resized, 4, 17, 31);
             imagesetthickness($resized, 4);
-            imagepolygon($resized, $points, 6, $navy);
+            
+            if ($shape === 'hexagon') {
+                imagepolygon($resized, $points, 6, $navy);
+            } else {
+                imagearc($resized, 125, 125, 246, 246, 0, 360, $navy);
+            }
 
             ob_start();
             imagepng($resized);
