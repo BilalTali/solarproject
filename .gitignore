@@ -1,0 +1,22 @@
+# IDE Directories
+.idea/
+.vscode/
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Build Artifacts
+dist/
+dist.tar.gz
+stats.html
+
+# Local Environment
+.env
+.env.local
+.env.production
+.env.development
+
+# Node/PHP dependencies (already ignored in subdirs, but safe at root too)
+node_modules/
+vendor/
