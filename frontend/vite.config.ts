@@ -22,6 +22,12 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
+            src: '/favicon.svg',
+            sizes: '32x32',
+            type: 'image/svg+xml',
+            purpose: 'any'
+          },
+          {
             src: '/pwa-icons/icon-192.png',
             sizes: '192x192',
             type: 'image/png',

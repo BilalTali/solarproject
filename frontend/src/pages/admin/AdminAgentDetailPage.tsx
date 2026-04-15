@@ -3,15 +3,18 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     ArrowLeft, Users, Phone, Activity,
-    CheckCircle, XCircle, UserX, Edit2, X, QrCode, BadgeCheck
+    CheckCircle, XCircle, UserX, Edit2, X, QrCode, BadgeCheck, Gift
 } from 'lucide-react';
 import { agentsApi } from '@/services/agents.api';
+import { offersApi } from '@/services/offers.api';
 import toast from 'react-hot-toast';
 import type { User } from '@/types';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import DownloadJoiningLetterButton from '@/components/shared/DownloadJoiningLetterButton';
 import QrCodePreview from '@/components/shared/QrCodePreview';
 import QrScanHistory from '@/components/shared/QrScanHistory';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { OfferCard } from '@/components/shared/OfferCard';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 const STATUS_BADGE: Record<string, string> = {
@@ -25,7 +28,7 @@ function fmt(iso: string) {
     return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-type Tab = 'overview' | 'enumerators' | 'scans';
+type Tab = 'overview' | 'enumerators' | 'scans' | 'offers';
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AdminAgentDetailPage() {
@@ -81,6 +84,14 @@ export default function AdminAgentDetailPage() {
             toast.error(msg);
         },
     });
+
+    // ── Fetch agent offers ─────────────────────────────────────────────
+    const { data: offersData, isLoading: offersLoading } = useQuery({
+        queryKey: ['admin-agent-offers', id],
+        queryFn: () => offersApi.admin.getAgentOffers(Number(id)),
+        enabled: !!id && tab === 'offers',
+    });
+    const offers = offersData?.data ?? [];
 
     const startEdit = () => {
         if (!agent) return;
@@ -208,6 +219,12 @@ export default function AdminAgentDetailPage() {
                 >
                     QR Scan History
                 </button>
+                <button
+                    onClick={() => setTab('offers')}
+                    className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'offers' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-500 hover:text-slate-900'}`}
+                >
+                    Incentive Offers
+                </button>
             </div>
 
             {/* ── Content ── */}
@@ -277,6 +294,38 @@ export default function AdminAgentDetailPage() {
                     {tab === 'scans' && (
                         <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <QrScanHistory userId={agent.id} role="agent" />
+                        </div>
+                    )}
+
+                    {tab === 'offers' && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                                        <Gift className="text-indigo-600" />
+                                        Agent Offer Progress
+                                    </h2>
+                                </div>
+                                
+                                {offersLoading ? (
+                                    <div className="py-20 flex justify-center"><LoadingSpinner /></div>
+                                ) : offers.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {offers.map((offer: any) => (
+                                            <OfferCard 
+                                                key={offer.id} 
+                                                offer={offer} 
+                                                onRedeem={() => {}} 
+                                                isRedeeming={false}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-20 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No active offers for this agent</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>

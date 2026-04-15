@@ -297,7 +297,7 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
                 const first = Object.values(errors)[0] as string[];
                 toast.error(first?.[0] ?? 'Validation error occurred.');
             } else {
-                toast.error(err.response?.data?.message ?? 'Failed to submit lead.');
+                toast.error(err.response?.data?.message ?? err.message ?? 'Failed to submit lead.');
             }
         }
     });

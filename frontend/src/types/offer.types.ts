@@ -3,7 +3,7 @@ export type ExcitementState = 'dormant' | 'building' | 'close' | 'ready';
 // ====== Offers & Incentives (v2) ======
 export type OfferType = 'individual' | 'collective';
 export type OfferStatus = 'active' | 'paused' | 'ended';
-export type RedemptionStatus = 'pending' | 'approved' | 'delivered' | 'cancelled';
+export type RedemptionStatus = 'pending' | 'admin_approved' | 'approved' | 'delivered' | 'cancelled';
 
 export interface Offer {
     id: number;

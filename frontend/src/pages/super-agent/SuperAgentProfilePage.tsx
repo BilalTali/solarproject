@@ -2,35 +2,62 @@
 import { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import {
-    User, Phone, MapPin, Building2, 
+    User as UserIcon, Phone, MapPin, Building2, 
     Calendar, Shield, BadgeCheck, Save,
     Camera, Mail, FileText, Lock, Download,
-    Briefcase, Star, Check, RefreshCcw
+    Briefcase, Star, Check, RefreshCcw, Info,
+    CreditCard, GraduationCap, Target, UserCheck, Edit2
 } from 'lucide-react';
 import { superAgentApi } from '@/services/superAgent.api';
 import { authApi } from '@/services/auth.api';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm';
 import DownloadJoiningLetterButton from '@/components/shared/DownloadJoiningLetterButton';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 
-type ProfileTab = 'identity' | 'location' | 'documents' | 'security';
+type ProfileTab = 'personal' | 'contact' | 'professional' | 'kyc_bank' | 'security';
 
 export function SuperAgentProfilePage() {
     const { user, setUser } = useAuthStore();
     const [editing, setEditing] = useState(false);
-    const [activeTab, setActiveTab] = useState<ProfileTab>('identity');
+    const [activeTab, setActiveTab] = useState<ProfileTab>('personal');
     
     const [editForm, setEditForm] = useState({
         whatsapp_number: user?.whatsapp_number ?? '',
         father_name: (user as any)?.father_name ?? '',
         dob: (user as any)?.dob ? (user as any).dob.split('T')[0] : '',
         blood_group: (user as any)?.blood_group ?? '',
+        religion: (user as any)?.religion ?? '',
+        gender: (user as any)?.gender ?? '',
+        marital_status: (user as any)?.marital_status ?? '',
+
+        permanent_address: (user as any)?.permanent_address ?? '',
+        current_address: (user as any)?.current_address ?? '',
+        pincode: (user as any)?.pincode ?? '',
+        landmark: (user as any)?.landmark ?? '',
         state: user?.state ?? '',
         district: user?.district ?? '',
         area: user?.area ?? '',
+
+        voter_id: (user as any)?.voter_id ?? '',
+        aadhaar_number: (user as any)?.aadhaar_number ?? '',
+        pan_number: (user as any)?.pan_number ?? '',
+        bank_name: (user as any)?.bank_name ?? '',
+        bank_account_number: (user as any)?.bank_account_number ?? '',
+        bank_ifsc: (user as any)?.bank_ifsc ?? '',
+        bank_branch: (user as any)?.bank_branch ?? '',
+        upi_id: (user as any)?.upi_id ?? '',
+
+        occupation: (user as any)?.occupation ?? '',
+        qualification: (user as any)?.qualification ?? '',
+        experience_years: (user as any)?.experience_years ?? 0,
+        languages_known_string: ((user as any)?.languages_known ?? []).join(', '),
+        reference_name: (user as any)?.reference_name ?? '',
+        reference_mobile: (user as any)?.reference_mobile ?? '',
+        territory: (user as any)?.territory ?? '',
+        target_monthly: (user as any)?.target_monthly ?? 0,
     });
 
     useEffect(() => {
@@ -40,9 +67,35 @@ export function SuperAgentProfilePage() {
                 father_name: (user as any).father_name ?? '',
                 dob: (user as any).dob ? (user as any).dob.split('T')[0] : '',
                 blood_group: (user as any).blood_group ?? '',
+                religion: (user as any).religion ?? '',
+                gender: (user as any).gender ?? '',
+                marital_status: (user as any).marital_status ?? '',
+                
+                permanent_address: (user as any).permanent_address ?? '',
+                current_address: (user as any).current_address ?? '',
+                pincode: (user as any).pincode ?? '',
+                landmark: (user as any).landmark ?? '',
                 state: user.state ?? '',
                 district: user.district ?? '',
                 area: user.area ?? '',
+
+                voter_id: (user as any).voter_id ?? '',
+                aadhaar_number: (user as any).aadhaar_number ?? '',
+                pan_number: (user as any).pan_number ?? '',
+                bank_name: (user as any).bank_name ?? '',
+                bank_account_number: (user as any).bank_account_number ?? '',
+                bank_ifsc: (user as any).bank_ifsc ?? '',
+                bank_branch: (user as any).bank_branch ?? '',
+                upi_id: (user as any).upi_id ?? '',
+
+                occupation: (user as any).occupation ?? '',
+                qualification: (user as any).qualification ?? '',
+                experience_years: (user as any).experience_years ?? 0,
+                languages_known_string: ((user as any).languages_known ?? []).join(', '),
+                reference_name: (user as any).reference_name ?? '',
+                reference_mobile: (user as any).reference_mobile ?? '',
+                territory: (user as any).territory ?? '',
+                target_monthly: (user as any).target_monthly ?? 0,
             });
         }
     }, [user]);
@@ -65,7 +118,7 @@ export function SuperAgentProfilePage() {
         onSuccess: (res) => {
             if (res.success) {
                 setUser(res.data);
-                toast.success('Profile credentials synchronized');
+                toast.success('Manager credentials synchronized');
                 setEditing(false);
             }
         },
@@ -76,11 +129,18 @@ export function SuperAgentProfilePage() {
     });
 
     const handleSave = () => {
-        updateProfileMutation.mutate(editForm);
+        const payload = { ...editForm };
+        if (payload.languages_known_string) {
+            payload.languages_known = payload.languages_known_string.split(',').map(s => s.trim()).filter(s => s !== '');
+            delete payload.languages_known_string;
+        }
+        updateProfileMutation.mutate(payload);
     };
 
+    const completion = user?.profile_completion ?? 0;
+
     return (
-        <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-700 pb-20">
+        <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-700 pb-20 px-4">
             {/* Header Area */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-200">
                 <div className="flex items-center gap-4">
@@ -93,8 +153,8 @@ export function SuperAgentProfilePage() {
                     </div>
                 </div>
                 {!editing ? (
-                    <button onClick={() => setEditing(true)} className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 hover:scale-105 transition-all shadow-xl">
-                        Edit Manager Profile
+                    <button onClick={() => setEditing(true)} className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 hover:scale-105 transition-all shadow-xl flex items-center gap-2">
+                        <Edit2 size={14} /> Edit Manager Profile
                     </button>
                 ) : (
                     <div className="flex gap-3">
@@ -148,10 +208,33 @@ export function SuperAgentProfilePage() {
                         </div>
                     </div>
 
+                    {/* Completion Progress */}
+                    <div className="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm space-y-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Profile Strength</span>
+                            <span className="text-lg font-black text-indigo-600">{completion}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div 
+                                className="h-full bg-indigo-600 transition-all duration-1000"
+                                style={{ width: `${completion}%` }}
+                            />
+                        </div>
+                        {completion < 60 && (
+                            <div className="p-3 bg-amber-50 rounded-xl border border-amber-100 flex items-start gap-2">
+                                <Info size={12} className="text-amber-600 mt-0.5" />
+                                <p className="text-[9px] text-amber-700 font-bold leading-relaxed">
+                                    Reach 60% to unlock your official ID Card and Appointment Letter.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
                     <nav className="bg-white rounded-[2rem] border border-slate-200 p-2 shadow-sm space-y-1">
-                        <NavTab id="identity" label="Manager Identity" icon={<User size={16} />} active={activeTab === 'identity'} onClick={setActiveTab} />
-                        <NavTab id="location" label="Serving Location" icon={<MapPin size={16} />} active={activeTab === 'location'} onClick={setActiveTab} />
-                        <NavTab id="documents" label="Official Resources" icon={<FileText size={16} />} active={activeTab === 'documents'} onClick={setActiveTab} />
+                        <NavTab id="personal" label="Manager Identity" icon={<UserIcon size={16} />} active={activeTab === 'personal'} onClick={setActiveTab} />
+                        <NavTab id="contact" label="Contact & Address" icon={<MapPin size={16} />} active={activeTab === 'contact'} onClick={setActiveTab} />
+                        <NavTab id="professional" label="Professional" icon={<Briefcase size={16} />} active={activeTab === 'professional'} onClick={setActiveTab} />
+                        <NavTab id="kyc_bank" label="KYC & Banking" icon={<CreditCard size={16} />} active={activeTab === 'kyc_bank'} onClick={setActiveTab} />
                         <NavTab id="security" label="System Security" icon={<Lock size={16} />} active={activeTab === 'security'} onClick={setActiveTab} />
                     </nav>
                 </div>
@@ -160,33 +243,22 @@ export function SuperAgentProfilePage() {
                 <div className="lg:col-span-3 space-y-8">
                     <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden min-h-[500px]">
                         <div className="p-8 lg:p-10">
-                            {activeTab === 'identity' && (
+                            {activeTab === 'personal' && (
                                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
                                     <div className="flex items-center gap-3 mb-4">
-                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><User size={18} /></div>
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><UserIcon size={18} /></div>
                                         <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Personal Credentials</h2>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <DisplayField label="Full Legal Name" value={user?.name} icon={<User size={14} />} />
-                                        <DisplayField label="Primary Mobile" value={user?.mobile} icon={<Phone size={14} />} />
-                                        
-                                        <EditField 
-                                            label="WhatsApp Number" 
-                                            value={editForm.whatsapp_number} 
-                                            editing={editing} 
-                                            onChange={v => setEditForm(p => ({ ...p, whatsapp_number: v }))} 
-                                            icon={<Phone size={14} />} 
-                                            placeholder="10-digit number"
-                                        />
+                                        <DisplayField label="Full Legal Name" value={user?.name} icon={<UserIcon size={14} />} />
                                         <EditField 
                                             label="Father's Name" 
                                             value={editForm.father_name} 
                                             editing={editing} 
                                             onChange={v => setEditForm(p => ({ ...p, father_name: v }))} 
-                                            icon={<User size={14} />} 
+                                            icon={<UserIcon size={14} />} 
                                             placeholder="S/o or D/o name"
                                         />
-                                        
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Date of Birth</label>
                                             {editing ? (
@@ -203,125 +275,257 @@ export function SuperAgentProfilePage() {
                                                 </div>
                                             )}
                                         </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Blood Group</label>
-                                            {editing ? (
-                                                <select 
-                                                    value={editForm.blood_group} 
-                                                    onChange={e => setEditForm(p => ({ ...p, blood_group: e.target.value }))}
-                                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all appearance-none"
-                                                >
-                                                    <option value="">Select...</option>
-                                                    {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
-                                                </select>
-                                            ) : (
-                                                <div className="px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl flex items-center gap-3 text-slate-800 font-bold">
-                                                    <Star size={14} className="text-slate-300" />
-                                                    {(user as any)?.blood_group || 'Not Provided'}
-                                                </div>
-                                            )}
-                                        </div>
+                                        <EditSelect 
+                                            label="Blood Group"
+                                            value={editForm.blood_group}
+                                            editing={editing}
+                                            onChange={v => setEditForm(p => ({ ...p, blood_group: v }))}
+                                            options={['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']}
+                                            icon={<Star size={14} />}
+                                        />
+                                        <EditSelect 
+                                            label="Gender"
+                                            value={editForm.gender}
+                                            editing={editing}
+                                            onChange={v => setEditForm(p => ({ ...p, gender: v }))}
+                                            options={['male', 'female', 'other']}
+                                            icon={<UserCheck size={14} />}
+                                        />
+                                        <EditSelect 
+                                            label="Marital Status"
+                                            value={editForm.marital_status}
+                                            editing={editing}
+                                            onChange={v => setEditForm(p => ({ ...p, marital_status: v }))}
+                                            options={['single', 'married', 'divorced', 'widowed']}
+                                            icon={<UserCheck size={14} />}
+                                        />
+                                        <EditField 
+                                            label="Religion" 
+                                            value={editForm.religion} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, religion: v }))} 
+                                            icon={<Star size={14} />} 
+                                            placeholder="e.g. Hindu, Muslim, Sikh"
+                                        />
                                     </div>
                                 </div>
                             )}
 
-                            {activeTab === 'location' && (
+                            {activeTab === 'contact' && (
                                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
                                     <div className="flex items-center gap-3 mb-4">
                                         <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><MapPin size={18} /></div>
-                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Serving Territory Authority</h2>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Contact & Address Details</h2>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">State Authority</label>
-                                            {editing ? (
-                                                <select 
-                                                    value={editForm.state} 
-                                                    onChange={e => setEditForm(p => ({ ...p, state: e.target.value, district: '' }))}
-                                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all"
-                                                >
-                                                    <option value="">Select State</option>
-                                                    {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                                                </select>
-                                            ) : (
-                                                <div className="px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-slate-800 font-bold">{user?.state || 'Not Provided'}</div>
-                                            )}
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">District Boundary</label>
-                                            {editing ? (
-                                                <select 
-                                                    value={editForm.district} 
-                                                    onChange={e => setEditForm(p => ({ ...p, district: e.target.value }))}
-                                                    disabled={!editForm.state}
-                                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all disabled:opacity-50"
-                                                >
-                                                    <option value="">Select District</option>
-                                                    {(STATE_DISTRICTS[editForm.state] || []).map(d => <option key={d} value={d}>{d}</option>)}
-                                                </select>
-                                            ) : (
-                                                <div className="px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-slate-800 font-bold">{user?.district || 'Not Provided'}</div>
-                                            )}
-                                        </div>
-
+                                        <DisplayField label="Primary Mobile" value={user?.mobile} icon={<Phone size={14} />} />
+                                        <DisplayField label="Email Address" value={user?.email} icon={<Mail size={14} />} />
+                                        <EditField 
+                                            label="WhatsApp Number" 
+                                            value={editForm.whatsapp_number} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, whatsapp_number: v }))} 
+                                            icon={<Phone size={14} />} 
+                                            placeholder="10-digit number"
+                                        />
+                                        <EditField 
+                                            label="Landmark" 
+                                            value={editForm.landmark} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, landmark: v }))} 
+                                            icon={<MapPin size={14} />} 
+                                            placeholder="Near school, hospital, etc."
+                                        />
                                         <div className="md:col-span-2">
-                                            <EditField 
-                                                label="Assigned Serving Area" 
-                                                value={editForm.area} 
-                                                editing={editing} 
-                                                onChange={v => setEditForm(p => ({ ...p, area: v }))} 
-                                                icon={<MapPin size={14} />} 
-                                                placeholder="Block, Taluka or Area Name"
+                                            <EditTextArea 
+                                                label="Permanent Address" 
+                                                value={editForm.permanent_address}
+                                                editing={editing}
+                                                onChange={v => setEditForm(p => ({ ...p, permanent_address: v }))}
+                                                icon={<MapPin size={14} />}
                                             />
                                         </div>
+                                        <div className="md:col-span-2">
+                                            <EditTextArea 
+                                                label="Current Address" 
+                                                value={editForm.current_address}
+                                                editing={editing}
+                                                onChange={v => setEditForm(p => ({ ...p, current_address: v }))}
+                                                icon={<MapPin size={14} />}
+                                            />
+                                        </div>
+                                        <EditSelect 
+                                            label="State Authority"
+                                            value={editForm.state}
+                                            editing={editing}
+                                            onChange={v => setEditForm(p => ({ ...p, state: v, district: '' }))}
+                                            options={INDIAN_STATES}
+                                            icon={<MapPin size={14} />}
+                                        />
+                                        <EditSelect 
+                                            label="District Boundary"
+                                            value={editForm.district}
+                                            editing={editing}
+                                            onChange={v => setEditForm(p => ({ ...p, district: v }))}
+                                            options={STATE_DISTRICTS[editForm.state] || []}
+                                            disabled={!editForm.state}
+                                            icon={<MapPin size={14} />}
+                                        />
+                                        <EditField 
+                                            label="Area Name" 
+                                            value={editForm.area} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, area: v }))} 
+                                            icon={<MapPin size={14} />} 
+                                            placeholder="Block or Taluka"
+                                        />
+                                        <EditField 
+                                            label="Pincode" 
+                                            value={editForm.pincode} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, pincode: v }))} 
+                                            icon={<MapPin size={14} />} 
+                                            placeholder="6-digit PIN"
+                                        />
                                     </div>
                                 </div>
                             )}
 
-                            {activeTab === 'documents' && (
-                                <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4">
+                            {activeTab === 'professional' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
                                     <div className="flex items-center gap-3 mb-4">
-                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><FileText size={18} /></div>
-                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Official Credentials Vault</h2>
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><Briefcase size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Professional Standing</h2>
                                     </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        {/* ID Card Block */}
-                                        <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 space-y-6 flex flex-col items-center text-center">
-                                            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl flex items-center justify-center text-indigo-600">
-                                                <Download size={32} />
-                                            </div>
-                                            <div>
-                                                <h4 className="text-xl font-display font-black text-slate-900 tracking-tight">Professional I-Card</h4>
-                                                <p className="text-slate-500 text-xs font-bold leading-relaxed mt-2">
-                                                    Download your official platform identity card with secure QR verification.
-                                                </p>
-                                            </div>
-                                            <DownloadIdCardButton className="w-full h-14 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl" />
-                                        </div>
-
-                                        {/* Joining Letter Block */}
-                                        <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 space-y-6 flex flex-col items-center text-center">
-                                            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl flex items-center justify-center text-indigo-600">
-                                                <FileText size={32} />
-                                            </div>
-                                            <div>
-                                                <h4 className="text-xl font-display font-black text-slate-900 tracking-tight">Joining Authorization</h4>
-                                                <p className="text-slate-500 text-xs font-bold leading-relaxed mt-2">
-                                                    Official appointment letter authorizing your position as a registered Senior Manager.
-                                                </p>
-                                            </div>
-                                            <DownloadJoiningLetterButton user={user!} variant="primary" className="w-full h-14 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl" />
-                                        </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <EditField 
+                                            label="Current Occupation" 
+                                            value={editForm.occupation} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, occupation: v }))} 
+                                            icon={<Briefcase size={14} />} 
+                                        />
+                                        <EditField 
+                                            label="Educational Qualification" 
+                                            value={editForm.qualification} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, qualification: v }))} 
+                                            icon={<GraduationCap size={14} />} 
+                                        />
+                                        <EditField 
+                                            label="Experience (Years)" 
+                                            value={editForm.experience_years} 
+                                            type="number"
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, experience_years: parseInt(v) || 0 }))} 
+                                            icon={<Star size={14} />} 
+                                        />
+                                        <EditField 
+                                            label="Known Languages" 
+                                            value={editForm.languages_known_string} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, languages_known_string: v }))} 
+                                            icon={<Info size={14} />} 
+                                            placeholder="English, Hindi, etc."
+                                        />
+                                        <EditField 
+                                            label="Assigned Territory" 
+                                            value={editForm.territory} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, territory: v }))} 
+                                            icon={<Target size={14} />} 
+                                        />
+                                        <DisplayField label="Monthly Target" value={editForm.target_monthly} icon={<Target size={14} />} />
+                                        <EditField 
+                                            label="Reference Name" 
+                                            value={editForm.reference_name} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, reference_name: v }))} 
+                                            icon={<UserIcon size={14} />} 
+                                        />
+                                        <EditField 
+                                            label="Reference Mobile" 
+                                            value={editForm.reference_mobile} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, reference_mobile: v }))} 
+                                            icon={<Phone size={14} />} 
+                                        />
                                     </div>
+                                </div>
+                            )}
 
-                                    <div className="p-6 bg-indigo-50 rounded-3xl flex items-start gap-4 border border-indigo-100 italic">
-                                        <Shield className="text-indigo-600 shrink-0 mt-1" size={18} />
-                                        <p className="text-xs text-indigo-800 font-bold leading-relaxed">
-                                            These documents are cryptographically signed. Any tampering with the printed details or QR codes will invalidate the credentials during field verification.
+                            {activeTab === 'kyc_bank' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><CreditCard size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">KYC & Banking Settlement</h2>
+                                    </div>
+                                    <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl flex items-start gap-4 italic mb-6">
+                                        <Shield className="text-slate-400 shrink-0 mt-1" size={18} />
+                                        <p className="text-xs text-slate-500 font-bold leading-relaxed">
+                                            For security, sensitive data like Aadhaar and Bank Account numbers are encrypted. Masked values are shown for your protection.
                                         </p>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <EditField 
+                                            label="Aadhaar Card Number" 
+                                            value={editForm.aadhaar_number} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, aadhaar_number: v }))} 
+                                            icon={<Shield size={14} />} 
+                                            placeholder="12-digit number"
+                                        />
+                                        <EditField 
+                                            label="PAN Card Number" 
+                                            value={editForm.pan_number} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, pan_number: v }))} 
+                                            icon={<Shield size={14} />} 
+                                            placeholder="ABCDE1234F"
+                                        />
+                                        <EditField 
+                                            label="Voter ID" 
+                                            value={editForm.voter_id} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, voter_id: v }))} 
+                                            icon={<Shield size={14} />} 
+                                        />
+                                        <div className="md:col-span-2 h-px bg-slate-100 my-2" />
+                                        <EditField 
+                                            label="Bank Name" 
+                                            value={editForm.bank_name} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, bank_name: v }))} 
+                                            icon={<Building2 size={14} />} 
+                                        />
+                                        <EditField 
+                                            label="Account Number" 
+                                            value={editForm.bank_account_number} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, bank_account_number: v }))} 
+                                            icon={<CreditCard size={14} />} 
+                                        />
+                                        <EditField 
+                                            label="Bank IFSC" 
+                                            value={editForm.bank_ifsc} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, bank_ifsc: v }))} 
+                                            icon={<Building2 size={14} />} 
+                                        />
+                                        <EditField 
+                                            label="Bank Branch" 
+                                            value={editForm.bank_branch} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, bank_branch: v }))} 
+                                            icon={<Building2 size={14} />} 
+                                        />
+                                        <EditField 
+                                            label="UPI ID" 
+                                            value={editForm.upi_id} 
+                                            editing={editing} 
+                                            onChange={v => setEditForm(p => ({ ...p, upi_id: v }))} 
+                                            icon={<RefreshCcw size={14} />} 
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -340,25 +544,21 @@ export function SuperAgentProfilePage() {
                         </div>
                     </div>
 
-                    {!editing && activeTab === 'identity' && (
-                        <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-indigo-200 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl transition-transform group-hover:scale-110" />
-                            <div className="relative z-10 flex items-start gap-6">
-                                <div className="p-4 bg-white/10 rounded-3xl backdrop-blur-md">
-                                    <Shield className="text-indigo-200 w-8 h-8" />
-                                </div>
-                                <div className="space-y-4">
-                                    <h4 className="text-2xl font-display font-black tracking-tight">Profile Integrity Sync</h4>
-                                    <p className="text-indigo-100 text-sm leading-relaxed max-w-xl font-medium opacity-80">
-                                        Your identity is professional and verified. Ensuring your Father's Name and DOB matches your IDs is critical for the generation of valid official documents.
-                                    </p>
-                                    <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-indigo-300">
-                                        <Check size={14} /> End-to-end Encrypted
-                                        <span className="opacity-30">|</span>
-                                        <Check size={14} /> Verified Professional
-                                    </div>
-                                </div>
-                            </div>
+                    {/* Action Cards for Documents */}
+                    {!editing && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <DocumentCard 
+                                title="Official I-Card" 
+                                desc="Download your verified platform identity document."
+                                icon={<Download size={24} />}
+                                button={<DownloadIdCardButton className="w-full h-12 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg" />}
+                            />
+                            <DocumentCard 
+                                title="Appointment" 
+                                desc="Official joining authorization for your position."
+                                icon={<FileText size={24} />}
+                                button={<DownloadJoiningLetterButton user={user!} variant="primary" className="w-full h-12 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg" />}
+                            />
                         </div>
                     )}
                 </div>
@@ -377,7 +577,7 @@ const NavTab = ({ id, label, icon, active, onClick }: { id: any, label: string, 
     </button>
 );
 
-const DisplayField = ({ label, value, icon }: { label: string, value?: string, icon: React.ReactNode }) => (
+const DisplayField = ({ label, value, icon }: { label: string, value?: any, icon: React.ReactNode }) => (
     <div className="space-y-2">
         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
         <div className="px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl flex items-center gap-3 text-slate-800 font-bold overflow-hidden">
@@ -387,13 +587,13 @@ const DisplayField = ({ label, value, icon }: { label: string, value?: string, i
     </div>
 );
 
-const EditField = ({ label, value, editing, onChange, icon, placeholder, type = "text" }: { label: string, value: string, editing: boolean, onChange: (v: string) => void, icon: React.ReactNode, placeholder?: string, type?: string }) => (
+const EditField = ({ label, value, editing, onChange, icon, placeholder, type = "text" }: { label: string, value: any, editing: boolean, onChange: (v: string) => void, icon: React.ReactNode, placeholder?: string, type?: string }) => (
     <div className="space-y-2">
         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
         {editing ? (
             <input 
                 type={type} 
-                value={value} 
+                value={value || ''} 
                 onChange={e => onChange(e.target.value)} 
                 placeholder={placeholder}
                 className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all" 
@@ -404,5 +604,59 @@ const EditField = ({ label, value, editing, onChange, icon, placeholder, type = 
                 <span className="truncate">{value || 'Not Provided'}</span>
             </div>
         )}
+    </div>
+);
+
+const EditSelect = ({ label, value, editing, onChange, options, icon }: { label: string, value: any, editing: boolean, onChange: (v: string) => void, options: string[], icon: React.ReactNode }) => (
+    <div className="space-y-2">
+        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
+        {editing ? (
+            <select 
+                value={value || ''} 
+                onChange={e => onChange(e.target.value)}
+                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all appearance-none"
+            >
+                <option value="">Select...</option>
+                {options.map(opt => <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1).replace(/_/g, ' ')}</option>)}
+            </select>
+        ) : (
+            <div className="px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl flex items-center gap-3 text-slate-800 font-bold">
+                <span className="text-slate-300">{icon}</span>
+                <span>{value || 'Not Provided'}</span>
+            </div>
+        )}
+    </div>
+);
+
+const EditTextArea = ({ label, value, editing, onChange, icon }: { label: string, value: any, editing: boolean, onChange: (v: string) => void, icon: React.ReactNode }) => (
+    <div className="space-y-2">
+        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
+        {editing ? (
+            <textarea 
+                value={value || ''} 
+                onChange={e => onChange(e.target.value)}
+                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all min-h-[100px]"
+            />
+        ) : (
+            <div className="px-6 py-8 bg-slate-50 border-2 border-slate-50 rounded-2xl flex items-start gap-3 text-slate-800 font-bold">
+                <span className="text-slate-300 mt-1">{icon}</span>
+                <span className="leading-relaxed">{value || 'Not Provided'}</span>
+            </div>
+        )}
+    </div>
+);
+
+const DocumentCard = ({ title, desc, icon, button }: { title: string, desc: string, icon: React.ReactNode, button: React.ReactNode }) => (
+    <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm space-y-4">
+        <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                {icon}
+            </div>
+            <div>
+                <h4 className="font-display font-black text-slate-800">{title}</h4>
+                <p className="text-[10px] text-slate-400 font-bold leading-none mt-1 uppercase tracking-wider">{desc}</p>
+            </div>
+        </div>
+        {button}
     </div>
 );

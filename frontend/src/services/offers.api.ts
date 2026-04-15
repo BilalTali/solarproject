@@ -59,6 +59,14 @@ export const offersApi = {
         triggerExpiry: async (id: number) => {
             const { data } = await axios.post<ApiResponse<any>>(`/admin/offers/${id}/trigger-expiry`);
             return data;
+        },
+        getLeaderboard: async () => {
+            const { data } = await axios.get<ApiResponse<any[]>>('/admin/offers/all-points-leaderboard');
+            return data;
+        },
+        getAgentOffers: async (agentId: number) => {
+            const { data } = await axios.get<ApiResponse<UserOfferProgress[]>>(`/admin/offers/agents/${agentId}/offers`);
+            return data;
         }
     },
 

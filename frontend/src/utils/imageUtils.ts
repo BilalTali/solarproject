@@ -2,7 +2,7 @@
  * Utility to compress images on the client-side.
  * Reduces file size by resizing and adjusting JPEG/PNG quality.
  */
-export async function compressImage(file: File, maxWidth = 1600, maxQuality = 0.7): Promise<File> {
+export async function compressImage(file: File, maxWidth = 1024, maxQuality = 0.6): Promise<File> {
     // Only compress images
     if (!file.type.startsWith('image/') || file.type === 'image/gif') {
         return file;

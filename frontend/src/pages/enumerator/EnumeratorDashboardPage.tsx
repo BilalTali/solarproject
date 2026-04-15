@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { enumeratorApi } from '@/services/enumerator.api';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { LayoutDashboard, FileText, CheckCircle, IndianRupee, TrendingUp, Users, ArrowRight, PlusCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
@@ -32,7 +32,7 @@ export default function EnumeratorDashboardPage() {
     ];
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-24 md:pb-0">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -161,6 +161,26 @@ export default function EnumeratorDashboardPage() {
                         </Link>
                     </div>
                 </div>
+            </div>
+            {/* Mobile Sticky Action Bar */}
+            <div
+                className="fixed bottom-0 left-0 right-0 z-50 flex gap-3 px-4 md:hidden bg-white/80 backdrop-blur-xl border-t border-slate-200"
+                style={{
+                    paddingTop: '12px',
+                    paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+                }}
+            >
+                <DownloadIdCardButton
+                    variant="button"
+                    className="flex-1 h-[52px] !bg-emerald-600 !text-white !rounded-xl shadow-md border-none font-bold text-sm"
+                />
+                {user && (
+                    <DownloadJoiningLetterButton
+                        user={user}
+                        variant="outline"
+                        className="flex-1 h-[52px] !border-emerald-600 !text-emerald-700 !bg-transparent hover:!bg-emerald-50 !rounded-xl font-bold text-sm"
+                    />
+                )}
             </div>
         </div>
     );

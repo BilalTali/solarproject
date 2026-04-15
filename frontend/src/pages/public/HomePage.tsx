@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { publicApi } from '@/services/public.api';
 import { Link } from 'react-router-dom';
@@ -49,6 +49,23 @@ export default function HomePage() {
 
     const [submittedRef, setSubmittedRef] = useState<string | null>(null);
     const [eligAnswers, setEligAnswers] = useState<Record<string, EligibilityAnswer>>({});
+
+    // Scroll to Lead Form if #lead-form or ref is present
+    useEffect(() => {
+        const hash = window.location.hash;
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('ref');
+
+        if (hash === '#lead-form' || ref) {
+            // Wait slightly for dynamic content to render
+            setTimeout(() => {
+                const element = document.getElementById('lead-form');
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 500);
+        }
+    }, []);
 
     // 1. Parse dynamic Eligibility Questions
     const eligibilityQuestions = (() => {

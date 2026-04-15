@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import type { UserRole } from '@/types';
 
 interface ProtectedRouteProps {

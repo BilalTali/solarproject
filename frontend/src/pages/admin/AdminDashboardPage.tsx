@@ -8,7 +8,7 @@ import { formatCurrency, formatDate, STATUS_LABELS } from '@/utils/formatters';
 import { ArrowRight, Users, TrendingUp, CheckCircle2, Clock, IndianRupee } from 'lucide-react';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import DownloadJoiningLetterButton from '@/components/shared/DownloadJoiningLetterButton';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 
 const PIPELINE_COLORS: Record<string, string> = {
@@ -80,6 +80,9 @@ export default function AdminDashboardPage() {
                 <div className="hidden md:flex gap-3">
                     <DownloadIdCardButton />
                     {user && <DownloadJoiningLetterButton user={user} variant="button" />}
+                    {role === 'super_admin' && (
+                        <Link to="/admin/offers" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95">Manage Offers</Link>
+                    )}
                     <Link to="/admin/leads" className="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 px-5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95">View All Leads</Link>
                 </div>
             </div>

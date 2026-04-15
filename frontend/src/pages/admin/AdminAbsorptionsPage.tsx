@@ -105,7 +105,7 @@ export const AdminAbsorptionsPage: React.FC = () => {
                                         <h3 className="font-bold text-slate-900 leading-tight mb-1">{p.offer?.title}</h3>
                                         <div className="space-y-1">
                                             <p className="text-xs font-bold text-slate-500">
-                                                Super Agent: <span className="text-indigo-600 font-black">{p.super_agent?.name}</span>
+                                                Super Agent: <span className="text-indigo-600 font-black">{p.super_agent?.name || 'Unassigned (Global Pool)'}</span>
                                             </p>
                                             <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                                                 <span>From: {p.source_agent?.name}</span>
@@ -149,7 +149,7 @@ export const AdminAbsorptionsPage: React.FC = () => {
                                     </h2>
                                     <div className="grid grid-cols-2 gap-4">
                                         <DetailItem label="Source Agent" value={selectedPoint.source_agent?.name} />
-                                        <DetailItem label="Target SA" value={selectedPoint.super_agent?.name} />
+                                        <DetailItem label="Target BDM" value={selectedPoint.super_agent?.name || 'System (Global Pool)'} />
                                         <DetailItem label="Points" value={selectedPoint.absorbed_points.toString()} />
                                         <DetailItem label="Reason" value={selectedPoint.absorption_reason.replace(/_/g, ' ')} />
                                     </div>
@@ -210,3 +210,4 @@ const DetailItem = ({ label, value }: { label: string, value?: string }) => (
         <p className="text-sm font-bold text-white leading-tight truncate">{value || 'N/A'}</p>
     </div>
 );
+export default AdminAbsorptionsPage;

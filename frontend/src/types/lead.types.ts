@@ -58,6 +58,7 @@ export interface Lead {
     revert_reason: string | null;
     assigned_agent_id: number | null;
     assigned_super_agent_id: number | null;
+    assigned_admin_id: number | null;
     submitted_by_agent_id: number | null;
     submitted_by_enumerator_id: number | null;
     created_by_super_agent_id: number | null;
@@ -66,6 +67,7 @@ export interface Lead {
     reverted_at: string | null;
     assigned_agent?: User;
     assigned_super_agent?: User;
+    assigned_admin?: User;
     submitted_by_agent?: User;
     submitted_by_enumerator?: User;
     created_by_super_agent?: User;

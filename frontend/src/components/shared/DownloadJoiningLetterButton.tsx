@@ -4,7 +4,7 @@ import { User } from '@/types';
 import { joiningLetterApi } from '@/services/joiningLetter.api';
 import { toast } from 'react-hot-toast';
 import { useSettings } from '@/hooks/useSettings';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 
 interface DownloadJoiningLetterButtonProps {
     user: User;
@@ -39,22 +39,32 @@ const DownloadJoiningLetterButton: React.FC<DownloadJoiningLetterButtonProps> = 
             // If it's an admin viewing potentially another user, pass the target userId
             const downloadUrl = await joiningLetterApi.getDownloadUrl(isAdmin ? user.id : undefined);
 
-            // Fetch as blob to bypass PWA navigation cache interception
-            const fileResponse = await fetch(downloadUrl);
-            if (!fileResponse.ok) throw new Error('Failed to download');
-            
-            const blob = await fileResponse.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = `Joining_Letter_${user.name.replace(/\s+/g, '_')}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(blobUrl);
+            // Detect Mobile / PWA Standalone Mode
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
 
-            toast.success('Joining letter download started.');
+            if (isIOS || isStandalone) {
+                // On iOS or Standalone PWA, direct navigation is more reliable for triggers the native PDF viewer/download
+                window.open(downloadUrl, '_blank');
+                toast.success('Opening Joining Letter...');
+            } else {
+                // Desktop/Standard: Fetch as blob to bypass PWA navigation cache interception
+                const fileResponse = await fetch(downloadUrl);
+                if (!fileResponse.ok) throw new Error('Failed to download');
+                
+                const blob = await fileResponse.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = `Joining_Letter_${user.name.replace(/\s+/g, '_')}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+
+                toast.success('Joining letter download started.');
+            }
         } catch (error: any) {
             if (import.meta.env.DEV) {
                 console.error('Download error:', error);

@@ -9,7 +9,7 @@ import {
 import toast from 'react-hot-toast';
 import { settingsApi } from '@/services/settings.api';
 import { authApi } from '@/services/auth.api';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { AchievementManager } from '@/components/admin/AchievementManager';
 import { FeedbackManager } from '@/components/admin/FeedbackManager';
 import api from '@/services/axios';

@@ -3,7 +3,7 @@ import { Sun, LayoutDashboard, List, PlusCircle, DollarSign, Bell, User, Users, 
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { authApi } from '@/services/auth.api';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import { useSettings } from '@/hooks/useSettings';
 

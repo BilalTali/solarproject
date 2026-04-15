@@ -1,22 +1,26 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-    LayoutDashboard, Users, Shield, FileText, Monitor, LogOut, ShieldAlert, HelpCircle, MessageSquare, IndianRupee, Settings, Globe
+    LayoutDashboard, Users, Shield, FileText, Monitor, LogOut, ShieldAlert,
+    HelpCircle, MessageSquare, IndianRupee, Settings, Globe, Gift, Award, Inbox
 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { authApi } from '@/services/auth.api';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { useSettings } from '@/hooks/useSettings';
 
 const SUPER_ADMIN_NAV = [
     { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', to: '/super-admin/dashboard' },
     { icon: <ShieldAlert className="w-5 h-5" />, label: 'Manage Admins', to: '/super-admin/admins' },
     { icon: <IndianRupee className="w-5 h-5" />, label: 'Commission Settlements', to: '/super-admin/commissions' },
-    { icon: <hr className="border-white/10 my-2" />, label: '', to: '', divider: true },
     { icon: <Monitor className="w-5 h-5" />, label: 'Monitor BDMs (SA)', to: '/super-admin/monitor/super-agents' },
     { icon: <Users className="w-5 h-5" />, label: 'Monitor BDEs (Agent)', to: '/super-admin/monitor/agents' },
     { icon: <Users className="w-5 h-5" />, label: 'Monitor Enumerators', to: '/super-admin/monitor/enumerators' },
     { icon: <FileText className="w-5 h-5" />, label: 'Monitor Leads', to: '/super-admin/monitor/leads' },
+    { icon: <hr className="border-white/10 my-2" />, label: '', to: '', divider: true },
+    { icon: <Gift className="w-5 h-5" />, label: 'Incentive Offers', to: '/super-admin/offers' },
+    { icon: <Award className="w-5 h-5" />, label: 'Prize Redemptions', to: '/super-admin/redemptions' },
+    { icon: <Inbox className="w-5 h-5" />, label: 'Absorbed Points', to: '/super-admin/absorptions' },
     { icon: <hr className="border-white/10 my-2" />, label: '', to: '', divider: true },
     { icon: <HelpCircle className="w-5 h-5" />, label: 'Global Help Center', to: '/super-admin/help-center' },
     { icon: <MessageSquare className="w-5 h-5" />, label: 'Global WhatsApp Chatbot', to: '/super-admin/chatbot' },

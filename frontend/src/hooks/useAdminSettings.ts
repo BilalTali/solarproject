@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { settingsApi } from '@/services/settings.api';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { useSettings } from '@/hooks/useSettings';
 
 const getFileUrl = (path: string | null | undefined) => {

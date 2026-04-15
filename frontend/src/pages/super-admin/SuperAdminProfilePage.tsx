@@ -7,7 +7,7 @@ import {
     Upload, Check, Key, FileText
 } from 'lucide-react';
 import { settingsApi } from '@/services/settings.api';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { AchievementManager } from '@/components/admin/AchievementManager';
 import { FeedbackManager } from '@/components/admin/FeedbackManager';
 import api from '@/services/axios';
@@ -325,8 +325,9 @@ export default function SuperAdminProfilePage() {
                                         <InputBlock label="Track Status Link" value={localAuthority.nav_track_status || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_track_status: v }))} />
                                         <InputBlock label="Portal Login Button" value={localAuthority.nav_portal_login || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_portal_login: v }))} />
                                         <InputBlock label="CTA Button (Electricity)" value={localAuthority.nav_cta_electricity || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_cta_electricity: v }))} />
+                                        <InputBlock label="User Guide Link" value={localAuthority.nav_guide || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_guide: v }))} />
                                     </div>
-                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['nav_home', 'nav_rewards', 'nav_calculator', 'nav_track_status', 'nav_portal_login', 'nav_cta_electricity'])} />
+                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['nav_home', 'nav_rewards', 'nav_calculator', 'nav_track_status', 'nav_portal_login', 'nav_cta_electricity', 'nav_guide'])} />
                                 </div>
                             )}
 

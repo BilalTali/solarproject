@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Download, CreditCard, Loader2, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/services/axios';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { useSettings } from '@/hooks/useSettings';
 
 import { User } from '@/types';
@@ -16,7 +16,6 @@ interface Props {
 
 export const DownloadIdCardButton = ({ variant = 'button', className, userId, user: targetUser }: Props) => {
     const [loading, setLoading] = useState(false);
-    const [loading2, setLoading2] = useState(false);
     const { user: authUser } = useAuthStore();
     const { companyName } = useSettings();
 
@@ -42,40 +41,46 @@ export const DownloadIdCardButton = ({ variant = 'button', className, userId, us
         if (!isApproved) return;
         setLoading(true);
         try {
-            // Get signed download URL from API
-            const response = await api.get('/icard/download-url', {
+            const response = await api.get('/icard/download-url2', {
                 params: { userId }
             });
             const url = response.data.url;
+            
+            // Detect Mobile / PWA Standalone Mode
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
 
-            // Trigger download by fetching as blob to bypass PWA navigation cache interception
-            const fileResponse = await fetch(url);
-            
-            if (!fileResponse.ok) throw new Error('Failed to download');
-            
-            const blob = await fileResponse.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            
-            // Extract filename from Content-Disposition if available, or fallback
-            const disposition = fileResponse.headers.get('content-disposition');
-            let filename = 'ID_Card.pdf';
-            if (disposition && disposition.indexOf('attachment') !== -1) {
-                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                const matches = filenameRegex.exec(disposition);
-                if (matches != null && matches[1]) {
-                    filename = matches[1].replace(/['"]/g, '');
+            if (isIOS || isStandalone) {
+                // On iOS or Standalone PWA, direct navigation is more reliable for triggers the native PDF viewer/download
+                window.open(url, '_blank');
+                toast.success('Opening ID Card...');
+            } else {
+                // Desktop/Standard: Trigger download by fetching as blob to keep same-page UX
+                const fileResponse = await fetch(url);
+                if (!fileResponse.ok) throw new Error('Failed to download');
+                
+                const blob = await fileResponse.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                
+                const disposition = fileResponse.headers.get('content-disposition');
+                let filename = 'iCard.pdf';
+                if (disposition && disposition.indexOf('attachment') !== -1) {
+                    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                    const matches = filenameRegex.exec(disposition);
+                    if (matches != null && matches[1]) {
+                        filename = matches[1].replace(/['"]/g, '');
+                    }
                 }
+                
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(blobUrl);
+                toast.success('ID Card downloaded successfully!');
             }
-            
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(blobUrl);
-
-            toast.success('ID Card downloaded successfully!');
         } catch (error) {
             if (import.meta.env.DEV) {
                 console.error('ID Card Download Error:', error);
@@ -83,51 +88,6 @@ export const DownloadIdCardButton = ({ variant = 'button', className, userId, us
             toast.error('Failed to generate ID card. Please try again.');
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleDownload2 = async () => {
-        if (!isApproved) return;
-        setLoading2(true);
-        try {
-            const response = await api.get('/icard/download-url2', {
-                params: { userId }
-            });
-            const url = response.data.url;
-
-            const fileResponse = await fetch(url);
-            
-            if (!fileResponse.ok) throw new Error('Failed to download');
-            
-            const blob = await fileResponse.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            
-            const disposition = fileResponse.headers.get('content-disposition');
-            let filename = 'iCard2.pdf';
-            if (disposition && disposition.indexOf('attachment') !== -1) {
-                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                const matches = filenameRegex.exec(disposition);
-                if (matches != null && matches[1]) {
-                    filename = matches[1].replace(/['"]/g, '');
-                }
-            }
-            
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(blobUrl);
-
-            toast.success('iCard 2 downloaded successfully!');
-        } catch (error) {
-            if (import.meta.env.DEV) {
-                console.error('iCard 2 Download Error:', error);
-            }
-            toast.error('Failed to generate iCard 2. Please try again.');
-        } finally {
-            setLoading2(false);
         }
     };
 
@@ -180,19 +140,11 @@ export const DownloadIdCardButton = ({ variant = 'button', className, userId, us
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleDownload}
-                        disabled={loading || loading2}
-                        className="flex-1 flex justify-center items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-sm bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+                        disabled={loading}
+                        className="flex-1 flex justify-center items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:shadow-lg disabled:opacity-50"
                     >
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                         {loading ? 'Generating...' : 'Download ID Card'}
-                    </button>
-                    <button
-                        onClick={handleDownload2}
-                        disabled={loading || loading2}
-                        className="flex-1 flex justify-center items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-sm bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:shadow-lg disabled:opacity-50"
-                    >
-                        {loading2 ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                        {loading2 ? 'Generating...' : 'Download iCard 2'}
                     </button>
                 </div>
             </div>
@@ -201,23 +153,13 @@ export const DownloadIdCardButton = ({ variant = 'button', className, userId, us
 
     // Default: inline button
     return (
-        <div className="flex items-center gap-2">
-            <button
-                onClick={handleDownload}
-                disabled={loading || loading2}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-md bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50 ${className}`}
-            >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                <span>{loading ? '...' : 'ID Card'}</span>
-            </button>
-            <button
-                onClick={handleDownload2}
-                disabled={loading || loading2}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-md bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:shadow-lg disabled:opacity-50 ${className}`}
-            >
-                {loading2 ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                <span>{loading2 ? '...' : 'iCard 2'}</span>
-            </button>
-        </div>
+        <button
+            onClick={handleDownload}
+            disabled={loading}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-md bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:shadow-lg disabled:opacity-50 ${className}`}
+        >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+            <span>{loading ? '...' : 'ID Card'}</span>
+        </button>
     );
 };

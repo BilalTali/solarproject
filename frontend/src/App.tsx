@@ -10,7 +10,7 @@ import SuperAgentLayout from '@/components/layouts/SuperAgentLayout';
 
 // Route Guards
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 
 // Public Pages
 const MediaPage = lazy(() => import('@/pages/public/MediaPage'));
@@ -29,6 +29,7 @@ const CalculatorPage = lazy(() => import('@/pages/public/CalculatorPage'));
 const GuidePage = lazy(() => import('@/pages/public/GuidePage'));
 const StateSubsidyPage = lazy(() => import('@/pages/public/StateSubsidyPage'));
 const BenefitsPage = lazy(() => import('@/pages/public/BenefitsPage'));
+const DirectApplyPage = lazy(() => import('@/pages/public/DirectApplyPage'));
 
 // Auth Pages
 const AgentLoginPage = lazy(() => import('@/pages/agent/AgentLoginPage'));
@@ -79,7 +80,7 @@ const AdminDocumentsPage = lazy(() => import('@/pages/admin/AdminDocumentsPage')
 const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage'));
 const AdminOffersPage = lazy(() => import('@/pages/admin/AdminOffersPage').then(module => ({ default: module.AdminOffersPage })));
 const AdminRedemptionsPage = lazy(() => import('@/pages/admin/AdminRedemptionsPage').then(module => ({ default: module.AdminRedemptionsPage })));
-const AdminAbsorptionsPage = lazy(() => import('@/pages/admin/AdminAbsorptionsPage').then(module => ({ default: module.AdminAbsorptionsPage })));
+const AdminAbsorptionsPage = lazy(() => import('@/pages/admin/AdminAbsorptionsPage'));
 const AdminWithdrawalsPage = lazy(() => import('@/pages/admin/AdminWithdrawalsPage').then(module => ({ default: module.AdminWithdrawalsPage })));
 const AdminOperatorsPage = lazy(() => import('@/pages/admin/AdminOperatorsPage'));
 
@@ -94,6 +95,7 @@ const EnumeratorNotificationsPage = lazy(() => import('@/pages/enumerator/Enumer
 const EnumeratorLoginPage = lazy(() => import('@/pages/enumerator/EnumeratorLoginPage'));
 const EnumeratorRegisterPage = lazy(() => import('@/pages/enumerator/EnumeratorRegisterPage'));
 const EnumeratorWithdrawalsPage = lazy(() => import('@/pages/enumerator/EnumeratorWithdrawalsPage').then(module => ({ default: module.EnumeratorWithdrawalsPage })));
+const EnumeratorOffersPage = lazy(() => import('./pages/enumerator/EnumeratorOffersPage'));
 
 // Super Admin Pages
 import SuperAdminLayout from '@/components/layouts/SuperAdminLayout';
@@ -162,6 +164,7 @@ export default function App() {
           <Route path="/pm-surya-ghar-guide" element={<GuidePage />} />
           <Route path="/state-wise-subsidy" element={<StateSubsidyPage />} />
           <Route path="/benefits-of-solar" element={<BenefitsPage />} />
+          <Route path="/apply" element={<DirectApplyPage />} />
 
           {/* Business Development Executive Auth */}
           <Route path="/agent/login" element={<AgentLoginPage />} />
@@ -243,8 +246,8 @@ export default function App() {
             <Route path="reports" element={<AdminReportsPage />} />
             <Route path="media" element={<AdminMediaPage />} />
             <Route path="documents" element={<AdminDocumentsPage />} />
-            <Route path="offers" element={<AdminOffersPage />} />
             <Route path="redemptions" element={<AdminRedemptionsPage />} />
+            <Route path="offers" element={<AdminOffersPage />} />
             <Route path="absorptions" element={<AdminAbsorptionsPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
             <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
@@ -276,6 +279,7 @@ export default function App() {
             <Route path="documents" element={<DocumentsPage />} />
             <Route path="profile" element={<EnumeratorProfilePage />} />
             <Route path="withdrawals" element={<EnumeratorWithdrawalsPage />} />
+            <Route path="offers" element={<EnumeratorOffersPage />} />
             <Route index element={<Navigate to="/enumerator/dashboard" replace />} />
           </Route>
 
@@ -295,6 +299,9 @@ export default function App() {
             <Route path="monitor/agents" element={<SuperAdminMonitorAgentsPage />} />
             <Route path="monitor/enumerators" element={<SuperAdminMonitorEnumeratorsPage />} />
             <Route path="monitor/leads" element={<SuperAdminMonitorLeadsPage />} />
+            <Route path="offers" element={<AdminOffersPage />} />
+            <Route path="redemptions" element={<AdminRedemptionsPage />} />
+            <Route path="absorptions" element={<AdminAbsorptionsPage />} />
             <Route path="help-center" element={<SuperAdminFAQPage />} />
             <Route path="chatbot" element={<SuperAdminChatbotPage />} />
             <Route path="reports" element={<SuperAdminReportsPage />} />

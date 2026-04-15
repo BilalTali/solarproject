@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Menu, X, Bell } from 'lucide-react';
 import SuperAgentSidebar from '@/components/super-agent/SuperAgentSidebar';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 
 export default function SuperAgentLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);

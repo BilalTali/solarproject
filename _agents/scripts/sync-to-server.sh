@@ -71,7 +71,7 @@ log "✅ SSH connection verified."
 # ── Step 1: Sync Backend ──────────────────────────────────────────────────────
 log "Syncing backend PHP files..."
 eval "${RSYNC_BACKEND} \
-  '${LOCAL_PROJECT}/backend/' \
+  '${LOCAL_PROJECT}/backend/laravel/' \
   '${SSH_USER}@${SSH_HOST}:${REMOTE_BACKEND}/'"
 log "✅ Backend synced."
 

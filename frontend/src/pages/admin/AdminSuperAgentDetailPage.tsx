@@ -3,9 +3,10 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     ArrowLeft, Users, Star, Phone, MapPin, Mail, Activity,
-    CheckCircle, XCircle, UserX, Edit2, Save, X, Unlink, Calendar, QrCode
+    CheckCircle, XCircle, UserX, Edit2, Save, X, Unlink, Calendar, QrCode, Gift
 } from 'lucide-react';
 import { adminSuperAgentApi } from '@/services/adminSuperAgent.api';
+import { offersApi } from '@/services/offers.api';
 import toast from 'react-hot-toast';
 import type { User } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
@@ -23,7 +24,7 @@ function fmt(iso: string) {
     return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-type Tab = 'overview' | 'team' | 'log';
+type Tab = 'overview' | 'team' | 'log' | 'offers';
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AdminSuperAgentDetailPage() {
@@ -61,6 +62,14 @@ export default function AdminSuperAgentDetailPage() {
         enabled: !!id && tab === 'log',
     });
     const logs = logData?.data?.data ?? [];
+
+    // ── Fetch SA offers ───────────────────────────────────────────────────
+    const { data: offersData, isLoading: offersLoading } = useQuery({
+        queryKey: ['admin-sa-offers', id],
+        queryFn: () => offersApi.admin.getAgentOffers(Number(id)),
+        enabled: !!id && tab === 'offers',
+    });
+    const offers = offersData?.data ?? [];
 
     // ── Status mutation ───────────────────────────────────────────────────────
     const statusMut = useMutation({
@@ -241,6 +250,7 @@ export default function AdminSuperAgentDetailPage() {
                     ['overview', 'Overview'],
                     ['team', `Team (${sa.agent_count ?? 0})`],
                     ['log', 'Assignment Log'],
+                    ['offers', 'Incentive Offers'],
                 ] as [Tab, string][]).map(([key, lbl]) => (
                     <button
                         key={key}
@@ -472,6 +482,61 @@ export default function AdminSuperAgentDetailPage() {
                             </button>
                         </form>
                     </div>
+                </div>
+            )}
+            {tab === 'offers' && (
+                <div className="bg-white rounded-xl border border-slate-200 p-8 space-y-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <Gift className="text-orange-500" size={20} />
+                            Business Manager Offer Progress
+                        </h2>
+                    </div>
+
+                    {offersLoading ? (
+                        <div className="py-10 text-center text-slate-400">Loading offers…</div>
+                    ) : offers.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {offers.map((offer: any) => (
+                                <div key={offer.id} className="scale-95 origin-top-left">
+                                    <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-3">
+                                        <div className="flex justify-between items-start">
+                                            <h4 className="font-bold text-slate-800">{offer.title}</h4>
+                                            <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded uppercase">
+                                                {offer.offer_type}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <div className="flex justify-between text-xs font-medium text-slate-500">
+                                                <span>Progress</span>
+                                                <span>{offer.my_unredeemed_points} / {offer.target_points} Pts</span>
+                                            </div>
+                                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-orange-500 rounded-full" 
+                                                    style={{ width: `${Math.min(100, (offer.my_unredeemed_points / offer.target_points) * 100)}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between items-center pt-2">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                Redeemed: {offer.my_redemption_count}
+                                            </span>
+                                            {offer.can_redeem && (
+                                                <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded">
+                                                    READY TO REDEEM
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            <p className="text-slate-400 font-medium italic">No active offers for this manager</p>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

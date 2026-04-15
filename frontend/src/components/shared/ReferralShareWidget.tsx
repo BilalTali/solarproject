@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Copy, Check, Share2, MessageSquare, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authApi } from '@/services/auth.api';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 
 interface ReferralShareWidgetProps {
     referralCode: string;
@@ -15,7 +15,7 @@ export const ReferralShareWidget: React.FC<ReferralShareWidgetProps> = ({ referr
     const { setUser } = useAuthStore();
 
     const baseUrl = window.location.origin;
-    const referralUrl = referralCode ? `${baseUrl}/?ref=${referralCode}#lead-form` : null;
+    const referralUrl = referralCode ? `${baseUrl}/apply?ref=${referralCode}` : null;
     const roleName = role === 'agent' ? 'BDE (Field Agent)' : 'BDM (Team Manager)';
 
     /**

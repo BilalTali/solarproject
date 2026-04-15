@@ -6,7 +6,7 @@ import {
     Briefcase, CreditCard, ClipboardCheck, Info, Map,
     GraduationCap, Lock, CheckCircle2, Star, UserCheck
 } from 'lucide-react';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/services/auth.api';
 import { enumeratorApi } from '@/services/enumerator.api';
 import toast from 'react-hot-toast';

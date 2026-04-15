@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Menu, DollarSign } from 'lucide-react';
 import EnumeratorSidebar from '@/components/enumerator/EnumeratorSidebar';
 import { useSettings } from '@/hooks/useSettings';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/services/auth.api';
 
 export default function EnumeratorLayout() {

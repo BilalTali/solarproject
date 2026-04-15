@@ -6,7 +6,7 @@ import DashboardSkeleton from '@/components/shared/DashboardSkeleton';
 import LeadStatusBadge from '@/components/shared/LeadStatusBadge';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { TrendingUp, Users, IndianRupee, CheckCircle2, PlusCircle, ArrowRight } from 'lucide-react';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import DownloadJoiningLetterButton from '@/components/shared/DownloadJoiningLetterButton';
 import { RevertedLeadBanner } from '@/components/agent/RevertedLeadBanner';

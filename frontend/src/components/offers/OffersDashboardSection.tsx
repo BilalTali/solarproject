@@ -1,7 +1,8 @@
+import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
-import { OfferCard } from '../shared/OfferCard' // Changed from OfferExcitementCard
+import { OfferCard } from '../shared/OfferCard'
 import { OfferNotificationBanner } from './OfferNotificationBanner'
 import { OfferWithProgress, UserOfferProgress, computeUrgencyScore, OfferProgress } from '@/types'
 import api from '@/services/axios'
@@ -25,6 +26,30 @@ export const OffersDashboardSection = ({ role, onRedeem }: Props) => {
         refetchInterval: 20_000,
         staleTime: 10_000,
     })
+
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [isPaused, setIsPaused] = useState(false);
+
+    useEffect(() => {
+        if (!scrollRef.current || isPaused || offers.length <= 1) return;
+
+        const interval = setInterval(() => {
+            const el = scrollRef.current;
+            if (!el) return;
+
+            const cardWidth = el.offsetWidth * 0.85; // Approximate width based on snap points
+            const maxScroll = el.scrollWidth - el.clientWidth;
+            
+            if (el.scrollLeft >= maxScroll - 50) {
+                // Smoothly reset to start if we're at the end
+                el.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                el.scrollBy({ left: cardWidth, behavior: 'smooth' });
+            }
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [isPaused, offers.length]);
 
     // Live offers only:
     const live = offers.filter(o => o.is_live || o.is_claimable)
@@ -76,11 +101,18 @@ export const OffersDashboardSection = ({ role, onRedeem }: Props) => {
 
             <OfferNotificationBanner offers={live.slice(0, 3)} progressMap={pm} role={role} />
 
-            <div className="relative group/scroll">
-                <div className="
-                    flex gap-6 pb-12 px-1
-                    overflow-x-auto scrollbar-hide snap-x snap-mandatory
-                ">
+            <div 
+                className="relative group/scroll"
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
+            >
+                <div 
+                    ref={scrollRef}
+                    className="
+                        flex gap-6 pb-12 px-1
+                        overflow-x-auto scrollbar-hide snap-x snap-mandatory
+                    "
+                >
                     {sorted.map(offer => {
                         // Map OfferWithProgress + its own_progress/progress into the UserOfferProgress expected by OfferCard
                         const progress = role === 'agent' ? offer.progress : offer.own_progress;

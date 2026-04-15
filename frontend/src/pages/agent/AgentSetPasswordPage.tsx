@@ -6,7 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Lock, Sun } from 'lucide-react';
 import { authApi } from '@/services/auth.api';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { useSettings } from '@/hooks/useSettings';
 
 const schema = z.object({

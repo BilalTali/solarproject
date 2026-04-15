@@ -11,7 +11,7 @@ import { superAgentApi } from '@/services/superAgent.api';
 import { superAgentCommissionsApi } from '@/services/commissions.api';
 import { openAuthenticatedFile } from '@/utils/documentUtils';
 import { authApi } from '@/services/auth.api';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 import type { Lead, CommissionPrompt } from '@/types';
 import CommissionInlineEntryForAgent from '@/components/super-agent/CommissionInlineEntryForAgent';

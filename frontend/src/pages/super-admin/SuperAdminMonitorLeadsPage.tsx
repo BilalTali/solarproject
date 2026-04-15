@@ -1,15 +1,18 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
     Search, LayoutList, MapPin, Tag
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '@/services/axios';
-import { ApiResponse, Lead, PaginatedResponse } from '@/types';
+import { ApiResponse, Lead, PaginatedResponse, User } from '@/types';
 
 export default function SuperAdminMonitorLeadsPage() {
+    const queryClient = useQueryClient();
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
 
+    // Fetch leads
     const { data: res, isLoading } = useQuery({
         queryKey: ['super-admin', 'monitor-leads', search, status],
         queryFn: async () => {
@@ -20,7 +23,34 @@ export default function SuperAdminMonitorLeadsPage() {
         }
     });
 
+    // Fetch Admins list for assignment
+    const { data: adminsRes } = useQuery({
+        queryKey: ['super-admin', 'all-admins'],
+        queryFn: async () => {
+            const response = await api.get<ApiResponse<PaginatedResponse<User>>>('/super-admin/admins', {
+                params: { per_page: 100 }
+            });
+            return response.data;
+        }
+    });
+
+    const assignMutation = useMutation({
+        mutationFn: ({ ulid, admin_id }: { ulid: string, admin_id: number }) => 
+            api.put(`/super-admin/monitor/leads/${ulid}/assign-admin`, { admin_id }),
+        onSuccess: () => {
+            toast.success('Lead assigned to admin successfully!');
+            queryClient.invalidateQueries({ queryKey: ['super-admin', 'monitor-leads'] });
+        },
+        onError: () => toast.error('Failed to assign lead')
+    });
+
     const leads = res?.data?.data || [];
+    const admins = adminsRes?.data?.data || [];
+
+    const handleAssign = (ulid: string, admin_id: string) => {
+        if (!admin_id) return;
+        assignMutation.mutate({ ulid, admin_id: parseInt(admin_id) });
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -112,6 +142,24 @@ export default function SuperAdminMonitorLeadsPage() {
                                                 <div className="flex items-center gap-1.5 text-[10px] font-black text-blue-600 uppercase">
                                                     <Tag className="w-2.5 h-2.5" />
                                                     BDE: {lead.assigned_agent.name}
+                                                </div>
+                                            )}
+                                            {lead.assigned_admin_id && lead.assigned_admin ? (
+                                                <div className="flex items-center gap-1.5 text-[10px] font-black text-rose-600 uppercase mt-1">
+                                                    <Tag className="w-2.5 h-2.5" />
+                                                    Admin: {lead.assigned_admin.name}
+                                                </div>
+                                            ) : !lead.assigned_agent && !lead.assigned_super_agent && (
+                                                <div className="mt-1 flex items-center gap-2">
+                                                    <select 
+                                                        onChange={(e) => handleAssign(lead.ulid, e.target.value)}
+                                                        className="text-[10px] uppercase font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded px-2 py-1 max-w-[120px]"
+                                                        defaultValue=""
+                                                        disabled={assignMutation.isPending}
+                                                    >
+                                                        <option value="" disabled>Assign Admin...</option>
+                                                        {admins.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                                                    </select>
                                                 </div>
                                             )}
                                         </div>

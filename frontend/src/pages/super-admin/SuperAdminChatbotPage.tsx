@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { 
     chatbotApi, WaChatbotCategory, WaRegistrationField, WaChatbotSession, WaHandler 
 } from '@/services/chatbot.api';

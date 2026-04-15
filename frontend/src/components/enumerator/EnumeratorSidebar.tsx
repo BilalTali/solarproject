@@ -1,9 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sun, LayoutDashboard, List, PlusCircle, DollarSign, User, LogOut, BadgeCheck, Bell, FileText, Wallet } from 'lucide-react';
+import { Sun, LayoutDashboard, List, PlusCircle, DollarSign, User, LogOut, BadgeCheck, Bell, FileText, Wallet, Gift } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { authApi } from '@/services/auth.api';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { useSettings } from '@/hooks/useSettings';
 
 const NAV = [
@@ -12,6 +12,7 @@ const NAV = [
     { icon: <PlusCircle className="w-5 h-5" />, label: 'Submit Lead', to: '/enumerator/leads/new' },
     { icon: <DollarSign className="w-5 h-5" />, label: 'My Earnings', to: '/enumerator/commissions' },
     { icon: <Wallet className="w-5 h-5" />, label: 'Withdraw Cash', to: '/enumerator/withdrawals' },
+    { icon: <Gift className="w-5 h-5" />, label: 'Incentive Offers', to: '/enumerator/offers' },
     { icon: <Bell className="w-5 h-5" />, label: 'Notifications', to: '/enumerator/notifications' },
     { icon: <FileText className="w-5 h-5" />, label: 'Resource Library', to: '/enumerator/documents' },
     { icon: <User className="w-5 h-5" />, label: 'Profile', to: '/enumerator/profile' },

@@ -11,7 +11,7 @@ import { adminSuperAgentApi } from '@/services/adminSuperAgent.api';
 import toast from 'react-hot-toast';
 import type { Lead, ApiResponse, PaginatedResponse, CommissionPrompt } from '@/types';
 import CommissionInlineEntry from '@/components/admin/CommissionInlineEntry';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor, MILESTONE_STATUSES } from '@/constants/leadStatuses';
 import { List } from 'react-window';
 import MobileFilterModal from '@/components/shared/MobileFilterModal';

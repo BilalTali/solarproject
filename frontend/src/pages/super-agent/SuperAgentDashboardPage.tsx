@@ -6,7 +6,7 @@ import {
 import { Link } from 'react-router-dom';
 import { superAgentApi } from '@/services/superAgent.api';
 import { leadsApi } from '@/services/leads.api';
-import { useAuthStore } from '@/hooks/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import type { SuperAgentDashboardStats } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
 import { superAgentCommissionsApi } from '@/services/commissions.api';
@@ -105,7 +105,7 @@ export default function SuperAgentDashboardPage() {
         : 0;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-24 md:pb-0">
             {/* Welcome Banner */}
             <div className="bg-gradient-to-r from-slate-800 to-orange-700 rounded-2xl px-6 py-5 text-white">
                 <div className="flex flex-wrap items-center justify-between gap-4">
