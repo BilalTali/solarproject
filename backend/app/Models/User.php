@@ -280,7 +280,13 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
     }
 
     /**
-     * Calculate profile completion percentage
+     * Calculate profile completion percentage.
+     *
+     * Encrypted fields (aadhaar_number, bank_account_number) are read inside
+     * a try-catch to gracefully handle legacy rows that were stored as plain
+     * text before the encryption cast was applied. Without this guard, any
+     * such row will throw a DecryptException when Eloquent serialises the
+     * model, producing a 500 on every endpoint that returns User collections.
      */
     public function getProfileCompletionAttribute(): int
     {
@@ -293,11 +299,18 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
             'bank_name', 'bank_account_number', 'bank_ifsc', 'bank_branch',
             'qualification', 'experience_years', 'languages_known',
             'reference_name', 'reference_mobile', 'territory',
+            'profile_photo', 'signature_image',
         ];
 
         $completed = 0;
         foreach ($fields as $field) {
-            if (! empty($this->{$field})) {
+            try {
+                if (! empty($this->{$field})) {
+                    $completed++;
+                }
+            } catch (\Throwable $e) {
+                // Encrypted field could not be decrypted (legacy plain-text value).
+                // Treat the field as filled so it does not block profile completion.
                 $completed++;
             }
         }
