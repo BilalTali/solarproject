@@ -30,7 +30,9 @@ class AdminLeadController extends Controller
                   ->orWhereIn('submitted_by_enumerator_id', $managedIds)
                   ->orWhereIn('assigned_agent_id', $managedIds)
                   ->orWhereIn('assigned_super_agent_id', $managedIds)
+                  ->orWhereIn('assigned_admin_id', $managedIds)
                   // Directly handled by this admin
+                  ->orWhere('assigned_admin_id', $user->id)
                   ->orWhere('wa_handler_admin_id', $user->id);
             });
         }
