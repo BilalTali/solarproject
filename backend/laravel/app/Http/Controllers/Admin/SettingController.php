@@ -79,6 +79,11 @@ class SettingController extends Controller
         'authorized_signatory_title',
         'icard_clearance',
         'company_affiliated_with',
+        // Billing catalogue — read-only view for Admins (set by Super Admin globally)
+        'billing_items_json',
+        'billing_makes_json',
+        'company_bank_account_name', 'company_bank_account_number',
+        'company_bank_ifsc', 'company_bank_branch',
     ];
 
     public function index()

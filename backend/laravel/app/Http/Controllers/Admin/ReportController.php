@@ -131,12 +131,12 @@ class ReportController extends Controller
 
         $byState = (clone $leadQuery)->select('beneficiary_state as state', DB::raw('count(*) as count'))
             ->groupBy('beneficiary_state')
-            ->orderByDesc('count')
+            ->orderByRaw('count(*) DESC')
             ->get();
 
         $topDistricts = (clone $leadQuery)->select('beneficiary_district as district', 'beneficiary_state as state', DB::raw('count(*) as count'))
             ->groupBy('beneficiary_state', 'beneficiary_district')
-            ->orderByDesc('count')
+            ->orderByRaw('count(*) DESC')
             ->take(10)
             ->get();
 

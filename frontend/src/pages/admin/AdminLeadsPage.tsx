@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 import type { Lead, ApiResponse, PaginatedResponse, CommissionPrompt } from '@/types';
 import CommissionInlineEntry from '@/components/admin/CommissionInlineEntry';
 import { useAuthStore } from '@/store/authStore';
-import { useSettings } from '@/hooks/useSettings';
+import { useAdminSettings } from '@/hooks/useAdminSettings';
 import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor, MILESTONE_STATUSES } from '@/constants/leadStatuses';
 import { List } from 'react-window';
 import MobileFilterModal from '@/components/shared/MobileFilterModal';
@@ -44,7 +44,7 @@ export default function AdminLeadsPage() {
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
     // billing state
-    const { settings } = useSettings();
+    const { settings } = useAdminSettings();
     const billingItems = typeof settings.billing_items_json === 'string' ? JSON.parse(settings.billing_items_json) : (settings.billing_items_json || []);
     const billingMakes = typeof settings.billing_makes_json === 'string' ? JSON.parse(settings.billing_makes_json) : (settings.billing_makes_json || []);
     const [billItem, setBillItem] = useState('');

@@ -638,7 +638,7 @@ class OfferService
                 'collective_remaining' => $offer->collective_remaining,
                 'collective_redeemed' => $offer->collective_redeemed,
             ];
-        })->toArray();
+        })->values()->toArray();
     }
 
     /**
