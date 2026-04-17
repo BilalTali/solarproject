@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { User, Phone, Save, RefreshCcw, LogOut } from 'lucide-react';
+import { User, Phone, Save, RefreshCcw } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '@/services/axios';

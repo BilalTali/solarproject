@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Camera, MapPin, CheckCircle, Navigation, Loader2, List, PlayCircle, UploadCloud, FileText } from 'lucide-react';
+import { Camera, MapPin, CheckCircle, Navigation, Loader2, List, PlayCircle, UploadCloud } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/services/axios';
 import { useAuthStore } from '@/store/authStore';
@@ -17,7 +17,6 @@ export default function TechnicalLeadsPage() {
     const { user } = useAuthStore();
     const { settings } = useSettings();
     const queryClient = useQueryClient();
-    const technicianType = (user as any)?.technician_type || 'engineer';
     const termsHtml = settings.technical_team_terms || 'I certify that the information provided is accurate and captured at the site.';
 
     const [activeLead, setActiveLead] = useState<Lead | null>(null);

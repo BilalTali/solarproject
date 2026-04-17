@@ -88,6 +88,7 @@ export interface PublicSettingsData {
     company_bank_branch: string | null;
     billing_items_json: string | null;
     billing_makes_json: string | null;
+    technical_team_terms: string | null;
 }
 
 export interface PublicAchievement {

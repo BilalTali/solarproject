@@ -1,7 +1,7 @@
 #!/usr/bin/expect -f
 set timeout 30
 
-spawn ssh -o StrictHostKeyChecking=no -p 65002 u335000182@92.249.46.36 "ls -la domains/andleebsurya.in/public_html"
+spawn ssh -o StrictHostKeyChecking=no -p 65002 u335000182@92.249.46.36 "echo 'Server OK' && php -v | head -1 && ls domains/andleebsurya.in/public_html/ | head -10"
 
 expect {
     "password:" {

@@ -1,5 +1,4 @@
-
-export type UserRole = 'admin' | 'super_admin' | 'super_agent' | 'agent' | 'enumerator' | 'operator';
+export type UserRole = 'admin' | 'super_admin' | 'super_agent' | 'agent' | 'enumerator' | 'operator' | 'field_technical_team';
 export type UserStatus = 'active' | 'inactive' | 'pending';
 export type OverrideStatus = 'pending' | 'approved' | 'paid';
 // ====== User / Business Development Executive ======

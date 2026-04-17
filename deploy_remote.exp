@@ -1,7 +1,17 @@
 #!/usr/bin/expect -f
 set timeout 300
 
-spawn ssh -o StrictHostKeyChecking=no -p 65002 u335000182@92.249.46.36 "cd domains/andleebsurya.in/public_html && git reset --hard && git clean -fd && git pull origin finalproduct && cd backend/laravel && php artisan migrate --force && php artisan db:seed --class=SettingsSeeder --force && php artisan db:seed --class=SuperAdminSeeder --force && php artisan optimize:clear && cd ../../frontend && npm run build"
+spawn ssh -o StrictHostKeyChecking=no -p 65002 u335000182@92.249.46.36 "
+cd domains/andleebsurya.in/public_html && \
+git reset --hard && \
+git clean -fd && \
+git pull origin finalproduct && \
+cd backend/laravel && \
+php artisan migrate --force && \
+php artisan db:seed --class=SettingsSeeder --force && \
+php artisan optimize:clear && \
+echo '=== DEPLOY DONE ==='
+"
 
 expect {
     "password:" {

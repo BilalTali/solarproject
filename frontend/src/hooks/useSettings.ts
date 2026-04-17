@@ -84,6 +84,7 @@ export const DEFAULT_SETTINGS: PublicSettingsData = {
     company_bank_branch: null,
     billing_items_json: null,
     billing_makes_json: null,
+    technical_team_terms: null,
 };
 
 const getFileUrl = (path: string | null | undefined) => {

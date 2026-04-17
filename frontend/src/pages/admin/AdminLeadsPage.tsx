@@ -915,11 +915,14 @@ export default function AdminLeadsPage() {
                                                         onChange={e => setNewStatus(e.target.value)}
                                                         className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"
                                                     >
-                                                        {LEAD_STATUS_OPTIONS.map(opt => (
+                                                        {LEAD_STATUS_OPTIONS
+                                                            .filter(opt => opt.value !== 'SITE_SURVEY' && opt.value !== 'COMPLETED')
+                                                            .map(opt => (
                                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                                         ))}
                                                     </select>
                                                 </div>
+                                                <p className="text-[10px] text-slate-400 italic">⚠ "Site Survey Done" and "Successfully Completed" are set only by the Field Technical Team via geo-tagged visit.</p>
                                                 <textarea
                                                     rows={2}
                                                     value={statusNote}
