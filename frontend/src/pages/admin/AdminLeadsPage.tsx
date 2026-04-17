@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import type { Lead, ApiResponse, PaginatedResponse, CommissionPrompt } from '@/types';
 import CommissionInlineEntry from '@/components/admin/CommissionInlineEntry';
 import { useAuthStore } from '@/store/authStore';
+import { useSettings } from '@/hooks/useSettings';
 import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor, MILESTONE_STATUSES } from '@/constants/leadStatuses';
 import { List } from 'react-window';
 import MobileFilterModal from '@/components/shared/MobileFilterModal';
@@ -40,6 +41,14 @@ export default function AdminLeadsPage() {
     const [activePrompts, setActivePrompts] = useState<Record<string, CommissionPrompt>>({});
     // mobile filter modal state
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+    // billing state
+    const { settings } = useSettings();
+    const billingItems = typeof settings.billing_items_json === 'string' ? JSON.parse(settings.billing_items_json) : (settings.billing_items_json || []);
+    const billingMakes = typeof settings.billing_makes_json === 'string' ? JSON.parse(settings.billing_makes_json) : (settings.billing_makes_json || []);
+    const [billSerial, setBillSerial] = useState('');
+    const [billItem, setBillItem] = useState('');
+    const [billMake, setBillMake] = useState('');
 
     const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -149,12 +158,15 @@ export default function AdminLeadsPage() {
         onError: () => toast.error('Failed to update lead.'),
     });
 
-    const openDetail = (lead: Lead) => {
+    const openDetail = (lead: Lead | any) => {
         setDetail(lead);
         setNewStatus(lead.status);
         setStatusNote('');
         setAssignSuperAgent('');
         setReceiptFile(null);
+        setBillSerial(lead.bill_serial || '');
+        setBillItem(lead.system_item || '');
+        setBillMake(lead.system_make || '');
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -679,6 +691,71 @@ export default function AdminLeadsPage() {
                                                     <p className="text-[10px] text-slate-400 italic">No documents uploaded yet.</p>
                                                 </div>
                                             )}
+                                        </section>
+
+                                        {/* ── Billing & Invoice ── */}
+                                        <section>
+                                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                                <FileText size={14} /> Billing & Invoice
+                                            </p>
+                                            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Bill Serial Number</label>
+                                                        <input 
+                                                            type="text" 
+                                                            value={billSerial}
+                                                            onChange={e => setBillSerial(e.target.value)}
+                                                            placeholder="e.g. INV-001"
+                                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1.5 flex items-end">
+                                                        <button 
+                                                            disabled={updateLeadMut.isPending}
+                                                            onClick={() => updateLeadMut.mutate({ ulid: fullLead!.ulid, data: { bill_serial: billSerial }})}
+                                                            className="px-4 py-2 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 disabled:opacity-50"
+                                                        >
+                                                            {updateLeadMut.isPending ? 'Saving...' : 'Save Serial'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">System Item</label>
+                                                        <select
+                                                            value={billItem}
+                                                            onChange={e => {
+                                                                setBillItem(e.target.value);
+                                                                updateLeadMut.mutate({ ulid: fullLead!.ulid, data: { system_item: e.target.value } });
+                                                            }}
+                                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        >
+                                                            <option value="">Select Item...</option>
+                                                            {billingItems.map((opt: any) => (
+                                                                <option key={opt.id} value={opt.name}>{opt.name}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">System Make</label>
+                                                        <select
+                                                            value={billMake}
+                                                            onChange={e => {
+                                                                setBillMake(e.target.value);
+                                                                updateLeadMut.mutate({ ulid: fullLead!.ulid, data: { system_make: e.target.value } });
+                                                            }}
+                                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        >
+                                                            <option value="">Select Brand/Make...</option>
+                                                            {billingMakes.map((opt: any) => (
+                                                                <option key={opt.id} value={opt.name}>{opt.name}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </section>
 
                                         {/* ── Update Status ── */}

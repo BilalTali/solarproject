@@ -159,12 +159,18 @@ class Lead extends Model
         'reverted_at',
         'reverted_by',
         'wa_handler_admin_id',
+        // Billing / Invoice fields
+        'bill_serial',
+        'bill_date',
+        'system_item',
+        'system_make',
     ];
 
     protected function casts(): array
     {
         return [
             'follow_up_date' => 'date',
+            'bill_date' => 'date',
             'commission_paid_at' => 'datetime',
             'commission_paid' => 'boolean',
             'verified_at' => 'datetime',

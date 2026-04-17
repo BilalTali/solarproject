@@ -127,6 +127,13 @@ $api->as('api.v1.')->group(function () {
         // Authenticated settings lookup works for all sub-roles to fetch their parent admin's branding
         Route::get('/admin/settings', [AdminSettingController::class, 'index']);
 
+        // Settings write — admin middleware applied here, NOT via prefix('admin') to avoid double-prefix /admin/admin/settings
+        Route::middleware('admin')->group(function () {
+            Route::put('/admin/settings', [AdminSettingController::class, 'updateBulk']);
+            Route::post('/admin/settings/upload', [AdminSettingController::class, 'uploadFile']);
+            Route::put('/admin/profile', [AdminSettingController::class, 'updateProfile']);
+        });
+
         // ==============================
         // ENUMERATOR ROUTES
         // ==============================
@@ -343,10 +350,8 @@ $api->as('api.v1.')->group(function () {
             Route::post('/offers/{offer}/trigger-expiry', [AdminOfferController::class, 'triggerExpiry']);
             Route::apiResource('offers', AdminOfferController::class);
 
-            // Settings
-            Route::put('/settings', [AdminSettingController::class, 'updateBulk']);
-            Route::post('/settings/upload', [AdminSettingController::class, 'uploadFile']);
-            Route::put('/profile', [AdminSettingController::class, 'updateProfile']);
+            // Settings — routes moved outside this prefix('admin') group to fix double-prefix bug
+            // PUT /admin/settings is now defined above alongside the GET
 
             // Achievements (admin)
             Route::get('/achievements', [AchievementController::class, 'index']);

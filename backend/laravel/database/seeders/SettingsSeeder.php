@@ -116,12 +116,19 @@ class SettingsSeeder extends Seeder
 
             // Navigation Labels
             ['key' => 'nav_home', 'value' => 'Home', 'group' => 'homepage'],
-            ['key' => 'nav_rewards', 'value' => 'Rewards', 'group' => 'homepage'],
+            ['key' => 'nav_home_link', 'value' => '/', 'group' => 'homepage'],
+            ['key' => 'nav_rewards', 'value' => 'Benefits', 'group' => 'homepage'],
+            ['key' => 'nav_rewards_link', 'value' => '/media', 'group' => 'homepage'],
             ['key' => 'nav_portal_login', 'value' => 'Portal Login', 'group' => 'homepage'],
-            ['key' => 'nav_cta_electricity', 'value' => 'Show Subsidy', 'group' => 'homepage'],
+            ['key' => 'nav_cta_electricity', 'value' => 'Get Free Electricity', 'group' => 'homepage'],
             ['key' => 'nav_calculator', 'value' => 'Calculator', 'group' => 'homepage'],
+            ['key' => 'nav_calculator_link', 'value' => '/solar-subsidy-calculator', 'group' => 'homepage'],
             ['key' => 'nav_track_status', 'value' => 'Track Status', 'group' => 'homepage'],
+            ['key' => 'nav_track_status_link', 'value' => '/track-status', 'group' => 'homepage'],
             ['key' => 'nav_guide', 'value' => 'Guide', 'group' => 'homepage'],
+            ['key' => 'nav_guide_link', 'value' => '/user-manual', 'group' => 'homepage'],
+            ['key' => 'hero_cta_primary_link', 'value' => '#lead-form', 'group' => 'homepage'],
+            ['key' => 'hero_cta_secondary_link', 'value' => '/enumerator/register', 'group' => 'homepage'],
             ['key' => 'label_how_it_works', 'value' => 'How It Works', 'group' => 'homepage'],
             ['key' => 'label_eligibility_checker', 'value' => 'Check Your Eligibility', 'group' => 'homepage'],
             ['key' => 'label_subsidy_calculator', 'value' => 'Solar Subsidy Calculator', 'group' => 'homepage'],
@@ -130,6 +137,48 @@ class SettingsSeeder extends Seeder
             // ── Offers & Points ────────────────────────────────────────────────
             ['key' => 'capacity_points_json', 'value' => '{"3kw":1,"3.3kw":1.1,"4kw":1.5,"5kw":2,"5.5kw":2.2,"6kw":2.5,"7kw":3,"8kw":3.5,"9kw":4,"10kw":5,"above_10kw":6,"above_3kw":1.5}', 'group' => 'offer'],
             ['key' => 'offer_grace_period_days', 'value' => '7', 'group' => 'offer'],
+
+            // ── Company Bank Details (for Billing / Invoices) ─────────────────
+            ['key' => 'company_bank_account_name',   'value' => 'SuryaMitra Solar Network',         'group' => 'billing'],
+            ['key' => 'company_bank_account_number', 'value' => '000000000000',                      'group' => 'billing'],
+            ['key' => 'company_bank_ifsc',           'value' => 'XXXXXXXX000',                        'group' => 'billing'],
+            ['key' => 'company_bank_branch',         'value' => 'Main Branch, Srinagar',              'group' => 'billing'],
+
+            // ── Billing Items (Hardware Components) ───────────────────────────
+            ['key' => 'billing_items_json', 'value' => json_encode([
+                ['id' => '1', 'name' => 'Solar Panel (Monocrystalline)',  'unit' => 'Nos'],
+                ['id' => '2', 'name' => 'Solar Panel (Polycrystalline)',  'unit' => 'Nos'],
+                ['id' => '3', 'name' => 'Grid-Tie Inverter',             'unit' => 'Nos'],
+                ['id' => '4', 'name' => 'Hybrid Inverter',               'unit' => 'Nos'],
+                ['id' => '5', 'name' => 'Battery (Lithium-Ion)',          'unit' => 'Nos'],
+                ['id' => '6', 'name' => 'Battery (Lead Acid / Tubular)', 'unit' => 'Nos'],
+                ['id' => '7', 'name' => 'ACDB / DCDB Box',               'unit' => 'Set'],
+                ['id' => '8', 'name' => 'MC4 Connector & DC Cable',      'unit' => 'Lot'],
+                ['id' => '9', 'name' => 'Mounting Structure (Roof)',      'unit' => 'Set'],
+                ['id' => '10', 'name' => 'Net Meter',                    'unit' => 'Nos'],
+                ['id' => '11', 'name' => 'Junction Box',                 'unit' => 'Nos'],
+                ['id' => '12', 'name' => 'Earthing Kit & Accessories',   'unit' => 'Set'],
+                ['id' => '13', 'name' => 'Complete On-Grid Solar System', 'unit' => 'Package'],
+                ['id' => '14', 'name' => 'Complete Hybrid Solar System',  'unit' => 'Package'],
+            ]), 'group' => 'billing'],
+
+            // ── Billing Makes (Brands / Manufacturers) ────────────────────────
+            ['key' => 'billing_makes_json', 'value' => json_encode([
+                ['id' => '1',  'name' => 'Luminous'],
+                ['id' => '2',  'name' => 'Exide'],
+                ['id' => '3',  'name' => 'Waaree'],
+                ['id' => '4',  'name' => 'Loom Solar'],
+                ['id' => '5',  'name' => 'Adani Solar'],
+                ['id' => '6',  'name' => 'TATA Power Solar'],
+                ['id' => '7',  'name' => 'Premier Energies'],
+                ['id' => '8',  'name' => 'Sukam'],
+                ['id' => '9',  'name' => 'Microtek'],
+                ['id' => '10', 'name' => 'UTL Solar'],
+                ['id' => '11', 'name' => 'Havells'],
+                ['id' => '12', 'name' => 'Polycab'],
+                ['id' => '13', 'name' => 'Nexus'],
+                ['id' => '14', 'name' => 'Other'],
+            ]), 'group' => 'billing'],
         ];
 
         foreach ($settings as $setting) {

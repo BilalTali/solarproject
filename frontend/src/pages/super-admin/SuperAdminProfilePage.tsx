@@ -26,7 +26,7 @@ export default function SuperAdminProfilePage() {
     });
 
     // Authority Tabs
-    const [authorityTab, setAuthorityTab] = useState<'presence' | 'content' | 'branding' | 'achievements' | 'feedback' | 'nav' | 'footer'>('presence');
+    const [authorityTab, setAuthorityTab] = useState<'presence' | 'content' | 'branding' | 'billing' | 'achievements' | 'feedback' | 'nav' | 'footer'>('presence');
     const [saving, setSaving] = useState(false);
 
     // Authority State
@@ -177,6 +177,7 @@ export default function SuperAdminProfilePage() {
                         <NavTab id="presence" label="Hero Presence" icon={<Globe size={16} />} active={authorityTab === 'presence'} onClick={setAuthorityTab} />
                         <NavTab id="content" label="Homepage Content" icon={<FileText size={16} />} active={authorityTab === 'content'} onClick={setAuthorityTab} />
                         <NavTab id="branding" label="Master Branding" icon={<Building2 size={16} />} active={authorityTab === 'branding'} onClick={setAuthorityTab} />
+                        <NavTab id="billing" label="Billing & Bank Authority" icon={<FileText size={16} />} active={authorityTab === 'billing'} onClick={setAuthorityTab} />
                         <NavTab id="nav" label="Navigation Links" icon={<Key size={16} />} active={authorityTab === 'nav'} onClick={setAuthorityTab} />
                         <NavTab id="footer" label="Footer Settings" icon={<Building2 size={16} />} active={authorityTab === 'footer'} onClick={setAuthorityTab} />
                         <NavTab id="achievements" label="Achievements" icon={<Trophy size={16} />} active={authorityTab === 'achievements'} onClick={setAuthorityTab} />
@@ -316,18 +317,73 @@ export default function SuperAdminProfilePage() {
                                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
                                     <div className="flex items-center gap-3 mb-4">
                                         <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><Key size={18} /></div>
-                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Navigation Authority</h2>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Navigation & CTA Authority</h2>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <InputBlock label="Home Link" value={localAuthority.nav_home || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_home: v }))} />
-                                        <InputBlock label="Rewards Link" value={localAuthority.nav_rewards || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_rewards: v }))} />
-                                        <InputBlock label="Calculator Link" value={localAuthority.nav_calculator || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_calculator: v }))} />
-                                        <InputBlock label="Track Status Link" value={localAuthority.nav_track_status || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_track_status: v }))} />
-                                        <InputBlock label="Portal Login Button" value={localAuthority.nav_portal_login || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_portal_login: v }))} />
-                                        <InputBlock label="CTA Button (Electricity)" value={localAuthority.nav_cta_electricity || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_cta_electricity: v }))} />
-                                        <InputBlock label="User Guide Link" value={localAuthority.nav_guide || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_guide: v }))} />
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+                                        {/* Row: Home */}
+                                        <div className="space-y-4">
+                                            <InputBlock label="Home Nav Label" value={localAuthority.nav_home || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_home: v }))} />
+                                            <InputBlock label="Home Nav Link" value={localAuthority.nav_home_link || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_home_link: v }))} />
+                                        </div>
+
+                                        {/* Row: Rewards/Benefits */}
+                                        <div className="space-y-4">
+                                            <InputBlock label="Rewards/Benefits Label" value={localAuthority.nav_rewards || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_rewards: v }))} />
+                                            <InputBlock label="Rewards/Benefits Link" value={localAuthority.nav_rewards_link || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_rewards_link: v }))} />
+                                        </div>
+
+                                        {/* Row: Calculator */}
+                                        <div className="space-y-4">
+                                            <InputBlock label="Calculator Label" value={localAuthority.nav_calculator || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_calculator: v }))} />
+                                            <InputBlock label="Calculator Link" value={localAuthority.nav_calculator_link || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_calculator_link: v }))} />
+                                        </div>
+
+                                        {/* Row: Track Status */}
+                                        <div className="space-y-4">
+                                            <InputBlock label="Track Status Label" value={localAuthority.nav_track_status || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_track_status: v }))} />
+                                            <InputBlock label="Track Status Link" value={localAuthority.nav_track_status_link || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_track_status_link: v }))} />
+                                        </div>
+
+                                        {/* Row: User Guide */}
+                                        <div className="space-y-4">
+                                            <InputBlock label="User Guide Label" value={localAuthority.nav_guide || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_guide: v }))} />
+                                            <InputBlock label="User Guide Link" value={localAuthority.nav_guide_link || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_guide_link: v }))} />
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <InputBlock label="Portal Login Button Label" value={localAuthority.nav_portal_login || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_portal_login: v }))} />
+                                            <div className="h-20 flex items-end">
+                                                <p className="text-[10px] text-slate-400 font-bold italic p-4 bg-slate-50 rounded-xl">Portal login target is managed by the system security layer.</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-6 border-t border-slate-100 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-10">
+                                            <div className="space-y-4">
+                                                <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">Navbar CTA Button</h3>
+                                                <InputBlock label="Navbar CTA Label" value={localAuthority.nav_cta_electricity || ''} onChange={v => setLocalAuthority(p => ({ ...p, nav_cta_electricity: v }))} />
+                                                <p className="text-[9px] text-indigo-600 font-bold">Points to lead registration form by default.</p>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">Hero Secondary Button</h3>
+                                                <InputBlock label="Hero Secondary Label (Text)" value={localAuthority.company_slogan ? 'Using locale' : 'Become a Partner'} disabled onChange={() => {}} />
+                                                <InputBlock label="Hero Secondary Link" value={localAuthority.hero_cta_secondary_link || ''} onChange={v => setLocalAuthority(p => ({ ...p, hero_cta_secondary_link: v }))} />
+                                                <p className="text-[9px] text-indigo-600 font-bold">Current Target: {localAuthority.hero_cta_secondary_link}</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['nav_home', 'nav_rewards', 'nav_calculator', 'nav_track_status', 'nav_portal_login', 'nav_cta_electricity', 'nav_guide'])} />
+
+                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave([
+                                        'nav_home', 'nav_home_link', 
+                                        'nav_rewards', 'nav_rewards_link', 
+                                        'nav_calculator', 'nav_calculator_link', 
+                                        'nav_track_status', 'nav_track_status_link', 
+                                        'nav_portal_login', 
+                                        'nav_cta_electricity', 
+                                        'nav_guide', 'nav_guide_link',
+                                        'hero_cta_secondary_link'
+                                    ])} />
                                 </div>
                             )}
 
@@ -435,6 +491,45 @@ export default function SuperAdminProfilePage() {
                                 </div>
                             )}
 
+                            {authorityTab === 'billing' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><FileText size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Billing & Bank Authority</h2>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <InputBlock label="Bank Account Name" value={localAuthority.company_bank_account_name || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_bank_account_name: v }))} />
+                                        <InputBlock label="Bank Account Number" value={localAuthority.company_bank_account_number || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_bank_account_number: v }))} />
+                                        <InputBlock label="Bank IFSC" value={localAuthority.company_bank_ifsc || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_bank_ifsc: v }))} />
+                                        <InputBlock label="Bank Branch" value={localAuthority.company_bank_branch || ''} onChange={v => setLocalAuthority(p => ({ ...p, company_bank_branch: v }))} />
+                                    </div>
+                                    <div className="pt-6 border-t border-slate-50">
+                                        <SettingJsonEditor 
+                                            label="Billing Items (Components)"
+                                            value={localAuthority.billing_items_json || '[]'}
+                                            onChange={v => setLocalAuthority(p => ({ ...p, billing_items_json: v }))}
+                                            fields={[
+                                                { key: 'id', label: 'Item ID', type: 'text' },
+                                                { key: 'name', label: 'Item Name', type: 'text' },
+                                                { key: 'unit', label: 'Unit (e.g. Nos, Set, Package)', type: 'text' }
+                                            ]}
+                                        />
+                                    </div>
+                                    <div className="pt-6 border-t border-slate-50">
+                                        <SettingJsonEditor 
+                                            label="Billing Makes (Brands)"
+                                            value={localAuthority.billing_makes_json || '[]'}
+                                            onChange={v => setLocalAuthority(p => ({ ...p, billing_makes_json: v }))}
+                                            fields={[
+                                                { key: 'id', label: 'Brand ID', type: 'text' },
+                                                { key: 'name', label: 'Brand Name', type: 'text' }
+                                            ]}
+                                        />
+                                    </div>
+                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['company_bank_account_name', 'company_bank_account_number', 'company_bank_ifsc', 'company_bank_branch', 'billing_items_json', 'billing_makes_json'])} />
+                                </div>
+                            )}
+
                             {authorityTab === 'achievements' && <AchievementManager />}
                             {authorityTab === 'feedback' && <FeedbackManager />}
                         </div>
@@ -464,14 +559,15 @@ const NavTab = ({ id, label, icon, active, onClick }: { id: any, label: string, 
     </button>
 );
 
-const InputBlock = ({ label, value, onChange, type = "text" }: { label: string, value: string, onChange: (v: string) => void, type?: string }) => (
-    <div className="space-y-1.5 w-full">
+const InputBlock = ({ label, value, onChange, type = "text", disabled = false }: { label: string, value: string, onChange: (v: string) => void, type?: string, disabled?: boolean }) => (
+    <div className={`space-y-1.5 w-full ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
         <input 
             type={type} 
             value={value} 
-            onChange={e => onChange(e.target.value)} 
-            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all" 
+            disabled={disabled}
+            onChange={e => !disabled && onChange(e.target.value)} 
+            className={`w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all ${disabled ? 'bg-slate-100' : ''}`} 
         />
     </div>
 );

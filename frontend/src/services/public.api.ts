@@ -40,12 +40,19 @@ export interface PublicSettingsData {
 
     // Navigation Labels
     nav_home: string | null;
+    nav_home_link: string | null;
     nav_rewards: string | null;
+    nav_rewards_link: string | null;
     nav_calculator: string | null;
+    nav_calculator_link: string | null;
     nav_track_status: string | null;
+    nav_track_status_link: string | null;
     nav_guide: string | null;
+    nav_guide_link: string | null;
     nav_portal_login: string | null;
     nav_cta_electricity: string | null;
+    hero_cta_primary_link: string | null;
+    hero_cta_secondary_link: string | null;
 
     // Footer Links & Sections
     footer_section_quick_links: string | null;
@@ -73,6 +80,14 @@ export interface PublicSettingsData {
     icard_clearance: string | null;
     external_pmsuryaghar_label: string | null;
     external_pmsuryaghar_url: string | null;
+
+    // Billing & Invoice (Super Admin Only)
+    company_bank_account_name: string | null;
+    company_bank_account_number: string | null;
+    company_bank_ifsc: string | null;
+    company_bank_branch: string | null;
+    billing_items_json: string | null;
+    billing_makes_json: string | null;
 }
 
 export interface PublicAchievement {

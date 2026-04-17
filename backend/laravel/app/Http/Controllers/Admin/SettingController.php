@@ -40,13 +40,20 @@ class SettingController extends Controller
         // Global Navigation & Footer
         'nav_home', 'nav_rewards', 'nav_calculator', 'nav_track_status', 'nav_guide',
         'nav_portal_login', 'nav_cta_electricity',
+        'nav_home_link', 'nav_rewards_link', 'nav_calculator_link', 'nav_track_status_link',
+        'nav_guide_link', 'hero_cta_primary_link', 'hero_cta_secondary_link',
         'footer_section_quick_links', 'footer_section_legal', 'footer_link_about',
         'footer_link_scheme', 'footer_link_contact', 'footer_link_faq', 'footer_link_privacy',
         'footer_link_terms', 'footer_link_refund', 'footer_about_text', 'footer_copyright',
         'footer_disclaimer',
-        
+
         // Global Portal Logic
         'incentive_points_per_lead', 'incentive_points_per_agent',
+
+        // ── Billing & Invoice Authority (Super Admin Only) ────────────────────
+        'company_bank_account_name', 'company_bank_account_number',
+        'company_bank_ifsc', 'company_bank_branch',
+        'billing_items_json', 'billing_makes_json',
     ];
 
     /**
@@ -110,7 +117,8 @@ class SettingController extends Controller
                 'calculator_' => 'homepage',
                 'welcome_' => 'portal',
                 'terms_' => 'portal',
-                'nav_' => 'portal',
+                'nav_' => 'homepage',
+                'hero_cta_' => 'homepage',
                 'label_' => 'homepage',
                 'authorized_' => 'icard',
                 'letter_' => 'letter',
@@ -136,6 +144,7 @@ class SettingController extends Controller
                     ->first();
 
                 if ($existing) {
+                    Log::info("UPDATING EXISTING: {$key} WITH {$value}");
                     $existing->update(['value' => $value]);
                 } else {
                     $group = 'general';

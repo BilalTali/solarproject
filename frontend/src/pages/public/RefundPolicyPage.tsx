@@ -14,8 +14,8 @@ export default function RefundPolicyPage() {
     });
 
     const companyName = getSetting(settings, 'company_name', 'AndleebSurya');
-    const companyEmail = getSetting(settings, 'company_email', 'admin@suryamitra.in');
-    const companyMobile = getSetting(settings, 'company_mobile', '+91-98765 43210');
+    const companyEmail = getSetting(settings, 'company_email', 'support@andleebsurya.in');
+    const companyMobile = getSetting(settings, 'company_mobile', '+91-XXXXXXXXXX');
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-orange-100 selection:text-orange-900">

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { publicApi, type PublicSettingsData } from '@/services/public.api';
 
 export const DEFAULT_SETTINGS: PublicSettingsData = {
-    company_name: 'SuryaMitra',
+    company_name: import.meta.env.VITE_APP_NAME || 'AndleebSurya',
     company_email: null,
     company_mobile: null,
     company_whatsapp: null,
@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS: PublicSettingsData = {
     company_favicon: null,
     company_signature: null,
     company_seal: null,
-    company_website: 'https://suryamitra.in',
+    company_website: window.location.origin,
     social_facebook: null,
     social_twitter: null,
     social_instagram: null,
@@ -38,12 +38,19 @@ export const DEFAULT_SETTINGS: PublicSettingsData = {
     footer_disclaimer: null,
 
     nav_home: 'Home',
+    nav_home_link: '/',
     nav_rewards: 'Rewards',
+    nav_rewards_link: '/media',
     nav_calculator: 'Calculator',
+    nav_calculator_link: '/solar-subsidy-calculator',
     nav_track_status: 'Track Status',
+    nav_track_status_link: '/track-status',
     nav_guide: 'Guide',
+    nav_guide_link: '/user-manual',
     nav_portal_login: 'Portal Login',
     nav_cta_electricity: 'Get Free Electricity',
+    hero_cta_primary_link: '#lead-form',
+    hero_cta_secondary_link: '/enumerator/register',
 
     footer_section_quick_links: 'Quick Links',
     footer_section_legal: 'Legal & Support',
@@ -69,6 +76,14 @@ export const DEFAULT_SETTINGS: PublicSettingsData = {
     icard_clearance: 'Level-V (Elite)',
     external_pmsuryaghar_label: 'pmsuryaghar.gov.in',
     external_pmsuryaghar_url: 'https://pmsuryaghar.gov.in',
+
+    // Billing & Invoice defaults
+    company_bank_account_name: null,
+    company_bank_account_number: null,
+    company_bank_ifsc: null,
+    company_bank_branch: null,
+    billing_items_json: null,
+    billing_makes_json: null,
 };
 
 const getFileUrl = (path: string | null | undefined) => {

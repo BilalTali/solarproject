@@ -11,9 +11,9 @@ export default function ContactPage() {
         queryFn: publicApi.getSettings,
     });
 
-    const companyEmail = settings?.company_email || 'admin@suryamitra.in';
-    const companyMobile = settings?.company_mobile || '+91-98765 43210';
-    const companyAddress = settings?.company_address || 'Headquarters, India';
+    const companyEmail = settings?.company_email || 'support@andleebsurya.in';
+    const companyMobile = settings?.company_mobile || '+91-XXXXXXXXXX';
+    const companyAddress = settings?.company_address || 'Registered Office';
     const companyName = settings?.company_name || 'AndleebSurya';
 
     return (
