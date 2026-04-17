@@ -18,6 +18,7 @@ const ADMIN_NAV = [
     { icon: <Users className="w-5 h-5" />, label: 'Enumerators', to: '/admin/enumerators' },
     { icon: <Star className="w-5 h-5" />, label: 'Business Development Managers', to: '/admin/super-agents' },
     { icon: <Shield className="w-5 h-5" />, label: 'Operators', to: '/admin/operators' },
+    { icon: <Settings className="w-5 h-5" />, label: 'Field Technical Team', to: '/admin/technical-team' },
     { icon: <Award className="w-5 h-5" />, label: 'Reward Winners', to: '/admin/media' },
     { icon: <Gift className="w-5 h-5" />, label: 'Incentive Offers', to: '/admin/offers' },
     { icon: <Gift className="w-5 h-5" />, label: 'Offer Approvals', to: '/admin/redemptions' },

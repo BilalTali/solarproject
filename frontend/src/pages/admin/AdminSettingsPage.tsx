@@ -417,9 +417,10 @@ const AdminSettingsPage: React.FC = () => {
                                         <div className="space-y-6">
                                             {F('letter_agent_body', 'Agent Appointment Body', 'textarea', "With reference to your application and subsequent interaction with our team, we are pleased to appoint you as a Business Development Executive (BDE) for our facilitation programme. \n\nYou will be responsible for identifying, registering, and facilitating potential beneficiaries for rooftop solar installation.")}
                                             {F('letter_super_agent_body', 'BDM Appointment Body', 'textarea', "With reference to your application and the evaluation conducted by our senior team, we are pleased to appoint you as a Business Development Manager (BDM) for our facilitation programme. \n\nYou will be responsible for building, managing, and mentoring a team of Business Development Executives.")}
-                                            {F('letter_terms', 'Terms & Conditions', 'textarea', "1. This appointment is for facilitation only.\n2. Do NOT collect money from beneficiaries.\n3. Confidentiality must be maintained.\n4. Appointment may be revoked for misconduct.")}
+                                            {F('letter_terms', 'Appointment Terms & Conditions (Letter)', 'textarea', "1. This appointment is for facilitation only.\n2. Do NOT collect money from beneficiaries.\n3. Confidentiality must be maintained.\n4. Appointment may be revoked for misconduct.")}
+                                            {F('technical_team_terms', 'Technical Team Portal Terms (Survey & Installation)', 'textarea', "I hereby certify that I have personally visited the site, validated the structural and geographical suitability, and guarantee that the geo-tagged selfie submitted corresponds accurately to the property. Any false representation may result in immediate termination of affiliation.")}
                                         </div>
-                                        <SectionSave keys={['signatory_name', 'signatory_title', 'letter_agent_body', 'letter_super_agent_body', 'letter_terms']} label="Save Letter Settings" />
+                                        <SectionSave keys={['signatory_name', 'signatory_title', 'letter_agent_body', 'letter_super_agent_body', 'letter_terms', 'technical_team_terms']} label="Save Settings" />
                                     </div>
                                 );
                             case 'achievements':

@@ -14,6 +14,7 @@ import React from 'react';
 import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor } from '@/constants/leadStatuses';
 import { useAuthStore } from '@/store/authStore';
 import MobileFilterModal from '@/components/shared/MobileFilterModal';
+import { LeadDocumentsModal } from '@/components/leads/LeadDocumentsModal';
 
 type TabType = 'needs_verification' | 'my_leads' | 'team_leads' | 'all';
 
@@ -256,12 +257,15 @@ export default function SuperAgentLeadsPage() {
                                                             </button>
                                                         </div>
                                                     ) : (
-                                                        <Link
-                                                            to={`/super-agent/leads/${lead.ulid}`}
-                                                            className="text-orange-600 hover:text-orange-700 font-medium text-xs font-black"
-                                                        >
-                                                            VIEW →
-                                                        </Link>
+                                                        <div className="flex flex-col gap-2">
+                                                            <LeadDocumentsModal ulid={lead.ulid} />
+                                                            <Link
+                                                                to={`/super-agent/leads/${lead.ulid}`}
+                                                                className="text-orange-600 hover:text-orange-700 font-medium text-xs font-black text-center"
+                                                            >
+                                                                VIEW →
+                                                            </Link>
+                                                        </div>
                                                     )}
                                                 </td>
                                             </tr>
@@ -416,12 +420,15 @@ export default function SuperAgentLeadsPage() {
 
                                     <div className="flex items-center justify-between pt-3 border-t border-slate-50">
                                         <span className="text-[10px] text-slate-400 font-medium">Updated on {new Date(lead.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
-                                        <Link 
-                                            to={`/super-agent/leads/${lead.ulid}`} 
-                                            className="text-[10px] text-orange-600 font-black uppercase tracking-widest flex items-center gap-1"
-                                        >
-                                            View Progress <ChevronRight size={12} />
-                                        </Link>
+                                        <div className="flex gap-3 items-center">
+                                            <LeadDocumentsModal ulid={lead.ulid} />
+                                            <Link 
+                                                to={`/super-agent/leads/${lead.ulid}`} 
+                                                className="text-[10px] text-orange-600 font-black uppercase tracking-widest flex items-center gap-1"
+                                            >
+                                                Progress <ChevronRight size={12} />
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
                             );

@@ -8,6 +8,7 @@ import {
 import { openAuthenticatedFile } from '@/utils/documentUtils';
 import { leadsApi } from '@/services/leads.api';
 import { adminSuperAgentApi } from '@/services/adminSuperAgent.api';
+import api from '@/services/axios';
 import toast from 'react-hot-toast';
 import type { Lead, ApiResponse, PaginatedResponse, CommissionPrompt } from '@/types';
 import CommissionInlineEntry from '@/components/admin/CommissionInlineEntry';
@@ -46,9 +47,12 @@ export default function AdminLeadsPage() {
     const { settings } = useSettings();
     const billingItems = typeof settings.billing_items_json === 'string' ? JSON.parse(settings.billing_items_json) : (settings.billing_items_json || []);
     const billingMakes = typeof settings.billing_makes_json === 'string' ? JSON.parse(settings.billing_makes_json) : (settings.billing_makes_json || []);
-    const [billSerial, setBillSerial] = useState('');
     const [billItem, setBillItem] = useState('');
     const [billMake, setBillMake] = useState('');
+    const [quotationSerial, setQuotationSerial] = useState('1');
+    const [receiptSerial, setReceiptSerial] = useState('1');
+    const [quotationBase, setQuotationBase] = useState('294500');
+    const [receiptPercentage, setReceiptPercentage] = useState('10');
 
     const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -107,6 +111,14 @@ export default function AdminLeadsPage() {
     });
     const activeSuperAgents = (superAgentsData?.data?.data ?? []) as { id: number; name: string; super_agent_code: string | null }[];
 
+    // ── active technicians ───────────────────────────────────────────────────
+    const { data: techniciansData } = useQuery({
+        queryKey: ['admin-technical-team'],
+        queryFn: () => api.get('/admin/technical-team').then(r => r.data.data),
+        staleTime: 60_000,
+    });
+    const activeTechnicians = (techniciansData ?? []) as any[];
+
     // ── mutations ─────────────────────────────────────────────────────────────
     const statusMut = useMutation({
         mutationFn: ({ ulid, formData }: { ulid: string; formData: FormData }) =>
@@ -147,6 +159,17 @@ export default function AdminLeadsPage() {
         onError: () => toast.error('Failed to assign lead.'),
     });
 
+    const assignTechMut = useMutation({
+        mutationFn: ({ ulid, payload }: { ulid: string; payload: any }) =>
+            leadsApi.assignTechnicians(ulid, payload),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ['admin-leads'] });
+            qc.invalidateQueries({ queryKey: ['admin-lead-detail'] });
+            toast.success('Technician assigned successfully');
+        },
+        onError: () => toast.error('Failed to assign technician.'),
+    });
+
     const updateLeadMut = useMutation({
         mutationFn: ({ ulid, data }: { ulid: string; data: Record<string, any> }) =>
             leadsApi.updateAdminLead(ulid, data),
@@ -164,7 +187,17 @@ export default function AdminLeadsPage() {
         setStatusNote('');
         setAssignSuperAgent('');
         setReceiptFile(null);
-        setBillSerial(lead.bill_serial || '');
+        setQuotationSerial(lead.quotation_serial || '');
+        setReceiptSerial(lead.receipt_serial || '');
+        setQuotationBase(lead.quotation_base_amount || '');
+        
+        // Compute reverse percentage if they had a receipt amount
+        if (lead.quotation_total_amount && lead.receipt_amount) {
+            setReceiptPercentage(((lead.receipt_amount / lead.quotation_total_amount) * 100).toFixed(1));
+        } else {
+            setReceiptPercentage('10');
+        }
+
         setBillItem(lead.system_item || '');
         setBillMake(lead.system_make || '');
     };
@@ -641,6 +674,55 @@ export default function AdminLeadsPage() {
                                                 )}
                                             </section>
                                         )}
+
+                                        {/* ── Field Technical Team Assignment ── */}
+                                        <section>
+                                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Field Technical Team Assignment</p>
+                                            
+                                            <div className="space-y-4">
+                                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                                                    <p className="text-xs text-slate-800 mb-2 font-bold">Site Surveyor</p>
+                                                    {fullLead?.assigned_surveyor_id ? (
+                                                        <p className="text-xs text-slate-600">{fullLead.assigned_surveyor?.name} ({fullLead.assigned_surveyor?.mobile})</p>
+                                                    ) : (
+                                                        <div className="flex gap-2">
+                                                            <select
+                                                                value=""
+                                                                onChange={e => assignTechMut.mutate({ ulid: fullLead!.ulid, payload: { surveyor_id: Number(e.target.value) } })}
+                                                                className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                                                            >
+                                                                <option value="">Select an engineer/worker…</option>
+                                                                {activeTechnicians.filter(t => t.technician_type !== 'installer' && t.status === 'active').map(t => (
+                                                                    <option key={t.id} value={t.id}>{t.name} ({t.mobile})</option>
+                                                                ))}
+                                                            </select>
+                                                            {assignTechMut.isPending && <span className="p-2 text-xs text-slate-400">...</span>}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                                                    <p className="text-xs text-slate-800 mb-2 font-bold">Installer</p>
+                                                    {fullLead?.assigned_installer_id ? (
+                                                        <p className="text-xs text-slate-600">{fullLead.assigned_installer?.name} ({fullLead.assigned_installer?.mobile})</p>
+                                                    ) : (
+                                                        <div className="flex gap-2">
+                                                            <select
+                                                                value=""
+                                                                onChange={e => assignTechMut.mutate({ ulid: fullLead!.ulid, payload: { installer_id: Number(e.target.value) } })}
+                                                                className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                                                            >
+                                                                <option value="">Select an installer…</option>
+                                                                {activeTechnicians.filter(t => t.technician_type === 'installer' && t.status === 'active').map(t => (
+                                                                    <option key={t.id} value={t.id}>{t.name} ({t.mobile})</option>
+                                                                ))}
+                                                            </select>
+                                                            {assignTechMut.isPending && <span className="p-2 text-xs text-slate-400">...</span>}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </section>
                                         {/* ── Documents ── */}
                                         <section>
                                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Documents</p>
@@ -696,30 +778,91 @@ export default function AdminLeadsPage() {
                                         {/* ── Billing & Invoice ── */}
                                         <section>
                                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                                <FileText size={14} /> Billing & Invoice
+                                                <FileText size={14} /> Billing & Invoice Generation
                                             </p>
                                             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Bill Serial Number</label>
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Quotation Serial No.</label>
                                                         <input 
                                                             type="text" 
-                                                            value={billSerial}
-                                                            onChange={e => setBillSerial(e.target.value)}
-                                                            placeholder="e.g. INV-001"
+                                                            value={quotationSerial}
+                                                            onChange={e => setQuotationSerial(e.target.value)}
+                                                            placeholder="e.g. 119"
+                                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Receipt Serial No.</label>
+                                                        <input 
+                                                            type="text" 
+                                                            value={receiptSerial}
+                                                            onChange={e => setReceiptSerial(e.target.value)}
+                                                            placeholder="e.g. 299"
+                                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Base Amount (₹)</label>
+                                                        <input 
+                                                            type="number" 
+                                                            value={quotationBase}
+                                                            onChange={e => setQuotationBase(e.target.value)}
+                                                            placeholder="e.g. 294500"
+                                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Receipt Percentage (%)</label>
+                                                        <input 
+                                                            type="number" 
+                                                            value={receiptPercentage}
+                                                            onChange={e => setReceiptPercentage(e.target.value)}
+                                                            placeholder="e.g. 10"
                                                             className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                         />
                                                     </div>
                                                     <div className="space-y-1.5 flex items-end">
                                                         <button 
                                                             disabled={updateLeadMut.isPending}
-                                                            onClick={() => updateLeadMut.mutate({ ulid: fullLead!.ulid, data: { bill_serial: billSerial }})}
-                                                            className="px-4 py-2 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 disabled:opacity-50"
+                                                            onClick={() => {
+                                                                const base = Number(quotationBase) || 0;
+                                                                const gst = base * 0.05;
+                                                                const total = base + gst;
+                                                                const receiptAmt = total * ((Number(receiptPercentage) || 0) / 100);
+                                                                
+                                                                updateLeadMut.mutate({ 
+                                                                    ulid: fullLead!.ulid, 
+                                                                    data: { 
+                                                                        quotation_serial: quotationSerial,
+                                                                        receipt_serial: receiptSerial,
+                                                                        quotation_base_amount: base,
+                                                                        quotation_gst_amount: gst,
+                                                                        quotation_total_amount: total,
+                                                                        receipt_amount: Math.round(receiptAmt)
+                                                                    }
+                                                                });
+                                                            }}
+                                                            className="w-full px-4 py-2 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 disabled:opacity-50"
                                                         >
-                                                            {updateLeadMut.isPending ? 'Saving...' : 'Save Serial'}
+                                                            {updateLeadMut.isPending ? 'Saving...' : 'Save Prices & Serials'}
                                                         </button>
                                                     </div>
                                                 </div>
+
+                                                {quotationBase !== '' && (
+                                                    <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100 flex gap-4 text-[10px] font-mono text-indigo-800">
+                                                        <span>Base: ₹{Number(quotationBase).toLocaleString()}</span>
+                                                        <span>GST (5%): ₹{(Number(quotationBase) * 0.05).toLocaleString()}</span>
+                                                        <span className="font-bold">Total: ₹{(Number(quotationBase) * 1.05).toLocaleString()}</span>
+                                                        <span className="text-orange-700 font-bold ml-auto">
+                                                            Receipt Drop: ₹{Math.round((Number(quotationBase) * 1.05) * ((Number(receiptPercentage)||0)/100)).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                )}
 
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                     <div className="space-y-1.5">

@@ -242,7 +242,9 @@ class CommissionService
             $lead->submittedByEnumerator,
             $lead->submittedByAgent,
             $lead->assignedAgent,
-            $lead->createdBySuperAgent
+            $lead->createdBySuperAgent,
+            $lead->assignedSurveyor,
+            $lead->assignedInstaller
         ])->filter()->unique('id');
 
         foreach ($potentialPayees as $payee) {
@@ -306,6 +308,9 @@ class CommissionService
     {
         $hierarchyService = app(HierarchyService::class);
         $payerId = $hierarchyService->getLogicalParentId($payee, $lead);
+        if ($role === 'field_technical_team') {
+            $payerId = null; // Admin pays Field Technical Team directly
+        }
         $payer = $payerId ? User::find($payerId) : null;
 
         $comm = Commission::query()->where(fn($q) => $q->where('lead_id', $lead->id))->where(fn($q) => $q->where('payee_id', $payee->id))->first();
@@ -314,11 +319,17 @@ class CommissionService
             'payee_id' => $payee->id,
             'payee_name' => $payee->name,
             'payee_role' => $role,
-            'payee_code' => $payee->role === 'super_agent' ? $payee->super_agent_code : ($payee->role === 'agent' ? $payee->agent_id : $payee->enumerator_id),
+            'payee_code' => match($role) {
+                'super_agent' => $payee->super_agent_code,
+                'agent' => $payee->agent_id,
+                'enumerator' => $payee->enumerator_id,
+                default => ''
+            },
             'payee_type_label' => match($role) {
                 'super_agent' => 'Business Development Manager',
                 'agent' => 'Business Development Executive',
                 'enumerator' => 'Enumerator',
+                'field_technical_team' => 'Field Technician ' . ($payee->technician_type ? ' (' . ucfirst($payee->technician_type) . ')' : ''),
                 default => 'Executive',
             },
             'payer_id' => $payerId,

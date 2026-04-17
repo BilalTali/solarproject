@@ -155,6 +155,44 @@ class AdminLeadController extends Controller
     }
 
     /** Assign lead to a Super Agent */
+    /**
+     * Assign Technical Team members to a lead.
+     */
+    public function assignTechnicians(Request $request, $ulid)
+    {
+        $request->validate([
+            'surveyor_id' => 'nullable|exists:users,id',
+            'installer_id' => 'nullable|exists:users,id',
+        ]);
+
+        $lead = Lead::where('ulid', $ulid)->firstOrFail();
+
+        // Validations
+        if ($request->has('surveyor_id') && $request->surveyor_id) {
+            $surveyor = User::findOrFail($request->surveyor_id);
+            if (!$surveyor->isFieldTechnician()) {
+                return response()->json(['error' => 'Selected user is not a field technician'], 400);
+            }
+            $lead->assigned_surveyor_id = $request->surveyor_id;
+        }
+
+        if ($request->has('installer_id') && $request->installer_id) {
+            $installer = User::findOrFail($request->installer_id);
+            if (!$installer->isFieldTechnician()) {
+                return response()->json(['error' => 'Selected user is not a field technician'], 400);
+            }
+            $lead->assigned_installer_id = $request->installer_id;
+        }
+
+        $lead->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Technicians assigned successfully',
+            'data' => $lead->load(['assignedSurveyor', 'assignedInstaller'])
+        ]);
+    }
+
     public function assignSuperAgent(Request $request, $ulid)
     {
         $request->validate(['super_agent_id' => 'required|exists:users,id']);

@@ -59,6 +59,8 @@ export interface Lead {
     assigned_agent_id: number | null;
     assigned_super_agent_id: number | null;
     assigned_admin_id: number | null;
+    assigned_surveyor_id?: number | null;
+    assigned_installer_id?: number | null;
     submitted_by_agent_id: number | null;
     submitted_by_enumerator_id: number | null;
     created_by_super_agent_id: number | null;
@@ -68,6 +70,8 @@ export interface Lead {
     assigned_agent?: User;
     assigned_super_agent?: User;
     assigned_admin?: User;
+    assigned_surveyor?: User;
+    assigned_installer?: User;
     submitted_by_agent?: User;
     submitted_by_enumerator?: User;
     created_by_super_agent?: User;

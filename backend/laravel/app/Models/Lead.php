@@ -147,6 +147,8 @@ class Lead extends Model
         'assigned_agent_id',
         'assigned_super_agent_id',
         'assigned_admin_id',
+        'assigned_surveyor_id',
+        'assigned_installer_id',
         'submitted_by_agent_id',
         'created_by_super_agent_id',
         'submitted_by_enumerator_id',
@@ -164,6 +166,12 @@ class Lead extends Model
         'bill_date',
         'system_item',
         'system_make',
+        'quotation_serial',
+        'receipt_serial',
+        'quotation_base_amount',
+        'quotation_gst_amount',
+        'quotation_total_amount',
+        'receipt_amount',
     ];
 
     protected function casts(): array
@@ -199,6 +207,16 @@ class Lead extends Model
     public function assignedAdmin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_admin_id');
+    }
+
+    public function assignedSurveyor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_surveyor_id');
+    }
+
+    public function assignedInstaller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_installer_id');
     }
 
     public function submittedByAgent(): BelongsTo
@@ -335,6 +353,18 @@ class Lead extends Model
         return $q->where(function ($query) use ($agentId) {
             $query->where(fn($q) => $q->where('submitted_by_agent_id', $agentId))
                 ->orWhere(fn($q) => $q->where('assigned_agent_id', $agentId));
+        });
+    }
+
+    /**
+     * Leads visible to a specific field technician:
+     * assigned stringently to them as either a surveyor or an installer
+     */
+    public function scopeVisibleToTechnician(Builder $q, int $technicianId): Builder
+    {
+        return $q->where(function ($query) use ($technicianId) {
+            $query->where(fn($q) => $q->where('assigned_surveyor_id', $technicianId))
+                ->orWhere(fn($q) => $q->where('assigned_installer_id', $technicianId));
         });
     }
 

@@ -486,8 +486,17 @@ export default function SuperAdminProfilePage() {
                                             />
                                             <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Browser tab icon</p>
                                         </div>
+                                        <div className="space-y-2">
+                                            <FileUploadBlock
+                                                label="Authorized Signature (For Bills)"
+                                                currentPath={localAuthority.company_signature}
+                                                pendingFile={pendingFiles.company_signature}
+                                                onSelect={f => setPendingFiles(p => ({ ...p, company_signature: f }))}
+                                            />
+                                            <p className="text-[9px] text-indigo-600 font-black uppercase tracking-widest">Transparent PNG signature for Bank/Receipts</p>
+                                        </div>
                                     </div>
-                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['company_name', 'company_affiliated_with', 'company_registration_no', 'company_slogan', 'company_logo', 'company_favicon'])} />
+                                    <CommitButton saving={saving} onClick={() => handleAuthoritySave(['company_name', 'company_affiliated_with', 'company_registration_no', 'company_slogan', 'company_logo', 'company_favicon', 'company_signature'])} />
                                 </div>
                             )}
 

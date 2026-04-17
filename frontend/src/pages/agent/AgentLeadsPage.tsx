@@ -14,6 +14,7 @@ import { agentCommissionsApi } from '@/services/commissions.api';
 import CommissionInlineEntryForAgent from '@/components/super-agent/CommissionInlineEntryForAgent';
 import { LEAD_STATUS_OPTIONS, getLeadStatusColor } from '@/constants/leadStatuses';
 import MobileFilterModal from '@/components/shared/MobileFilterModal';
+import { LeadDocumentsModal } from '@/components/leads/LeadDocumentsModal';
 
 
 export default function AgentLeadsPage() {
@@ -283,12 +284,15 @@ export default function AgentLeadsPage() {
                                             })()}
 
                                             {(!lead.commission_prompt || !lead.commission_prompt.should_prompt) && lead.verification_status !== 'reverted_to_agent' && (
-                                                <Link
-                                                    to={`/agent/leads/${lead.ulid}`}
-                                                    className="text-orange-600 hover:text-orange-700 font-extrabold text-[10px] uppercase tracking-widest block text-center mt-1"
-                                                >
-                                                    VIEW →
-                                                </Link>
+                                                <div className="flex flex-col gap-2 mt-1">
+                                                    <LeadDocumentsModal ulid={lead.ulid} />
+                                                    <Link
+                                                        to={`/agent/leads/${lead.ulid}`}
+                                                        className="text-orange-600 hover:text-orange-700 font-extrabold text-[10px] uppercase tracking-widest block text-center"
+                                                    >
+                                                        VIEW →
+                                                    </Link>
+                                                </div>
                                             )}
                                         </td>
                                     </tr>
@@ -454,12 +458,15 @@ export default function AgentLeadsPage() {
 
                                 <div className="flex items-center justify-between pt-3 border-t border-slate-50">
                                     <span className="text-[10px] text-slate-400 font-medium">Added on {formatDate(lead.created_at)}</span>
-                                    <Link
-                                        to={`/agent/leads/${lead.ulid}`}
-                                        className="text-[10px] text-orange-600 font-black uppercase tracking-widest flex items-center gap-1"
-                                    >
-                                        View Details <ChevronRight size={12} />
-                                    </Link>
+                                    <div className="flex gap-3 items-center">
+                                        <LeadDocumentsModal ulid={lead.ulid} />
+                                        <Link
+                                            to={`/agent/leads/${lead.ulid}`}
+                                            className="text-[10px] text-orange-600 font-black uppercase tracking-widest flex items-center gap-1"
+                                        >
+                                            Details <ChevronRight size={12} />
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         ))

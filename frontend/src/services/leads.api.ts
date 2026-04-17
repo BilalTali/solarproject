@@ -126,6 +126,10 @@ export const leadsApi = {
         const res = await api.put<ApiResponse<Lead>>(`/admin/leads/${ulid}/assign-agent`, { agent_id });
         return res.data;
     },
+    assignTechnicians: async (ulid: string, payload: { surveyor_id?: number | null, installer_id?: number | null }) => {
+        const res = await api.put<ApiResponse<Lead>>(`/admin/leads/${ulid}/assign-technicians`, payload);
+        return res.data;
+    },
     overrideVerification: async (ulid: string, reason: string) => {
         const res = await api.put<ApiResponse<Lead>>(`/admin/leads/${ulid}/override-verification`, { reason });
         return res.data;

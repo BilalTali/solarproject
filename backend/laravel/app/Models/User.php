@@ -201,6 +201,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
     const ROLE_AGENT = 'agent';
     const ROLE_ENUMERATOR = 'enumerator';
     const ROLE_OPERATOR = 'operator';
+    const ROLE_FIELD_TECHNICAL_TEAM = 'field_technical_team';
 
     protected $fillable = [
         'name', 'father_name', 'dob', 'blood_group', 'email', 'mobile', 'password',
@@ -214,7 +215,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         'aadhaar_document', 'pan_document', 'education_level', 'education_cert',
         'resume', 'mou_signed', 'super_agent_id', 'created_by_super_agent_id',
         'created_by_agent_id', 'enumerator_id', 'enumerator_creator_role',
-        'parent_id', 'permissions', 'role', 'status',
+        'parent_id', 'permissions', 'role', 'status', 'technician_type',
         'is_wa_lead_handler', 'wa_lead_round_robin_counter',
     ];
 
@@ -449,6 +450,11 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         return $query->where(fn ($q) => $q->where('role', 'enumerator'));
     }
 
+    public function scopeRoleFieldTechnicalTeam(Builder $query): Builder
+    {
+        return $query->where(fn ($q) => $q->where('role', 'field_technical_team'));
+    }
+
     public function scopeRoleSuperAdmin(Builder $query): Builder
     {
         return $query->where(fn ($q) => $q->where('role', 'super_admin'));
@@ -519,6 +525,11 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
     public function isOperator(): bool
     {
         return $this->role === 'operator';
+    }
+
+    public function isFieldTechnician(): bool
+    {
+        return $this->role === 'field_technical_team';
     }
 
     public function hasAssignedSuperAgent(): bool

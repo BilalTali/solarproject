@@ -15,7 +15,9 @@ use App\Http\Controllers\Admin\AdminDashboardController as AdminDashboardControl
 // Super Agent
 use App\Http\Controllers\Admin\AdminLeadController as AdminLeadController;
 use App\Http\Controllers\Admin\AdminOfferController as AdminOfferController;
+use App\Http\Controllers\Admin\WithdrawalController as AdminWithdrawalController;
 use App\Http\Controllers\Admin\OperatorController as AdminOperatorController;
+use App\Http\Controllers\Admin\AdminTechnicalTeamController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\AdminSuperAgentController as AdminSuperAgentController;
@@ -33,6 +35,7 @@ use App\Http\Controllers\Admin\JoiningLetterController;
 use App\Http\Controllers\Solar\LeadDocumentController;
 use App\Http\Controllers\Solar\EligibilityController;
 use App\Http\Controllers\Solar\PortalLeadController as PublicLeadController;
+use App\Http\Controllers\Technical\TechnicalDashboardController;
 // CMS
 use App\Http\Controllers\Admin\SuperAgentAgentController as SAAgentController;
 use App\Http\Controllers\Admin\SuperAgentDashboardController as SADashboardController;
@@ -123,6 +126,10 @@ $api->as('api.v1.')->group(function () {
         // Lead Documents
         Route::get('/leads/{ulid}/documents/{id}/download', [LeadDocumentController::class, 'download'])->name('leads.documents.download');
         Route::get('/leads/{ulid}/documents/{id}/view-url', [LeadDocumentController::class, 'getSignedUrl']);
+        
+        Route::get('/leads/{ulid}/documents/all', [LeadDocumentController::class, 'index']);
+        Route::get('/leads/{ulid}/pdf/quotation', [\App\Http\Controllers\Admin\LeadBillController::class, 'downloadQuotation']);
+        Route::get('/leads/{ulid}/pdf/receipt', [\App\Http\Controllers\Admin\LeadBillController::class, 'downloadReceipt']);
 
         // Authenticated settings lookup works for all sub-roles to fetch their parent admin's branding
         Route::get('/admin/settings', [AdminSettingController::class, 'index']);
@@ -132,6 +139,14 @@ $api->as('api.v1.')->group(function () {
             Route::put('/admin/settings', [AdminSettingController::class, 'updateBulk']);
             Route::post('/admin/settings/upload', [AdminSettingController::class, 'uploadFile']);
             Route::put('/admin/profile', [AdminSettingController::class, 'updateProfile']);
+        });
+
+        // ==========================================
+        // TECHNICAL TEAM PORTAL
+        // ==========================================
+        Route::middleware([\App\Http\Middleware\TechnicalTeamMiddleware::class])->prefix('technical')->group(function () {
+            Route::get('/leads', [TechnicalDashboardController::class, 'getAssignedLeads']);
+            Route::post('/leads/{ulid}/visit', [TechnicalDashboardController::class, 'submitVisit']);
         });
 
         // ==============================
@@ -281,6 +296,11 @@ $api->as('api.v1.')->group(function () {
             Route::put('/operators/{id}/status', [AdminOperatorController::class, 'updateStatus']);
             Route::delete('/operators/{id}', [AdminOperatorController::class, 'destroy']);
 
+            Route::get('/technical-team', [AdminTechnicalTeamController::class, 'index']);
+            Route::post('/technical-team', [AdminTechnicalTeamController::class, 'store']);
+            Route::put('/technical-team/{id}/status', [AdminTechnicalTeamController::class, 'updateStatus']);
+            Route::delete('/technical-team/{id}', [AdminTechnicalTeamController::class, 'destroy']);
+
             // Super Agents CRUD
             Route::get('/super-agents', [AdminSuperAgentController::class, 'index']);
             Route::post('/super-agents', [AdminSuperAgentController::class, 'store']);
@@ -303,6 +323,7 @@ $api->as('api.v1.')->group(function () {
             Route::put('/leads/{ulid}', [AdminLeadController::class, 'update']);
             Route::put('/leads/{ulid}/assign', [AdminLeadController::class, 'assign']);
             Route::put('/leads/{ulid}/assign-super-agent', [AdminLeadController::class, 'assignSuperAgent']);
+            Route::put('/leads/{ulid}/assign-technicians', [AdminLeadController::class, 'assignTechnicians']);
             Route::put('/leads/{ulid}/assign-agent', [AdminLeadController::class, 'assignAgent']);
             Route::put('/leads/{ulid}/override-verification', [AdminLeadController::class, 'overrideVerification']);
             Route::post('/leads/{ulid}/documents', [AdminLeadController::class, 'uploadDocument']);

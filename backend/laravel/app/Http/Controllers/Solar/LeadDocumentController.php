@@ -12,6 +12,47 @@ use Illuminate\Filesystem\FilesystemAdapter;
 
 class LeadDocumentController extends Controller
 {
+    public function index(Request $request, string $ulid)
+    {
+        $lead = Lead::query()->where('ulid', $ulid)->with('documents')->firstOrFail();
+        $this->authorizeDocument($request->user(), $lead);
+
+        $documents = $lead->documents->map(function ($doc) use ($ulid) {
+            return [
+                'id' => $doc->id,
+                'document_type' => $doc->document_type,
+                'original_filename' => $doc->original_filename,
+                'created_at' => $doc->created_at,
+                'download_url' => $doc->download_url,
+                'is_virtual' => false
+            ];
+        });
+
+        $virtualDocuments = collect([
+            [
+                'id' => 'virtual-quotation',
+                'document_type' => 'Pro Forma Quotation',
+                'original_filename' => 'Quotation-'.$lead->quotation_serial.'.pdf',
+                'created_at' => $lead->bill_date ?? $lead->created_at,
+                'download_url' => url('/api/v1/leads/'.$ulid.'/pdf/quotation'),
+                'is_virtual' => true
+            ],
+            [
+                'id' => 'virtual-receipt',
+                'document_type' => 'Payment Receipt',
+                'original_filename' => 'Receipt-'.$lead->receipt_serial.'.pdf',
+                'created_at' => $lead->bill_date ?? $lead->created_at,
+                'download_url' => url('/api/v1/leads/'.$ulid.'/pdf/receipt'),
+                'is_virtual' => true
+            ]
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => collect($virtualDocuments)->merge($documents)->values()
+        ]);
+    }
+
     /**
      * Download a lead document with authorization check.
      */

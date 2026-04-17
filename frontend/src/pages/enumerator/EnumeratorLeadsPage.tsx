@@ -9,6 +9,7 @@ import { formatDate } from '@/utils/formatters';
 import type { Lead } from '@/types';
 import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor } from '@/constants/leadStatuses';
 import MobileFilterModal from '@/components/shared/MobileFilterModal';
+import { LeadDocumentsModal } from '@/components/leads/LeadDocumentsModal';
 
 export default function EnumeratorLeadsPage() {
     const [page, setPage] = useState(1);
@@ -129,7 +130,7 @@ export default function EnumeratorLeadsPage() {
                     <table className="min-w-full text-sm" aria-label="My Submitted Leads">
                         <thead className="bg-slate-50 border-b border-slate-200">
                             <tr>
-                                {['Ref', 'Beneficiary', 'Mobile', 'District', 'Capacity', 'Verification', 'Status', 'Date'].map(h => (
+                                {['Ref', 'Beneficiary', 'Mobile', 'District', 'Capacity', 'Verification', 'Status', 'Date', 'Documents'].map(h => (
                                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">
                                         {h}
                                     </th>
@@ -155,6 +156,9 @@ export default function EnumeratorLeadsPage() {
                                         <LeadStatusBadge status={lead.status} />
                                     </td>
                                     <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">{formatDate(lead.created_at)}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap">
+                                        <LeadDocumentsModal ulid={lead.ulid} />
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -210,8 +214,11 @@ export default function EnumeratorLeadsPage() {
 
                             <div className="flex items-center justify-between pt-3 border-t border-slate-50">
                                 <span className="text-[10px] text-slate-400 font-medium tracking-tight">Submitted on {formatDate(lead.created_at)}</span>
-                                <div className="flex items-center gap-1 text-[10px] text-slate-300 font-black uppercase tracking-widest">
-                                    Locked <Hash size={10} />
+                                <div className="flex items-center gap-3">
+                                    <LeadDocumentsModal ulid={lead.ulid} />
+                                    <div className="flex items-center gap-1 text-[10px] text-slate-300 font-black uppercase tracking-widest">
+                                        Locked <Hash size={10} />
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -83,6 +83,7 @@ const AdminRedemptionsPage = lazy(() => import('@/pages/admin/AdminRedemptionsPa
 const AdminAbsorptionsPage = lazy(() => import('@/pages/admin/AdminAbsorptionsPage'));
 const AdminWithdrawalsPage = lazy(() => import('@/pages/admin/AdminWithdrawalsPage').then(module => ({ default: module.AdminWithdrawalsPage })));
 const AdminOperatorsPage = lazy(() => import('@/pages/admin/AdminOperatorsPage'));
+const AdminTechnicalTeamPage = lazy(() => import('@/pages/admin/AdminTechnicalTeamPage'));
 
 // Enumerator Pages
 import EnumeratorLayout from '@/components/layouts/EnumeratorLayout';
@@ -96,6 +97,11 @@ const EnumeratorLoginPage = lazy(() => import('@/pages/enumerator/EnumeratorLogi
 const EnumeratorRegisterPage = lazy(() => import('@/pages/enumerator/EnumeratorRegisterPage'));
 const EnumeratorWithdrawalsPage = lazy(() => import('@/pages/enumerator/EnumeratorWithdrawalsPage').then(module => ({ default: module.EnumeratorWithdrawalsPage })));
 const EnumeratorOffersPage = lazy(() => import('./pages/enumerator/EnumeratorOffersPage'));
+
+// Field Technical Team Pages
+import TechnicalLayout from '@/components/layouts/TechnicalLayout';
+const TechnicalLeadsPage = lazy(() => import('@/pages/technical/TechnicalLeadsPage'));
+const TechnicalProfilePage = lazy(() => import('@/pages/technical/TechnicalProfilePage'));
 
 // Super Admin Pages
 import SuperAdminLayout from '@/components/layouts/SuperAdminLayout';
@@ -252,6 +258,7 @@ export default function App() {
             <Route path="settings" element={<AdminSettingsPage />} />
             <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
             <Route path="operators" element={<AdminOperatorsPage />} />
+            <Route path="technical-team" element={<AdminTechnicalTeamPage />} />
             <Route index element={<AdminIndexRedirect />} />
           </Route>
 
@@ -281,6 +288,20 @@ export default function App() {
             <Route path="withdrawals" element={<EnumeratorWithdrawalsPage />} />
             <Route path="offers" element={<EnumeratorOffersPage />} />
             <Route index element={<Navigate to="/enumerator/dashboard" replace />} />
+          </Route>
+
+          {/* Technical Team Protected Routes */}
+          <Route
+            path="/technical"
+            element={
+              <ProtectedRoute requiredRole="field_technical_team" loginPath="/login">
+                <TechnicalLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="leads" element={<TechnicalLeadsPage />} />
+            <Route path="profile" element={<TechnicalProfilePage />} />
+            <Route index element={<Navigate to="/technical/leads" replace />} />
           </Route>
 
           {/* Super Admin Protected Routes */}
