@@ -16,7 +16,11 @@ class AdminLeadController extends Controller
 
     public function index(Request $request)
     {
-        $query = Lead::query()->with(['assignedSuperAgent', 'assignedAgent', 'submittedByAgent', 'createdBySuperAgent', 'documents', 'commissions']);
+        $query = Lead::query()->with([
+            'assignedSuperAgent', 'assignedAgent', 'submittedByAgent', 
+            'createdBySuperAgent', 'documents', 'commissions',
+            'assignedSurveyor', 'assignedInstaller'
+        ]);
 
         $user = $request->user();
 

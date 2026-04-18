@@ -115,8 +115,24 @@ export interface Lead {
     status_logs?: LeadStatusLog[];
     documents?: LeadDocument[];
 
+    billing_items?: BillingItem[];
+    billing_gst_percentage?: number;
+
+    quotation_serial?: string;
+    receipt_serial?: string;
+    quotation_base_amount?: number;
+    quotation_gst_amount?: number;
+    quotation_total_amount?: number;
+    receipt_amount?: number;
+
     created_at: string;
     updated_at: string;
+}
+
+export interface BillingItem {
+    description: string;
+    make: string;
+    rate: number;
 }
 
 // ====== Lead Status Log ======

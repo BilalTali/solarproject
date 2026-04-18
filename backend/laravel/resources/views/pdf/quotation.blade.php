@@ -165,30 +165,30 @@
             </tr>
         </thead>
         <tbody>
+            @foreach($billingItems as $index => $item)
             <tr>
-                <td class="text-center">1</td>
+                <td class="text-center">{{ $index + 1 }}</td>
                 <td>
-                    <b>{{ $kw }} KW Solar Grid Tie System</b><br>
-                    Make: {{ $make }}<br>
-                    Item: {{ $item }}<br>
-                    <i>Including Installation, Net Metering and all accessories</i>
+                    <b>{{ $item['description'] }}</b><br>
+                    Make: {{ $item['make'] }}<br>
                 </td>
                 <td class="text-center">1 Set</td>
-                <td class="text-right">{{ number_format($baseAmount, 2) }}</td>
-                <td class="text-right">{{ number_format($baseAmount, 2) }}</td>
+                <td class="text-right">{{ number_format($item['rate'], 2) }}</td>
+                <td class="text-right">{{ number_format($item['rate'], 2) }}</td>
             </tr>
+            @endforeach
             <tr>
                 <td colspan="3" class="text-right"><b>Taxable Amount:</b></td>
                 <td></td>
                 <td class="text-right"><b>{{ number_format($baseAmount, 2) }}</b></td>
             </tr>
             <tr>
-                <td colspan="3" class="text-right"><b>Add CGST @ 2.5%:</b></td>
+                <td colspan="3" class="text-right"><b>Add CGST @ {{ $gstPercentage / 2 }}%:</b></td>
                 <td></td>
                 <td class="text-right">{{ number_format($gstAmount / 2, 2) }}</td>
             </tr>
             <tr>
-                <td colspan="3" class="text-right"><b>Add SGST @ 2.5%:</b></td>
+                <td colspan="3" class="text-right"><b>Add SGST @ {{ $gstPercentage / 2 }}%:</b></td>
                 <td></td>
                 <td class="text-right">{{ number_format($gstAmount / 2, 2) }}</td>
             </tr>

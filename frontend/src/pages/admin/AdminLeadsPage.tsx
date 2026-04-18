@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Search, Filter, ChevronLeft, ChevronRight, X,
     Phone, MapPin, User, Hash, FileText, AlertCircle, Calendar,
-    Download, CheckCircle
+    Download, CheckCircle, Trash2, Plus
 } from 'lucide-react';
 import { leadsApi } from '@/services/leads.api';
 import { adminSuperAgentApi } from '@/services/adminSuperAgent.api';
@@ -50,12 +50,11 @@ export default function AdminLeadsPage() {
     const { settings } = useAdminSettings();
     const billingItems = typeof settings.billing_items_json === 'string' ? JSON.parse(settings.billing_items_json) : (settings.billing_items_json || []);
     const billingMakes = typeof settings.billing_makes_json === 'string' ? JSON.parse(settings.billing_makes_json) : (settings.billing_makes_json || []);
-    const [billItem, setBillItem] = useState('');
-    const [billMake, setBillMake] = useState('');
     const [quotationSerial, setQuotationSerial] = useState('1');
     const [receiptSerial, setReceiptSerial] = useState('1');
-    const [quotationBase, setQuotationBase] = useState('294500');
     const [receiptPercentage, setReceiptPercentage] = useState('10');
+    const [billingItemsList, setBillingItemsList] = useState<{ description: string; make: string; rate: string }[]>([]);
+    const [gstPercentage, setGstPercentage] = useState('5');
 
     const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -193,7 +192,6 @@ export default function AdminLeadsPage() {
         setReceiptFile(null);
         setQuotationSerial(lead.quotation_serial || '');
         setReceiptSerial(lead.receipt_serial || '');
-        setQuotationBase(lead.quotation_base_amount || '');
         
         // Compute reverse percentage if they had a receipt amount
         if (lead.quotation_total_amount && lead.receipt_amount) {
@@ -202,8 +200,22 @@ export default function AdminLeadsPage() {
             setReceiptPercentage('10');
         }
 
-        setBillItem(lead.system_item || '');
-        setBillMake(lead.system_make || '');
+
+        if (lead.billing_items && lead.billing_items.length > 0) {
+            setBillingItemsList(lead.billing_items.map((it: any) => ({ ...it, rate: String(it.rate) })));
+        } else {
+            // Support legacy: if they have old data but no new array
+            if (lead.quotation_base_amount) {
+                setBillingItemsList([{ 
+                    description: lead.system_item || 'Solar Grid Tie System', 
+                    make: lead.system_make || 'Standard', 
+                    rate: String(lead.quotation_base_amount) 
+                }]);
+            } else {
+                setBillingItemsList([]);
+            }
+        }
+        setGstPercentage(String(lead.billing_gst_percentage || '5'));
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -774,14 +786,94 @@ export default function AdminLeadsPage() {
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                {/* ── Multi-Item Billing Table ── */}
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Bill Items</label>
+                                                        <button 
+                                                            onClick={() => setBillingItemsList([...billingItemsList, { description: '', make: '', rate: '' }])}
+                                                            className="flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-2 py-1 rounded"
+                                                        >
+                                                            <Plus size={10} /> Add Item
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-3">
+                                                        {billingItemsList.map((item, idx) => (
+                                                            <div key={idx} className="grid grid-cols-12 gap-2 p-2 bg-white border border-slate-100 rounded-lg shadow-sm">
+                                                                <div className="col-span-5 space-y-1">
+                                                                    <select
+                                                                        value={item.description}
+                                                                        onChange={e => {
+                                                                            const newList = [...billingItemsList];
+                                                                            newList[idx].description = e.target.value;
+                                                                            setBillingItemsList(newList);
+                                                                        }}
+                                                                        className="w-full border border-slate-200 rounded px-2 py-1.5 text-[11px] focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                                    >
+                                                                        <option value="">Description...</option>
+                                                                        {billingItems.map((opt: any) => (
+                                                                            <option key={opt.id} value={opt.name}>{opt.name}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                                <div className="col-span-3 space-y-1">
+                                                                    <select
+                                                                        value={item.make}
+                                                                        onChange={e => {
+                                                                            const newList = [...billingItemsList];
+                                                                            newList[idx].make = e.target.value;
+                                                                            setBillingItemsList(newList);
+                                                                        }}
+                                                                        className="w-full border border-slate-200 rounded px-2 py-1.5 text-[11px] focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                                    >
+                                                                        <option value="">Make...</option>
+                                                                        {billingMakes.map((opt: any) => (
+                                                                            <option key={opt.id} value={opt.name}>{opt.name}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                                <div className="col-span-3 space-y-1">
+                                                                    <input
+                                                                        type="number"
+                                                                        value={item.rate}
+                                                                        onChange={e => {
+                                                                            const newList = [...billingItemsList];
+                                                                            newList[idx].rate = e.target.value;
+                                                                            setBillingItemsList(newList);
+                                                                        }}
+                                                                        placeholder="Rate ₹"
+                                                                        className="w-full border border-slate-200 rounded px-2 py-1.5 text-[11px] focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                                    />
+                                                                </div>
+                                                                <div className="col-span-1 flex items-center justify-center">
+                                                                    <button 
+                                                                        onClick={() => setBillingItemsList(billingItemsList.filter((_, i) => i !== idx))}
+                                                                        className="text-slate-400 hover:text-red-500 transition-colors"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+
+                                                        {billingItemsList.length === 0 && (
+                                                            <div className="text-center py-4 bg-white border border-dashed border-slate-200 rounded-lg text-slate-400 text-[10px]">
+                                                                No items added yet. Click "Add Item" to begin.
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* ── GST and Totals ── */}
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-200 pt-4">
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Base Amount (₹)</label>
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">GST Percentage (%)</label>
                                                         <input 
                                                             type="number" 
-                                                            value={quotationBase}
-                                                            onChange={e => setQuotationBase(e.target.value)}
-                                                            placeholder="e.g. 294500"
+                                                            value={gstPercentage}
+                                                            onChange={e => setGstPercentage(e.target.value)}
+                                                            placeholder="e.g. 5"
                                                             className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                         />
                                                     </div>
@@ -797,77 +889,53 @@ export default function AdminLeadsPage() {
                                                     </div>
                                                     <div className="space-y-1.5 flex items-end">
                                                         <button 
-                                                            disabled={updateLeadMut.isPending}
+                                                            disabled={updateLeadMut.isPending || billingItemsList.length === 0}
                                                             onClick={() => {
-                                                                const base = Number(quotationBase) || 0;
-                                                                const gst = base * 0.05;
-                                                                const total = base + gst;
-                                                                const receiptAmt = total * ((Number(receiptPercentage) || 0) / 100);
+                                                                const subtotal = billingItemsList.reduce((acc, it) => acc + (Number(it.rate) || 0), 0);
+                                                                const gstTotal = subtotal * ((Number(gstPercentage) || 0) / 100);
+                                                                const totalAmt = subtotal + gstTotal;
+                                                                const receiptAmt = totalAmt * ((Number(receiptPercentage) || 0) / 100);
                                                                 
                                                                 updateLeadMut.mutate({ 
                                                                     ulid: fullLead!.ulid, 
                                                                     data: { 
                                                                         quotation_serial: quotationSerial,
                                                                         receipt_serial: receiptSerial,
-                                                                        quotation_base_amount: base,
-                                                                        quotation_gst_amount: gst,
-                                                                        quotation_total_amount: total,
-                                                                        receipt_amount: Math.round(receiptAmt)
+                                                                        quotation_base_amount: subtotal,
+                                                                        quotation_gst_amount: gstTotal,
+                                                                        quotation_total_amount: totalAmt,
+                                                                        receipt_amount: Math.round(receiptAmt),
+                                                                        billing_items: billingItemsList.map(it => ({ ...it, rate: Number(it.rate) })),
+                                                                        billing_gst_percentage: Number(gstPercentage) || 0
                                                                     }
                                                                 });
                                                             }}
-                                                            className="w-full px-4 py-2 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 disabled:opacity-50"
+                                                            className="w-full px-4 py-2 border border-slate-300 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
                                                         >
-                                                            {updateLeadMut.isPending ? 'Saving...' : 'Save Prices & Serials'}
+                                                            {updateLeadMut.isPending ? 'Saving...' : 'Save Multi-Item Bill'}
                                                         </button>
                                                     </div>
                                                 </div>
 
-                                                {quotationBase !== '' && (
-                                                    <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100 flex gap-4 text-[10px] font-mono text-indigo-800">
-                                                        <span>Base: ₹{Number(quotationBase).toLocaleString()}</span>
-                                                        <span>GST (5%): ₹{(Number(quotationBase) * 0.05).toLocaleString()}</span>
-                                                        <span className="font-bold">Total: ₹{(Number(quotationBase) * 1.05).toLocaleString()}</span>
-                                                        <span className="text-orange-700 font-bold ml-auto">
-                                                            Receipt Drop: ₹{Math.round((Number(quotationBase) * 1.05) * ((Number(receiptPercentage)||0)/100)).toLocaleString()}
-                                                        </span>
+                                                {billingItemsList.length > 0 && (
+                                                    <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100 flex flex-wrap gap-x-6 gap-y-2 text-[10px] font-mono text-indigo-800">
+                                                        {(() => {
+                                                            const subtotal = billingItemsList.reduce((acc, it) => acc + (Number(it.rate) || 0), 0);
+                                                            const gstTotal = subtotal * ((Number(gstPercentage) || 0) / 100);
+                                                            const totalAmt = subtotal + gstTotal;
+                                                            return (
+                                                                <>
+                                                                    <span>Subtotal: ₹{subtotal.toLocaleString()}</span>
+                                                                    <span>GST ({gstPercentage}%): ₹{gstTotal.toLocaleString()}</span>
+                                                                    <span className="font-bold">Grand Total: ₹{totalAmt.toLocaleString()}</span>
+                                                                    <span className="text-orange-700 font-bold ml-auto">
+                                                                        Receipt Drop: ₹{Math.round(totalAmt * ((Number(receiptPercentage)||0)/100)).toLocaleString()}
+                                                                    </span>
+                                                                </>
+                                                            );
+                                                        })()}
                                                     </div>
                                                 )}
-
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                    <div className="space-y-1.5">
-                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">System Item</label>
-                                                        <select
-                                                            value={billItem}
-                                                            onChange={e => {
-                                                                setBillItem(e.target.value);
-                                                                updateLeadMut.mutate({ ulid: fullLead!.ulid, data: { system_item: e.target.value } });
-                                                            }}
-                                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                                        >
-                                                            <option value="">Select Item...</option>
-                                                            {billingItems.map((opt: any) => (
-                                                                <option key={opt.id} value={opt.name}>{opt.name}</option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                    <div className="space-y-1.5">
-                                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">System Make</label>
-                                                        <select
-                                                            value={billMake}
-                                                            onChange={e => {
-                                                                setBillMake(e.target.value);
-                                                                updateLeadMut.mutate({ ulid: fullLead!.ulid, data: { system_make: e.target.value } });
-                                                            }}
-                                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                                        >
-                                                            <option value="">Select Brand/Make...</option>
-                                                            {billingMakes.map((opt: any) => (
-                                                                <option key={opt.id} value={opt.name}>{opt.name}</option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </section>
 

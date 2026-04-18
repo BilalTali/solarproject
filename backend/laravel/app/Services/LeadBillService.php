@@ -54,15 +54,9 @@ class LeadBillService
 
     private function buildViewData(Lead $lead): array
     {
-        // Fetch specific Admin ID (tenant) or fallback to global settings
-        $adminId = $lead->assigned_admin_id ?? null;
-
-        $directFetch = function($key) use ($adminId) {
-            $val = Setting::query()->where('key', $key)->where('user_id', $adminId)->first()?->value;
-            if ($val === null) {
-                $val = Setting::query()->where('key', $key)->whereNull('user_id')->first()?->value;
-            }
-            return $val;
+        // Force Global/SuperAdmin settings for company branding
+        $directFetch = function($key) {
+            return Setting::query()->where('key', $key)->whereNull('user_id')->first()?->value;
         };
 
         $companyLogoPath = $directFetch('company_logo');
@@ -72,21 +66,19 @@ class LeadBillService
         $sigBase64 = $this->getBase64Image($companySignaturePath);
 
         $companyName = $directFetch('company_name') ?: 'Malik Solar Tech Agency';
-        $companyAddress = $directFetch('company_address') ?: 'Bhagwati Nagar Lane N Near Transit Camp Banihal J&K';
-        $companyEmail = $directFetch('company_email') ?: 'maliksolartechagency@gmail.com';
+        $companyAddress = $directFetch('company_address') ?: 'Srinagar, Jammu & Kashmir';
+        $companyEmail = $directFetch('company_email') ?: 'info@andleebsurya.in';
         $companyPhone = $directFetch('company_phone') ?: '9596596963';
-        $companyRegNo = $directFetch('company_registration_no') ?: 'Reg. Vendor No: 341 GSTIN:01BTHPM7743P1Z7';
+        $companyRegNo = $directFetch('company_registration_no') ?: 'GSTIN:01BTHPM7743P1Z7';
         $companyAffiliated = $directFetch('company_affiliated_with') ?: 'Government Authorized Vendor for Solar Installation under PM Surya Ghar Yojana';
 
-        $bankAccountName = $directFetch('company_bank_account_name') ?: 'MALIK SOLAR TECH AGENCY';
+        $bankAccountName = $directFetch('company_bank_account_name') ?: 'ANDLEEB SURYA TECH';
         $bankAccountNumber = $directFetch('company_bank_account_number') ?: '0656010100000025';
         $bankIfsc = $directFetch('company_bank_ifsc') ?: 'JAKA0TUNNEL';
         $bankBranch = $directFetch('company_bank_branch') ?: 'JK Bank Banihal';
 
         // Extract system details
         $kw = filter_var($lead->system_capacity, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION) ?: '5';
-        $item = $lead->system_item ?: 'Monocrystalline DCR Module 550 Watt';
-        $make = $lead->system_make ?: 'Luminous/Exide/ServoTech';
         
         $quotationSerial = $lead->quotation_serial ?? '119';
         $quotationDate = $lead->bill_date ? $lead->bill_date->format('d/m/Y') : date('d/m/Y');
@@ -98,6 +90,20 @@ class LeadBillService
         $totalAmount = $lead->quotation_total_amount ?? 310000;
         
         $receiptAmount = $lead->receipt_amount ?? 31000;
+
+        $gstPercentage = $lead->billing_gst_percentage ?? 5;
+        $billingItems = $lead->billing_items;
+
+        // Populate legacy if empty
+        if (empty($billingItems)) {
+            $billingItems = [
+                [
+                    'description' => $lead->system_item ?: 'Monocrystalline DCR Module 550 Watt',
+                    'make' => $lead->system_make ?: 'Luminous/Exide/ServoTech',
+                    'rate' => $baseAmount
+                ]
+            ];
+        }
 
         $address = collect([$lead->beneficiary_address, $lead->beneficiary_district, $lead->beneficiary_state])
             ->filter()
@@ -120,8 +126,6 @@ class LeadBillService
             'logoBase64',
             'sigBase64',
             'kw',
-            'item',
-            'make',
             'quotationSerial',
             'quotationDate',
             'receiptSerial',
@@ -129,7 +133,9 @@ class LeadBillService
             'gstAmount',
             'totalAmount',
             'receiptAmount',
-            'address'
+            'address',
+            'billingItems',
+            'gstPercentage'
         );
     }
 

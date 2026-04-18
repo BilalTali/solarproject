@@ -143,7 +143,14 @@
         </tr>
         <tr>
             <td>For the payment of</td>
-            <td><span class="underline-text">Advance for {{ $kw }} KW Solar Grid Tie System ({{ $make }} / {{ $item }})</span></td>
+            <td>
+                <span class="underline-text">
+                    Advance for 
+                    @foreach($billingItems as $it)
+                        {{ $it['description'] }} ({{ $it['make'] }}){{ !$loop->last ? ', ' : '' }}
+                    @endforeach
+                </span>
+            </td>
         </tr>
         <tr>
             <td>By Cash / Cheque / DD</td>

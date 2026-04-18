@@ -172,6 +172,8 @@ class Lead extends Model
         'quotation_gst_amount',
         'quotation_total_amount',
         'receipt_amount',
+        'billing_items',
+        'billing_gst_percentage',
     ];
 
     protected function casts(): array
@@ -184,6 +186,8 @@ class Lead extends Model
             'verified_at' => 'datetime',
             'reverted_at' => 'datetime',
             'revert_count' => 'integer',
+            'billing_items' => 'array',
+            'billing_gst_percentage' => 'float',
         ];
     }
 
