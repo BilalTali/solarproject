@@ -397,13 +397,18 @@ export default function AdminLeadsPage() {
                                                             )}
                                                         </div>
                                                         <div className="px-4 py-3 text-slate-600 text-[10px] whitespace-nowrap w-[120px] flex items-center">{fmt(lead.created_at)}</div>
-                                                        <div className="px-4 py-3 w-[100px] flex items-center">
+                                                        <div className="px-4 py-3 w-[140px] flex items-center gap-3">
                                                             <button 
                                                                 onClick={(e) => { e.stopPropagation(); openDetail(lead); }}
-                                                                className="text-xs text-orange-600 hover:text-orange-700 font-extrabold uppercase tracking-widest"
+                                                                className="text-[10px] text-orange-600 hover:text-orange-700 font-black uppercase tracking-widest border border-orange-100 px-2 py-1 rounded hover:bg-orange-50 transition-colors"
                                                             >
-                                                                View →
+                                                                View
                                                             </button>
+                                                            <LeadDocumentsModal 
+                                                                ulid={lead.ulid} 
+                                                                triggerButtonText="" 
+                                                                buttonClassName="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all border border-transparent hover:border-indigo-100"
+                                                            />
                                                         </div>
                                                     </div>
                                                 );
@@ -496,7 +501,14 @@ export default function AdminLeadsPage() {
 
                             <div className="flex items-center justify-between pt-3 border-t border-slate-50">
                                 <span className="text-[10px] text-slate-400 font-medium">Added on {fmt(lead.created_at)}</span>
-                                <span className="text-[10px] text-orange-600 font-black tracking-widest uppercase">View full details →</span>
+                                <div className="flex items-center gap-4">
+                                    <LeadDocumentsModal 
+                                        ulid={lead.ulid} 
+                                        triggerButtonText="Documents" 
+                                        buttonClassName="text-[10px] text-indigo-600 font-black tracking-widest uppercase flex items-center gap-1.5"
+                                    />
+                                    <span className="text-[10px] text-orange-600 font-black tracking-widest uppercase">View full details →</span>
+                                </div>
                             </div>
                         </div>
                     ))}

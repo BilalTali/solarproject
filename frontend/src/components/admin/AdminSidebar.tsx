@@ -13,6 +13,7 @@ import { useAdminSettings } from '@/hooks/useAdminSettings';
 const ADMIN_NAV = [
     { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', to: '/admin/dashboard' },
     { icon: <List className="w-5 h-5" />, label: 'Leads', to: '/admin/leads' },
+    { icon: <FileText className="w-5 h-5" />, label: 'Lead Documents', to: '/admin/lead-documents' },
     { icon: <Wallet className="w-5 h-5" />, label: 'Withdrawal Requests', to: '/admin/withdrawals' },
     { icon: <Users className="w-5 h-5" />, label: 'Business Development Executives', to: '/admin/agents' },
     { icon: <Users className="w-5 h-5" />, label: 'Enumerators', to: '/admin/enumerators' },

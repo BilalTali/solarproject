@@ -12,6 +12,11 @@ interface Document {
     is_virtual: boolean;
 }
 
+const REQUIRED_DOCS = [
+    { key: 'feasibility_report', label: 'Feasibility Report' },
+    { key: 'e_token', label: 'E-Token' },
+];
+
 interface Props {
     ulid: string;
     triggerButtonText?: string;
@@ -131,7 +136,32 @@ export function LeadDocumentsModal({ ulid, triggerButtonText = 'View Documents',
                                     <p className="text-slate-500 text-sm font-medium">No documents available yet.</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 gap-3">
+                                <div className="space-y-6">
+                                    {/* Missing Requirements Checklist */}
+                                    <div className="bg-orange-50 border border-orange-100 rounded-xl p-4">
+                                        <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-3">Requirements Checklist</p>
+                                        <div className="space-y-2">
+                                            {REQUIRED_DOCS.map(req => {
+                                                const exists = docs.some(d => d.document_type === req.key);
+                                                return (
+                                                    <div key={req.key} className="flex items-center justify-between">
+                                                        <span className="text-xs font-medium text-slate-700">{req.label}</span>
+                                                        {exists ? (
+                                                            <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                                                <CheckCircle size={10} /> Received
+                                                            </span>
+                                                        ) : (
+                                                            <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 bg-white border border-orange-200 px-2 py-0.5 rounded-full shadow-sm">
+                                                                <X size={10} /> Missing
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-3">
                                     {docs.map(doc => (
                                         <button
                                             key={doc.id}
@@ -151,6 +181,7 @@ export function LeadDocumentsModal({ ulid, triggerButtonText = 'View Documents',
                                             <Download size={16} className={`shrink-0 ${doc.is_virtual ? 'text-indigo-300 group-hover:text-indigo-600' : 'text-slate-300 group-hover:text-orange-500'}`} />
                                         </button>
                                     ))}
+                                    </div>
                                 </div>
                             )}
                         </div>

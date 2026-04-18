@@ -105,7 +105,7 @@ class AdminLeadController extends Controller
             'assignedSuperAgent', 'assignedAgent', 'submittedByAgent',
             'submittedByEnumerator', 'createdBySuperAgent', 'verifiedBySuperAgent',
             'statusLogs.changedBy', 'documents', 'commissions',
-            'verifications.performedBy',
+            'verifications.performedBy', 'assignedSurveyor', 'assignedInstaller'
         ])
             ->where(fn ($q) => $q->where('ulid', $ulid))
             ->firstOrFail();

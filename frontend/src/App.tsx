@@ -77,6 +77,7 @@ const AdminCommissionsPage = lazy(() => import('@/pages/admin/AdminCommissionsPa
 const AdminReportsPage = lazy(() => import('@/pages/admin/AdminReportsPage'));
 const AdminMediaPage = lazy(() => import('@/pages/admin/AdminMediaPage'));
 const AdminDocumentsPage = lazy(() => import('@/pages/admin/AdminDocumentsPage'));
+const AdminLeadDocumentsPage = lazy(() => import('@/pages/admin/AdminLeadDocumentsPage'));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage'));
 const AdminOffersPage = lazy(() => import('@/pages/admin/AdminOffersPage').then(module => ({ default: module.AdminOffersPage })));
 const AdminRedemptionsPage = lazy(() => import('@/pages/admin/AdminRedemptionsPage').then(module => ({ default: module.AdminRedemptionsPage })));
@@ -252,6 +253,7 @@ export default function App() {
             <Route path="reports" element={<AdminReportsPage />} />
             <Route path="media" element={<AdminMediaPage />} />
             <Route path="documents" element={<AdminDocumentsPage />} />
+            <Route path="lead-documents" element={<AdminLeadDocumentsPage />} />
             <Route path="redemptions" element={<AdminRedemptionsPage />} />
             <Route path="offers" element={<AdminOffersPage />} />
             <Route path="absorptions" element={<AdminAbsorptionsPage />} />
