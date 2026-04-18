@@ -143,6 +143,16 @@ class AdminLeadController extends Controller
             $request->file('receipt')
         );
 
+        if ($request->hasFile('feasibility_report')) {
+            $this->leadService->uploadDocument($lead, $request->file('feasibility_report'), 'feasibility_report', $request->user()->id);
+        }
+        if ($request->hasFile('e_token')) {
+            $this->leadService->uploadDocument($lead, $request->file('e_token'), 'e_token', $request->user()->id);
+        }
+        if ($request->hasFile('additional_document')) {
+            $this->leadService->uploadDocument($lead, $request->file('additional_document'), 'additional_document', $request->user()->id);
+        }
+
         $commissionStatus = app(\App\Services\CommissionService::class)->getCommissionStatus($lead);
 
         return response()->json([
@@ -272,7 +282,7 @@ class AdminLeadController extends Controller
     {
         $request->validate([
             'document' => 'required|file|max:5120|mimes:jpg,png,pdf',
-            'type' => 'required|in:aadhaar,aadhaar_front,aadhaar_back,electricity_bill,photo,solar_roof_photo,bank_passbook,receipt,other',
+            'type' => 'required|in:aadhaar,aadhaar_front,aadhaar_back,electricity_bill,photo,solar_roof_photo,bank_passbook,receipt,feasibility_report,e_token,additional_document,other',
         ]);
 
         $lead = Lead::query()->where(fn ($q) => $q->where('ulid', $ulid))->firstOrFail();

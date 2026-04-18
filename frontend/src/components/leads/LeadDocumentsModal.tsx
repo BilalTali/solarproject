@@ -68,6 +68,9 @@ export function LeadDocumentsModal({ ulid, triggerButtonText = 'View Documents',
         solar_roof_photo: 'Solar Roof Photo',
         bank_passbook: 'Bank Passbook',
         receipt: 'Completion Receipt',
+        feasibility_report: 'Feasibility Report',
+        e_token: 'E-Token',
+        additional_document: 'Application Acknowledgement',
         other: 'PAN / Other'
     };
     
@@ -82,6 +85,9 @@ export function LeadDocumentsModal({ ulid, triggerButtonText = 'View Documents',
         receipt: <CheckCircle size={16} />,
         'Payment Receipt': <FileText size={16} className="text-emerald-500" />,
         'Pro Forma Quotation': <FileText size={16} className="text-purple-500" />,
+        feasibility_report: <FileText size={16} className="text-blue-500" />,
+        e_token: <FileText size={16} className="text-amber-500" />,
+        additional_document: <FileText size={16} />,
         other: <FileText size={16} />
     };
 

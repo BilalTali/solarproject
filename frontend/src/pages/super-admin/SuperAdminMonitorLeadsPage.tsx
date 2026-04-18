@@ -6,6 +6,7 @@ import {
 import toast from 'react-hot-toast';
 import api from '@/services/axios';
 import { ApiResponse, Lead, PaginatedResponse, User } from '@/types';
+import { LeadDocumentsModal } from '@/components/leads/LeadDocumentsModal';
 
 export default function SuperAdminMonitorLeadsPage() {
     const queryClient = useQueryClient();
@@ -108,13 +109,14 @@ export default function SuperAdminMonitorLeadsPage() {
                                 <th className="px-6 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Location</th>
                                 <th className="px-6 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Assigned Team</th>
                                 <th className="px-6 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                                <th className="px-6 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Docs</th>
                                 <th className="px-6 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest text-right">Date</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {isLoading ? (
                                 Array(5).fill(0).map((_, i) => (
-                                    <tr key={i} className="animate-pulse"><td colSpan={5} className="px-6 py-8"><div className="h-4 bg-slate-100 rounded-full w-full" /></td></tr>
+                                    <tr key={i} className="animate-pulse"><td colSpan={6} className="px-6 py-8"><div className="h-4 bg-slate-100 rounded-full w-full" /></td></tr>
                                 ))
                             ) : leads.map((lead) => (
                                 <tr key={lead.id} className="group hover:bg-slate-50/50 transition-colors">
@@ -168,6 +170,9 @@ export default function SuperAdminMonitorLeadsPage() {
                                         <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 text-slate-600 uppercase tracking-widest border border-slate-200">
                                             {lead.status}
                                         </span>
+                                    </td>
+                                    <td className="px-6 py-5">
+                                        <LeadDocumentsModal ulid={lead.ulid} triggerButtonText="Docs" buttonClassName="px-2 py-1 bg-white border border-slate-200 rounded-md text-[10px] font-bold text-slate-600 hover:bg-slate-50 transition-colors inline-flex items-center gap-1 uppercase tracking-wider" />
                                     </td>
                                     <td className="px-6 py-5 text-right font-medium text-slate-400 text-[10px] uppercase">
                                         {new Date(lead.created_at).toLocaleDateString()}

@@ -3,9 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Search, Filter, ChevronLeft, ChevronRight, X,
     Phone, MapPin, User, Hash, FileText, AlertCircle, Calendar,
-    Image as ImageIcon, CreditCard, FileBadge, Download, CheckCircle
+    Download, CheckCircle
 } from 'lucide-react';
-import { openAuthenticatedFile } from '@/utils/documentUtils';
 import { leadsApi } from '@/services/leads.api';
 import { adminSuperAgentApi } from '@/services/adminSuperAgent.api';
 import api from '@/services/axios';
@@ -17,6 +16,8 @@ import { useAdminSettings } from '@/hooks/useAdminSettings';
 import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor, MILESTONE_STATUSES } from '@/constants/leadStatuses';
 import { List } from 'react-window';
 import MobileFilterModal from '@/components/shared/MobileFilterModal';
+import { LeadDocumentsModal } from '@/components/leads/LeadDocumentsModal';
+import { StatusTransitionModal } from '@/components/leads/StatusTransitionModal';
 
 // ── constants ─────────────────────────────────────────────────────────────────
 const CAPACITY_LABEL: Record<string, string> = {
@@ -42,6 +43,8 @@ export default function AdminLeadsPage() {
     const [activePrompts, setActivePrompts] = useState<Record<string, CommissionPrompt>>({});
     // mobile filter modal state
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+    // status transition modal state
+    const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
     // billing state
     const { settings } = useAdminSettings();
@@ -143,6 +146,7 @@ export default function AdminLeadsPage() {
             qc.invalidateQueries({ queryKey: ['admin-lead-detail'] });
             toast.success('Lead status updated');
             setNewStatus(''); setStatusNote(''); setReceiptFile(null);
+            setIsStatusModalOpen(false);
         },
         onError: () => toast.error('Failed to update status.'),
     });
@@ -725,54 +729,8 @@ export default function AdminLeadsPage() {
                                         </section>
                                         {/* ── Documents ── */}
                                         <section>
-                                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Documents</p>
-                                            {(fullLead?.documents && fullLead.documents.length > 0) ? (
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    {fullLead.documents.map(doc => {
-                                                        const labelMap: Record<string, string> = {
-                                                            aadhaar: 'Aadhaar Card',
-                                                            aadhaar_front: 'Aadhaar Front',
-                                                            aadhaar_back: 'Aadhaar Back',
-                                                            electricity_bill: 'Electricity Bill',
-                                                            photo: 'Beneficiary Photo',
-                                                            solar_roof_photo: 'Solar Roof Photo',
-                                                            bank_passbook: 'Bank Passbook',
-                                                            receipt: 'Completion Receipt',
-                                                            other: 'PAN / Other'
-                                                        };
-                                                        const iconMap: Record<string, React.ReactNode> = {
-                                                            aadhaar: <FileBadge size={16} />,
-                                                            aadhaar_front: <FileBadge size={16} />,
-                                                            aadhaar_back: <FileBadge size={16} />,
-                                                            electricity_bill: <FileText size={16} />,
-                                                            photo: <ImageIcon size={16} />,
-                                                            solar_roof_photo: <ImageIcon size={16} />,
-                                                            bank_passbook: <CreditCard size={16} />,
-                                                            receipt: <CheckCircle size={16} />,
-                                                            other: <FileText size={16} />
-                                                        };
-
-                                                        return (
-                                                            <button
-                                                                key={doc.id}
-                                                                onClick={() => openAuthenticatedFile(doc.download_url, doc.original_filename)}
-                                                                className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:border-orange-300 hover:bg-orange-50 transition-all group w-full text-left"
-                                                            >
-                                                                <span className="text-slate-500 group-hover:text-orange-500">{iconMap[doc.document_type] ?? <FileText size={16} />}</span>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <p className="text-[11px] font-semibold text-slate-800 truncate">{labelMap[doc.document_type] ?? 'Document'}</p>
-                                                                    <p className="text-[9px] text-slate-400 truncate">{doc.original_filename}</p>
-                                                                </div>
-                                                                <Download size={12} className="text-slate-300 group-hover:text-orange-400" />
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            ) : (
-                                                <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 text-center">
-                                                    <p className="text-[10px] text-slate-400 italic">No documents uploaded yet.</p>
-                                                </div>
-                                            )}
+                                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Documents & Bills</p>
+                                            <LeadDocumentsModal ulid={fullLead!.ulid} />
                                         </section>
 
                                         {/* ── Billing & Invoice ── */}
@@ -922,6 +880,11 @@ export default function AdminLeadsPage() {
                                                         ))}
                                                     </select>
                                                 </div>
+                                                {newStatus === 'REGISTERED' && (
+                                                    <p className="text-[10px] text-indigo-600 bg-indigo-50 p-2 rounded-lg border border-indigo-100 italic">
+                                                        ⚠ Changing status to "Registered at MNRE" will require uploading the Feasibility Report and E-Token.
+                                                    </p>
+                                                )}
                                                 <p className="text-[10px] text-slate-400 italic">⚠ "Site Survey Done" and "Successfully Completed" are set only by the Field Technical Team via geo-tagged visit.</p>
                                                 <textarea
                                                     rows={2}
@@ -947,15 +910,19 @@ export default function AdminLeadsPage() {
                                                 <button
                                                     disabled={newStatus === fullLead?.status || statusMut.isPending}
                                                     onClick={() => {
-                                                        const fd = new FormData();
-                                                        fd.append('status', newStatus);
-                                                        if (statusNote) fd.append('notes', statusNote);
-                                                        if (receiptFile) fd.append('receipt', receiptFile);
-                                                        statusMut.mutate({ ulid: fullLead!.ulid, formData: fd });
+                                                        if (newStatus === 'REGISTERED') {
+                                                            setIsStatusModalOpen(true);
+                                                        } else {
+                                                            const fd = new FormData();
+                                                            fd.append('status', newStatus);
+                                                            if (statusNote) fd.append('notes', statusNote);
+                                                            if (receiptFile) fd.append('receipt', receiptFile);
+                                                            statusMut.mutate({ ulid: fullLead!.ulid, formData: fd });
+                                                        }
                                                     }}
                                                     className="w-full py-2 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 disabled:opacity-40 transition-colors"
                                                 >
-                                                    {statusMut.isPending ? 'Saving…' : 'Save Status Change'}
+                                                    {statusMut.isPending ? 'Saving…' : (newStatus === 'REGISTERED' ? 'Proceed to Upload Required Docs' : 'Save Status Change')}
                                                 </button>
                                             </div>
                                         </section>
@@ -1044,6 +1011,17 @@ export default function AdminLeadsPage() {
                     </div>
                 )
             }
+
+            <StatusTransitionModal
+                isOpen={isStatusModalOpen}
+                onClose={() => setIsStatusModalOpen(false)}
+                onSubmit={(formData) => {
+                    statusMut.mutate({ ulid: fullLead!.ulid, formData });
+                }}
+                isPending={statusMut.isPending}
+                targetStatus="REGISTERED"
+                targetStatusLabel="Registered at MNRE"
+            />
         </div>
     );
 }
