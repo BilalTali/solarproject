@@ -29,105 +29,111 @@
             margin-right: -1px;
         }
         
-        /* Branding Header */
+        /* World-Class Designer Footer/Branding */
         .brand-container {
-            border-bottom: 3px solid #f4f4f4;
-            padding-bottom: 12px;
-            margin-bottom: 20px;
+            border-bottom: 2px solid #A68636;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
         }
         .company-brand {
-            font-family: 'Times New Roman', serif;
+            font-family: 'DejaVu Serif', serif;
             font-size: 20pt;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            font-weight: bold;
+            letter-spacing: 6px;
+            font-weight: normal;
             color: #1a1a1a;
             margin: 0;
+            line-height: 1.2;
         }
         .company-tagline {
-            font-size: 8pt;
+            font-size: 7.5pt;
             color: #A68636;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-top: 2px;
+            letter-spacing: 2px;
+            margin-top: 5px;
         }
 
-        .header-table td { vertical-align: middle; }
-        .logo { max-width: 140px; }
-        .company-contact { text-align: right; font-size: 7.5pt; color: #636E72; line-height: 1.4; }
+        .header-table td { vertical-align: bottom; }
+        .logo { max-width: 130px; }
+        .company-contact { text-align: right; font-size: 7pt; color: #636E72; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.5px; }
 
         .doc-title-bar {
             text-align: center;
-            margin: 25px 0;
-            padding: 5px 0;
-            border-top: 1px solid #eee;
-            border-bottom: 1px solid #eee;
+            margin: 20px 0 30px 0;
+            padding: 8px 0;
+            background-color: #fcfcfc;
+            border-top: 0.5px solid #eee;
+            border-bottom: 0.5px solid #eee;
         }
         .doc-title {
-            font-family: 'Times New Roman', serif;
-            font-size: 14pt;
+            font-family: 'DejaVu Serif', serif;
+            font-size: 13pt;
             text-transform: uppercase;
-            letter-spacing: 8px;
-            color: #444;
+            letter-spacing: 10px;
+            color: #333;
             font-weight: normal;
         }
 
         .section-header {
-            font-size: 8pt;
+            font-size: 7.5pt;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             color: #A68636;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #f9f9f9;
+            padding-bottom: 2px;
         }
 
         .items-table th {
-            border-bottom: 2px solid #2D3436;
+            border-bottom: 2px solid #1a1a1a;
             text-align: left;
             padding: 10px 8px;
-            font-size: 7.5pt;
+            font-size: 7pt;
             text-transform: uppercase;
-            background-color: #FAFAFA;
+            letter-spacing: 1px;
+            background-color: #fafafa;
         }
-        .items-table td { padding: 12px 8px; border-bottom: 1px solid #F0F0F0; vertical-align: top; }
+        .items-table td { padding: 12px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
         
-        .summary-wrapper {
-            margin-top: 30px;
-        }
         .total-box {
-            background-color: #FCFBFA;
+            background-color: #fdfdfd;
             padding: 15px;
-            border: 1px solid #F2EEE9;
-            width: 250px;
+            border: 1px solid #eee;
+            width: 260px;
             margin-left: auto;
         }
-        .total-label { font-size: 11pt; font-weight: bold; }
+        .total-label { font-size: 10pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
         .total-value { font-size: 13pt; font-weight: bold; color: #A68636; }
 
         .bank-details {
             margin-top: 40px;
             font-size: 8pt;
             color: #444;
-            border-left: 3px solid #A68636;
-            padding-left: 15px;
+            padding: 15px;
+            background-color: #fcfcfc;
+            border: 1px solid #f4f4f4;
         }
 
-        .signature-section {
-            margin-top: 60px;
-            text-align: right;
-        }
         .signature-box {
-            display: inline-block;
             text-align: center;
             width: 200px;
+            margin-left: auto;
+            margin-top: 50px;
+        }
+        .signature-img {
+            max-height: 50px;
+            mix-blend-mode: multiply;
+            filter: contrast(1.3) brightness(1.05);
+            margin-bottom: 5px;
         }
         .sig-line {
-            border-top: 1px solid #2D3436;
-            margin-top: 10px;
-            padding-top: 5px;
-            font-size: 7.5pt;
+            border-top: 1.5px solid #1a1a1a;
+            padding-top: 6px;
+            font-size: 7pt;
             font-weight: bold;
             text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         @php
@@ -153,8 +159,7 @@
                 <td class="company-contact">
                     Reg: {{ $companyRegNo }}<br>
                     {{ $companyAddress }}<br>
-                    {{ $companyEmail }}<br>
-                    Phone: {{ $companyPhone }}
+                    {{ $companyEmail }} | {{ $companyPhone }}
                 </td>
             </tr>
         </table>
@@ -166,34 +171,34 @@
     </div>
 
     <!-- Recipient & Meta -->
-    <table style="margin-bottom: 30px;">
+    <table style="margin-bottom: 40px;">
         <tr>
             <td style="width: 60%; vertical-align: top;">
-                <div class="section-header">Prepared For</div>
-                <div style="font-size: 13pt; font-weight: bold; color: #000;" class="serif">{{ $lead->beneficiary_name }}</div>
-                <div style="margin-top: 5px; color: #636E72;">
+                <div class="section-header">Client Recipient</div>
+                <div style="font-size: 14pt; font-weight: bold; color: #000;" class="serif">{{ $lead->beneficiary_name }}</div>
+                <div style="margin-top: 6px; color: #636E72; font-size: 9.5pt;">
                     {{ $address }}<br>
                     Contact: {{ $lead->beneficiary_mobile }}<br>
-                    Capacity: <strong>{{ $kw }} kW</strong> Solar Photovoltaic Plant
+                    System: <strong>{{ $kw }} kW Solar PV Power Plant</strong>
                 </div>
             </td>
             <td style="width: 40%; vertical-align: top;">
-                <div class="section-header">Quotation Info</div>
-                <table style="font-size: 8.5pt;">
-                    <tr><td style="color: #636E72; width: 80px;">Ref No:</td><td style="font-weight: bold;">{{ $quotationSerial }}</td></tr>
-                    <tr><td style="color: #636E72;">Date:</td><td style="font-weight: bold;">{{ $quotationDate }}</td></tr>
-                    <tr><td style="color: #636E72;">Validity:</td><td style="font-weight: bold;">30 Calendar Days</td></tr>
+                <div class="section-header" style="text-align: right;">Project Reference</div>
+                <table style="font-size: 8.5pt; width: 100%;">
+                    <tr><td style="color: #636E72; text-align: right;">Quote Serial:</td><td style="font-weight: bold; text-align: right; width: 60px;">#{{ $quotationSerial }}</td></tr>
+                    <tr><td style="color: #636E72; text-align: right;">Date Issued:</td><td style="font-weight: bold; text-align: right;">{{ $quotationDate }}</td></tr>
+                    <tr><td style="color: #636E72; text-align: right;">Valid Until:</td><td style="font-weight: bold; text-align: right;">30 Days</td></tr>
                 </table>
             </td>
         </tr>
     </table>
 
     <!-- Items Table -->
-    <div class="section-header">Technical Scope & Supply</div>
+    <div class="section-header">Technical Specifications & Investment</div>
     <table class="items-table">
         <thead>
             <tr>
-                <th style="width: 50%;">Description of Goods & Services</th>
+                <th style="width: 50%;">Scope of Supply / Description</th>
                 <th style="width: 10%; text-align: center;">Qty</th>
                 <th style="width: 20%; text-align: right;">Rate</th>
                 <th style="width: 20%; text-align: right;">Amount</th>
@@ -203,8 +208,8 @@
             @foreach($billingItems as $it)
             <tr>
                 <td>
-                    <div style="font-weight: bold; font-size: 10pt;">{{ $it['description'] }}</div>
-                    <div style="font-size: 7.5pt; color: #636E72; font-style: italic;">Make/Brand: {{ $it['make'] ?? 'MNRE Approved' }}</div>
+                    <div style="font-weight: bold; font-size: 10.5pt; color: #1a1a1a;">{{ $it['description'] }}</div>
+                    <div style="font-size: 7.5pt; color: #636E72; font-style: italic; margin-top: 2px;">Make/Brand: {{ $it['make'] ?? 'Standard' }}</div>
                 </td>
                 <td style="text-align: center;">01 Unit</td>
                 <td style="text-align: right;"><img src="{{ $rupeeSvg }}" class="rupee-icon"> {{ number_format($it['rate'], 2) }}</td>
@@ -215,28 +220,28 @@
     </table>
 
     <!-- Financial Summary -->
-    <div class="summary-wrapper">
+    <div style="margin-top: 30px;">
         <table>
             <tr>
-                <td style="width: 55%; vertical-align: top;">
-                    <div style="font-size: 8pt; color: #636E72; font-style: italic;">
-                        <strong>Total Amount in Words:</strong><br>
+                <td style="width: 50%; vertical-align: top;">
+                    <div style="font-size: 8.5pt; color: #636E72; font-style: italic; border-left: 2px solid #eee; padding-left: 10px;">
+                        <strong>In Words:</strong><br>
                         {{ \NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT)->format($totalAmount) }} Rupees Only
                     </div>
                 </td>
-                <td style="width: 45%;">
+                <td style="width: 50%;">
                     <table class="total-box">
                         <tr>
-                            <td style="font-size: 8pt; color: #636E72;">Subtotal (Excl. Tax)</td>
+                            <td style="font-size: 8pt; color: #636E72;">Taxable Base Value</td>
                             <td style="text-align: right; font-weight: bold;"><img src="{{ $rupeeSvg }}" class="rupee-icon"> {{ number_format($baseAmount, 2) }}</td>
                         </tr>
                         <tr>
                             <td style="font-size: 8pt; color: #636E72;">GST Charge ({{ $gstPercentage }}%)</td>
                             <td style="text-align: right; font-weight: bold;"><img src="{{ $rupeeSvg }}" class="rupee-icon"> {{ number_format($gstAmount, 2) }}</td>
                         </tr>
-                        <tr style="height: 10px;"><td></td><td></td></tr>
+                        <tr style="height: 12px;"><td colspan="2"><div style="border-bottom: 1px solid #eee;"></div></td></tr>
                         <tr>
-                            <td class="total-label">Grand Total</td>
+                            <td class="total-label">Total Investment</td>
                             <td style="text-align: right;" class="total-value"><img src="{{ $rupeeSvg }}" class="rupee-icon" style="width:10pt; height:10pt;"> {{ number_format($totalAmount, 2) }}</td>
                         </tr>
                     </table>
@@ -245,36 +250,25 @@
         </table>
     </div>
 
-    <!-- Natural Balanced Footer Area -->
-    <div style="margin-top: auto;">
-        <table style="width: 100%;">
-            <tr>
-                <td style="width: 60%; vertical-align: top;">
-                    <div class="bank-details">
-                        <strong style="color: #2D3436; text-transform: uppercase; font-size: 7.5pt;">Standard Bank Remittance</strong><br>
-                        Beneficiary: {{ $bankAccountName }}<br>
-                        Bank: {{ $bankBranch }} | Account: <strong>{{ $bankAccountNumber }}</strong><br>
-                        IFSC: <strong>{{ $bankIfsc }}</strong>
-                    </div>
-                </td>
-                <td style="width: 40%; vertical-align: bottom;">
-                    <div class="signature-section">
-                        <div class="signature-box">
-                            @if($sigBase64)
-                                <img src="{{ $sigBase64 }}" style="max-height: 45px; margin-bottom: 5px;">
-                            @else
-                                <div style="height: 45px;"></div>
-                            @endif
-                            <div class="sig-line">Authorized Signatory</div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-        </table>
+    <!-- Balanced Footer Info -->
+    <div class="bank-details">
+        <strong style="color: #1a1a1a; text-transform: uppercase; font-size: 7pt; letter-spacing: 1px; display: block; margin-bottom: 5px;">Bank Remittance Information</strong>
+        Beneficiary: {{ $bankAccountName }} &bull; {{ $bankBranch }}<br>
+        Account Number: <strong>{{ $bankAccountNumber }}</strong> &bull; IFSC: <strong>{{ $bankIfsc }}</strong>
     </div>
 
-    <div style="text-align: center; font-size: 7.5pt; color: #aaa; margin-top: 40px; border-top: 1px solid #eee; padding-top: 15px;">
-        This is an official electronically generated Quotation Page. &copy; {{ date('Y') }} {{ $companyName }} &bull; Save paper, go solar.
+    <!-- Signature -->
+    <div class="signature-box">
+        @if($sigBase64)
+            <img src="{{ $sigBase64 }}" class="signature-img">
+        @else
+            <div style="height: 50px;"></div>
+        @endif
+        <div class="sig-line">Authorized Signatory</div>
+    </div>
+
+    <div style="text-align: center; font-size: 7.5pt; color: #aaa; margin-top: 60px; border-top: 1px solid #eee; padding-top: 15px;">
+        &copy; {{ date('Y') }} {{ $companyName }} &bull; Leading with Solar. All rights reserved.
     </div>
 
 </body>
