@@ -420,8 +420,8 @@
                 <div class="client-name">{{ $lead->beneficiary_name }}</div>
                 <div class="client-details">
                     {{ $address }} <br>
-                    Contact: {{ $lead->mobile_number }} <br>
-                    Capacity: {{ $kw }} kW {{ $lead->phase_connection ?: 'Single Phase' }}
+                    Contact: {{ $lead->beneficiary_mobile }} <br>
+                    System Capacity: {{ $kw }} kW Solar PV System
                 </div>
             </div>
         </div>
