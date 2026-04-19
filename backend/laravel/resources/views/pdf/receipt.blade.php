@@ -3,111 +3,92 @@
 <head>
     <meta charset="utf-8">
     <title>Payment Receipt - {{ $receiptSerial }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         @page {
             size: A4;
-            margin: 1cm;
+            margin: 1.2cm;
         }
         body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-family: 'Outfit', sans-serif;
             font-size: 10pt;
-            color: #333;
+            color: #2D3436;
             margin: 0;
             padding: 0;
-            line-height: 1.5;
+            line-height: 1.6;
         }
+        .serif { font-family: 'Cormorant Garamond', serif; }
+        .currency { font-family: 'DejaVu Sans', sans-serif; }
+        
         table {
             width: 100%;
             border-collapse: collapse;
         }
-        .header-table td {
-            vertical-align: top;
-        }
-        .logo {
-            max-width: 160px;
-            max-height: 70px;
-        }
-        .company-info {
-            text-align: right;
-            font-size: 8pt;
-            color: #666;
-        }
-        .company-name {
-            font-size: 15pt;
-            font-weight: bold;
-            color: #000;
-        }
-        .doc-type-box {
-            background-color: #f8f8f8;
-            border: 1px solid #eee;
-            margin: 20px 0;
-            padding: 10px;
+
+        /* World-Class Heading */
+        .doc-title-container {
             text-align: center;
+            margin: 20px 0 30px 0;
+            border-top: 1px solid #DFE6E9;
+            border-bottom: 2.5px double #2D3436;
+            padding: 12px 0;
         }
-        .doc-type-text {
-            font-size: 14pt;
-            font-weight: bold;
+        .doc-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20pt;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            color: #444;
+            letter-spacing: 6px;
+            color: #2D3436;
+            font-weight: 600;
         }
-        .meta-table {
-            margin-bottom: 30px;
-            font-size: 9pt;
+
+        .header-table td { vertical-align: top; }
+        .logo { max-width: 160px; max-height: 70px; }
+        .company-info { text-align: right; font-size: 8pt; color: #636E72; }
+        .company-name-bold { font-size: 15pt; font-weight: 600; color: #000; }
+
+        .receipt-card {
+            margin: 20px 0;
+            padding: 30px;
+            border: 1px solid #F0F0F0;
+            background-color: #FCFBFA;
         }
-        .receipt-body {
-            margin: 15px 0;
-            padding: 20px;
-            border: 1px solid #f0f0f0;
-            background-color: #fafafa;
-        }
-        .amount-highlight {
-            font-size: 22pt;
-            font-weight: bold;
+
+        .hero-amount {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32pt;
+            font-weight: 600;
             color: #A68636;
-            margin: 15px 0;
             text-align: center;
-            border-top: 1px dashed #ddd;
-            border-bottom: 1px dashed #ddd;
+            margin: 25px 0;
+            border-top: 1px solid #EBE7E1;
+            border-bottom: 1px solid #EBE7E1;
             padding: 15px 0;
         }
-        .detail-row {
-            margin-bottom: 15px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
+
+        .detail-group { margin-bottom: 20px; border-bottom: 1px solid #F0F0F0; padding-bottom: 10px; }
         .label {
-            font-weight: bold;
-            color: #666;
-            text-transform: uppercase;
-            font-size: 8pt;
-            letter-spacing: 1px;
             display: block;
+            font-size: 7.5pt;
+            font-weight: 600;
+            color: #A68636;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
             margin-bottom: 5px;
         }
-        .value {
-            font-size: 11pt;
-            color: #222;
-        }
-        .footer-table {
-            margin-top: 50px;
-        }
-        .signature-box {
+        .value { font-size: 12pt; color: #2D3436; font-weight: 500; }
+        .value.serif-bold { font-family: 'Cormorant Garamond', serif; font-size: 16pt; font-weight: 600; }
+
+        .signature-area { text-align: center; width: 220px; margin-left: auto; }
+        .sig-line { border-top: 1px solid #2D3436; margin-top: 15px; padding-top: 5px; font-size: 8pt; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+        .footer-note {
             text-align: center;
-            width: 220px;
-            margin-left: auto;
-        }
-        .sig-line {
-            border-top: 1px solid #333;
-            margin-top: 40px;
-            padding-top: 5px;
-            font-weight: bold;
-            font-size: 8.5pt;
-        }
-        .amount-words {
-            font-style: italic;
-            color: #777;
-            font-size: 9pt;
+            font-size: 7.5pt;
+            color: #B2BEC3;
+            margin-top: 50px;
+            border-top: 1px solid #F0F0F0;
+            padding-top: 15px;
         }
     </style>
 </head>
@@ -118,13 +99,13 @@
         <tr>
             <td>
                 @if($logoBase64)
-                    <img src="{{ $logoBase64 }}" class="logo" alt="Logo">
+                    <img src="{{ $logoBase64 }}" class="logo">
                 @else
-                    <div class="company-name">{{ $companyName }}</div>
+                    <div class="company-name-bold serif">{{ $companyName }}</div>
                 @endif
             </td>
             <td class="company-info">
-                <div class="company-name">{{ $companyName }}</div>
+                <div class="company-name-bold serif">{{ $companyName }}</div>
                 <div>{{ $companyAddress }}</div>
                 <div>{{ $companyEmail }} | {{ $companyPhone }}</div>
                 <div>GSTIN: {{ $companyRegNo }}</div>
@@ -132,80 +113,76 @@
         </tr>
     </table>
 
-    <div class="doc-type-box">
-        <span class="doc-type-text">Payment Acknowledgment Receipt</span>
+    <!-- World Class Heading -->
+    <div class="doc-title-container">
+        <div class="doc-title">Payment Acknowledgment</div>
     </div>
 
-    <!-- Meta Info -->
-    <table class="meta-table">
+    <!-- Meta -->
+    <table style="font-size: 9pt; color: #636E72; margin-bottom: 10px;">
         <tr>
-            <td style="width: 50%;">
-                <strong>Receipt No:</strong> {{ $receiptSerial }}
-            </td>
-            <td style="width: 50%; text-align: right;">
-                <strong>Date:</strong> {{ $quotationDate }}
-            </td>
+            <td>Receipt Serial: <strong>{{ $receiptSerial }}</strong></td>
+            <td style="text-align: right;">Date Issued: <strong>{{ $quotationDate }}</strong></td>
         </tr>
     </table>
 
-    <!-- Receipt Centerpiece -->
-    <div class="receipt-body">
-        <div class="detail-row">
-            <span class="label">Received From</span>
-            <span class="value" style="font-size: 14pt; font-weight: bold;">{{ $lead->beneficiary_name }}</span>
+    <!-- Receipt Center -->
+    <div class="receipt-card">
+        <div class="detail-group">
+            <span class="label">Received With Thanks From</span>
+            <span class="value serif-bold">{{ $lead->beneficiary_name }}</span>
         </div>
 
-        <div class="amount-highlight">
-            ₹ {{ number_format($receiptAmount, 2) }}
+        <div class="hero-amount">
+            <span class="currency">&#8377;</span> {{ number_format($receiptAmount, 2) }}
         </div>
 
-        <div class="detail-row" style="border-bottom: none;">
-            <span class="label">Amount in Words</span>
-            <span class="amount-words">
+        <div class="detail-group">
+            <span class="label">Sum in Words</span>
+            <div style="font-style: italic; color: #636E72; font-size: 9.5pt;">
                 {{ \NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT)->format($receiptAmount) }} Rupees Only
-            </td>
+            </div>
         </div>
 
-        <div class="detail-row">
-            <span class="label">Being Payment Towards</span>
-            <span class="value">
-                Advance consideration for {{ $kw }} kW Solar Power Installation as per Quotation REF: {{ $quotationSerial }}.
+        <div class="detail-group">
+            <span class="label">On Account Of</span>
+            <span class="value" style="font-size: 10pt;">
+                Advance partial payment towards {{ $kw }} kW Solar Power Installation as per Project Quotation Ref: {{ $quotationSerial }}.
             </span>
         </div>
 
-        <div class="detail-row">
-            <span class="label">Payment Mode</span>
-            <span class="value">Digital/Bank Transfer</span>
+        <div class="detail-group" style="border-bottom: none;">
+            <span class="label">Payment Status</span>
+            <span class="value" style="color: #27AE60; font-weight: 600;">Digitally Confirmed</span>
         </div>
     </div>
 
-    <!-- Verification & Footer -->
-    <table class="footer-table">
+    <!-- Bottom Footer Section -->
+    <table style="margin-top: 40px;">
         <tr>
-            <td style="vertical-align: bottom; font-size: 8pt; color: #888;">
-                <div style="border: 1px solid #eee; padding: 10px; width: 250px; background-color: #fff;">
-                    <strong>System Verified Receipt</strong><br>
-                    Transaction ID: {{ substr(md5($receiptSerial . $quotationDate), 0, 12) }}<br>
-                    Status: <span style="color: green; font-weight: bold;">Confirmed</span>
+            <td style="vertical-align: bottom;">
+                <div style="border-left: 2px solid #A68636; padding-left: 12px; font-size: 8pt; color: #636E72;">
+                    <strong>Electronic Voucher</strong><br>
+                    Authenticated via billing portal. <br>
+                    Funds realization subject to bank clearance.
                 </div>
             </td>
             <td style="text-align: right; vertical-align: bottom;">
-                <div class="signature-box">
+                <div class="signature-area">
                     @if($sigBase64)
-                        <img src="{{ $sigBase64 }}" style="max-height: 40px; margin-bottom: 5px;">
+                        <img src="{{ $sigBase64 }}" style="max-height: 48px; margin-bottom: 5px;">
                     @else
-                        <div style="height: 40px;"></div>
+                        <div style="height: 48px;"></div>
                     @endif
                     <div class="sig-line">Authorized Signatory</div>
-                    <div style="font-size: 7pt; color: #999; margin-top: 3px;">Digitally Authenticated</div>
                 </div>
             </td>
         </tr>
     </table>
 
-    <div style="text-align: center; font-size: 7.5pt; color: #aaa; margin-top: 60px; border-top: 1px solid #eee; padding-top: 10px;">
-        &copy; {{ date('Y') }} {{ $companyName }}. Thank you for choosing a sustainable future.<br>
-        This is an official computer-generated receipt.
+    <div class="footer-note">
+        &copy; {{ date('Y') }} {{ $companyName }} &bull; All Rights Reserved. <br>
+        Thank you for choosing renewable energy to power your home.
     </div>
 
 </body>
