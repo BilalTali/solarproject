@@ -3,100 +3,106 @@
 <head>
     <meta charset="utf-8">
     <title>Pro Forma Quotation - {{ $quotationSerial }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         @page {
             size: A4;
-            margin: 1.2cm;
+            margin: 0.8cm;
         }
         body {
-            font-family: 'Outfit', sans-serif;
-            font-size: 9pt;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 8.5pt;
             color: #2D3436;
             margin: 0;
             padding: 0;
-            line-height: 1.4;
+            line-height: 1.3;
         }
-        .serif { font-family: 'Cormorant Garamond', serif; }
-        .currency { font-family: 'DejaVu Sans', sans-serif; }
-        
         table {
             width: 100%;
             border-collapse: collapse;
         }
+        .rupee-icon {
+            width: 8pt;
+            height: 8pt;
+            vertical-align: middle;
+            margin-right: -1px;
+        }
         
-        /* World-Class Heading */
-        .doc-title-container {
+        /* World-Class Compact Heading */
+        .doc-header {
             text-align: center;
-            margin: 15px 0 25px 0;
+            margin: 10px 0 15px 0;
             border-top: 1px solid #DFE6E9;
-            border-bottom: 2.5px double #2D3436;
-            padding: 10px 0;
+            border-bottom: 2px solid #2D3436;
+            padding: 8px 0;
         }
         .doc-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 22pt;
+            font-size: 18pt;
             text-transform: uppercase;
-            letter-spacing: 8px;
+            letter-spacing: 6px;
             color: #2D3436;
-            font-weight: 600;
+            font-weight: bold;
         }
 
         .header-table td { vertical-align: top; }
-        .logo { max-width: 170px; max-height: 75px; }
-        .company-info { text-align: right; font-size: 8pt; color: #636E72; }
-        .company-name-bold { font-size: 16pt; font-weight: 600; color: #000; margin-bottom: 2px; }
+        .logo { max-width: 150px; max-height: 65px; }
+        .company-info { text-align: right; font-size: 7.5pt; color: #636E72; }
+        .company-name-bold { font-size: 14pt; font-weight: bold; color: #000; margin-bottom: 2px; }
 
         .section-header {
-            font-size: 8pt;
-            font-weight: 600;
+            font-size: 7.5pt;
+            font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             color: #A68636;
             border-bottom: 1px solid #F0F0F0;
-            padding-bottom: 4px;
-            margin-bottom: 8px;
+            padding-bottom: 3px;
+            margin-top: 15px;
+            margin-bottom: 6px;
         }
 
-        .meta-table td { font-size: 8.5pt; padding: 2px 0; }
-        .meta-label { color: #636E72; width: 90px; }
-        .meta-value { font-weight: 600; }
+        .meta-table td { font-size: 8pt; padding: 1px 0; }
+        .meta-label { color: #636E72; width: 80px; }
+        .meta-value { font-weight: bold; }
 
         .items-table th {
             border-bottom: 1px solid #2D3436;
             text-align: left;
-            padding: 10px 8px;
-            font-size: 7.5pt;
+            padding: 6px 8px;
+            font-size: 7pt;
             text-transform: uppercase;
-            letter-spacing: 1px;
             background-color: #FAFAFA;
         }
-        .items-table td { padding: 10px 8px; border-bottom: 1px solid #DFE6E9; vertical-align: top; }
+        .items-table td { padding: 6px 8px; border-bottom: 1px solid #DFE6E9; vertical-align: top; }
         
-        .summary-box { background-color: #FCFBFA; padding: 15px; border: 1px solid #F2EEE9; }
-        .total-label { font-size: 11pt; font-weight: 600; text-transform: uppercase; }
-        .total-value { font-size: 14pt; font-weight: 600; color: #A68636; font-family: 'Cormorant Garamond', serif; }
+        .summary-box { background-color: #FCFBFA; padding: 10px; border: 1px solid #F2EEE9; width: 250px; margin-left: auto; }
+        .total-label { font-size: 10pt; font-weight: bold; text-transform: uppercase; }
+        .total-value { font-size: 12pt; font-weight: bold; color: #A68636; }
 
         .bank-box {
             font-size: 7.5pt;
-            line-height: 1.6;
-            color: #636E72;
+            line-height: 1.5;
+            color: #444;
             border-left: 2px solid #A68636;
-            padding-left: 12px;
+            padding-left: 10px;
         }
-        .bank-title { color: #2D3436; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .bank-title { color: #2D3436; font-weight: bold; text-transform: uppercase; margin-bottom: 3px; display: block; }
 
-        .signature-area { text-align: center; width: 200px; }
-        .sig-line { border-top: 1px solid #2D3436; margin-top: 10px; padding-top: 5px; font-size: 7.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-
-        .footer-note {
-            text-align: center;
-            font-size: 7pt;
-            color: #B2BEC3;
-            margin-top: 35px;
+        .footer-fixed {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
             border-top: 1px solid #F0F0F0;
             padding-top: 10px;
         }
+
+        .signature-area { text-align: center; width: 180px; }
+        .sig-line { border-top: 1px solid #2D3436; margin-top: 8px; padding-top: 4px; font-size: 7pt; font-weight: bold; text-transform: uppercase; }
+
+        .amount-words { font-style: italic; color: #636E72; font-size: 7.5pt; margin-bottom: 15px;}
+
+        @php
+            $rupeeSvg = "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMzIgMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTI0IDhoLTQuMDNhMSAxIDAgMCAwLTEtMWg1LjAzYTEgMSAwIDAgMCAwLTJIOWExIDEtMCAwIDAgMCAyaDV2M2gtNWExIDEtMCAwIDAgMCAyaDV2M2gtNWExIDEtMCAwIDAgMCAyaDVsLTcgOGgzYTEgMSAwIDAgMCAwIDJsOS0xMGExIDEtMCAwIDAgMC0yaC01di0zaDVhMSAxIDAgMCAwIDAtM2gtNXYtM2g0YTEgMSAwIDAgMCAwLTJ6IiBmaWxsPSIjNDQ0Ii8+PC9zdmc+";
+        @endphp
     </style>
 </head>
 <body>
@@ -108,12 +114,12 @@
                 @if($logoBase64)
                     <img src="{{ $logoBase64 }}" class="logo">
                 @else
-                    <div class="company-name-bold serif">{{ $companyName }}</div>
+                    <div class="company-name-bold">{{ $companyName }}</div>
                 @endif
             </td>
             <td class="company-info">
-                <div class="company-name-bold serif">{{ $companyName }}</div>
-                <div style="font-style: italic; margin-bottom: 5px;">{{ $companyAffiliated }}</div>
+                <div class="company-name-bold">{{ $companyName }}</div>
+                <div>{{ $companyAffiliated }}</div>
                 <div>Reg: {{ $companyRegNo }}</div>
                 <div>{{ $companyAddress }}</div>
                 <div>{{ $companyEmail }} | {{ $companyPhone }}</div>
@@ -121,65 +127,64 @@
         </tr>
     </table>
 
-    <!-- World Class Heading -->
-    <div class="doc-title-container">
+    <div class="doc-header">
         <div class="doc-title">Pro Forma Quotation</div>
     </div>
 
-    <!-- Info Grid -->
+    <!-- Client / Meta Info Row -->
     <table>
         <tr>
-            <td style="width: 60%; vertical-align: top; padding-right: 40px;">
+            <td style="width: 55%; vertical-align: top;">
                 <div class="section-header">Client Recipient</div>
-                <div style="font-size: 13pt; font-weight: 600;" class="serif">{{ $lead->beneficiary_name }}</div>
-                <div style="margin-top: 4px; color: #636E72;">
+                <div style="font-size: 11pt; font-weight: bold;">{{ $lead->beneficiary_name }}</div>
+                <div style="margin-top: 3px; color: #444;">
                     {{ $address }}<br>
                     Contact: {{ $lead->beneficiary_mobile }}<br>
-                    Project: <strong>{{ $kw }} kW Solar PV Power Plant</strong>
+                    {{ $kw }} kW Solar Power Installation
                 </div>
             </td>
-            <td style="width: 40%; vertical-align: top;">
-                <div class="section-header">Reference</div>
-                <table class="meta-table">
+            <td style="width: 45%; vertical-align: top; text-align: right;">
+                <div class="section-header" style="text-align: right;">Document ID</div>
+                <table class="meta-table" style="width: auto; margin-left: auto;">
                     <tr><td class="meta-label">Quote Serial</td><td class="meta-value">{{ $quotationSerial }}</td></tr>
                     <tr><td class="meta-label">Date Issued</td><td class="meta-value">{{ $quotationDate }}</td></tr>
-                    <tr><td class="meta-label">Validity</td><td class="meta-value">30 Calendar Days</td></tr>
+                    <tr><td class="meta-label">Validity</td><td class="meta-value">30 Days</td></tr>
                 </table>
             </td>
         </tr>
     </table>
 
-    <!-- Items -->
-    <div class="section-header" style="margin-top: 30px;">Investment Specifications</div>
+    <!-- Items Table -->
+    <div class="section-header">Technical Specifications & Investment</div>
     <table class="items-table">
         <thead>
             <tr>
-                <th style="width: 50%;">Description / Scope of Supply</th>
+                <th style="width: 50%;">Scope of Supply</th>
                 <th style="width: 10%; text-align: center;">Qty</th>
-                <th style="width: 20%; text-align: right;">Rate (<span class="currency">&#8377;</span>)</th>
-                <th style="width: 20%; text-align: right;">Amount (<span class="currency">&#8377;</span>)</th>
+                <th style="width: 20%; text-align: right;">Rate</th>
+                <th style="width: 20%; text-align: right;">Amount</th>
             </tr>
         </thead>
         <tbody>
             @foreach($billingItems as $it)
             <tr>
                 <td>
-                    <span style="font-weight: 600;">{{ $it['description'] }}</span><br>
-                    <span style="font-size: 7.5pt; color: #636E72; font-style: italic;">Preferred Make: {{ $it['make'] ?? 'Standard IEC Certified' }}</span>
+                    <div style="font-weight: bold;">{{ $it['description'] }}</div>
+                    <div style="font-size: 7pt; color: #666;">Make: {{ $it['make'] ?? 'Standard' }}</div>
                 </td>
-                <td style="text-align: center;">01 Unit</td>
-                <td style="text-align: right;"><span class="currency">&#8377;</span> {{ number_format($it['rate'], 2) }}</td>
-                <td style="text-align: right;"><span class="currency">&#8377;</span> {{ number_format($it['rate'], 2) }}</td>
+                <td style="text-align: center;">01 Set</td>
+                <td style="text-align: right;"><img src="{{ $rupeeSvg }}" class="rupee-icon"> {{ number_format($it['rate'], 2) }}</td>
+                <td style="text-align: right;"><img src="{{ $rupeeSvg }}" class="rupee-icon"> {{ number_format($it['rate'], 2) }}</td>
             </tr>
             @endforeach
         </tbody>
     </table>
 
-    <!-- Financial Summary -->
-    <table style="margin-top: 20px;">
+    <!-- Summary Box Row -->
+    <table style="margin-top: 15px;">
         <tr>
-            <td style="width: 50%; vertical-align: top; padding-right: 30px;">
-                <div style="font-size: 8pt; color: #636E72; font-style: italic;">
+            <td style="width: 50%; vertical-align: top;">
+                <div class="amount-words">
                     <strong>Amount in words:</strong><br>
                     {{ \NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT)->format($totalAmount) }} Rupees Only
                 </div>
@@ -187,53 +192,51 @@
             <td style="width: 50%;">
                 <table class="summary-box">
                     <tr>
-                        <td style="font-size: 8.5pt; color: #636E72;">Taxable Base Value</td>
-                        <td style="text-align: right; font-weight: 600;"><span class="currency">&#8377;</span> {{ number_format($baseAmount, 2) }}</td>
+                        <td style="font-size: 8pt; color: #636E72;">Base Value</td>
+                        <td style="text-align: right; font-weight: bold;"><img src="{{ $rupeeSvg }}" class="rupee-icon"> {{ number_format($baseAmount, 2) }}</td>
                     </tr>
                     <tr>
-                        <td style="font-size: 8.5pt; color: #636E72;">GST ({{ $gstPercentage }}%) <small>(CGST + SGST)</small></td>
-                        <td style="text-align: right; font-weight: 600;"><span class="currency">&#8377;</span> {{ number_format($gstAmount, 2) }}</td>
+                        <td style="font-size: 8pt; color: #636E72;">GST ({{ $gstPercentage }}%)</td>
+                        <td style="text-align: right; font-weight: bold;"><img src="{{ $rupeeSvg }}" class="rupee-icon"> {{ number_format($gstAmount, 2) }}</td>
                     </tr>
-                    <tr style="height: 10px;"><td></td><td></td></tr>
+                    <tr style="height: 5px;"><td></td><td></td></tr>
                     <tr>
-                        <td class="total-label">Total Investment</td>
-                        <td style="text-align: right;" class="total-value"><span class="currency">&#8377;</span> {{ number_format($totalAmount, 2) }}</td>
+                        <td class="total-label">Total Amount</td>
+                        <td style="text-align: right;" class="total-value"><img src="{{ $rupeeSvg }}" class="rupee-icon" style="width:10pt; height:10pt;"> {{ number_format($totalAmount, 2) }}</td>
                     </tr>
                 </table>
             </td>
         </tr>
     </table>
 
-    <!-- Signature & Footer -->
-    <table style="margin-top: 40px; border-top: 1px solid #DFE6E9; padding-top: 20px;">
-        <tr>
-            <td style="width: 60%;">
-                <div class="bank-box">
-                    <span class="bank-title">Remittance Information</span>
-                    Beneficiary: {{ $bankAccountName }}<br>
-                    Bank: {{ $bankBranch }}<br>
-                    Account: <strong>{{ $bankAccountNumber }}</strong><br>
-                    IFSC: <strong>{{ $bankIfsc }}</strong>
-                </div>
-            </td>
-            <td style="width: 40%; text-align: right;">
-                <div style="display: inline-block;">
-                    <div class="signature-area">
-                        @if($sigBase64)
-                            <img src="{{ $sigBase64 }}" style="max-height: 45px; margin-bottom: 5px;">
-                        @else
-                            <div style="height: 45px;"></div>
-                        @endif
-                        <div class="sig-line">Authorized Signatory</div>
+    <!-- Fixed Footer Area -->
+    <div class="footer-fixed">
+        <table>
+            <tr>
+                <td style="width: 60%; vertical-align: top;">
+                    <div class="bank-box">
+                        <span class="bank-title">Bank Details</span>
+                        {{ $bankAccountName }} &bull; {{ $bankBranch }}<br>
+                        Account: <strong>{{ $bankAccountNumber }}</strong> &bull; IFSC: <strong>{{ $bankIfsc }}</strong>
                     </div>
-                </div>
-            </td>
-        </tr>
-    </table>
-
-    <div class="footer-note">
-        This document is an electronically generated Pro Forma Quotation and does not require a physical stamp.<br>
-        &copy; {{ date('Y') }} {{ $companyName }} &bull; All Rights Reserved.
+                </td>
+                <td style="width: 40%; text-align: right; vertical-align: top;">
+                    <div style="display: inline-block;">
+                        <div class="signature-area">
+                            @if($sigBase64)
+                                <img src="{{ $sigBase64 }}" style="max-height: 40px; margin-bottom: 3px;">
+                            @else
+                                <div style="height: 40px;"></div>
+                            @endif
+                            <div class="sig-line">Authorized Signatory</div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <div style="text-align: center; font-size: 7pt; color: #aaa; margin-top: 10px;">
+            This is an electronically generated Pro Forma document. &copy; {{ date('Y') }} {{ $companyName }}
+        </div>
     </div>
 
 </body>
