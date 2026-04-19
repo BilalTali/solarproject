@@ -1,418 +1,416 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Payment Receipt</title>
+    <title>Payment Receipt - {{ $receiptSerial }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        /* ── RESET & A4 CORE ── */
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #F4F4F4;
+            font-family: 'Outfit', sans-serif;
+            color: #1A1A1A;
+            -webkit-font-smoothing: antialiased;
+        }
 
         :root {
-            --gold:       #C9A84C;
-            --gold-light: #F0E0B0;
-            --gold-pale:  #FDF8EE;
-            --dark:       #0D0D0D;
-            --mid:        #4A4540;
-            --soft:       #7A746E;
-            --rule:       #E2D9CC;
-            --bg:         #FAFAF8;
-            --white:      #FFFFFF;
+            --gold: #C9A84C;
+            --gold-dark: #A68636;
+            --gold-light: #E5D5A7;
+            --dark: #0D0D0D;
+            --mid: #4A4540;
+            --soft: #8E8881;
+            --border: #E8E2D9;
+            --bg-page: #FFFFFF;
+            --bg-accent: #FAF9F6;
         }
 
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: #ECECEC;
-            padding: 40px 20px;
-            min-height: 100vh;
-        }
-
-        .page {
-            max-width: 860px;
+        /* ── THEME WRAPPER ── */
+        .a4-container {
+            width: 210mm;
+            height: 297mm;
             margin: 0 auto;
-            background: var(--white);
+            background: var(--bg-page);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 48px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
 
-        /* ── LEFT GOLD STRIPE ── */
-        .side-stripe {
+        /* ── DECORATIVE ELEMENTS ── */
+        .side-accent {
             position: absolute;
-            top: 0; left: 0;
-            width: 5px;
-            height: 100%;
-            background: linear-gradient(180deg, var(--gold) 0%, #8B6914 100%);
+            top: 0; left: 0; bottom: 0;
+            width: 6px;
+            background: linear-gradient(to bottom, var(--gold), var(--gold-dark));
+            z-index: 100;
+        }
+
+        .header-bg-shape {
+            position: absolute;
+            top: -50mm; right: -50mm;
+            width: 150mm; height: 150mm;
+            background: radial-gradient(circle, rgba(201, 168, 76, 0.05) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        /* ── MAIN LAYOUT ── */
+        .content {
+            position: relative;
             z-index: 10;
-        }
-
-        /* ── TOP BAR ── */
-        .top-bar {
-            background: var(--dark);
-            padding: 13px 48px 13px 60px;
+            padding: 12mm 15mm 12mm 20mm; /* Extra left for accent */
+            height: 100%;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+        }
+
+        /* ── TOP NAV / META ── */
+        .top-meta {
+            display: flex;
             justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1.5px solid var(--dark);
+            padding-bottom: 12px;
         }
 
-        .top-bar-label {
-            font-size: 9.5px;
+        .doc-type {
+            font-size: 9pt;
             font-weight: 700;
-            letter-spacing: 0.30em;
+            letter-spacing: 0.3em;
             text-transform: uppercase;
-            color: var(--gold);
+            color: var(--gold-dark);
         }
 
-        .top-bar-ref {
-            font-size: 10px;
-            font-weight: 300;
-            letter-spacing: 0.12em;
-            color: rgba(255,255,255,0.38);
+        .doc-id {
+            font-size: 9pt;
+            font-weight: 500;
+            color: var(--soft);
         }
 
         /* ── HEADER ── */
         .header {
-            padding: 34px 48px 30px 60px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 24px;
-            border-bottom: 1px solid var(--rule);
+            display: table;
+            width: 100%;
+            margin-bottom: 40px;
         }
 
         .header-left {
-            display: flex;
-            align-items: flex-start;
-            gap: 18px;
+            display: table-cell;
+            vertical-align: top;
+            width: 65%;
         }
 
-        .logo-wrap {
-            width: 64px;
-            height: 64px;
-            border: 1px solid var(--rule);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--gold-pale);
-            flex-shrink: 0;
+        .header-right {
+            display: table-cell;
+            vertical-align: top;
+            width: 35%;
+            text-align: right;
         }
 
-        .logo-wrap img {
-            max-width: 56px;
-            max-height: 56px;
-            object-fit: contain;
+        .logo-box {
+            margin-bottom: 15px;
+        }
+
+        .logo-box img {
+            max-height: 20mm;
+            max-width: 50mm;
         }
 
         .company-name {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 26px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 26pt;
             font-weight: 700;
-            letter-spacing: 0.07em;
-            text-transform: uppercase;
             color: var(--dark);
-            line-height: 1.1;
-            margin-bottom: 7px;
-        }
-
-        .company-sub {
-            font-size: 11px;
-            color: var(--soft);
-            font-weight: 300;
-            line-height: 1.75;
-        }
-
-        .company-sub b { color: var(--mid); font-weight: 600; }
-
-        .header-right {
-            text-align: right;
-            flex-shrink: 0;
-        }
-
-        .doc-title {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--dark);
-            letter-spacing: 0.04em;
-        }
-
-        .doc-meta {
-            font-size: 11px;
-            color: var(--soft);
-            margin-top: 5px;
-            font-weight: 300;
-            line-height: 1.7;
-        }
-
-        .doc-meta b { color: var(--mid); font-weight: 600; }
-
-        /* ── GOLD RULE ── */
-        .gold-rule {
-            height: 1px;
-            margin: 0 48px 0 60px;
-            background: linear-gradient(90deg, var(--gold) 0%, rgba(201,168,76,0.06) 100%);
-        }
-
-        /* ── AMOUNT HERO BAND ── */
-        .amount-hero {
-            padding: 28px 48px 28px 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--dark);
-            gap: 24px;
-        }
-
-        .amount-hero-label {
-            font-size: 9.5px;
-            font-weight: 700;
-            letter-spacing: 0.26em;
+            line-height: 0.9;
+            margin-bottom: 5px;
             text-transform: uppercase;
-            color: rgba(255,255,255,0.45);
-            margin-bottom: 6px;
+            letter-spacing: -0.02em;
         }
 
-        .amount-hero-value {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 38px;
-            font-weight: 700;
-            color: var(--gold-light);
-            letter-spacing: 0.04em;
-            line-height: 1;
-        }
-
-        .amount-hero-words {
-            font-size: 11px;
-            color: rgba(255,255,255,0.38);
-            font-weight: 300;
-            margin-top: 6px;
-            text-transform: capitalize;
-            max-width: 420px;
+        .company-contact {
+            font-size: 9pt;
+            color: var(--soft);
             line-height: 1.5;
         }
 
-        .receipt-badge {
-            flex-shrink: 0;
-            border: 1px solid rgba(201,168,76,0.35);
-            padding: 10px 20px;
-            text-align: center;
+        .receipt-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 24pt;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 10px;
         }
 
-        .receipt-badge-top {
-            font-size: 8.5px;
+        .meta-grid {
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
+        }
+
+        .meta-item {
+            font-size: 9pt;
+            margin-bottom: 4px;
+            color: var(--soft);
+        }
+
+        .meta-item b {
+            color: var(--dark);
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        /* ── HERO AMOUNT BAND ── */
+        .hero-band {
+            background: var(--dark);
+            color: #FFF;
+            padding: 30px;
+            border-radius: 4px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hero-band::after {
+            content: "";
+            position: absolute;
+            top: 0; right: 0; bottom: 0;
+            width: 30%;
+            background: linear-gradient(to left, rgba(201,168,76,0.1), transparent);
+        }
+
+        .hero-label {
+            font-size: 9pt;
             font-weight: 700;
-            letter-spacing: 0.22em;
+            letter-spacing: 0.25em;
             text-transform: uppercase;
             color: var(--gold);
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
 
-        .receipt-badge-num {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 18px;
-            font-weight: 600;
+        .hero-val {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 36pt;
+            font-weight: 700;
             color: var(--gold-light);
-            letter-spacing: 0.05em;
+            line-height: 1;
         }
 
-        /* ── DETAILS SECTION ── */
-        .details-section {
-            padding: 30px 48px 30px 60px;
-            border-bottom: 1px solid var(--rule);
+        .hero-badge {
+            text-align: right;
+        }
+
+        .badge-top { font-size: 8pt; color: var(--soft); font-weight: 600; margin-bottom: 5px; }
+        .badge-num { font-size: 14pt; color: #FFF; font-weight: 500; font-family: 'Cormorant Garamond', serif; }
+
+        /* ── DETAILS ── */
+        .details-list {
+            flex-grow: 1;
         }
 
         .detail-row {
             display: flex;
             align-items: flex-start;
-            padding: 13px 0;
-            border-bottom: 1px solid var(--rule);
-            gap: 16px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
         }
-
-        .detail-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .detail-row:first-child { padding-top: 0; }
 
         .detail-key {
-            font-size: 9.5px;
+            width: 180px;
+            font-size: 8.5pt;
             font-weight: 700;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
-            color: var(--gold);
-            min-width: 160px;
-            padding-top: 2px;
-            flex-shrink: 0;
+            color: var(--soft);
+            padding-top: 4px;
         }
 
         .detail-val {
-            font-size: 13px;
+            flex-grow: 1;
+            font-size: 12pt;
             font-weight: 500;
             color: var(--dark);
-            line-height: 1.55;
+            line-height: 1.4;
         }
 
         .detail-val.hero {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 17px;
-            font-weight: 600;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18pt;
+            font-weight: 700;
         }
 
-        .detail-val.muted {
+        .detail-val.words {
+            font-style: italic;
             color: var(--mid);
-            font-weight: 400;
+            text-transform: capitalize;
         }
 
         /* ── FOOTER ── */
-        .footer {
-            padding: 26px 48px 32px 60px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            gap: 24px;
+        .bottom-sections {
+            display: table;
+            width: 100%;
+            margin-top: 40px;
+            padding-top: 30px;
         }
 
-        .footnote {
-            font-size: 10.5px;
-            color: var(--soft);
-            font-style: italic;
-            font-weight: 300;
+        .bank-details {
+            display: table-cell;
+            width: 60%;
+            vertical-align: bottom;
         }
 
-        .footnote::before {
-            content: '* ';
-            color: var(--gold);
-            font-style: normal;
-        }
-
-        .sig-box {
-            text-align: center;
-            min-width: 155px;
-            flex-shrink: 0;
+        .signature-box {
+            display: table-cell;
+            width: 40%;
+            text-align: right;
+            vertical-align: bottom;
         }
 
         .sig-img {
-            max-height: 54px;
+            max-height: 50px;
+            margin-bottom: 5px;
             display: block;
-            margin: 0 auto 14px;
-            object-fit: contain;
+            margin-left: auto;
         }
 
-        .sig-space { height: 54px; margin-bottom: 14px; }
-
         .sig-line {
-            border-top: 1.5px solid var(--dark);
-            padding-top: 8px;
-            font-size: 9px;
+            width: 60mm;
+            height: 1.5px;
+            background: var(--dark);
+            margin-left: auto;
+            margin-top: 10px;
+        }
+
+        .sig-text {
+            font-size: 8pt;
             font-weight: 700;
-            letter-spacing: 0.24em;
             text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-top: 8px;
             color: var(--dark);
         }
 
-        /* ── BOTTOM BAR ── */
-        .bottom-bar {
-            height: 4px;
-            background: linear-gradient(90deg, var(--gold) 0%, #6B4E0A 55%, var(--dark) 100%);
+        .footer-note {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 8pt;
+            color: var(--soft);
+            letter-spacing: 0.05em;
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
         }
+
     </style>
 </head>
 <body>
-<div class="page">
 
-    <div class="side-stripe"></div>
+<div class="a4-container">
+    <div class="side-accent"></div>
+    <div class="header-bg-shape"></div>
 
-    <!-- TOP BAR -->
-    <div class="top-bar">
-        <span class="top-bar-label">Payment Receipt</span>
-        <span class="top-bar-ref">{{ $receiptSerial }} &nbsp;·&nbsp; {{ $quotationDate }}</span>
-    </div>
+    <div class="content">
+        <!-- TOP META -->
+        <div class="top-meta">
+            <div class="doc-type">Official Payment Receipt</div>
+            <div class="doc-id">TRANS-ID: {{ $receiptSerial }} / {{ $quotationDate }}</div>
+        </div>
 
-    <!-- HEADER -->
-    <div class="header">
-        <div class="header-left">
-            @if($logoBase64)
-            <div class="logo-wrap">
-                <img src="{{ $logoBase64 }}" alt="Logo">
-            </div>
-            @endif
-            <div>
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo-box">
+                    @if($logoBase64)
+                        <img src="{{ $logoBase64 }}" alt="Company Logo">
+                    @endif
+                </div>
                 <div class="company-name">{{ $companyName }}</div>
-                <div class="company-sub">
-                    {{ $companyAddress }}<br>
-                    <b>{{ $companyEmail }}</b> &nbsp;·&nbsp; <b>{{ $companyPhone }}</b><br>
-                    {{ $companyRegNo }}<br>
-                    {{ $companyAffiliated }}
+                <div class="company-contact">
+                    {{ $companyAddress }} <br>
+                    <b>Email:</b> {{ $companyEmail }} &nbsp; <b>Phone:</b> {{ $companyPhone }} <br>
+                    <b>GSTIN:</b> {{ $companyRegNo }}
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="receipt-title">Receipt</div>
+                <div class="meta-grid">
+                    <div class="meta-item">Date: <b>{{ $quotationDate }}</b></div>
+                    <div class="meta-item">Ref: <b>{{ $receiptSerial }}</b></div>
                 </div>
             </div>
         </div>
-        <div class="header-right">
-            <div class="doc-title">Receipt</div>
-            <div class="doc-meta">
-                Date &nbsp;<b>{{ $quotationDate }}</b><br>
-                Ref &nbsp;<b>{{ $receiptSerial }}</b>
+
+        <!-- HERO BAND -->
+        <div class="hero-band">
+            <div>
+                <div class="hero-label">Amount Received</div>
+                <div class="hero-val">₹ {{ number_format($receiptAmount, 2) }}</div>
+            </div>
+            <div class="hero-badge">
+                <div class="badge-top">Receipt Voucher</div>
+                <div class="badge-num">#{{ $receiptSerial }}</div>
             </div>
         </div>
-    </div>
 
-    <div class="gold-rule"></div>
-
-    <!-- AMOUNT HERO BAND -->
-    <div class="amount-hero">
-        <div>
-            <div class="amount-hero-label">Amount Received</div>
-            <div class="amount-hero-value">₹ {{ number_format($receiptAmount, 2) }}</div>
-            <div class="amount-hero-words">
-                {{ \NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT)->format($receiptAmount) }} Rupees Only
+        <!-- DETAILS -->
+        <div class="details-list">
+            <div class="detail-row">
+                <div class="detail-key">Received From</div>
+                <div class="detail-val hero">{{ $lead->beneficiary_name }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-key">Sum of Rupees</div>
+                <div class="detail-val words">
+                    {{ \NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT)->format($receiptAmount) }} Rupees Only
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-key">On Account Of</div>
+                <div class="detail-val">
+                    Advance payment for 
+                    @foreach($billingItems as $it)
+                        {{ $it['description'] }}{{ !$loop->last ? ', ' : '' }}
+                    @endforeach
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-key">Payment Mode</div>
+                <div class="detail-val">Bank Transfer / Online Payment</div>
             </div>
         </div>
-        <div class="receipt-badge">
-            <div class="receipt-badge-top">Receipt No.</div>
-            <div class="receipt-badge-num">{{ $receiptSerial }}</div>
+
+        <!-- BOTTOM -->
+        <div class="bottom-sections">
+            <div class="bank-details">
+                <div style="font-size: 8.5pt; color: var(--soft); line-height: 1.6;">
+                    * This is a computer generated receipt. <br>
+                    * All payments are subject to bank realization.
+                </div>
+            </div>
+            <div class="signature-box">
+                @if($sigBase64)
+                    <img src="{{ $sigBase64 }}" class="sig-img" alt="Authorized Signature">
+                @else
+                    <div style="height:50px"></div>
+                @endif
+                <div class="sig-line"></div>
+                <div class="sig-text">Authorized Signatory</div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            Thank you for your business. For any queries, please contact {{ $companyEmail }}.
         </div>
     </div>
-
-    <!-- DETAILS -->
-    <div class="details-section">
-        <div class="detail-row">
-            <span class="detail-key">Received From</span>
-            <span class="detail-val hero">{{ $lead->beneficiary_name }}</span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-key">Sum of Rupees</span>
-            <span class="detail-val">{{ \NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT)->format($receiptAmount) }} Only</span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-key">Payment For</span>
-            <span class="detail-val">
-                Advance for
-                @foreach($billingItems as $it)
-                    {{ $it['description'] }} ({{ $it['make'] }}){{ !$loop->last ? ', ' : '' }}
-                @endforeach
-            </span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-key">Mode of Payment</span>
-            <span class="detail-val muted">Online / Bank Transfer</span>
-        </div>
-    </div>
-
-    <!-- FOOTER -->
-    <div class="footer">
-        <div class="footnote">Subject to realization of cheque</div>
-        <div class="sig-box">
-            @if($sigBase64)
-                <img src="{{ $sigBase64 }}" class="sig-img" alt="Signature">
-            @else
-                <div class="sig-space"></div>
-            @endif
-            <div class="sig-line">Authorized Signatory</div>
-        </div>
-    </div>
-
-    <div class="bottom-bar"></div>
-
 </div>
+
 </body>
 </html>

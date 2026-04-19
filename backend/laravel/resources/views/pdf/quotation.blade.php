@@ -1,524 +1,513 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Pro Forma Quotation</title>
+    <title>Pro Forma Quotation - {{ $quotationSerial }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        /* ── RESET & A4 CORE ── */
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #F4F4F4;
+            font-family: 'Outfit', sans-serif;
+            color: #1A1A1A;
+            -webkit-font-smoothing: antialiased;
+        }
 
         :root {
-            --gold:       #C9A84C;
-            --gold-light: #F0E0B0;
-            --gold-pale:  #FDF8EE;
-            --dark:       #0D0D0D;
-            --mid:        #4A4540;
-            --soft:       #7A746E;
-            --rule:       #E2D9CC;
-            --bg:         #FAFAF8;
-            --white:      #FFFFFF;
+            --gold: #C9A84C;
+            --gold-dark: #A68636;
+            --gold-light: #E5D5A7;
+            --dark: #0D0D0D;
+            --mid: #4A4540;
+            --soft: #8E8881;
+            --border: #E8E2D9;
+            --bg-page: #FFFFFF;
+            --bg-accent: #FAF9F6;
         }
 
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: #ECECEC;
-            padding: 40px 20px;
-            min-height: 100vh;
-        }
-
-        .page {
-            max-width: 860px;
+        /* ── THEME WRAPPER ── */
+        .a4-container {
+            width: 210mm;
+            height: 297mm;
             margin: 0 auto;
-            background: var(--white);
+            background: var(--bg-page);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 48px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
 
-        /* ── LEFT GOLD STRIPE ── */
-        .side-stripe {
+        /* ── DECORATIVE ELEMENTS ── */
+        .side-accent {
             position: absolute;
-            top: 0; left: 0;
-            width: 5px;
-            height: 100%;
-            background: linear-gradient(180deg, var(--gold) 0%, #8B6914 100%);
+            top: 0; left: 0; bottom: 0;
+            width: 6px;
+            background: linear-gradient(to bottom, var(--gold), var(--gold-dark));
+            z-index: 100;
+        }
+
+        .header-bg-shape {
+            position: absolute;
+            top: -50mm; right: -50mm;
+            width: 150mm; height: 150mm;
+            background: radial-gradient(circle, rgba(201, 168, 76, 0.05) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        /* ── MAIN LAYOUT ── */
+        .content {
+            position: relative;
             z-index: 10;
-        }
-
-        /* ── TOP BAR ── */
-        .top-bar {
-            background: var(--dark);
-            padding: 13px 48px 13px 60px;
+            padding: 12mm 15mm 12mm 20mm; /* Extra left for accent */
+            height: 100%;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+        }
+
+        /* ── TOP NAV / META ── */
+        .top-meta {
+            display: flex;
             justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1.5px solid var(--dark);
+            padding-bottom: 12px;
         }
 
-        .top-bar-label {
-            font-size: 9.5px;
+        .doc-type {
+            font-size: 9pt;
             font-weight: 700;
-            letter-spacing: 0.30em;
+            letter-spacing: 0.3em;
             text-transform: uppercase;
-            color: var(--gold);
+            color: var(--gold-dark);
         }
 
-        .top-bar-ref {
-            font-size: 10px;
-            font-weight: 300;
-            letter-spacing: 0.12em;
-            color: rgba(255,255,255,0.38);
+        .doc-id {
+            font-size: 9pt;
+            font-weight: 500;
+            color: var(--soft);
         }
 
         /* ── HEADER ── */
         .header {
-            padding: 34px 48px 30px 60px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 24px;
-            border-bottom: 1px solid var(--rule);
+            display: table;
+            width: 100%;
+            margin-bottom: 30px;
         }
 
         .header-left {
-            display: flex;
-            align-items: flex-start;
-            gap: 18px;
-        }
-
-        .logo-wrap {
-            width: 64px;
-            height: 64px;
-            border: 1px solid var(--rule);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--gold-pale);
-            flex-shrink: 0;
-        }
-
-        .logo-wrap img {
-            max-width: 56px;
-            max-height: 56px;
-            object-fit: contain;
-        }
-
-        .company-name {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 26px;
-            font-weight: 700;
-            letter-spacing: 0.07em;
-            text-transform: uppercase;
-            color: var(--dark);
-            line-height: 1.1;
-            margin-bottom: 7px;
-        }
-
-        .company-sub {
-            font-size: 11px;
-            color: var(--soft);
-            font-weight: 300;
-            line-height: 1.75;
-        }
-
-        .company-sub b {
-            color: var(--mid);
-            font-weight: 600;
+            display: table-cell;
+            vertical-align: top;
+            width: 65%;
         }
 
         .header-right {
+            display: table-cell;
+            vertical-align: top;
+            width: 35%;
             text-align: right;
-            flex-shrink: 0;
         }
 
-        .doc-title {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--dark);
-            letter-spacing: 0.04em;
+        .logo-box {
+            margin-bottom: 15px;
         }
 
-        .doc-meta {
-            font-size: 11px;
-            color: var(--soft);
-            margin-top: 5px;
-            font-weight: 300;
-            line-height: 1.7;
+        .logo-box img {
+            max-height: 20mm;
+            max-width: 50mm;
         }
 
-        .doc-meta b { color: var(--mid); font-weight: 600; }
-
-        /* ── THIN GOLD RULE ── */
-        .gold-rule {
-            height: 1px;
-            margin: 0 48px 0 60px;
-            background: linear-gradient(90deg, var(--gold) 0%, rgba(201,168,76,0.06) 100%);
-        }
-
-        /* ── BILL-TO BAND ── */
-        .bill-to-band {
-            padding: 22px 48px 22px 60px;
-            display: flex;
-            gap: 40px;
-            align-items: flex-start;
-            border-bottom: 1px solid var(--rule);
-        }
-
-        .field-block { flex: 1; }
-        .field-block.shrink { flex: 0; min-width: 130px; }
-
-        .field-label {
-            font-size: 9px;
+        .company-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 26pt;
             font-weight: 700;
-            letter-spacing: 0.24em;
+            color: var(--dark);
+            line-height: 0.9;
+            margin-bottom: 5px;
             text-transform: uppercase;
-            color: var(--gold);
-            margin-bottom: 4px;
+            letter-spacing: -0.02em;
         }
 
-        .field-value {
-            font-size: 13px;
+        .company-tag {
+            font-size: 8.5pt;
+            color: var(--gold-dark);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+        }
+
+        .company-contact {
+            font-size: 9pt;
+            color: var(--soft);
+            line-height: 1.5;
+            max-width: 90%;
+        }
+
+        .company-contact b { color: var(--mid); }
+
+        .quotation-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 24pt;
             font-weight: 500;
             color: var(--dark);
-            line-height: 1.5;
+            margin-bottom: 10px;
         }
 
-        .field-value.hero {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 17px;
+        .meta-grid {
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
+        }
+
+        .meta-item {
+            font-size: 9pt;
+            margin-bottom: 4px;
+            color: var(--soft);
+        }
+
+        .meta-item b {
+            color: var(--dark);
             font-weight: 600;
+            margin-left: 5px;
+        }
+
+        /* ── CLIENT INFO ── */
+        .billing-section {
+            display: table;
+            width: 100%;
+            margin-bottom: 35px;
+            background: var(--bg-accent);
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .bill-to {
+            display: table-cell;
+            width: 50%;
+        }
+
+        .bill-label {
+            font-size: 8pt;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--soft);
+            margin-bottom: 8px;
+        }
+
+        .client-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16pt;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .client-details {
+            font-size: 9.5pt;
+            color: var(--mid);
+            line-height: 1.4;
         }
 
         /* ── TABLE ── */
         .table-wrap {
-            padding: 28px 48px 0 60px;
+            flex-grow: 1;
         }
 
-        table { width: 100%; border-collapse: collapse; }
-
-        thead tr {
-            border-top: 1.5px solid var(--dark);
-            border-bottom: 1.5px solid var(--dark);
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
         }
 
-        thead th {
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 0.2em;
+        th {
+            background: var(--dark);
+            color: #FFF;
+            font-size: 8.5pt;
+            font-weight: 600;
             text-transform: uppercase;
-            color: var(--dark);
-            padding: 10px 10px;
+            letter-spacing: 0.1em;
+            padding: 12px 10px;
             text-align: left;
         }
 
-        thead th.r { text-align: right; }
-        thead th.c { text-align: center; }
-
-        tbody tr { border-bottom: 1px solid var(--rule); }
-        tbody tr:last-child { border-bottom: none; }
-
-        tbody td {
+        td {
             padding: 14px 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 10pt;
             vertical-align: top;
         }
 
-        .td-sno {
-            text-align: center;
-            color: var(--soft);
-            font-size: 11px;
-        }
+        .col-desc { width: 50%; }
+        .col-qty { width: 10%; text-align: center; }
+        .col-rate { width: 20%; text-align: right; }
+        .col-total { width: 20%; text-align: right; font-weight: 600; }
 
-        .td-name {
-            font-weight: 600;
-            color: var(--dark);
-            font-size: 13px;
+        .item-make {
             display: block;
-        }
-
-        .td-make {
-            font-size: 11px;
+            font-size: 8.5pt;
             color: var(--soft);
-            font-weight: 300;
-        }
-
-        .td-center { text-align: center; color: var(--mid); }
-
-        .td-right {
-            text-align: right;
-            font-variant-numeric: tabular-nums;
-            color: var(--dark);
-            font-weight: 500;
+            margin-top: 3px;
+            font-style: italic;
         }
 
         /* ── SUMMARY ── */
-        .summary-wrap {
-            padding: 24px 48px 0 60px;
-            display: flex;
-            justify-content: flex-end;
+        .summary-block {
+            display: table;
+            width: 100%;
+            margin-top: 20px;
         }
 
-        .summary-box {
-            width: 310px;
-            border: 1px solid var(--rule);
-            overflow: hidden;
+        .summary-left {
+            display: table-cell;
+            width: 55%;
+            vertical-align: bottom;
+            padding-right: 40px;
         }
 
-        .sum-row {
+        .summary-right {
+            display: table-cell;
+            width: 45%;
+        }
+
+        .summary-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 9px 16px;
-            border-bottom: 1px solid var(--rule);
-            font-size: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
         }
 
-        .sum-row:last-child { border-bottom: none; }
-        .sum-row.sub { background: var(--bg); }
-
-        .sum-lbl { font-weight: 500; color: var(--mid); }
-        .sum-val { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--dark); }
-
-        .sum-row.total-row {
-            background: var(--dark);
-            padding: 13px 16px;
-        }
-
-        .sum-row.total-row .sum-lbl {
-            color: var(--gold-light);
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .sum-row.total-row .sum-val {
-            color: var(--gold-light);
-            font-size: 14px;
-        }
-
-        /* ── AMOUNT IN WORDS ── */
-        .words-wrap {
-            margin: 20px 48px 30px 60px;
-            padding: 11px 16px;
-            background: var(--gold-pale);
+        .summary-row.total {
+            border-bottom: none;
+            background: var(--bg-accent);
+            padding: 12px 10px;
+            margin-top: 5px;
             border-left: 3px solid var(--gold);
         }
 
-        .w-label {
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            color: var(--gold);
-            margin-bottom: 3px;
+        .summary-lbl { font-size: 9.5pt; color: var(--soft); font-weight: 500; }
+        .summary-val { font-size: 10pt; color: var(--dark); font-weight: 600; }
+        
+        .total-lbl { font-size: 11pt; font-weight: 700; color: var(--dark); text-transform: uppercase; }
+        .total-val { font-size: 15pt; font-weight: 700; color: var(--gold-dark); }
+
+        .amount-words {
+            font-size: 8.5pt;
+            color: var(--soft);
+            text-transform: capitalize;
+            font-style: italic;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px dashed var(--border);
         }
 
-        .w-text {
-            font-size: 12.5px;
-            font-weight: 500;
+        /* ── BOTTOM INFO ── */
+        .bottom-sections {
+            display: table;
+            width: 100%;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1.5px solid var(--dark);
+        }
+
+        .bank-details {
+            display: table-cell;
+            width: 60%;
+        }
+
+        .signature-box {
+            display: table-cell;
+            width: 40%;
+            text-align: right;
+            vertical-align: bottom;
+        }
+
+        .bank-box {
+            background: #F9F9F9;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 8.5pt;
+            line-height: 1.6;
+        }
+
+        .bank-box b { color: var(--gold-dark); text-transform: uppercase; display: block; margin-bottom: 5px; font-size: 8pt; letter-spacing: 0.1em; }
+
+        .sig-img {
+            max-height: 45px;
+            margin-bottom: 5px;
+            display: block;
+            margin-left: auto;
+        }
+
+        .sig-line {
+            width: 60mm;
+            height: 1.5px;
+            background: var(--dark);
+            margin-left: auto;
+            margin-top: 10px;
+        }
+
+        .sig-text {
+            font-size: 8pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-top: 8px;
             color: var(--dark);
-            text-transform: capitalize;
         }
 
         /* ── FOOTER ── */
-        .footer {
-            border-top: 1px solid var(--rule);
-            padding: 26px 48px 32px 60px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            gap: 24px;
-        }
-
-        .bank-title {
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 0.24em;
-            text-transform: uppercase;
-            color: var(--gold);
-            margin-bottom: 12px;
-        }
-
-        .bank-grid {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 5px 18px;
-        }
-
-        .bk {
-            font-size: 11.5px;
-            font-weight: 600;
-            color: var(--mid);
-            white-space: nowrap;
-        }
-
-        .bv {
-            font-size: 11.5px;
-            color: var(--dark);
-            font-weight: 400;
-        }
-
-        .sig-box {
+        .footer-note {
+            margin-top: auto;
+            padding-top: 30px;
             text-align: center;
-            min-width: 155px;
+            font-size: 8pt;
+            color: var(--soft);
+            letter-spacing: 0.05em;
         }
 
-        .sig-img {
-            max-height: 54px;
-            display: block;
-            margin: 0 auto 14px;
-            object-fit: contain;
-        }
-
-        .sig-space { height: 54px; margin-bottom: 14px; }
-
-        .sig-line {
-            border-top: 1.5px solid var(--dark);
-            padding-top: 8px;
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 0.24em;
-            text-transform: uppercase;
-            color: var(--dark);
-        }
-
-        /* ── BOTTOM GRADIENT BAR ── */
-        .bottom-bar {
-            height: 4px;
-            background: linear-gradient(90deg, var(--gold) 0%, #6B4E0A 55%, var(--dark) 100%);
-        }
     </style>
 </head>
 <body>
-<div class="page">
 
-    <div class="side-stripe"></div>
+<div class="a4-container">
+    <div class="side-accent"></div>
+    <div class="header-bg-shape"></div>
 
-    <!-- TOP BAR -->
-    <div class="top-bar">
-        <span class="top-bar-label">Pro Forma Quotation</span>
-        <span class="top-bar-ref">Ref: {{ $quotationSerial }} &nbsp;·&nbsp; {{ $quotationDate }}</span>
-    </div>
+    <div class="content">
+        <!-- TOP META -->
+        <div class="top-meta">
+            <div class="doc-type">Pro Forma Quotation</div>
+            <div class="doc-id">REF: {{ $quotationSerial }} / {{ $quotationDate }}</div>
+        </div>
 
-    <!-- HEADER -->
-    <div class="header">
-        <div class="header-left">
-            @if($logoBase64)
-            <div class="logo-wrap">
-                <img src="{{ $logoBase64 }}" alt="Logo">
-            </div>
-            @endif
-            <div>
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo-box">
+                    @if($logoBase64)
+                        <img src="{{ $logoBase64 }}" alt="Company Logo">
+                    @endif
+                </div>
                 <div class="company-name">{{ $companyName }}</div>
-                <div class="company-sub">
-                    {{ $companyAddress }}<br>
-                    <b>{{ $companyEmail }}</b> &nbsp;·&nbsp; <b>{{ $companyPhone }}</b><br>
-                    {{ $companyRegNo }}<br>
-                    {{ $companyAffiliated }}
+                <div class="company-tag">{{ $companyAffiliated }}</div>
+                <div class="company-contact">
+                    <b>Reg No:</b> {{ $companyRegNo }} <br>
+                    <b>Address:</b> {{ $companyAddress }} <br>
+                    <b>Email:</b> {{ $companyEmail }} &nbsp; <b>Phone:</b> {{ $companyPhone }}
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="quotation-title">Quotation</div>
+                <div class="meta-grid">
+                    <div class="meta-item">Date: <b>{{ $quotationDate }}</b></div>
+                    <div class="meta-item">Ref: <b>{{ $quotationSerial }}</b></div>
+                    <div class="meta-item">Validity: <b>30 Days</b></div>
                 </div>
             </div>
         </div>
-        <div class="header-right">
-            <div class="doc-title">Quotation</div>
-            <div class="doc-meta">
-                Date &nbsp;<b>{{ $quotationDate }}</b><br>
-                Ref &nbsp;<b>{{ $quotationSerial }}</b>
+
+        <!-- CLIENT INFO -->
+        <div class="billing-section">
+            <div class="bill-to">
+                <div class="bill-label">Customer Details</div>
+                <div class="client-name">{{ $lead->beneficiary_name }}</div>
+                <div class="client-details">
+                    {{ $address }} <br>
+                    Contact: {{ $lead->mobile_number }} <br>
+                    Capacity: {{ $kw }} kW {{ $lead->phase_connection ?: 'Single Phase' }}
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="gold-rule"></div>
-
-    <!-- BILL TO -->
-    <div class="bill-to-band">
-        <div class="field-block">
-            <div class="field-label">Billed To</div>
-            <div class="field-value hero">{{ $lead->beneficiary_name }}</div>
+        <!-- ITEMS TABLE -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-desc">Description of Solution</th>
+                        <th class="col-qty">QTY</th>
+                        <th class="col-rate">Unit Price</th>
+                        <th class="col-total">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($billingItems as $it)
+                    <tr>
+                        <td class="col-desc">
+                            {{ $it['description'] }}
+                            <span class="item-make">Make/Brand: {{ $it['make'] ?? 'Standard' }}</span>
+                        </td>
+                        <td class="col-qty">1 Set</td>
+                        <td class="col-rate">₹ {{ number_format($it['rate'], 2) }}</td>
+                        <td class="col-total">₹ {{ number_format($it['rate'], 2) }}</td>
+                    </tr>
+                    @endforeach
+                    <!-- Placeholder rows for visual balance if needed -->
+                    @for($i = count($billingItems); $i < 3; $i++)
+                    <tr style="height: 40px;"><td colspan="4"></td></tr>
+                    @endfor
+                </tbody>
+            </table>
         </div>
-        <div class="field-block">
-            <div class="field-label">Address</div>
-            <div class="field-value">{{ $address }}</div>
-        </div>
-        <div class="field-block shrink">
-            <div class="field-label">Contact</div>
-            <div class="field-value">{{ $lead->beneficiary_mobile }}</div>
-        </div>
-    </div>
 
-    <!-- ITEMS TABLE -->
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th class="c" width="5%">#</th>
-                    <th width="47%">Description</th>
-                    <th class="c" width="10%">Qty</th>
-                    <th class="r" width="19%">Rate (₹)</th>
-                    <th class="r" width="19%">Amount (₹)</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($billingItems as $index => $item)
-                <tr>
-                    <td class="td-sno">{{ $index + 1 }}</td>
-                    <td>
-                        <span class="td-name">{{ $item['description'] }}</span>
-                        <span class="td-make">Make: {{ $item['make'] }}</span>
-                    </td>
-                    <td class="td-center">1 Set</td>
-                    <td class="td-right">{{ number_format($item['rate'], 2) }}</td>
-                    <td class="td-right">{{ number_format($item['rate'], 2) }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-
-    <!-- SUMMARY -->
-    <div class="summary-wrap">
-        <div class="summary-box">
-            <div class="sum-row sub">
-                <span class="sum-lbl">Taxable Amount</span>
-                <span class="sum-val">{{ number_format($baseAmount, 2) }}</span>
+        <!-- SUMMARY -->
+        <div class="summary-block">
+            <div class="summary-left">
+                <div class="bill-label">Total in Words</div>
+                <div class="amount-words">
+                    {{ \NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT)->format($totalAmount) }} Rupees Only
+                </div>
             </div>
-            <div class="sum-row">
-                <span class="sum-lbl">GST @ {{ $gstPercentage }}% &nbsp;<small style="color:var(--soft);font-weight:400;">(CGST + SGST)</small></span>
-                <span class="sum-val">{{ number_format($gstAmount, 2) }}</span>
-            </div>
-            <div class="sum-row total-row">
-                <span class="sum-lbl">Total Amount</span>
-                <span class="sum-val">₹ {{ number_format($totalAmount, 2) }}</span>
+            <div class="summary-right">
+                <div class="summary-row">
+                    <span class="summary-lbl">Sub Total (Taxable)</span>
+                    <span class="summary-val">₹ {{ number_format($baseAmount, 2) }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-lbl">GST ({{ $gstPercentage }}%) <small>(CGST + SGST)</small></span>
+                    <span class="summary-val">₹ {{ number_format($gstAmount, 2) }}</span>
+                </div>
+                <div class="summary-row total">
+                    <span class="total-lbl">Grand Total</span>
+                    <span class="total-val">₹ {{ number_format($totalAmount, 2) }}</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- AMOUNT IN WORDS -->
-    <div class="words-wrap">
-        <div class="w-label">Amount in Words</div>
-        <div class="w-text">{{ \NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT)->format($totalAmount) }} Rupees Only.</div>
-    </div>
-
-    <!-- FOOTER -->
-    <div class="footer">
-        <div>
-            <div class="bank-title">Bank Details</div>
-            <div class="bank-grid">
-                <span class="bk">Account Name</span><span class="bv">{{ $bankAccountName }}</span>
-                <span class="bk">Account No.</span><span class="bv">{{ $bankAccountNumber }}</span>
-                <span class="bk">IFSC Code</span><span class="bv">{{ $bankIfsc }}</span>
-                <span class="bk">Branch</span><span class="bv">{{ $bankBranch }}</span>
+        <!-- BANK & SIGNATURE -->
+        <div class="bottom-sections">
+            <div class="bank-details">
+                <div class="bank-box">
+                    <b>Bank Details for Payment</b>
+                    Acc Holder: {{ $bankAccountName }} <br>
+                    Bank Name: {{ $bankBranch }} <br>
+                    Account No: <b>{{ $bankAccountNumber }}</b> <br>
+                    IFSC Code: <b>{{ $bankIfsc }}</b>
+                </div>
+            </div>
+            <div class="signature-box">
+                @if($sigBase64)
+                    <img src="{{ $sigBase64 }}" class="sig-img" alt="Authorized Signature">
+                @else
+                    <div style="height:45px"></div>
+                @endif
+                <div class="sig-line"></div>
+                <div class="sig-text">Authorized Signatory</div>
             </div>
         </div>
-        <div class="sig-box">
-            @if($sigBase64)
-                <img src="{{ $sigBase64 }}" class="sig-img" alt="Signature">
-            @else
-                <div class="sig-space"></div>
-            @endif
-            <div class="sig-line">Authorized Signatory</div>
+
+        <div class="footer-note">
+            This is a computer-generated Pro Forma Quotation and requires no physical seal if digitally signed.
         </div>
     </div>
-
-    <div class="bottom-bar"></div>
-
 </div>
+
 </body>
 </html>
