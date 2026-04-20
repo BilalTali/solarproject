@@ -146,6 +146,8 @@ $api->as('api.v1.')->group(function () {
         // ==========================================
         Route::middleware([\App\Http\Middleware\TechnicalTeamMiddleware::class])->prefix('technical')->group(function () {
             Route::get('/stats', [TechnicalDashboardController::class, 'getStats']);
+            Route::get('/profile', [\App\Http\Controllers\Auth\AuthController::class, 'me']);
+            Route::put('/profile', [\App\Http\Controllers\Auth\SharedProfileController::class, 'update']);
             Route::get('/leads', [TechnicalDashboardController::class, 'getAssignedLeads']);
             Route::post('/leads/{ulid}/visit', [TechnicalDashboardController::class, 'submitVisit']);
         });
