@@ -1,0 +1,36 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Explicitly set MIME types for JavaScript modules
+    AddType application/javascript .js
+    AddType application/javascript .mjs
+
+    # Disable caching for the Service Worker and Entry Point
+    <FilesMatch "(sw\.js|index\.html|manifest\.webmanifest)$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+
+    # 1. API and Storage Routes point to Laravel
+    RewriteCond %{REQUEST_URI} ^/(api|sanctum|storage)/ [NC]
+    RewriteRule ^(.*)$ backend/laravel/public/$1 [L]
+
+    # 2. Redirect /assets requests directly to the dist folder
+    # Only if the file actually exists
+    RewriteCond %{DOCUMENT_ROOT}/frontend/dist/assets/$1 -f
+    RewriteRule ^assets/(.*)$ frontend/dist/assets/$1 [L]
+
+    # 3. Handle specific root files in the dist folder (PWA, Service Worker, Root Assets)
+    # Added workbox-*.js to resolve the Service Worker import error
+    RewriteCond %{REQUEST_URI} ^/(manifest\.webmanifest|registerSW\.js|sw\.js|workbox-[a-z0-9]+\.js|robots\.txt|sitemap\.xml|favicon\.ico|logo\.webp|vite\.svg|pwa-icons/.*) [NC]
+    RewriteRule ^(.*)$ frontend/dist/$1 [L]
+
+    # 4. Everything else goes to React's index.html
+    # But only if it's NOT a missing asset (avoiding MIME type errors on missing scripts)
+    RewriteCond %{REQUEST_URI} !^/(api|sanctum|storage)/ [NC]
+    RewriteCond %{REQUEST_URI} !^/frontend/dist/ [NC]
+    RewriteCond %{REQUEST_URI} !^/assets/.*$ [NC]
+    RewriteRule ^(.*)$ frontend/dist/index.html [L]
+</IfModule>

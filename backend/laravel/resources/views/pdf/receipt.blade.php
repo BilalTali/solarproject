@@ -32,8 +32,8 @@
         /* Professional Designer Header */
         .brand-container {
             border-bottom: 2px solid #A68636;
-            padding-bottom: 15px;
-            margin-bottom: 40px;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
         .company-brand {
             font-family: 'DejaVu Serif', serif;
@@ -49,7 +49,7 @@
 
         .doc-title-bar {
             text-align: center;
-            margin: 30px 0;
+            margin: 15px 0;
         }
         .doc-title {
             font-family: 'DejaVu Serif', serif;
@@ -64,8 +64,8 @@
         }
 
         .receipt-card {
-            margin: 20px 0;
-            padding: 35px;
+            margin: 10px 0;
+            padding: 20px;
             border: 1px solid #f4f4f4;
             background-color: #fdfdfd;
         }
@@ -76,10 +76,10 @@
             font-weight: bold;
             color: #A68636;
             text-align: center;
-            margin: 25px 0;
+            margin: 15px 0;
             border-top: 0.5px solid #eee;
             border-bottom: 0.5px solid #eee;
-            padding: 20px 0;
+            padding: 10px 0;
         }
 
         .detail-group { margin-bottom: 25px; border-bottom: 1px solid #f9f9f9; padding-bottom: 10px; }
@@ -98,7 +98,7 @@
             text-align: center;
             width: 220px;
             margin-left: auto;
-            margin-top: 80px;
+            margin-top: 30px;
         }
         .signature-img {
             max-height: 55px;
@@ -126,9 +126,9 @@
     <div class="brand-container">
         <table class="header-table">
             <tr>
-                <td style="width: 140px;">
+                <td style="width: 120px; vertical-align: middle;">
                     @if($logoBase64)
-                        <img src="{{ $logoBase64 }}" class="logo">
+                        <img src="{{ $logoBase64 }}" style="max-width: 110px; max-height: 80px; display: block;">
                     @endif
                 </td>
                 <td>
@@ -198,7 +198,7 @@
         <div class="sig-line">Authorized Signatory</div>
     </div>
 
-    <div style="text-align: center; font-size: 7.5pt; color: #aaa; margin-top: 80px; border-top: 1px solid #eee; padding-top: 15px;">
+    <div style="text-align: center; font-size: 7.5pt; color: #aaa; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">
         &copy; {{ date('Y') }} {{ $companyName }} &bull; Committed to a Sustainable Future.
     </div>
 

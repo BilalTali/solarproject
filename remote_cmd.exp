@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout 60
+set cmd [lindex $argv 0]
+spawn ssh -o StrictHostKeyChecking=no -p 65002 u335000182@92.249.46.36 "$cmd > /tmp/remote_out.txt && cat /tmp/remote_out.txt"
+expect {
+    "password:" {
+        send "Sugen@9313\r"
+        expect eof
+    }
+    eof
+}

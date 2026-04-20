@@ -1,5 +1,5 @@
 #!/usr/bin/expect -f
-set timeout 30
+set timeout 300
 
 spawn scp -o StrictHostKeyChecking=no -P 65002 -r frontend/dist/. u335000182@92.249.46.36:domains/andleebsurya.in/public_html/frontend/dist/
 

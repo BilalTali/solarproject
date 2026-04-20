@@ -6,12 +6,17 @@
     RewriteCond %{REQUEST_URI} ^/(api|sanctum|storage)/ [NC]
     RewriteRule ^(.*)$ backend/laravel/public/$1 [L]
 
-    # 2. Serve static assets if they exist in frontend/dist
-    RewriteCond %{DOCUMENT_ROOT}/frontend/dist/$1 -f [OR]
-    RewriteCond %{DOCUMENT_ROOT}/frontend/dist/$1 -d
+    # 2. Redirect /assets requests directly to the dist folder
+    # This avoids the MIME type error (text/html) on missing or misrouted assets
+    RewriteRule ^assets/(.*)$ frontend/dist/assets/$1 [L]
+
+    # 3. Handle specific root files in the dist folder (PWA, Service Worker, Root Assets)
+    # Added workbox-*.js to resolve the Service Worker import error
+    RewriteCond %{REQUEST_URI} ^/(manifest\.webmanifest|registerSW\.js|sw\.js|workbox-[a-z0-9]+\.js|robots\.txt|sitemap\.xml|favicon\.ico|logo\.webp|vite\.svg) [NC]
     RewriteRule ^(.*)$ frontend/dist/$1 [L]
 
-    # 3. Everything else goes to React's index.html
+    # 4. Everything else goes to React's index.html
     RewriteCond %{REQUEST_URI} !^/(api|sanctum|storage)/ [NC]
+    RewriteCond %{REQUEST_URI} !^/frontend/dist/ [NC]
     RewriteRule ^(.*)$ frontend/dist/index.html [L]
 </IfModule>

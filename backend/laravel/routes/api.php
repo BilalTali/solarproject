@@ -145,6 +145,7 @@ $api->as('api.v1.')->group(function () {
         // TECHNICAL TEAM PORTAL
         // ==========================================
         Route::middleware([\App\Http\Middleware\TechnicalTeamMiddleware::class])->prefix('technical')->group(function () {
+            Route::get('/stats', [TechnicalDashboardController::class, 'getStats']);
             Route::get('/leads', [TechnicalDashboardController::class, 'getAssignedLeads']);
             Route::post('/leads/{ulid}/visit', [TechnicalDashboardController::class, 'submitVisit']);
         });

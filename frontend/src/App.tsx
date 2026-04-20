@@ -102,6 +102,7 @@ const EnumeratorOffersPage = lazy(() => import('./pages/enumerator/EnumeratorOff
 // Field Technical Team Pages
 import TechnicalLayout from '@/components/layouts/TechnicalLayout';
 const TechnicalLeadsPage = lazy(() => import('@/pages/technical/TechnicalLeadsPage'));
+const TechnicalDashboardPage = lazy(() => import('@/pages/technical/TechnicalDashboardPage'));
 const TechnicalProfilePage = lazy(() => import('@/pages/technical/TechnicalProfilePage'));
 
 // Super Admin Pages
@@ -301,9 +302,10 @@ export default function App() {
               </ProtectedRoute>
             }
           >
+            <Route path="dashboard" element={<TechnicalDashboardPage />} />
             <Route path="leads" element={<TechnicalLeadsPage />} />
             <Route path="profile" element={<TechnicalProfilePage />} />
-            <Route index element={<Navigate to="/technical/leads" replace />} />
+            <Route index element={<Navigate to="/technical/dashboard" replace />} />
           </Route>
 
           {/* Super Admin Protected Routes */}

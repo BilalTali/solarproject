@@ -271,6 +271,12 @@ class Lead extends Model
         return $relation;
     }
 
+    /** @return HasMany */
+    public function technicalVisits(): HasMany
+    {
+        return $this->hasMany(LeadTechnicalVisit::class);
+    }
+
     // ── Helper Methods ────────────────────────────────────────────────
 
     public function isInAdminPool(): bool

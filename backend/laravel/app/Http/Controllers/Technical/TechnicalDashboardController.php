@@ -101,8 +101,8 @@ class TechnicalDashboardController extends Controller
 
             // Log Status
             $lead->statusLogs()->create([
-                'old_status' => $lead->getOriginal('status'),
-                'new_status' => $lead->status,
+                'from_status' => $lead->getOriginal('status'),
+                'to_status' => $lead->status,
                 'changed_by' => $user->id,
                 'notes' => 'Status updated via Geo-tagged Field Visit (' . str_replace('_', ' ', $request->visit_type) . ')',
             ]);
@@ -119,5 +119,41 @@ class TechnicalDashboardController extends Controller
             if (isset($path)) Storage::disk('public')->delete($path);
             return response()->json(['error' => 'Failed to process visit: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Get dashboard statistics for the technician
+     */
+    public function getStats(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user->isFieldTechnician()) {
+            return response()->json(['error' => 'Unauthorized access'], 403);
+        }
+
+        $baseQuery = Lead::query()->visibleToTechnician($user->id);
+
+        $stats = [
+            'total_assigned' => (clone $baseQuery)->count(),
+            'pending_surveys' => (clone $baseQuery)->whereIn('status', ['NEW', 'REGISTERED', 'ON_HOLD'])->count(),
+            'completed_surveys' => (clone $baseQuery)->whereIn('status', ['SITE_SURVEY', 'AT_BANK', 'COMPLETED'])->count(),
+            'pending_installations' => (clone $baseQuery)->where('status', 'AT_BANK')->count(),
+            'completed_installations' => (clone $baseQuery)->where('status', 'COMPLETED')->count(),
+        ];
+
+        $recentActivity = LeadTechnicalVisit::where('technician_id', $user->id)
+            ->with('lead:id,ulid,beneficiary_name')
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'stats' => $stats,
+                'recent_activity' => $recentActivity
+            ]
+        ]);
     }
 }

@@ -1,0 +1,12 @@
+#!/usr/bin/expect -f
+set timeout 30
+
+spawn scp -o StrictHostKeyChecking=no -P 65002 backend/laravel/.env u335000182@92.249.46.36:domains/andleebsurya.in/public_html/backend/laravel/.env
+
+expect {
+    "password:" {
+        send "Sugen@9313\r"
+        exp_continue
+    }
+    eof
+}

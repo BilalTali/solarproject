@@ -1,0 +1,150 @@
+import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/services/axios';
+import { ClipboardList, CheckCircle2, Clock, MapPin, Sun, LayoutDashboard } from 'lucide-react';
+import { formatDate } from '@/utils/formatters';
+import DashboardSkeleton from '@/components/shared/DashboardSkeleton';
+
+interface TechnicalStats {
+    total_assigned: number;
+    pending_surveys: number;
+    completed_surveys: number;
+    pending_installations: number;
+    completed_installations: number;
+}
+
+interface Activity {
+    id: number;
+    visit_type: string;
+    created_at: string;
+    lead: {
+        ulid: string;
+        beneficiary_name: string;
+    };
+}
+
+export default function TechnicalDashboardPage() {
+    const { data: dashboardData, isLoading } = useQuery({
+        queryKey: ['technical-stats'],
+        queryFn: async () => {
+            const res = await api.get<{ success: boolean; data: { stats: TechnicalStats; recent_activity: Activity[] } }>('/technical/stats');
+            return res.data.data;
+        }
+    });
+
+    if (isLoading) return <DashboardSkeleton />;
+
+    const stats = dashboardData?.stats;
+    const activities = dashboardData?.recent_activity || [];
+
+    const kpiCards = [
+        { label: 'Assigned Leads', value: stats?.total_assigned || 0, icon: <ClipboardList />, color: 'border-blue-500 text-blue-600', sub: 'Total assigned' },
+        { label: 'Pending Surveys', value: stats?.pending_surveys || 0, icon: <Clock />, color: 'border-orange-500 text-orange-600', sub: 'Action required' },
+        { label: 'Completed Surveys', value: stats?.completed_surveys || 0, icon: <CheckCircle2 />, color: 'border-emerald-500 text-emerald-600', sub: 'Surveyed' },
+        { label: 'Installations', value: stats?.completed_installations || 0, icon: <Sun />, color: 'border-indigo-500 text-indigo-600', sub: 'Finalized' },
+    ];
+
+    return (
+        <div className="space-y-8 animate-in fade-in duration-700">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-200">
+                <div>
+                    <h1 className="text-3xl font-display font-black text-slate-900 tracking-tight flex items-center gap-3">
+                        <LayoutDashboard className="text-orange-500" size={32} />
+                        Field Operations Hub
+                    </h1>
+                    <p className="text-slate-500 text-sm mt-1 font-medium italic">Performance overview & real-time assignments</p>
+                </div>
+                <Link to="/technical/leads" className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 hover:scale-105 transition-all shadow-xl">
+                    View Assigned Leads
+                </Link>
+            </div>
+
+            {/* KPI Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {kpiCards.map((card, i) => (
+                    <div key={i} className={`bg-white p-6 rounded-[2rem] border-l-8 ${card.color} shadow-sm hover:shadow-md transition-all group`}>
+                         <div className="flex justify-between items-start">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{card.label}</p>
+                                <h3 className="text-3xl font-display font-black text-slate-800">{card.value}</h3>
+                            </div>
+                            <div className="p-3 bg-slate-50 rounded-2xl group-hover:bg-slate-100 transition-colors">
+                                {card.icon}
+                            </div>
+                         </div>
+                         <p className="text-[9px] font-bold text-slate-500 mt-4 uppercase tracking-tighter">{card.sub}</p>
+                    </div>
+                ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Recent Activity */}
+                <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8">
+                    <h2 className="text-xl font-display font-black text-slate-800 mb-6 flex items-center gap-2">
+                        Recent Logged Visits
+                    </h2>
+                    {activities.length > 0 ? (
+                        <div className="space-y-4">
+                            {activities.map((act) => (
+                                <div key={act.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-slate-100 transition-colors">
+                                    <div className={`p-3 rounded-xl ${act.visit_type === 'site_survey' ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                        <MapPin size={20} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-bold text-slate-800 text-sm">{act.lead.beneficiary_name}</p>
+                                        <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">
+                                            {act.visit_type.replace('_', ' ')} • {act.lead.ulid}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase">{formatDate(act.created_at)}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="py-12 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No visit logs recorded yet</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Quick Info / Tips */}
+                <div className="space-y-6">
+                    <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+                        <h3 className="text-lg font-display font-black mb-4 flex items-center gap-2">
+                            <Sun className="text-orange-400" /> Ground Support
+                        </h3>
+                        <p className="text-sm text-slate-300 leading-relaxed font-medium">
+                            Ensuring accurate geo-tagged status updates is critical for lead processing. Always verify the GPS lock before submitting a visit.
+                        </p>
+                        <div className="mt-6 pt-6 border-t border-white/10">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-orange-400">Need Help?</p>
+                            <p className="text-xs mt-1 text-slate-400">Contact your technical lead or regional admin.</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-orange-50 rounded-[2.5rem] border border-orange-100 p-8">
+                        <h4 className="text-orange-800 font-black text-sm uppercase tracking-widest mb-4">Current Focus</h4>
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-orange-500" />
+                                <span className="text-xs font-bold text-orange-950">Prioritize "REGISTERED" leads</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-orange-500" />
+                                <span className="text-xs font-bold text-orange-950">Upload clear selfie photos</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-orange-500" />
+                                <span className="text-xs font-bold text-orange-950">Sync data after every visit</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

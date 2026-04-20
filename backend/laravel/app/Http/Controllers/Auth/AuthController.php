@@ -62,7 +62,7 @@ class AuthController extends Controller
         
         /** @var User $user */
         // Status Validation
-        if (in_array($user->role, ['agent', 'super_agent', 'enumerator'])) {
+        if (in_array($user->role, ['agent', 'super_agent', 'enumerator', 'field_technical_team', 'operator'])) {
             if ($user->status === 'pending') {
                 return response()->json(['success' => false, 'message' => 'Account pending approval'], 403);
             }
@@ -72,7 +72,11 @@ class AuthController extends Controller
         }
 
         if (!$user->email) {
-            return response()->json(['success' => false, 'message' => 'No email associated with this account. Please contact support.'], 422);
+            $msg = ($user->role === 'field_technical_team') 
+                ? 'No email associated with your technician account. Please ask your Admin to add an email to your profile so you can receive OTPs.'
+                : 'No email associated with this account. Please contact support.';
+                
+            return response()->json(['success' => false, 'message' => $msg], 422);
         }
 
         $throttleKey = 'send-otp:'.$user->mobile;
@@ -115,7 +119,17 @@ class AuthController extends Controller
         ]);
 
         // STEP 4: Send direct immediately (synchronously)
-        Mail::to($user->email)->send(new \App\Mail\LoginOtpMail($otp));
+        try {
+            Log::info("Attempting to send OTP mail to: " . $user->email . " for role: " . $user->role);
+            Mail::to($user->email)->send(new \App\Mail\LoginOtpMail($otp));
+            Log::info("OTP mail dispatch command successful for: " . $user->email);
+        } catch (\Throwable $e) {
+            Log::error("OTP Mailer Failure for " . $user->email . ": " . $e->getMessage(), [
+                'exception' => $e,
+                'user_id' => $user->id,
+                'role' => $user->role
+            ]);
+        }
 
 
         return response()->json([

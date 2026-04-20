@@ -1,0 +1,8 @@
+#!/usr/bin/expect -f
+set timeout -1
+set password "Sugen@9313"
+
+spawn scp -o StrictHostKeyChecking=no -P 65002 backend/laravel/resources/views/pdf/quotation.blade.php backend/laravel/resources/views/pdf/receipt.blade.php u335000182@92.249.46.36:domains/andleebsurya.in/public_html/backend/laravel/resources/views/pdf/
+expect "password:"
+send "$password\r"
+expect eof

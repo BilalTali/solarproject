@@ -32,8 +32,8 @@
         /* World-Class Designer Footer/Branding */
         .brand-container {
             border-bottom: 2px solid #A68636;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
         .company-brand {
             font-family: 'DejaVu Serif', serif;
@@ -53,14 +53,14 @@
             margin-top: 5px;
         }
 
-        .header-table td { vertical-align: bottom; }
-        .logo { max-width: 130px; }
+        .header-table td { vertical-align: middle; }
+        .logo { max-width: 110px; max-height: 80px; display: block; }
         .company-contact { text-align: right; font-size: 7pt; color: #636E72; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.5px; }
 
         .doc-title-bar {
             text-align: center;
-            margin: 20px 0 30px 0;
-            padding: 8px 0;
+            margin: 10px 0 15px 0;
+            padding: 5px 0;
             background-color: #fcfcfc;
             border-top: 0.5px solid #eee;
             border-bottom: 0.5px solid #eee;
@@ -119,7 +119,7 @@
             text-align: center;
             width: 200px;
             margin-left: auto;
-            margin-top: 50px;
+            margin-top: 30px;
         }
         .signature-img {
             max-height: 50px;
@@ -171,7 +171,7 @@
     </div>
 
     <!-- Recipient & Meta -->
-    <table style="margin-bottom: 40px;">
+    <table style="margin-bottom: 20px;">
         <tr>
             <td style="width: 60%; vertical-align: top;">
                 <div class="section-header">Client Recipient</div>
@@ -267,7 +267,7 @@
         <div class="sig-line">Authorized Signatory</div>
     </div>
 
-    <div style="text-align: center; font-size: 7.5pt; color: #aaa; margin-top: 60px; border-top: 1px solid #eee; padding-top: 15px;">
+    <div style="text-align: center; font-size: 7.5pt; color: #aaa; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">
         &copy; {{ date('Y') }} {{ $companyName }} &bull; Leading with Solar. All rights reserved.
     </div>
 

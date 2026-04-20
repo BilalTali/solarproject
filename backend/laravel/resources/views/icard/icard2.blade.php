@@ -223,10 +223,10 @@
     <div style="position:absolute; bottom:25pt; right:12pt; width:110pt; text-align:center; z-index:15;">
       <div style="position:relative; height:32pt; width:100%; display:block;">
         @if($sealBase64)
-          <img src="{{ $sealBase64 }}" style="position:absolute; width:44pt; height:44pt; right:35pt; top:-12pt; opacity:0.35; z-index:5;" alt="Seal">
+          <img src="{{ $sealBase64 }}" style="position:absolute; width:44pt; height:44pt; right:35pt; top:-12pt; opacity:0.15; z-index:5;" alt="Seal">
         @endif
         @if($sigBase64)
-          <img src="{{ $sigBase64 }}" style="position:absolute; width:34pt; height:34pt; right:8pt; top:0pt; opacity:1.0; z-index:15;" alt="Signature">
+          <img src="{{ $sigBase64 }}" style="position:absolute; width:44pt; height:auto; right:8pt; top:0pt; z-index:15; mix-blend-mode: multiply; filter: contrast(1.2);" alt="Signature">
         @endif
       </div>
       <div style="width:90pt; height:0.5pt; background:#FF9500; opacity:0.4; margin:2pt auto;"></div>
@@ -316,10 +316,10 @@
       {{-- Wrapper: relative, fixed height 32pt --}}
       <div style="position:relative; height:32pt; width:100pt; display:inline-block;">
         @if($sealBase64)
-          <img src="{{ $sealBase64 }}" style="position:absolute; width:38pt; height:38pt; left:24pt; top:-8pt; opacity:0.35; z-index:5;" alt="Seal">
+          <img src="{{ $sealBase64 }}" style="position:absolute; width:38pt; height:38pt; left:24pt; top:-8pt; opacity:0.15; z-index:5;" alt="Seal">
         @endif
         @if($sigBase64)
-          <img src="{{ $sigBase64 }}" style="position:absolute; width:28pt; height:28pt; left:36pt; top:2pt; opacity:1.0; z-index:15;" alt="Signature">
+          <img src="{{ $sigBase64 }}" style="position:absolute; width:38pt; height:auto; left:36pt; top:2pt; z-index:15; mix-blend-mode: multiply; filter: contrast(1.2);" alt="Signature">
         @endif
       </div>
 

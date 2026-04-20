@@ -26,52 +26,33 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Appointment Letter - {{ isset($user) ? $user->name : 'User' }}</title>
     <style>
-        @font-face {
-            font-family: 'Cinzel';
-            src: local('Cinzel'), url('{{ public_path("fonts/Cinzel-Bold.ttf") }}') format('truetype');
-            font-weight: bold;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'DM Sans';
-            src: local('DM Sans'), url('{{ public_path("fonts/DMSans-Regular.ttf") }}') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'DM Sans';
-            src: local('DM Sans'), url('{{ public_path("fonts/DMSans-Bold.ttf") }}') format('truetype');
-            font-weight: bold;
-            font-style: normal;
-        }
-
         @page {
             size: A4;
             margin: 0;
         }
         body {
-            font-family: 'DM Sans', 'Times New Roman', Helvetica, Arial, sans-serif;
+            font-family: 'Helvetica', 'Arial', sans-serif;
             font-size: 9.5pt;
-            line-height: 1.35;
+            line-height: 1.5;
             color: #04111F;
             margin: 0;
             padding: 1cm 1.5cm;
             background: #fff;
         }
         .company-name {
-            font-family: 'Cinzel', serif;
-            font-size: 26pt;
+            font-family: 'Times New Roman', serif;
+            font-size: 24pt;
             font-weight: bold;
             color: #0A1931;
             text-transform: uppercase;
             margin: 0;
             padding: 0;
-            line-height: 0.9;
+            line-height: 1;
+            letter-spacing: 2px;
         }
         
         .company-tagline {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 10pt;
+            font-size: 9pt;
             font-weight: bold;
             color: #F7B100;
             text-transform: uppercase;
@@ -80,10 +61,9 @@
         }
 
         .affiliation-partner {
-            font-family: 'DM Sans', sans-serif;
             font-size: 8pt;
             color: #64748B;
-            font-weight: 700;
+            font-weight: bold;
             margin-top: 6px;
             text-transform: uppercase;
             letter-spacing: 0.8px;
@@ -350,15 +330,15 @@
 
     <div class="signature-section">
         <div class="sig-container">
-            <div style="position: relative; height: 100px; margin-bottom: 5px;">
+            <div style="position: relative; padding: 10px 0;">
                 @if($sealBase64)
-                    <img src="{{ $sealBase64 }}" class="seal-image" style="width: 100px; height: 100px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); opacity: 0.85; z-index: 5;">
+                    <img src="{{ $sealBase64 }}" class="seal-image" style="width: 100px; height: 100px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); opacity: 0.3; z-index: 5;">
                 @endif
                 @if($sigBase64)
-                    <img src="{{ $sigBase64 }}" class="sig-image" style="width: 140px; height: auto; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 10;">
+                    <img src="{{ $sigBase64 }}" class="sig-image" style="width: 140px; height: auto; position: relative; z-index: 10; mix-blend-mode: multiply; filter: contrast(1.2);">
                 @endif
             </div>
-            <div class="sig-name" style="margin-top: 10px;">{{ $authorizedSignatory }}</div>
+            <div class="sig-name" style="margin-top: 5px; border-top: 1px solid #E2E8F0; padding-top: 5px;">{{ $authorizedSignatory }}</div>
             <div class="sig-title">{{ $signatoryTitle }}</div>
         </div>
     </div>

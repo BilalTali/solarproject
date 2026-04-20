@@ -280,48 +280,46 @@ class JoiningLetterService
     private function getBase64Image(?string $path, bool $useFallback = true): ?string
     {
         if (! $path) {
-            return null;
+            return $useFallback ? $this->getFallbackLogo() : null;
         }
 
-        // Handle full URLs if they were passed through (strip prefix to get relative path)
-        if (str_starts_with($path, 'http')) {
+        // Handle full URLs
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
             $storageUrl = asset('storage/');
             if (str_starts_with($path, $storageUrl)) {
                 $path = str_replace($storageUrl, '', $path);
             } else {
-                // External URL: try to download or fallback to placeholder
                 try {
-                    $content = file_get_contents($path);
+                    $content = @file_get_contents($path);
                     if ($content) {
                         $finfo = new \finfo(FILEINFO_MIME_TYPE);
                         $mimeType = $finfo->buffer($content);
                         return 'data:' . $mimeType . ';base64,' . base64_encode($content);
                     }
-                } catch (\Throwable $e) {
-                    // Fall down to fallback
-                }
+                } catch (\Throwable $e) {}
+                return $useFallback ? $this->getFallbackLogo() : null;
             }
         }
 
-        // 1. Try public path first (for assets/images)
+        // 1. Try public path
         $fullPath = public_path($path);
         if (file_exists($fullPath) && ! is_dir($fullPath)) {
             $type = pathinfo($fullPath, PATHINFO_EXTENSION);
             return 'data:image/'.$type.';base64,'.base64_encode(file_get_contents($fullPath));
         }
 
-        // 2. Try storage disk (for user uploads)
+        // 2. Try storage disk
         if (Storage::disk('public')->exists($path)) {
             $content = Storage::disk('public')->get($path);
             $type = pathinfo($path, PATHINFO_EXTENSION);
             return 'data:image/'.$type.';base64,'.base64_encode($content);
         }
 
-        if (!$useFallback) {
-            return null;
-        }
+        return $useFallback ? $this->getFallbackLogo() : null;
+    }
 
-        // Fallback placeholder logo (Simple SVG Circle with initials if file missing)
+    private function getFallbackLogo(): string
+    {
         return 'data:image/svg+xml;base64,'.base64_encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#0A1931"/><text x="50" y="65" font-family="Arial" font-size="40" font-weight="bold" fill="#F7B100" text-anchor="middle">AS</text></svg>');
     }
 }

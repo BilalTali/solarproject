@@ -11,7 +11,7 @@ import { useAuthStore } from '@/store/authStore';
 import ForgotPasswordForm from './ForgotPasswordForm';
 
 const step1Schema = z.object({
-    email: z.string().email('Enter a valid email address'),
+    email: z.string().min(1, 'Enter your email, mobile number, or ID'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 type Step1Data = z.infer<typeof step1Schema>;
@@ -114,13 +114,13 @@ export default function LoginForm({ role, redirectPath }: LoginFormProps) {
         return (
             <form onSubmit={step1Form.handleSubmit((d) => sendOtpMutation.mutate(d))} className="space-y-6 animate-in fade-in slide-in-from-right-4">
                 <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Login Identifier</label>
                     <div className="relative group">
                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                         <input
-                            type="email"
+                            type="text"
                             className={`w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400 ${step1Form.formState.errors.email ? 'border-red-500 focus:ring-red-500/5' : ''}`}
-                            placeholder="name@company.com"
+                            placeholder="Email, Mobile, or ID"
                             {...step1Form.register('email')}
                             autoFocus
                         />
