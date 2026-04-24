@@ -14,6 +14,7 @@ import api from '@/services/axios';
 import toast from 'react-hot-toast';
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm';
 import { SettingJsonEditor } from '@/components/admin/SettingJsonEditor';
+import SuperAdminCrmOptionsPage from '@/pages/super-admin/SuperAdminCrmOptionsPage';
 
 export default function SuperAdminProfilePage() {
     const queryClient = useQueryClient();
@@ -26,7 +27,7 @@ export default function SuperAdminProfilePage() {
     });
 
     // Authority Tabs
-    const [authorityTab, setAuthorityTab] = useState<'presence' | 'content' | 'branding' | 'billing' | 'achievements' | 'feedback' | 'nav' | 'footer'>('presence');
+    const [authorityTab, setAuthorityTab] = useState<'presence' | 'content' | 'branding' | 'billing' | 'achievements' | 'feedback' | 'nav' | 'footer' | 'crm'>('presence');
     const [saving, setSaving] = useState(false);
 
     // Authority State
@@ -182,6 +183,7 @@ export default function SuperAdminProfilePage() {
                         <NavTab id="footer" label="Footer Settings" icon={<Building2 size={16} />} active={authorityTab === 'footer'} onClick={setAuthorityTab} />
                         <NavTab id="achievements" label="Achievements" icon={<Trophy size={16} />} active={authorityTab === 'achievements'} onClick={setAuthorityTab} />
                         <NavTab id="feedback" label="Customer Feedback" icon={<MessageSquare size={16} />} active={authorityTab === 'feedback'} onClick={setAuthorityTab} />
+                        <NavTab id="crm" label="CRM Configuration" icon={<Shield size={16} />} active={authorityTab === 'crm'} onClick={setAuthorityTab} />
                     </nav>
                 </div>
 
@@ -541,6 +543,15 @@ export default function SuperAdminProfilePage() {
 
                             {authorityTab === 'achievements' && <AchievementManager />}
                             {authorityTab === 'feedback' && <FeedbackManager />}
+                            {authorityTab === 'crm' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600"><Shield size={18} /></div>
+                                        <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">CRM Pipeline Configuration</h2>
+                                    </div>
+                                    <SuperAdminCrmOptionsPage />
+                                </div>
+                            )}
                         </div>
                     </div>
 
