@@ -74,15 +74,22 @@ class AdminDashboardController extends Controller
         // Multi-tenant Isolation: Get all managed IDs for recursive team visibility
         $managedIds = $isSuperAdmin ? [] : $user->getManagedUserIds();
 
-        // 1. Leads
         $leadQuery = Lead::query();
         if (!$isSuperAdmin) {
-            $leadQuery->where(function ($q) use ($managedIds) {
-                $q->whereIn('created_by_super_agent_id', $managedIds)
-                  ->orWhereIn('submitted_by_agent_id', $managedIds)
-                  ->orWhereIn('submitted_by_enumerator_id', $managedIds)
-                  ->orWhereIn('assigned_agent_id', $managedIds)
-                  ->orWhereIn('assigned_super_agent_id', $managedIds);
+            $leadQuery->where(function ($q) use ($user, $managedIds) {
+                $q->where(function ($q2) use ($managedIds) {
+                    $q2->where('owner_type', 'admin_pool')
+                       ->where(function ($q3) use ($managedIds) {
+                           $q3->whereIn('created_by_super_agent_id', $managedIds)
+                              ->orWhereIn('submitted_by_agent_id', $managedIds)
+                              ->orWhereIn('submitted_by_enumerator_id', $managedIds)
+                              ->orWhereIn('assigned_agent_id', $managedIds)
+                              ->orWhereIn('assigned_super_agent_id', $managedIds)
+                              ->orWhereIn('assigned_admin_id', $managedIds);
+                       });
+                })
+                ->orWhere('assigned_admin_id', $user->id)
+                ->orWhere('wa_handler_admin_id', $user->id);
             });
         }
 

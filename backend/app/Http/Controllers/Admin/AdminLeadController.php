@@ -28,20 +28,26 @@ class AdminLeadController extends Controller
 
         $user = $request->user();
 
-        // ── RECURSIVE TEAM ISOLATION ──
+        // ── RECURSIVE TEAM ISOLATION & HIERARCHY APPROVAL GATE ──
         if (!$user->isSuperAdmin()) {
             $managedIds = $user->getManagedUserIds();
             $query->where(function ($q) use ($user, $managedIds) {
-                // Core team ownership (recursive)
-                $q->whereIn('created_by_super_agent_id', $managedIds)
-                  ->orWhereIn('submitted_by_agent_id', $managedIds)
-                  ->orWhereIn('submitted_by_enumerator_id', $managedIds)
-                  ->orWhereIn('assigned_agent_id', $managedIds)
-                  ->orWhereIn('assigned_super_agent_id', $managedIds)
-                  ->orWhereIn('assigned_admin_id', $managedIds)
-                  // Directly handled by this admin
-                  ->orWhere('assigned_admin_id', $user->id)
-                  ->orWhere('wa_handler_admin_id', $user->id);
+                // The Admin should ONLY see leads from their hierarchy if the lead 
+                // has been approved by the BDM/Super Agent and escalated to the admin_pool.
+                $q->where(function ($q2) use ($managedIds) {
+                    $q2->where('owner_type', 'admin_pool')
+                       ->where(function ($q3) use ($managedIds) {
+                           $q3->whereIn('created_by_super_agent_id', $managedIds)
+                              ->orWhereIn('submitted_by_agent_id', $managedIds)
+                              ->orWhereIn('submitted_by_enumerator_id', $managedIds)
+                              ->orWhereIn('assigned_agent_id', $managedIds)
+                              ->orWhereIn('assigned_super_agent_id', $managedIds)
+                              ->orWhereIn('assigned_admin_id', $managedIds);
+                       });
+                })
+                // Allow direct assignments to this admin regardless of pool state
+                ->orWhere('assigned_admin_id', $user->id)
+                ->orWhere('wa_handler_admin_id', $user->id);
             });
         }
 
