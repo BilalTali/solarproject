@@ -17,9 +17,9 @@ import ChangePasswordForm from '@/components/shared/ChangePasswordForm';
 import MobileInput from '@/components/shared/MobileInput';
 import { useSettings } from '@/hooks/useSettings';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
+import SuperAdminCrmOptionsPage from '@/pages/super-admin/SuperAdminCrmOptionsPage';
 
-
-type TabId = 'company' | 'branding' | 'achievements' | 'feedback' | 'portal' | 'icard' | 'profile' | 'letter' | 'incentive';
+type TabId = 'company' | 'branding' | 'achievements' | 'feedback' | 'portal' | 'icard' | 'profile' | 'letter' | 'incentive' | 'crm_options';
 
 // ─── Standalone sub-components ───
 
@@ -279,6 +279,7 @@ const AdminSettingsPage: React.FC = () => {
             { id: 'achievements' as TabId, label: 'Achievements', icon: Trophy },
             { id: 'feedback' as TabId, label: 'Feedback', icon: MessageSquare },
             { id: 'incentive' as TabId, label: 'Incentive Points', icon: Trophy },
+            { id: 'crm_options' as TabId, label: 'CRM Configuration', icon: SettingsIcon },
         ] : []),
         { id: 'icard', label: 'ID Card', icon: CreditCard },
         { id: 'letter', label: 'Joining Letter', icon: FileText },
@@ -427,6 +428,8 @@ const AdminSettingsPage: React.FC = () => {
                                 return <AchievementManager />;
                             case 'feedback':
                                 return <FeedbackManager />;
+                            case 'crm_options':
+                                return <div className="animate-in fade-in slide-in-from-bottom-2 duration-500"><SuperAdminCrmOptionsPage /></div>;
                             case 'profile':
                                 return (
                                     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-500">
