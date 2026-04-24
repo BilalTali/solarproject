@@ -139,10 +139,16 @@ export interface BillingItem {
 export interface LeadStatusLog {
     id: number;
     lead_id: number;
-    changed_by: number;
+    changed_by: number | null;
     from_status: LeadStatus;
     to_status: LeadStatus;
     notes: string | null;
+    /** F3 — Geotag evidence (set when changed by field_technical_team) */
+    geotag_photo_path: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    /** B4 — Role of the user who made the change */
+    changed_by_role: string | null;
     changedBy?: User;
     created_at: string;
 }
@@ -156,6 +162,10 @@ export interface LeadDocument {
     download_url: string;
     original_filename: string;
     uploaded_by: number;
+    /** F5 — Document visibility flag for downline users (agents/enumerators) */
+    visible_to_downline: boolean;
+    /** F5 — Role of the uploader for filtering/display logic */
+    uploaded_by_role: string | null;
     uploadedBy?: User;
     created_at: string;
 }

@@ -14,6 +14,7 @@ import CommissionInlineEntry from '@/components/admin/CommissionInlineEntry';
 import { useAuthStore } from '@/store/authStore';
 import { useAdminSettings } from '@/hooks/useAdminSettings';
 import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor, MILESTONE_STATUSES } from '@/constants/leadStatuses';
+import { GEOTAG_REQUIRED_STATUSES } from '@/constants/statusTransitions';
 import { List } from 'react-window';
 import MobileFilterModal from '@/components/shared/MobileFilterModal';
 import { LeadDocumentsModal } from '@/components/leads/LeadDocumentsModal';
@@ -953,9 +954,8 @@ export default function AdminLeadsPage() {
                                                         onChange={e => setNewStatus(e.target.value)}
                                                         className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"
                                                     >
-                                                        {LEAD_STATUS_OPTIONS
-                                                            .filter(opt => opt.value !== 'SITE_SURVEY' && opt.value !== 'COMPLETED')
-                                                            .map(opt => (
+                                                        {/* F2 — All statuses shown to admin; SITE_SURVEY + COMPLETED exclusion removed */}
+                                                        {LEAD_STATUS_OPTIONS.map(opt => (
                                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                                         ))}
                                                     </select>
@@ -965,7 +965,15 @@ export default function AdminLeadsPage() {
                                                         ⚠ Changing status to "Registered at MNRE" will require uploading the Feasibility Report and E-Token.
                                                     </p>
                                                 )}
-                                                <p className="text-[10px] text-slate-400 italic">⚠ "Site Survey Done" and "Successfully Completed" are set only by the Field Technical Team via geo-tagged visit.</p>
+                                                {/* F1 — Show geotag notice when admin manually overrides a tech-only status */}
+                                                {GEOTAG_REQUIRED_STATUSES.includes(newStatus as any) && (
+                                                    <p className="text-[10px] text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-100 italic">
+                                                        ℹ “Site Survey Done” and “Successfully Completed” are normally set by the Field Technical Team via geo-tagged visit. You are using Admin override — no geotag is required.
+                                                    </p>
+                                                )}
+                                                {!GEOTAG_REQUIRED_STATUSES.includes(newStatus as any) && (
+                                                    <p className="text-[10px] text-slate-400 italic">ℹ “Site Survey Done” and “Successfully Completed” are auto-set when the Field Technical Team submits a geo-tagged visit. Admin can override here.</p>
+                                                )}
                                                 <textarea
                                                     rows={2}
                                                     value={statusNote}
@@ -1052,10 +1060,19 @@ export default function AdminLeadsPage() {
                                             </section>
                                         )}
 
-                                        {/* ── Status History ── */}
+                                        {/* F3 + F4 — Status History with geotag evidence + technician banner */}
                                         {(fullLead?.status_logs?.length ?? 0) > 0 && (
                                             <section>
                                                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Status History</p>
+
+                                                {/* F4 — Banner: last change was by a field technician */}
+                                                {fullLead!.status_logs![0]?.changed_by_role === 'field_technical_team' && (
+                                                    <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                                                        <AlertCircle size={14} className="text-amber-500 shrink-0" />
+                                                        <span>Status last changed by Field Tech: <strong>{fullLead!.status_logs![0].changedBy?.name ?? 'Technician'}</strong> on {fmt(fullLead!.status_logs![0].created_at)}</span>
+                                                    </div>
+                                                )}
+
                                                 <ol className="relative border-l border-slate-200 space-y-4 ml-2">
                                                     {fullLead!.status_logs!.map(log => (
                                                         <li key={log.id} className="ml-4">
@@ -1064,6 +1081,9 @@ export default function AdminLeadsPage() {
                                                                 <span className={`px-1.5 py-0.5 rounded text-xs ${getLeadStatusColor(log.from_status)}`}>{getLeadStatusLabel(log.from_status)}</span>
                                                                 <span className="text-slate-400 text-xs">→</span>
                                                                 <span className={`px-1.5 py-0.5 rounded text-xs ${getLeadStatusColor(log.to_status)}`}>{getLeadStatusLabel(log.to_status)}</span>
+                                                                {log.changed_by_role === 'field_technical_team' && (
+                                                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-100 text-indigo-700 uppercase tracking-wide">Field Tech</span>
+                                                                )}
                                                             </div>
                                                             <div className="flex items-center gap-2 mt-1">
                                                                 <Calendar size={11} className="text-slate-400" />
@@ -1071,6 +1091,30 @@ export default function AdminLeadsPage() {
                                                                 {log.changedBy && <span className="text-xs text-slate-400">by {log.changedBy.name}</span>}
                                                             </div>
                                                             {log.notes && <p className="text-xs text-slate-500 mt-0.5 italic">"{log.notes}"</p>}
+                                                            {/* F3 — Geotag evidence (visible when set by field tech) */}
+                                                            {log.geotag_photo_path && (
+                                                                <div className="mt-2 flex items-start gap-3">
+                                                                    <img
+                                                                        src={`/storage/${log.geotag_photo_path}`}
+                                                                        alt="Geotag selfie"
+                                                                        className="w-14 h-14 object-cover rounded-lg border border-slate-200 shrink-0"
+                                                                    />
+                                                                    <div className="space-y-1">
+                                                                        {log.latitude && log.longitude && (
+                                                                            <a
+                                                                                href={`https://maps.google.com/?q=${log.latitude},${log.longitude}`}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="inline-flex items-center gap-1 text-[10px] text-blue-600 underline hover:text-blue-800"
+                                                                            >
+                                                                                <MapPin size={10} />
+                                                                                {Number(log.latitude).toFixed(5)}, {Number(log.longitude).toFixed(5)} — View on Maps
+                                                                            </a>
+                                                                        )}
+                                                                        <p className="text-[10px] text-slate-400 italic">Geo-tagged site photo</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </li>
                                                     ))}
                                                 </ol>
