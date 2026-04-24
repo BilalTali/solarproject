@@ -16,6 +16,7 @@ export function StatusTransitionModal({ isOpen, onClose, onSubmit, isPending, ta
     const [eToken, setEToken] = useState<File | null>(null);
     const [additionalDocument, setAdditionalDocument] = useState<File | null>(null);
     const [notes, setNotes] = useState('');
+    const [visibleToDownline, setVisibleToDownline] = useState(false);
 
     if (!isOpen) return null;
 
@@ -31,6 +32,7 @@ export function StatusTransitionModal({ isOpen, onClose, onSubmit, isPending, ta
 
         const fd = new FormData();
         fd.append('status', targetStatus);
+        fd.append('visible_to_downline', visibleToDownline ? '1' : '0');
         
         if (notes) fd.append('notes', notes);
         
@@ -107,7 +109,20 @@ export function StatusTransitionModal({ isOpen, onClose, onSubmit, isPending, ta
                             />
                         </div>
 
-                        <div className="space-y-1.5 pt-2">
+                        <div className="space-y-3 pt-2">
+                             <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50/50 border border-indigo-100 rounded-lg">
+                                <input 
+                                    type="checkbox" 
+                                    id="visible_to_downline"
+                                    checked={visibleToDownline}
+                                    onChange={e => setVisibleToDownline(e.target.checked)}
+                                    className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                                />
+                                <label htmlFor="visible_to_downline" className="text-[11px] font-bold text-indigo-700 uppercase cursor-pointer select-none">
+                                    Share these documents with downstream agents/enumerators
+                                </label>
+                             </div>
+
                             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Status Change Notes</label>
                             <textarea
                                 rows={2}

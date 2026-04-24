@@ -151,7 +151,8 @@ class AdminLeadController extends Controller
             $request->status,
             $request->user()->id,
             $request->notes,
-            $request->file('receipt')
+            $request->file('receipt'),
+            $request->file('geotag')
         );
 
         if ($request->hasFile('feasibility_report')) {

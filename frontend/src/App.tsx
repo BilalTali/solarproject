@@ -119,6 +119,8 @@ const SuperAdminCommissionsPage = lazy(() => import('@/pages/super-admin/SuperAd
 const SuperAdminProfilePage = lazy(() => import('@/pages/super-admin/SuperAdminProfilePage'));
 const SuperAdminFAQPage = lazy(() => import('@/pages/super-admin/SuperAdminFAQPage'));
 const SuperAdminChatbotPage = lazy(() => import('@/pages/super-admin/SuperAdminChatbotPage'));
+const SuperAdminCrmOptionsPage = lazy(() => import('@/pages/super-admin/SuperAdminCrmOptionsPage'));
+
 
 /** Redirect admin to dashboard; operators straight to leads */
 function AdminIndexRedirect() {
@@ -324,6 +326,7 @@ export default function App() {
             <Route path="monitor/agents" element={<SuperAdminMonitorAgentsPage />} />
             <Route path="monitor/enumerators" element={<SuperAdminMonitorEnumeratorsPage />} />
             <Route path="monitor/leads" element={<SuperAdminMonitorLeadsPage />} />
+            <Route path="crm-options" element={<SuperAdminCrmOptionsPage />} />
             <Route path="offers" element={<AdminOffersPage />} />
             <Route path="redemptions" element={<AdminRedemptionsPage />} />
             <Route path="absorptions" element={<AdminAbsorptionsPage />} />

@@ -96,6 +96,7 @@ $api->as('api.v1.')->group(function () {
     Route::get('/public/verify-agent/{token}', [PublicController::class, 'verifyAgent']);
     Route::get('/public/help', [PublicController::class, 'help']);
     Route::get('/public/support-contacts', [SAChatbotController::class, 'publicContacts'])->middleware(\App\Http\Middleware\CacheResponse::class);
+    Route::get('/public/crm-options', [\App\Http\Controllers\CrmOptionController::class, 'getPublicOptions'])->middleware(\App\Http\Middleware\CacheResponse::class);
 
     // Signed Lead Document View (Publicly accessible via signature)
     Route::get('/public/leads/{ulid}/documents/{id}/view', [LeadDocumentController::class, 'viewSigned'])
@@ -159,7 +160,7 @@ $api->as('api.v1.')->group(function () {
         Route::middleware('enumerator')->prefix('enumerator')->group(function () {
             Route::get('/dashboard/stats', [\App\Http\Controllers\Admin\EnumeratorDashboardController::class, 'stats']);
             Route::get('/profile', [AuthController::class, 'me']);
-            Route::put('/profile', [\App\Http\Controllers\Auth\SharedProfileController::class, 'update']);
+            Route::put('/profile', [SharedProfileController::class, 'update']);
             
             Route::get('/leads', [\App\Http\Controllers\Admin\EnumeratorLeadController::class, 'index']);
             Route::post('/leads', [\App\Http\Controllers\Admin\EnumeratorLeadController::class, 'store']);
@@ -214,7 +215,7 @@ $api->as('api.v1.')->group(function () {
             Route::post('/offers/{id}/redeem', [AgentOfferController::class, 'redeem']);
             Route::get('/offers/redemptions', [AgentOfferController::class, 'redemptions']);
 
-            Route::put('/profile', [\App\Http\Controllers\Auth\SharedProfileController::class, 'update']);
+            Route::put('/profile', [SharedProfileController::class, 'update']);
 
             // Enumerators
             Route::apiResource('enumerators', \App\Http\Controllers\Admin\AgentEnumeratorController::class)->names('agent.enumerators');
@@ -266,8 +267,8 @@ $api->as('api.v1.')->group(function () {
 
             Route::get('/profile', [AuthController::class, 'me']);
             Route::get('/profile/qr-scans', [SADashboardController::class, 'getQrScans']);
-            Route::put('/profile', [\App\Http\Controllers\Auth\SharedProfileController::class, 'update']);
-            Route::put('/change-password', [\App\Http\Controllers\Auth\SharedProfileController::class, 'changePassword']);
+            Route::put('/profile', [SharedProfileController::class, 'update']);
+            Route::put('/change-password', [SharedProfileController::class, 'changePassword']);
 
             // Route::get('/commission-slabs', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionSlabController::class, 'index']);
             // Route::post('/commission-slabs', [\App\Http\Controllers\Api\V1\SuperAgent\CommissionSlabController::class, 'store']);
@@ -444,6 +445,9 @@ $api->as('api.v1.')->group(function () {
             // FAQ Management (Moved to Super Admin)
             Route::apiResource('faqs', SAFAQController::class);
             Route::patch('/faqs/{faq}/toggle-status', [SAFAQController::class, 'toggleStatus']);
+
+            // CRM Options Management
+            Route::apiResource('crm-options', \App\Http\Controllers\CrmOptionController::class);
 
             // Commission Settlement (Super Admin pays Admins)
             Route::get('/commissions/summary', [MonitoringController::class, 'commissionsSummary']);

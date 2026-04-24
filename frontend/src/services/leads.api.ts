@@ -107,6 +107,10 @@ export const leadsApi = {
         });
         return res.data;
     },
+    getAvailableStatuses: async (ulid: string) => {
+        const res = await api.get<ApiResponse<{ statuses: string[], requires_geotag: string[] }>>(`/admin/leads/${ulid}/available-statuses`);
+        return res.data;
+    },
     // Unified commission entry
     enterCommission: async (ulid: string, payload: { payee_id: number; amount: number }) => {
         const res = await api.post<ApiResponse<unknown>>(`/admin/leads/${ulid}/commission/enter`, payload);

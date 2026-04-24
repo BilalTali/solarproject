@@ -87,7 +87,7 @@ class TechnicalDashboardController extends Controller
 
         // ── FIX B4: Capture old status BEFORE any mutation ────────────
         $oldStatus = $lead->status;
-        $newStatus = $request->visit_type === 'site_survey' ? 'SITE_SURVEY' : 'COMPLETED';
+        $newStatus = $request->visit_type === 'site_survey' ? 'SURVEY_DONE' : 'SOLAR_INSTALLED';
         $visitLabel = str_replace('_', ' ', $request->visit_type);
 
         $path = null;
@@ -161,9 +161,9 @@ class TechnicalDashboardController extends Controller
         $stats = [
             'total_assigned'          => (clone $baseQuery)->count(),
             'pending_surveys'         => (clone $baseQuery)->whereIn('status', ['NEW', 'REGISTERED', 'ON_HOLD'])->count(),
-            'completed_surveys'       => (clone $baseQuery)->whereIn('status', ['SITE_SURVEY', 'AT_BANK', 'COMPLETED'])->count(),
-            'pending_installations'   => (clone $baseQuery)->where('status', 'AT_BANK')->count(),
-            'completed_installations' => (clone $baseQuery)->where('status', 'COMPLETED')->count(),
+            'completed_surveys'       => (clone $baseQuery)->whereIn('status', ['SURVEY_DONE', 'AT_BANK', 'SOLAR_INSTALLED', 'COMPLETED'])->count(),
+            'pending_installations'   => (clone $baseQuery)->whereIn('status', ['AT_BANK', 'INSTALLATION_SCHEDULED'])->count(),
+            'completed_installations' => (clone $baseQuery)->whereIn('status', ['SOLAR_INSTALLED', 'COMPLETED'])->count(),
         ];
 
         $recentActivity = LeadTechnicalVisit::where('technician_id', $user->id)

@@ -180,4 +180,8 @@ export const publicApi = {
         const res = await api.get<ApiResponse<HelpCenterData>>('/public/help');
         return res.data.data as HelpCenterData;
     },
+    getCrmOptions: async (): Promise<Record<string, any[]>> => {
+        const res = await api.get<ApiResponse<Record<string, any[]>>>('/public/crm-options');
+        return res.data.data ?? {};
+    },
 };

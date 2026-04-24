@@ -36,8 +36,8 @@ export const LEAD_STATUS_CONFIG: Record<string, { label: string; color: string; 
         color: 'bg-indigo-50 text-indigo-700',
         badgeClass: 'badge-registered'
     },
-    'SITE_SURVEY': { 
-        label: 'Site Survey Done', 
+    'SURVEY_DONE': { 
+        label: 'Survey Done', 
         color: 'bg-purple-50 text-purple-700',
         badgeClass: 'badge-survey'
     },
@@ -45,6 +45,16 @@ export const LEAD_STATUS_CONFIG: Record<string, { label: string; color: string; 
         label: 'At Bank', 
         color: 'bg-violet-50 text-violet-700',
         badgeClass: 'badge-at_bank'
+    },
+    'INSTALLATION_SCHEDULED': { 
+        label: 'Installation Scheduled', 
+        color: 'bg-blue-50 text-blue-700',
+        badgeClass: 'badge-installation-scheduled'
+    },
+    'SOLAR_INSTALLED': { 
+        label: 'Solar Installed', 
+        color: 'bg-green-50 text-green-700',
+        badgeClass: 'badge-installed'
     },
     'COMPLETED': { 
         label: 'Successfully Completed', 
@@ -92,8 +102,10 @@ export function getLeadStatusBadgeClass(status: string): string {
 
 export const MILESTONE_STATUSES = [
     'REGISTERED',
-    'SITE_SURVEY',
+    'SURVEY_DONE',
     'AT_BANK',
+    'INSTALLATION_SCHEDULED',
+    'SOLAR_INSTALLED',
     'COMPLETED',
     'PROJECT_COMMISSIONING',
     'SUBSIDY_REQUEST',

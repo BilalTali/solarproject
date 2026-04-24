@@ -15,7 +15,6 @@ import { useAuthStore } from '@/store/authStore';
 import { useAdminSettings } from '@/hooks/useAdminSettings';
 import { LEAD_STATUS_OPTIONS, getLeadStatusLabel, getLeadStatusColor, MILESTONE_STATUSES } from '@/constants/leadStatuses';
 import { GEOTAG_REQUIRED_STATUSES } from '@/constants/statusTransitions';
-import { List } from 'react-window';
 import MobileFilterModal from '@/components/shared/MobileFilterModal';
 import { LeadDocumentsModal } from '@/components/leads/LeadDocumentsModal';
 import { StatusTransitionModal } from '@/components/leads/StatusTransitionModal';
@@ -348,88 +347,75 @@ export default function AdminLeadsPage() {
                                         <p className="text-slate-400">No leads found{search || status || source ? ' matching your filters' : ''}.</p>
                                     </td>
                                 </tr>
-                            ) : (
-                                <tr className="contents">
-                                    <td colSpan={19} className="p-0">
-                                        <List<object>
-                                            style={{ height: 600, width: '100%' }}
-                                            rowCount={leads.length}
-                                            rowHeight={60}
-                                            rowProps={{}}
-                                            rowComponent={({ index, style }: { index: number, style: React.CSSProperties }) => {
-                                                const lead = leads[index];
-                                                return (
-                                                    <div 
-                                                        style={{...style, display: 'flex', borderBottom: '1px solid #f1f5f9'}}
-                                                        className="hover:bg-slate-50 transition-colors cursor-pointer group"
-                                                        onClick={() => openDetail(lead)}
-                                                    >
-                                                        <div className="px-4 py-3 font-mono text-[10px] text-slate-600 whitespace-nowrap w-[100px] flex items-center">{lead.ulid?.slice(-10)}</div>
-                                                        <div className="px-4 py-3 font-medium text-slate-800 whitespace-nowrap w-[200px] flex items-center">{lead.beneficiary_name}</div>
-                                                        <div className="px-4 py-3 text-slate-600 whitespace-nowrap w-[150px] flex items-center">{lead.beneficiary_mobile}</div>
-                                                        <div className="px-4 py-3 text-slate-600 whitespace-nowrap w-[120px] flex items-center">{lead.referral_agent_id || '—'}</div>
-                                                        <div className="px-4 py-3 text-slate-600 whitespace-nowrap w-[120px] flex items-center">{lead.beneficiary_state}</div>
-                                                        <div className="px-4 py-3 text-slate-600 whitespace-nowrap w-[120px] flex items-center">{lead.beneficiary_district}</div>
-                                                        <div className="px-4 py-3 text-slate-600 w-[200px] flex items-center truncate" title={lead.beneficiary_address ?? ''}>{lead.beneficiary_address ?? '—'}</div>
-                                                        <div className="px-4 py-3 text-slate-800 whitespace-nowrap w-[150px] flex items-center">{lead.discom_name || '—'}</div>
-                                                        <div className="px-4 py-3 text-slate-600 font-mono whitespace-nowrap w-[150px] flex items-center">{lead.consumer_number || '—'}</div>
-                                                        <div className="px-4 py-3 text-slate-600 whitespace-nowrap w-[100px] flex items-center">{lead.system_capacity?.replace(/_/g, ' ') || '—'}</div>
-                                                        <div className="px-4 py-3 text-slate-600 whitespace-nowrap w-[100px] flex items-center">{lead.roof_size?.replace(/_/g, ' ') || '—'}</div>
-                                                        <div className="px-4 py-3 text-slate-600 whitespace-nowrap w-[120px] flex items-center">{lead.monthly_bill_amount ? `₹${lead.monthly_bill_amount}` : '—'}</div>
-                                                        <div className="px-4 py-3 w-[100px] flex items-center">
-                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ${
-                                                                lead.source === 'public_form'
-                                                                    ? (lead.referral_agent_id ? 'bg-emerald-100 text-emerald-700' : 'bg-violet-100 text-violet-700')
-                                                                    : 'bg-sky-100 text-sky-700'
-                                                            }`}>
-                                                                {lead.source === 'public_form'
-                                                                    ? (lead.referral_agent_id ? 'Referral' : 'Public')
-                                                                    : 'Executive'}
-                                                            </span>
-                                                        </div>
-                                                        <div className="px-4 py-3 text-slate-600 whitespace-nowrap w-[200px] flex items-center">{lead.assigned_super_agent?.name ?? <span className="text-slate-400 italic">Unassigned</span>}</div>
-                                                        <div className="px-4 py-3 text-slate-600 whitespace-nowrap w-[200px] flex items-center">{lead.submitted_by_enumerator?.name ?? lead.submitted_by_agent?.name ?? <span className="text-slate-500 italic">Direct</span>}</div>
-                                                        <div className="px-4 py-3 whitespace-nowrap w-[150px] flex items-center">
-                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ${getLeadStatusColor(lead.status)}`}>
-                                                                {getLeadStatusLabel(lead.status)}
-                                                            </span>
-                                                        </div>
-                                                        <div className="px-4 py-3 whitespace-nowrap w-[100px] flex items-center">
-                                                            {lead.documents?.find(d => d.document_type === 'receipt') ? (
-                                                                <a 
-                                                                    href={lead.documents.find(d => d.document_type === 'receipt')?.download_url} 
-                                                                    target="_blank" 
-                                                                    rel="noopener noreferrer"
-                                                                    onClick={e => e.stopPropagation()}
-                                                                    className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded-md border border-blue-100 transition-colors uppercase tracking-tight"
-                                                                >
-                                                                    <Download size={10} /> Receipt
-                                                                </a>
-                                                            ) : (
-                                                                <span className="text-[10px] text-slate-300 italic">No receipt</span>
-                                                            )}
-                                                        </div>
-                                                        <div className="px-4 py-3 text-slate-600 text-[10px] whitespace-nowrap w-[120px] flex items-center">{fmt(lead.created_at)}</div>
-                                                        <div className="px-4 py-3 w-[140px] flex items-center gap-3">
-                                                            <button 
-                                                                onClick={(e) => { e.stopPropagation(); openDetail(lead); }}
-                                                                className="text-[10px] text-orange-600 hover:text-orange-700 font-black uppercase tracking-widest border border-orange-100 px-2 py-1 rounded hover:bg-orange-50 transition-colors"
-                                                            >
-                                                                View
-                                                            </button>
-                                                            <LeadDocumentsModal 
-                                                                ulid={lead.ulid} 
-                                                                triggerButtonText="" 
-                                                                buttonClassName="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all border border-transparent hover:border-indigo-100"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                );
-                                            }}
-                                        />
+            ) : leads.map((lead, idx) => (
+                                <tr
+                                    key={lead.id ?? idx}
+                                    className="hover:bg-slate-50 transition-colors cursor-pointer group"
+                                    onClick={() => openDetail(lead)}
+                                >
+                                    <td className="px-4 py-3 font-mono text-[10px] text-slate-600 whitespace-nowrap">{lead.ulid?.slice(-10)}</td>
+                                    <td className="px-4 py-3 font-medium text-slate-800 whitespace-nowrap">{lead.beneficiary_name}</td>
+                                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.beneficiary_mobile}</td>
+                                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.referral_agent_id || '—'}</td>
+                                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.beneficiary_state}</td>
+                                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.beneficiary_district}</td>
+                                    <td className="px-4 py-3 text-slate-600 max-w-[200px] truncate" title={lead.beneficiary_address ?? ''}>{lead.beneficiary_address ?? '—'}</td>
+                                    <td className="px-4 py-3 text-slate-800 whitespace-nowrap">{lead.discom_name || '—'}</td>
+                                    <td className="px-4 py-3 text-slate-600 font-mono whitespace-nowrap">{lead.consumer_number || '—'}</td>
+                                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.system_capacity?.replace(/_/g, ' ') || '—'}</td>
+                                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.roof_size?.replace(/_/g, ' ') || '—'}</td>
+                                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.monthly_bill_amount ? `₹${lead.monthly_bill_amount}` : '—'}</td>
+                                    <td className="px-4 py-3">
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ${
+                                            lead.source === 'public_form'
+                                                ? (lead.referral_agent_id ? 'bg-emerald-100 text-emerald-700' : 'bg-violet-100 text-violet-700')
+                                                : 'bg-sky-100 text-sky-700'
+                                        }`}>
+                                            {lead.source === 'public_form'
+                                                ? (lead.referral_agent_id ? 'Referral' : 'Public')
+                                                : 'Executive'}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.assigned_super_agent?.name ?? <span className="text-slate-400 italic">Unassigned</span>}</td>
+                                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{lead.submitted_by_enumerator?.name ?? lead.submitted_by_agent?.name ?? <span className="text-slate-500 italic">Direct</span>}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap">
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ${getLeadStatusColor(lead.status)}`}>
+                                            {getLeadStatusLabel(lead.status)}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3 whitespace-nowrap">
+                                        {lead.documents?.find(d => d.document_type === 'receipt') ? (
+                                            <a
+                                                href={lead.documents.find(d => d.document_type === 'receipt')?.download_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={e => e.stopPropagation()}
+                                                className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded-md border border-blue-100 transition-colors uppercase tracking-tight"
+                                            >
+                                                <Download size={10} /> Receipt
+                                            </a>
+                                        ) : (
+                                            <span className="text-[10px] text-slate-300 italic">No receipt</span>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-3 text-slate-600 text-[10px] whitespace-nowrap">{fmt(lead.created_at)}</td>
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); openDetail(lead); }}
+                                                className="text-[10px] text-orange-600 hover:text-orange-700 font-black uppercase tracking-widest border border-orange-100 px-2 py-1 rounded hover:bg-orange-50 transition-colors"
+                                            >
+                                                View
+                                            </button>
+                                            <LeadDocumentsModal
+                                                ulid={lead.ulid}
+                                                triggerButtonText=""
+                                                buttonClassName="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all border border-transparent hover:border-indigo-100"
+                                            />
+                                        </div>
                                     </td>
                                 </tr>
-                            )}
+                            ))}
                         </tbody>
                     </table>
                 </div>

@@ -7,8 +7,10 @@ export type LeadStatus =
     | 'DUPLICATE'
     | 'REJECTED'
     | 'REGISTERED'
-    | 'SITE_SURVEY'
+    | 'SURVEY_DONE'
     | 'AT_BANK'
+    | 'INSTALLATION_SCHEDULED'
+    | 'SOLAR_INSTALLED'
     | 'COMPLETED'
     | 'PROJECT_COMMISSIONING'
     | 'SUBSIDY_REQUEST'
@@ -87,8 +89,8 @@ export interface Lead {
 
     consumer_number: string | null;
     discom_name: string | null;
-    roof_size: 'less_100' | '100_200' | '200_300' | '300_plus' | null;
-    system_capacity: '3kw' | '3.3kw' | '4kw' | '5kw' | '5.5kw' | '6kw' | '7kw' | '8kw' | '9kw' | '10kw' | 'above_10kw' | null;
+    roof_size: string | null;
+    system_capacity: string | null;
     monthly_bill_amount: number | null;
     referral_agent_id: string | null;
 

@@ -20,8 +20,10 @@ export const ALL_STATUSES: LeadStatus[] = [
     'DUPLICATE',
     'REJECTED',
     'REGISTERED',
-    'SITE_SURVEY',
+    'SURVEY_DONE',
     'AT_BANK',
+    'INSTALLATION_SCHEDULED',
+    'SOLAR_INSTALLED',
     'COMPLETED',
     'PROJECT_COMMISSIONING',
     'SUBSIDY_REQUEST',
@@ -30,10 +32,10 @@ export const ALL_STATUSES: LeadStatus[] = [
 ];
 
 // Statuses the field_technical_team may set via geo-tagged visit
-export const TECHNICAL_STATUSES: LeadStatus[] = ['SITE_SURVEY', 'COMPLETED'];
+export const TECHNICAL_STATUSES: LeadStatus[] = ['SURVEY_DONE', 'SOLAR_INSTALLED'];
 
 // Statuses that require a geotag (photo + GPS) when set by technical team
-export const GEOTAG_REQUIRED_STATUSES: LeadStatus[] = ['SITE_SURVEY', 'COMPLETED'];
+export const GEOTAG_REQUIRED_STATUSES: LeadStatus[] = ['SURVEY_DONE', 'SOLAR_INSTALLED'];
 
 /**
  * Map of role → allowed status transitions.

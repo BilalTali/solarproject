@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
@@ -12,6 +12,7 @@ import { useSearchParams } from 'react-router-dom';
 import { leadsApi } from '@/services/leads.api';
 import { superAgentApi } from '@/services/superAgent.api';
 import { enumeratorApi } from '@/services/enumerator.api';
+import { publicApi } from '@/services/public.api';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
 import MobileInput from '@/components/shared/MobileInput';
 import { compressImage } from '@/utils/imageUtils';
@@ -31,10 +32,29 @@ interface FileUploadState {
 
 
 
-const DISCOM_LIST = [
-    'JPDCL', 'KPDCL',
-
-];
+// Dynamic options will be fetched from publicApi.getCrmOptions()
+const DEFAULT_OPTIONS = {
+    discom_name: [{ value: 'JPDCL', label: 'JPDCL' }, { value: 'KPDCL', label: 'KPDCL' }],
+    roof_size: [
+        { value: 'less_100', label: 'Less than 100 sq ft' },
+        { value: '100_200', label: '100 – 200 sq ft' },
+        { value: '200_300', label: '200 – 300 sq ft' },
+        { value: '300_plus', label: '300+ sq ft' },
+    ],
+    system_capacity: [
+        { value: '3kw', label: '3 kW' },
+        { value: '3.3kw', label: '3.3 kW' },
+        { value: '4kw', label: '4 kW' },
+        { value: '5kw', label: '5 kW' },
+        { value: '5.5kw', label: '5.5 kW' },
+        { value: '6kw', label: '6 kW' },
+        { value: '7kw', label: '7 kW' },
+        { value: '8kw', label: '8 kW' },
+        { value: '9kw', label: '9 kW' },
+        { value: '10kw', label: '10 kW' },
+        { value: 'above_10kw', label: 'Above 10 kW' },
+    ]
+};
 
 // ─── Sub Component ─────────────────────────────────────────────────────────────
 
@@ -255,6 +275,21 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
     const [solarRoofPhoto, setSolarRoofPhoto] = useState<FileUploadState>({ file: null, preview: null, name: '' });
     const [bankPassbook, setBankPassbook] = useState<FileUploadState>({ file: null, preview: null, name: '' });
     const [isSubmitted, setIsSubmitted] = useState(false);
+
+    // B1: Lead Creation Workflow - Dynamic CRM Options State
+    const { data: crmOptions } = useQuery({
+        queryKey: ['crmPublicOptions'],
+        queryFn: () => publicApi.getCrmOptions(),
+        staleTime: 1000 * 60 * 60, // 1 hour
+    });
+
+    const getOptions = (category: string) => {
+        const remote = crmOptions?.[category];
+        if (remote && remote.length > 0) {
+            return remote.map((opt: any) => ({ value: opt.value, label: opt.label }));
+        }
+        return DEFAULT_OPTIONS[category as keyof typeof DEFAULT_OPTIONS] || [];
+    };
 
     const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -502,35 +537,17 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
                             <Field label="Consumer Number" name="consumer_number" value={form.consumer_number} onChange={set} placeholder="CA-12345678" required />
                             <Select
                                 label="DISCOM" name="discom_name" value={form.discom_name} onChange={set} required
-                                options={DISCOM_LIST.map(d => ({ value: d, label: d }))}
+                                options={getOptions('discom_name')}
                             />
                             <Field label="Monthly Bill (₹)" name="monthly_bill_amount" value={form.monthly_bill_amount} onChange={set} type="number" placeholder="2500" required inputMode="numeric" />
                             <Select
                                 label="Roof Size (sq ft)" name="roof_size" value={form.roof_size} onChange={set} required
-                                options={[
-                                    { value: 'less_100', label: 'Less than 100 sq ft' },
-                                    { value: '100_200', label: '100 – 200 sq ft' },
-                                    { value: '200_300', label: '200 – 300 sq ft' },
-                                    { value: '300_plus', label: '300+ sq ft' },
-                                ]}
+                                options={getOptions('roof_size')}
                             />
                             <div className="md:col-span-2">
                                 <Select
-                                    label="System Capacity (kW) *" name="system_capacity" value={form.system_capacity} onChange={set} required
-                                    options={[
-                                        { value: '3kw', label: '3 kW' },
-                                        { value: '3.3kw', label: '3.3 kW' },
-                                        { value: '4kw', label: '4 kW' },
-                                        { value: '5kw', label: '5 kW' },
-                                        { value: '5.5kw', label: '5.5 kW' },
-                                        { value: '6kw', label: '6 kW' },
-                                        { value: '7kw', label: '7 kW' },
-                                        { value: '8kw', label: '8 kW' },
-                                        { value: '9kw', label: '9 kW' },
-                                        { value: '10kw', label: '10 kW' },
-                                        { value: 'above_10kw', label: 'Above 10 kW' },
-                                        { value: 'above_3kw', label: 'Above 3 kW' },
-                                    ]}
+                                    label="System Capacity (kW)" name="system_capacity" value={form.system_capacity} onChange={set} required
+                                    options={getOptions('system_capacity')}
                                 />
                             </div>
                         </div>

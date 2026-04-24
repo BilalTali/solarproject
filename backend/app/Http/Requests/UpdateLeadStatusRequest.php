@@ -36,6 +36,7 @@ class UpdateLeadStatusRequest extends FormRequest
             'feasibility_report'    => 'nullable|file|max:5120|mimes:pdf,jpg,jpeg,png',
             'e_token'               => 'nullable|file|max:5120|mimes:pdf,jpg,jpeg,png',
             'additional_document'   => 'nullable|file|max:5120|mimes:pdf,jpg,jpeg,png',
+            'geotag'                => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png',
         ];
 
         // REGISTERED requires supporting documents.

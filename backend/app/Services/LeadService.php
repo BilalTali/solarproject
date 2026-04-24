@@ -495,23 +495,29 @@ class LeadService
     // METHOD 9: updateStatus()
     // Core propagation: notifies SA + Agent automatically
     // ────────────────────────────────────────────────────────────────
-    public function updateStatus(Lead $lead, string $newStatus, int $changedById, ?string $notes = null, ?UploadedFile $receipt = null): void
+    public function updateStatus(Lead $lead, string $newStatus, int $changedById, ?string $notes = null, ?UploadedFile $receipt = null, ?UploadedFile $geotag = null): void
     {
-        $allStatuses = [
-            'NEW', 'ON_HOLD', 'INVALID', 'DUPLICATE', 'REJECTED',
-            'REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'COMPLETED',
-            'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED',
-        ];
+        $changer = User::find($changedById);
 
-        if (! in_array($newStatus, $allStatuses)) {
-            throw new \Exception("Invalid status: {$newStatus}");
+        // Enforce the centralized pipeline architectural limits implicitly
+        $allowedStatuses = \App\Services\StatusTransitionService::ALL_STATUSES;
+        if (! in_array($newStatus, $allowedStatuses)) {
+            throw new \Exception("Invalid status target: {$newStatus}");
+        }
+
+        // B4: Enforce Physical Geotag Requirements for specific pipeline actions natively
+        if (\App\Services\StatusTransitionService::requiresGeotag($newStatus)) {
+            if (!$geotag) {
+                // Return an explicit unprocessable entity error structure that triggers 422 HTTP responses on controllers
+                abort(422, "A physical Geotag photo artifact is absolutely required to transition to {$newStatus}.");
+            }
         }
 
         if ($lead->status === $newStatus) {
             return;
         }
 
-        DB::transaction(function () use ($lead, $newStatus, $changedById, $notes, $receipt) {
+        DB::transaction(function () use ($lead, $newStatus, $changedById, $notes, $receipt, $geotag) {
             $oldStatus = $lead->status;
             $changer = User::find($changedById);
 
@@ -520,7 +526,7 @@ class LeadService
                 $this->commissionService->revokeUnpaidCommissions($lead, $changer);
             }
 
-            $this->logStatusChange($lead, $changedById, $oldStatus, $newStatus, $notes);
+            $this->logStatusChange($lead, $changedById, $oldStatus, $newStatus, $notes, $geotag, $changer?->role);
 
             $lead->status = $newStatus;
             $lead->save();
@@ -528,6 +534,11 @@ class LeadService
             // UPLOAD RECEIPT if provided
             if ($newStatus === 'COMPLETED' && $receipt) {
                 $this->uploadDocument($lead, $receipt, 'receipt', $changedById);
+            }
+
+            // UPLOAD GEOTAG if provided
+            if ($geotag) {
+                $this->uploadDocument($lead, $geotag, 'geotag', $changedById, true, $changer->role);
             }
 
             // AUTO-PROPAGATION: Admin/SA changes → notify downstream parties
@@ -616,15 +627,57 @@ class LeadService
     // PRIVATE HELPERS
     // ────────────────────────────────────────────────────────────────
 
-    private function logStatusChange(Lead $lead, ?int $changedById, ?string $fromStatus, string $toStatus, ?string $notes): void
+    private function logStatusChange(Lead $lead, ?int $changedById, ?string $fromStatus, string $toStatus, ?string $notes, ?UploadedFile $geotag = null, ?string $role = null): void
     {
-        LeadStatusLog::create([
+        $logData = [
             'lead_id' => $lead->id,
             'changed_by' => $changedById,
             'from_status' => $fromStatus ?? $lead->status ?? 'NEW',
             'to_status' => $toStatus,
             'notes' => $notes,
-        ]);
+            'changed_by_role' => $role,
+        ];
+
+        if ($geotag) {
+            // 1. Upload the file
+            $path = $geotag->store("leads/geotags", 'public');
+            $logData['geotag_photo_path'] = $path;
+
+            // 2. Extract EXIF GPS data if available
+            try {
+                $exif = @exif_read_data($geotag->getRealPath());
+                if (isset($exif['GPSLatitude'], $exif['GPSLatitudeRef'], $exif['GPSLongitude'], $exif['GPSLongitudeRef'])) {
+                    $logData['latitude']  = $this->getGps($exif['GPSLatitude'], $exif['GPSLatitudeRef']);
+                    $logData['longitude'] = $this->getGps($exif['GPSLongitude'], $exif['GPSLongitudeRef']);
+                }
+            } catch (\Exception $e) {
+                // Silently fail if EXIF reading breaks; audit log remains without coords
+            }
+        }
+
+        LeadStatusLog::create($logData);
+    }
+
+    /**
+     * Helper to convert GPS DMS (Degrees, Minutes, Seconds) to decimal.
+     */
+    private function getGps($exifCoord, $hemi)
+    {
+        $degrees = count($exifCoord) > 0 ? $this->gps2Num($exifCoord[0]) : 0;
+        $minutes = count($exifCoord) > 1 ? $this->gps2Num($exifCoord[1]) : 0;
+        $seconds = count($exifCoord) > 2 ? $this->gps2Num($exifCoord[2]) : 0;
+
+        $flip = ($hemi == 'S' || $hemi == 'W') ? -1 : 1;
+
+        return $flip * ($degrees + ($minutes / 60) + ($seconds / 3600));
+    }
+
+    private function gps2Num($coordPart)
+    {
+        $parts = explode('/', $coordPart);
+        if (count($parts) <= 0) return 0;
+        if (count($parts) == 1) return $parts[0];
+        return floatval($parts[0]) / floatval($parts[1]);
     }
 
     private function leadBelongsToSuperAgentTeam(Lead $lead, User $superAgent): bool

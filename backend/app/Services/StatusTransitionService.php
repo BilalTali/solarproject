@@ -24,8 +24,10 @@ class StatusTransitionService
         'DUPLICATE',
         'REJECTED',
         'REGISTERED',
-        'SITE_SURVEY',
+        'SURVEY_DONE',
         'AT_BANK',
+        'INSTALLATION_SCHEDULED',
+        'SOLAR_INSTALLED',
         'COMPLETED',
         'PROJECT_COMMISSIONING',
         'SUBSIDY_REQUEST',
@@ -35,14 +37,14 @@ class StatusTransitionService
 
     // ── Statuses the field_technical_team may set via geo-tagged visit ──
     public const TECHNICAL_STATUSES = [
-        'SITE_SURVEY',
-        'COMPLETED',
+        'SURVEY_DONE',
+        'SOLAR_INSTALLED',
     ];
 
     // ── Statuses that REQUIRE a geotag (photo + GPS) when set by tech ─
     public const GEOTAG_REQUIRED_STATUSES = [
-        'SITE_SURVEY',
-        'COMPLETED',
+        'SURVEY_DONE',
+        'SOLAR_INSTALLED',
     ];
 
     /**
@@ -85,7 +87,7 @@ class StatusTransitionService
      * Return true when the given status transition REQUIRES a geotag photo
      * to be submitted alongside the status change.
      */
-    public function requiresGeotag(string $newStatus): bool
+    public static function requiresGeotag(string $newStatus): bool
     {
         return in_array($newStatus, self::GEOTAG_REQUIRED_STATUSES, true);
     }
@@ -103,8 +105,10 @@ class StatusTransitionService
             'DUPLICATE'              => 'Duplicate Entry',
             'REJECTED'               => 'Rejected',
             'REGISTERED'             => 'Registered at MNRE',
-            'SITE_SURVEY'            => 'Site Survey Done',
+            'SURVEY_DONE'            => 'Survey Done',
             'AT_BANK'                => 'At Bank',
+            'INSTALLATION_SCHEDULED' => 'Installation Scheduled',
+            'SOLAR_INSTALLED'        => 'Solar Installed',
             'COMPLETED'              => 'Successfully Completed',
             'PROJECT_COMMISSIONING'  => 'Project Commissioning',
             'SUBSIDY_REQUEST'        => 'Subsidy Request Filed',

@@ -17,6 +17,7 @@ const SUPER_ADMIN_NAV = [
     { icon: <Users className="w-5 h-5" />, label: 'Monitor BDEs (Agent)', to: '/super-admin/monitor/agents' },
     { icon: <Users className="w-5 h-5" />, label: 'Monitor Enumerators', to: '/super-admin/monitor/enumerators' },
     { icon: <FileText className="w-5 h-5" />, label: 'Monitor Leads', to: '/super-admin/monitor/leads' },
+    { icon: <Settings className="w-5 h-5" />, label: 'CRM Data Management', to: '/super-admin/crm-options' },
     { icon: <hr className="border-white/10 my-2" />, label: '', to: '', divider: true },
     { icon: <Gift className="w-5 h-5" />, label: 'Incentive Offers', to: '/super-admin/offers' },
     { icon: <Award className="w-5 h-5" />, label: 'Prize Redemptions', to: '/super-admin/redemptions' },
