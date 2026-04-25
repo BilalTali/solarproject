@@ -28,14 +28,12 @@
     <style>
         @page {
             size: A4;
-            margin: 0;
+            margin: 1.8cm 1.5cm 1.5cm 1.5cm;
         }
         * {
             box-sizing: border-box;
         }
         html, body {
-            width: 210mm;
-            height: 297mm;
             margin: 0;
             padding: 0;
             overflow: hidden;
@@ -45,7 +43,6 @@
             font-size: 8.5pt;
             line-height: 1.35;
             color: #04111F;
-            padding: 0.6cm 1.2cm 0.5cm 1.2cm;
             background: #fff;
             position: relative;
         }
@@ -175,10 +172,10 @@
 
         /* ── Footer ───────────────────────────────── */
         .footer {
-            position: absolute;
-            bottom: 0.35cm;
-            left: 1.2cm;
-            right: 1.2cm;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             text-align: center;
             font-size: 6.5pt;
             color: #94A3B8;
