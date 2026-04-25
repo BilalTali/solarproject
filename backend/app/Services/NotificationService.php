@@ -12,13 +12,26 @@ class NotificationService
 {
     public function create(int $userId, string $type, string $title, string $message, array $data = []): Notification
     {
-        return Notification::create([
+        $dbNotif = Notification::create([
             'user_id' => $userId,
             'type' => $type,
             'title' => $title,
             'message' => $message,
             'data' => $data,
         ]);
+
+        try {
+            $user = User::find($userId);
+            if ($user) {
+                // Determine the best redirect URL dynamically if absent
+                $url = $data['url'] ?? '/notifications';
+                $user->notify(new \App\Notifications\WebPushNotification($title, $message, $url));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('WebPush failed: ' . $e->getMessage());
+        }
+
+        return $dbNotif;
     }
 
     public function send(int $userId, string $type, string $title, string $message, array $data = []): Notification

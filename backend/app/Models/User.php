@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use NotificationChannels\WebPush\HasPushSubscriptions;
 
 /**
  * @property int $id
@@ -193,7 +194,7 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, HasPushSubscriptions;
 
     const ROLE_ADMIN = 'admin';
     const ROLE_SUPER_ADMIN = 'super_admin';

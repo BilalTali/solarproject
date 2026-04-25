@@ -120,6 +120,10 @@ $api->as('api.v1.')->group(function () {
         Route::post('/auth/set-password', [AuthController::class, 'setPassword']);
         Route::post('/auth/profile-photo', [AuthController::class, 'uploadProfilePhoto']);
         Route::put('/profile/change-password', [SharedProfileController::class, 'changePassword']);
+
+        // Web Push Subscriptions
+        Route::post('/push/subscribe', [\App\Http\Controllers\Shared\PushSubscriptionController::class, 'subscribe']);
+        Route::delete('/push/unsubscribe', [\App\Http\Controllers\Shared\PushSubscriptionController::class, 'unsubscribe']);
         Route::get('/icard/download-url2', [ICardController::class, 'getDownloadUrl2']);
         Route::get('/joining-letter/download-url', [JoiningLetterController::class, 'getDownloadUrl']);
         Route::get('/documents', [DocumentController::class, 'index']); // Auth-only resources

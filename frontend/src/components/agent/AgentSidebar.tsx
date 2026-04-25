@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Sun, LayoutDashboard, List, PlusCircle, DollarSign, Bell, User, Users, LogOut, BadgeCheck, FileText, Gift, Wallet } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { authApi } from '@/services/auth.api';
+import { agentsApi } from '@/services/agents.api';
 import { useAuthStore } from '@/store/authStore';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import { useSettings } from '@/hooks/useSettings';
@@ -34,6 +35,14 @@ export default function AgentSidebar({ onClose }: { onClose?: () => void }) {
             toast.success('Logged out successfully');
         },
     });
+
+    const { data: notifData } = useQuery({
+        queryKey: ['agent-notifications-count'],
+        queryFn: () => agentsApi.getNotifications(),
+        staleTime: 30000,
+        refetchInterval: 60000,
+    });
+    const unreadCount = notifData?.data?.data?.filter((n: any) => !n.read_at).length || 0;
 
     return (
         <aside className="w-64 h-full flex flex-col bg-slate-50 border-r border-slate-200 shadow-xl" aria-label="Agent Sidebar">
@@ -91,7 +100,12 @@ export default function AgentSidebar({ onClose }: { onClose?: () => void }) {
                             <span className={`${isActive ? 'text-sky-500 scale-110 drop-shadow-sm' : 'text-slate-400 group-hover:scale-110 transition-transform'}`} aria-hidden="true">
                                 {item.icon}
                             </span>
-                            <span className="text-sm">{item.label}</span>
+                            <span className="text-sm flex-1">{item.label}</span>
+                            {item.to.includes('/notifications') && unreadCount > 0 && (
+                                <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                                    {unreadCount}
+                                </span>
+                            )}
                         </Link>
                     );
                 })}

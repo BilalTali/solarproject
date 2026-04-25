@@ -1,10 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, CheckCircle2, Clock } from 'lucide-react';
+import { Bell, CheckCircle2, Clock, Volume2 } from 'lucide-react';
 import { agentsApi } from '@/services/agents.api';
 import toast from 'react-hot-toast';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 export default function AgentNotificationsPage() {
     const queryClient = useQueryClient();
+    const { isSupported, isSubscribed, subscribe } = usePushNotifications();
 
     const { data, isLoading } = useQuery({
         queryKey: ['agent-notifications'],
@@ -31,6 +33,24 @@ export default function AgentNotificationsPage() {
                     <p className="text-slate-500 text-sm mt-1">Updates on lead verifications and team activities</p>
                 </div>
             </div>
+
+            {isSupported && !isSubscribed && (
+                <div className="bg-sky-50 border border-sky-100 p-4 rounded-xl flex flex-col sm:flex-row items-center gap-4 justify-between">
+                    <div className="flex items-center gap-3 text-sky-800">
+                        <Volume2 className="text-sky-500 shrink-0" />
+                        <div>
+                            <p className="font-bold text-sm">Stay Updated Instantly</p>
+                            <p className="text-xs opacity-80">Enable Push Notifications to get alerts on your device even when closed.</p>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={() => subscribe().then(r => r ? toast.success('Push enabled!'):toast.error('Failed to enable'))}
+                        className="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+                    >
+                        Enable Push
+                    </button>
+                </div>
+            )}
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
                 {isLoading ? (

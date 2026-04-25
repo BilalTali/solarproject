@@ -41,21 +41,12 @@ export default defineConfig({
           }
         ],
       },
-      workbox: {
-        navigateFallbackDenylist: [/^\/api/, /^\/storage/, /^\/admin/, /^\/agent/],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-              }
-            }
-          }
-        ]
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
+      injectManifest: {
+        rollupFormat: 'iife',
+        maximumFileSizeToCacheInBytes: 5000000,
       }
     }),
     visualizer({
