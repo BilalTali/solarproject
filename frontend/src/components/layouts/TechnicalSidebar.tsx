@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Settings, LogOut, Sun, List, User, LayoutDashboard } from 'lucide-react';
+import { Settings, LogOut, Sun, List, User, LayoutDashboard, Banknote } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { authApi } from '@/services/auth.api';
@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 const NAV = [
     { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Portal Dashboard', to: '/technical/dashboard' },
     { icon: <List className="w-5 h-5" />, label: 'Assigned Leads', to: '/technical/leads' },
+    { icon: <Banknote className="w-5 h-5" />, label: 'My Commissions', to: '/technical/commissions' },
     { icon: <User className="w-5 h-5" />, label: 'My Hub (Profile)', to: '/technical/profile' },
 ];
 

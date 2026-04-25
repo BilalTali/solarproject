@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/services/axios';
-import { ClipboardList, CheckCircle2, Clock, MapPin, Sun, LayoutDashboard } from 'lucide-react';
-import { formatDate } from '@/utils/formatters';
+import { ClipboardList, CheckCircle2, Clock, MapPin, Sun, LayoutDashboard, Banknote } from 'lucide-react';
+import { formatDate, formatCurrency } from '@/utils/formatters';
 import DashboardSkeleton from '@/components/shared/DashboardSkeleton';
 
 interface TechnicalStats {
@@ -11,6 +11,8 @@ interface TechnicalStats {
     completed_surveys: number;
     pending_installations: number;
     completed_installations: number;
+    unpaid_commission: number;
+    paid_commission: number;
 }
 
 interface Activity {
@@ -42,6 +44,8 @@ export default function TechnicalDashboardPage() {
         { label: 'Pending Surveys', value: stats?.pending_surveys || 0, icon: <Clock />, color: 'border-orange-500 text-orange-600', sub: 'Action required' },
         { label: 'Completed Surveys', value: stats?.completed_surveys || 0, icon: <CheckCircle2 />, color: 'border-emerald-500 text-emerald-600', sub: 'Surveyed' },
         { label: 'Installations', value: stats?.completed_installations || 0, icon: <Sun />, color: 'border-indigo-500 text-indigo-600', sub: 'Finalized' },
+        { label: 'Pending Earnings', value: formatCurrency(stats?.unpaid_commission || 0), icon: <Banknote />, color: 'border-amber-500 text-amber-600', sub: 'To be disbursed' },
+        { label: 'Disbursed Earnings', value: formatCurrency(stats?.paid_commission || 0), icon: <CheckCircle2 />, color: 'border-green-500 text-green-600', sub: 'Total paid out' },
     ];
 
     return (

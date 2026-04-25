@@ -104,6 +104,7 @@ import TechnicalLayout from '@/components/layouts/TechnicalLayout';
 const TechnicalLeadsPage = lazy(() => import('@/pages/technical/TechnicalLeadsPage'));
 const TechnicalDashboardPage = lazy(() => import('@/pages/technical/TechnicalDashboardPage'));
 const TechnicalProfilePage = lazy(() => import('@/pages/technical/TechnicalProfilePage'));
+const TechnicalCommissionsPage = lazy(() => import('@/pages/technical/TechnicalCommissionsPage'));
 
 // Super Admin Pages
 import SuperAdminLayout from '@/components/layouts/SuperAdminLayout';
@@ -306,6 +307,7 @@ export default function App() {
           >
             <Route path="dashboard" element={<TechnicalDashboardPage />} />
             <Route path="leads" element={<TechnicalLeadsPage />} />
+            <Route path="commissions" element={<TechnicalCommissionsPage />} />
             <Route path="profile" element={<TechnicalProfilePage />} />
             <Route index element={<Navigate to="/technical/dashboard" replace />} />
           </Route>

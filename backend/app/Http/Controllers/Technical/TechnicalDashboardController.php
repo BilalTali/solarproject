@@ -164,6 +164,8 @@ class TechnicalDashboardController extends Controller
             'completed_surveys'       => (clone $baseQuery)->whereIn('status', ['SURVEY_DONE', 'AT_BANK', 'SOLAR_INSTALLED', 'COMPLETED'])->count(),
             'pending_installations'   => (clone $baseQuery)->whereIn('status', ['AT_BANK', 'INSTALLATION_SCHEDULED'])->count(),
             'completed_installations' => (clone $baseQuery)->whereIn('status', ['SOLAR_INSTALLED', 'COMPLETED'])->count(),
+            'unpaid_commission'       => (float) \App\Models\Commission::where('payee_id', $user->id)->unpaid()->sum('amount'),
+            'paid_commission'         => (float) \App\Models\Commission::where('payee_id', $user->id)->paid()->sum('amount'),
         ];
 
         $recentActivity = LeadTechnicalVisit::where('technician_id', $user->id)
@@ -178,6 +180,37 @@ class TechnicalDashboardController extends Controller
                 'stats'           => $stats,
                 'recent_activity' => $recentActivity,
             ],
+        ]);
+    }
+
+    /**
+     * Get commissions for the technician.
+     */
+    public function getCommissions(Request $request)
+    {
+        $user = $request->user();
+
+        if (! $user->isFieldTechnician()) {
+            return response()->json(['error' => 'Unauthorized access'], 403);
+        }
+
+        $commissions = \App\Models\Commission::where('payee_id', $user->id)
+            ->with(['lead', 'enteredBy', 'paidBy'])
+            ->latest()
+            ->paginate(20);
+
+        return response()->json([
+            'success' => true,
+            'data' => $commissions->items(),
+            'meta' => [
+                'current_page' => $commissions->currentPage(),
+                'last_page' => $commissions->lastPage(),
+                'total' => $commissions->total(),
+            ],
+            'summary' => [
+                'unpaid_total' => (float) \App\Models\Commission::where('payee_id', $user->id)->unpaid()->sum('amount'),
+                'paid_total'   => (float) \App\Models\Commission::where('payee_id', $user->id)->paid()->sum('amount'),
+            ]
         ]);
     }
 }
