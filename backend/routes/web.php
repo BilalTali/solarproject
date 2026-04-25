@@ -33,7 +33,7 @@ Route::get('/storage/{path}', function ($path) {
     if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
         return response()->file(storage_path('app/public/' . $path));
     }
-    abort(404);
+    return response('File not found natively in storage disk: ' . $path, 404);
 })->where('path', '.*');
 
 Route::get('/icons/icon-{size}.png', function ($size) {
