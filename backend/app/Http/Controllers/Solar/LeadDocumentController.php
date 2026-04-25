@@ -145,7 +145,7 @@ class LeadDocumentController extends Controller
         /** @var \Illuminate\Filesystem\FilesystemAdapter $local */
         $local = Storage::disk('local');
         if ($local->exists($path)) {
-            if (ob_get_length()) {
+            while (ob_get_level()) {
                 ob_end_clean();
             }
             return $isDownload 
@@ -156,7 +156,7 @@ class LeadDocumentController extends Controller
         /** @var \Illuminate\Filesystem\FilesystemAdapter $public */
         $public = Storage::disk('public');
         if ($public->exists($path)) {
-            if (ob_get_length()) {
+            while (ob_get_level()) {
                 ob_end_clean();
             }
             return $isDownload 

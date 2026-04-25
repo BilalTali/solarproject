@@ -335,7 +335,7 @@
                     <img src="{{ $sealBase64 }}" class="seal-image" style="width: 100px; height: 100px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); opacity: 0.3; z-index: 5;">
                 @endif
                 @if($sigBase64)
-                    <img src="{{ $sigBase64 }}" class="sig-image" style="width: 140px; height: auto; position: relative; z-index: 10; mix-blend-mode: multiply; filter: contrast(1.2);">
+                    <img src="{{ $sigBase64 }}" class="sig-image" style="width: 140px; height: auto; position: relative; z-index: 10;">
                 @endif
             </div>
             <div class="sig-name" style="margin-top: 5px; border-top: 1px solid #E2E8F0; padding-top: 5px;">{{ $authorizedSignatory }}</div>

@@ -226,7 +226,7 @@
           <img src="{{ $sealBase64 }}" style="position:absolute; width:44pt; height:44pt; right:35pt; top:-12pt; opacity:0.15; z-index:5;" alt="Seal">
         @endif
         @if($sigBase64)
-          <img src="{{ $sigBase64 }}" style="position:absolute; width:44pt; height:auto; right:8pt; top:0pt; z-index:15; mix-blend-mode: multiply; filter: contrast(1.2);" alt="Signature">
+          <img src="{{ $sigBase64 }}" style="position:absolute; width:44pt; height:auto; right:8pt; top:0pt; z-index:15;" alt="Signature">
         @endif
       </div>
       <div style="width:90pt; height:0.5pt; background:#FF9500; opacity:0.4; margin:2pt auto;"></div>
@@ -319,7 +319,7 @@
           <img src="{{ $sealBase64 }}" style="position:absolute; width:38pt; height:38pt; left:24pt; top:-8pt; opacity:0.15; z-index:5;" alt="Seal">
         @endif
         @if($sigBase64)
-          <img src="{{ $sigBase64 }}" style="position:absolute; width:38pt; height:auto; left:36pt; top:2pt; z-index:15; mix-blend-mode: multiply; filter: contrast(1.2);" alt="Signature">
+          <img src="{{ $sigBase64 }}" style="position:absolute; width:38pt; height:auto; left:36pt; top:2pt; z-index:15;" alt="Signature">
         @endif
       </div>
 
