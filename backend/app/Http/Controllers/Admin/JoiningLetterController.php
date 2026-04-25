@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\JoiningLetterService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\URL;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class JoiningLetterController extends Controller
 {
+    public function testPdf()
+    {
+        while (ob_get_level()) ob_end_clean();
+        return Pdf::loadHTML('<h1>Hello World</h1>')->download('test.pdf');
+    }
     protected $joiningLetterService;
 
     public function __construct(JoiningLetterService $joiningLetterService)
