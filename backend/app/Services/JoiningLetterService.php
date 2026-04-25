@@ -178,9 +178,15 @@ class JoiningLetterService
         $fileName = 'Joining_Letter_'.Str::slug($user->name).'_'.date('Ymd').'.pdf';
 
         if ($download) {
+            if (ob_get_length()) {
+                ob_end_clean();
+            }
             return $pdf->download($fileName);
         }
 
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
         return $pdf->output();
     }
 

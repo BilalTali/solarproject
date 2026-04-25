@@ -323,6 +323,10 @@ class ICardService
         $dompdf->loadHtml($html);
         $dompdf->render();
 
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
+
         return response(
             $dompdf->output(),
             200,
@@ -350,7 +354,7 @@ class ICardService
             } else {
                 // External URL: try to download or fallback to placeholder
                 try {
-                    $content = file_get_contents($path);
+                    $content = @file_get_contents($path);
                     if ($content) {
                         $finfo = new \finfo(FILEINFO_MIME_TYPE);
                         $mimeType = $finfo->buffer($content);
@@ -493,10 +497,11 @@ class ICardService
             imagepng($resized);
             $base64 = 'data:image/png;base64,' . base64_encode(ob_get_clean());
 
-            imagedestroy($img);
-            if ($cropped !== $img) imagedestroy($cropped);
-            imagedestroy($resized);
-            imagedestroy($mask);
+            // Image objects are automatically destroyed in PHP 8.4+, imagedestroy is deprecated
+            // imagedestroy($img);
+            // if ($cropped !== $img) imagedestroy($cropped);
+            // imagedestroy($resized);
+            // imagedestroy($mask);
 
             return $base64;
         } catch (\Throwable $e) {

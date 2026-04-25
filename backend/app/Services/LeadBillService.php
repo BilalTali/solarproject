@@ -42,6 +42,10 @@ class LeadBillService
         $dompdf->loadHtml($html);
         $dompdf->render();
 
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
+
         return response(
             $dompdf->output(),
             200,

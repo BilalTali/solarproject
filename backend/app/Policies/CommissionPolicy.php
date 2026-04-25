@@ -30,6 +30,9 @@ class CommissionPolicy
 
         // Logical Parent Check (BDM monitoring their team's earnings)
         if ($user->isSuperAgent()) {
+            if ($commission->payee_role === 'field_technical_team') {
+                return false;
+            }
             $logicalParentId = app(\App\Services\HierarchyService::class)->getLogicalParentId($commission->payee, $commission->lead);
             return (int) $logicalParentId === (int) $user->id;
         }
@@ -47,6 +50,9 @@ class CommissionPolicy
 
         // Recursive Hierarchy Check (Allows BDM to manage their whole team's payouts)
         if ($user->isSuperAgent()) {
+            if ($commission->payee_role === 'field_technical_team') {
+                return false;
+            }
             $ascendantSAId = app(\App\Services\HierarchyService::class)->findAscendantSuperAgentId($commission->payee);
             return (int) $ascendantSAId === (int) $user->id;
         }

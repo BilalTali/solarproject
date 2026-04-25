@@ -36,7 +36,8 @@ class SuperAgentCommissionController extends Controller
                     ->orWhere('entered_by', $superAgent->id)
                     ->orWhereHas('payee', fn ($pq) => $pq->where('parent_id', $superAgent->id))
                     ->orWhereHas('lead', fn ($lq) => $lq->where('assigned_super_agent_id', $superAgent->id));
-            });
+            })
+            ->where('payee_role', '!=', 'field_technical_team');
 
         // Apply status/view filter
         if ($request->filled('filter')) {
@@ -111,6 +112,7 @@ class SuperAgentCommissionController extends Controller
 
         // Summary logic: payouts are anything where SA is natural/dynamic parent or enterer
         $agentPayoutsQuery = Commission::query()->where('payee_id', '!=', $superAgent->id)
+            ->where('payee_role', '!=', 'field_technical_team')
             ->where(function ($q) use ($superAgent) {
                 $q->where('entered_by', $superAgent->id)
                     ->orWhereHas('payee', function ($pq) use ($superAgent) {

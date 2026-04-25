@@ -19,7 +19,8 @@ class AgentCommissionController extends Controller
         if (in_array($request->filter, ['pending_to_pay', 'all_to_pay'])) {
             $query = Commission::query()->with(['lead', 'payee'])
                 ->forPayer($agent->id)
-                ->where(fn($q) => $q->where('payee_role', 'enumerator'));
+                ->where(fn($q) => $q->where('payee_role', 'enumerator'))
+                ->where('payee_role', '!=', 'field_technical_team');
 
             if ($request->filter === 'pending_to_pay') {
                 $query->unpaid();
@@ -54,7 +55,9 @@ class AgentCommissionController extends Controller
         $agent = $request->user();
 
         $myEarningsBase = Commission::forPayee($agent->id)->where(fn($q) => $q->where('payee_role', 'agent'));
-        $payoutsBase = Commission::forPayer($agent->id)->where(fn($q) => $q->where('payee_role', 'enumerator'));
+        $payoutsBase = Commission::forPayer($agent->id)
+            ->where(fn($q) => $q->where('payee_role', 'enumerator'))
+            ->where('payee_role', '!=', 'field_technical_team');
 
         return response()->json([
             'success' => true,
