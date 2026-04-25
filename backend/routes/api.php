@@ -124,8 +124,8 @@ $api->as('api.v1.')->group(function () {
         // Web Push Subscriptions
         Route::post('/push/subscribe', [\App\Http\Controllers\Shared\PushSubscriptionController::class, 'subscribe']);
         Route::delete('/push/unsubscribe', [\App\Http\Controllers\Shared\PushSubscriptionController::class, 'unsubscribe']);
-        Route::get('/joining-letter/test', [\App\Http\Controllers\Admin\JoiningLetterController::class, 'testPdf']);
-        Route::get('/icard/download-url', [\App\Http\Controllers\Admin\ICardController::class, 'getDownloadUrl']);
+        Route::get('/joining-letter/test', [JoiningLetterController::class, 'testPdf']);
+        Route::get('/icard/download-url', [ICardController::class, 'getDownloadUrl']);
         Route::get('/joining-letter/download-url', [JoiningLetterController::class, 'getDownloadUrl']);
         Route::get('/documents', [DocumentController::class, 'index']); // Auth-only resources
         Route::get('/documents/{id}/view-url', [DocumentController::class, 'getSignedUrl']);
