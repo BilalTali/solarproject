@@ -28,20 +28,13 @@ Route::get('/favicon.ico', function () {
     abort(404);
 });
 
-// Explicit route just for branding storage
-Route::get('/storage/branding/{filename}', function ($filename) {
-    if (\Illuminate\Support\Facades\Storage::disk('public')->exists('branding/' . $filename)) {
-        return response()->file(storage_path('app/public/branding/' . $filename));
-    }
-    return response('File not found inside branding folder: ' . $filename, 404);
-});
-
-// Explicit route for generic storage
+// Serve all storage files directly via PHP (bypasses Hostinger symlink restrictions)
 Route::get('/storage/{path}', function ($path) {
-    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-        return response()->file(storage_path('app/public/' . $path));
+    $fullPath = storage_path('app/public/' . $path);
+    if (file_exists($fullPath) && is_file($fullPath)) {
+        return response()->file($fullPath);
     }
-    return response('Misc storage file not found: ' . $path, 404);
+    return response('Not found: ' . $path, 404);
 })->where('path', '.*');
 
 
