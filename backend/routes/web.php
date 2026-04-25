@@ -28,6 +28,14 @@ Route::get('/favicon.ico', function () {
     abort(404);
 });
 
+// Fallback to natively serve storage files without relying on symlinks for Hostinger
+Route::get('/storage/{path}', function ($path) {
+    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        return response()->file(storage_path('app/public/' . $path));
+    }
+    abort(404);
+})->where('path', '.*');
+
 Route::get('/icons/icon-{size}.png', function ($size) {
     $faviconPath = \App\Models\Setting::getValue('company_favicon');
     if ($faviconPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($faviconPath)) {
