@@ -21,12 +21,12 @@ class AdminLeadController extends Controller
     public function index(Request $request)
     {
         $query = Lead::query()->with([
-            'assignedSuperAgent:id,first_name,last_name,role', 
-            'assignedAgent:id,first_name,last_name,role', 
-            'submittedByAgent:id,first_name,last_name,role', 
-            'createdBySuperAgent:id,first_name,last_name,role', 
-            'assignedSurveyor:id,first_name,last_name,role', 
-            'assignedInstaller:id,first_name,last_name,role',
+            'assignedSuperAgent:id,name,role', 
+            'assignedAgent:id,name,role', 
+            'submittedByAgent:id,name,role', 
+            'createdBySuperAgent:id,name,role', 
+            'assignedSurveyor:id,name,role', 
+            'assignedInstaller:id,name,role',
             'documents', 'commissions'
         ]);
 
@@ -121,16 +121,16 @@ class AdminLeadController extends Controller
     public function show($ulid)
     {
         $lead = Lead::query()->with([
-            'assignedSuperAgent:id,first_name,last_name,role',
-            'assignedAgent:id,first_name,last_name,role',
-            'submittedByAgent:id,first_name,last_name,role',
-            'submittedByEnumerator:id,first_name,last_name,role',
-            'createdBySuperAgent:id,first_name,last_name,role',
-            'verifiedBySuperAgent:id,first_name,last_name,role',
-            'assignedSurveyor:id,first_name,last_name,role',
-            'assignedInstaller:id,first_name,last_name,role',
-            'statusLogs.changedBy:id,first_name,last_name,role', 
-            'verifications.performedBy:id,first_name,last_name,role',
+            'assignedSuperAgent:id,name,role',
+            'assignedAgent:id,name,role',
+            'submittedByAgent:id,name,role',
+            'submittedByEnumerator:id,name,role',
+            'createdBySuperAgent:id,name,role',
+            'verifiedBySuperAgent:id,name,role',
+            'assignedSurveyor:id,name,role',
+            'assignedInstaller:id,name,role',
+            'statusLogs.changedBy:id,name,role', 
+            'verifications.performedBy:id,name,role',
             'documents', 'commissions'
         ])
             ->where(fn ($q) => $q->where('ulid', $ulid))
