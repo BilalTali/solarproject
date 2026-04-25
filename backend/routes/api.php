@@ -129,6 +129,12 @@ $api->as('api.v1.')->group(function () {
         Route::get('/documents', [DocumentController::class, 'index']); // Auth-only resources
         Route::get('/documents/{id}/view-url', [DocumentController::class, 'getSignedUrl']);
 
+        // Temporary route to fix storage symlink issues on production without SSH
+        Route::get('/fix-storage', function () {
+            \Illuminate\Support\Facades\Artisan::call('storage:link');
+            return response()->json(['message' => 'Storage symlink created', 'output' => \Illuminate\Support\Facades\Artisan::output()]);
+        });
+
         // Lead Documents
         Route::get('/leads/{ulid}/documents/{id}/download', [LeadDocumentController::class, 'download'])->name('leads.documents.download');
         Route::get('/leads/{ulid}/documents/{id}/view-url', [LeadDocumentController::class, 'getSignedUrl']);
