@@ -19,7 +19,7 @@ self.addEventListener('push', (event) => {
                 badge: '/favicon.svg',
                 data: payload.data || {},
                 vibrate: [200, 100, 200]
-            })
+            } as any)
         );
     } catch (e) {
         console.error('Push payload parse error', e);
