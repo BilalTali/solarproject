@@ -28,18 +28,22 @@ Route::get('/favicon.ico', function () {
     abort(404);
 });
 
-// Fallback to natively serve storage files regardless of Hostinger's injected path prefixes
-Route::fallback(function () {
-    $path = request()->path();
-    if (str_contains($path, 'storage/')) {
-        $storagePath = explode('storage/', $path, 2)[1];
-        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($storagePath)) {
-            return response()->file(storage_path('app/public/' . $storagePath));
-        }
-        return response('File not found securely: ' . $storagePath, 404);
+// Explicit route just for branding storage
+Route::get('/storage/branding/{filename}', function ($filename) {
+    if (\Illuminate\Support\Facades\Storage::disk('public')->exists('branding/' . $filename)) {
+        return response()->file(storage_path('app/public/branding/' . $filename));
     }
-    return response('Backend fallback hit for: ' . $path, 404);
+    return response('File not found inside branding folder: ' . $filename, 404);
 });
+
+// Explicit route for generic storage
+Route::get('/storage/{path}', function ($path) {
+    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        return response()->file(storage_path('app/public/' . $path));
+    }
+    return response('Misc storage file not found: ' . $path, 404);
+})->where('path', '.*');
+
 
 Route::get('/icons/icon-{size}.png', function ($size) {
     $faviconPath = \App\Models\Setting::getValue('company_favicon');
