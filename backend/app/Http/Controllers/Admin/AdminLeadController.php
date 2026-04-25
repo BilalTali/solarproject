@@ -21,9 +21,13 @@ class AdminLeadController extends Controller
     public function index(Request $request)
     {
         $query = Lead::query()->with([
-            'assignedSuperAgent', 'assignedAgent', 'submittedByAgent', 
-            'createdBySuperAgent', 'documents', 'commissions',
-            'assignedSurveyor', 'assignedInstaller'
+            'assignedSuperAgent:id,first_name,last_name,role', 
+            'assignedAgent:id,first_name,last_name,role', 
+            'submittedByAgent:id,first_name,last_name,role', 
+            'createdBySuperAgent:id,first_name,last_name,role', 
+            'assignedSurveyor:id,first_name,last_name,role', 
+            'assignedInstaller:id,first_name,last_name,role',
+            'documents', 'commissions'
         ]);
 
         $user = $request->user();
@@ -105,7 +109,8 @@ class AdminLeadController extends Controller
             });
         }
 
-        $leads = $query->orderBy('created_at', 'desc')->paginate($request->input('per_page', 15));
+        $perPage = min((int) $request->input('per_page', 15), 100);
+        $leads = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json([
             'success' => true,
@@ -116,10 +121,17 @@ class AdminLeadController extends Controller
     public function show($ulid)
     {
         $lead = Lead::query()->with([
-            'assignedSuperAgent', 'assignedAgent', 'submittedByAgent',
-            'submittedByEnumerator', 'createdBySuperAgent', 'verifiedBySuperAgent',
-            'statusLogs.changedBy', 'documents', 'commissions',
-            'verifications.performedBy', 'assignedSurveyor', 'assignedInstaller'
+            'assignedSuperAgent:id,first_name,last_name,role',
+            'assignedAgent:id,first_name,last_name,role',
+            'submittedByAgent:id,first_name,last_name,role',
+            'submittedByEnumerator:id,first_name,last_name,role',
+            'createdBySuperAgent:id,first_name,last_name,role',
+            'verifiedBySuperAgent:id,first_name,last_name,role',
+            'assignedSurveyor:id,first_name,last_name,role',
+            'assignedInstaller:id,first_name,last_name,role',
+            'statusLogs.changedBy:id,first_name,last_name,role', 
+            'verifications.performedBy:id,first_name,last_name,role',
+            'documents', 'commissions'
         ])
             ->where(fn ($q) => $q->where('ulid', $ulid))
             ->firstOrFail();

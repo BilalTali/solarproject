@@ -87,7 +87,7 @@ export default function AdminLeadsPage() {
             status: status || undefined,
             source: source || undefined,
             page,
-            per_page: 200, // Higher per-page for virtualization demo
+            per_page: 50, // Reduced from 200 to prevent payload bottleneck
         }),
     });
 
