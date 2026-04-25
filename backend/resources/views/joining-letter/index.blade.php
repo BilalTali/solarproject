@@ -30,250 +30,229 @@
             size: A4;
             margin: 0;
         }
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 210mm;
+            height: 297mm;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
-            font-size: 9.5pt;
-            line-height: 1.5;
+            font-size: 8.5pt;
+            line-height: 1.35;
             color: #04111F;
-            margin: 0;
-            padding: 1cm 1.5cm;
+            padding: 0.6cm 1.2cm 0.5cm 1.2cm;
             background: #fff;
+            position: relative;
         }
+
+        /* ── Header ───────────────────────────────── */
         .company-name {
             font-family: 'Times New Roman', serif;
-            font-size: 24pt;
+            font-size: 19pt;
             font-weight: bold;
             color: #0A1931;
             text-transform: uppercase;
             margin: 0;
             padding: 0;
             line-height: 1;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
         }
-        
         .company-tagline {
-            font-size: 9pt;
+            font-size: 7.5pt;
             font-weight: bold;
             color: #F7B100;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-top: 4px;
+            letter-spacing: 1px;
+            margin-top: 2px;
         }
-
         .affiliation-partner {
-            font-size: 8pt;
+            font-size: 7pt;
             color: #64748B;
             font-weight: bold;
-            margin-top: 6px;
+            margin-top: 3px;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.5px;
         }
 
-        .company-contact {
-            margin-top: 8px;
-            font-size: 8pt;
-            color: #475569;
-            line-height: 1.3;
-        }
-
+        /* ── Metadata row ─────────────────────────── */
         .metadata-table {
             width: 100%;
-            margin-bottom: 20px;
-            font-size: 9.5pt;
+            margin-bottom: 6px;
+            font-size: 8.5pt;
         }
-
         .meta-label {
             font-weight: bold;
             color: #4A5568;
-            font-family: 'Helvetica', Arial, sans-serif;
-            font-size: 8.5pt;
+            font-size: 7.5pt;
             text-transform: uppercase;
         }
+
+        /* ── Body sections ────────────────────────── */
         .salutation {
-            margin-bottom: 20px;
+            margin-bottom: 6px;
         }
         .subject {
             text-align: center;
-            margin: 12px 0;
+            margin: 6px 0;
             font-weight: bold;
-            font-size: 10.5pt;
+            font-size: 9.5pt;
             text-decoration: underline;
             text-transform: uppercase;
-            line-height: 1.3;
+            line-height: 1.2;
             color: #0A1931;
         }
         .content {
             text-align: justify;
-            margin-bottom: 12px;
+            margin-bottom: 6px;
             clear: both;
         }
 
+        /* ── Terms box ────────────────────────────── */
         .terms-box {
             background: #F8FAFC;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 5px 10px;
             border-left: 3px solid #0A1931;
-            margin: 12px 0;
+            margin: 6px 0;
         }
-
         .terms-title {
-            font-family: 'Helvetica', Arial, sans-serif;
             font-weight: bold;
-            margin-bottom: 8px;
-            font-size: 9pt;
+            margin-bottom: 3px;
+            font-size: 7.5pt;
             text-transform: uppercase;
             color: #0A1931;
         }
         .terms-list {
-            padding-left: 18px;
+            padding-left: 14px;
             margin: 0;
-            font-size: 8.5pt;
+            font-size: 7.5pt;
         }
         .terms-list li {
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             text-align: justify;
         }
-        
-        .signature-section {
-            margin-top: 25px;
-            width: 100%;
-            height: 110px;
-        }
 
+        /* ── Signature ────────────────────────────── */
+        .signature-section {
+            margin-top: 8px;
+            width: 100%;
+        }
         .sig-container {
             float: right;
-            width: 250px;
+            width: 220px;
             text-align: center;
             position: relative;
         }
-
         .sig-image {
-            max-width: 160px;
-            max-height: 70px;
+            max-width: 130px;
+            max-height: 50px;
         }
-        
         .seal-image {
             position: absolute;
             left: 50%;
             top: 50%;
-            transform: translate(-50%, -50%);
-            height: 90px;
+            height: 75px;
             width: auto;
-            opacity: 0.8;
+            opacity: 0.25;
             z-index: 5;
         }
-
         .sig-name {
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 9pt;
             margin: 0;
             color: #0A1931;
         }
-
         .sig-title {
-            font-size: 9pt;
+            font-size: 7.5pt;
             color: #64748B;
             text-transform: uppercase;
-            font-family: 'Helvetica', Arial, sans-serif;
             font-weight: 700;
         }
-        
+
+        /* ── Footer ───────────────────────────────── */
         .footer {
             position: absolute;
-            bottom: 1.4cm;
-            left: 1.8cm;
-            right: 1.8cm;
+            bottom: 0.35cm;
+            left: 1.2cm;
+            right: 1.2cm;
             text-align: center;
-            font-size: 7.5pt;
+            font-size: 6.5pt;
             color: #94A3B8;
             border-top: 1px solid #E2E8F0;
-            padding-top: 10px;
-            font-family: 'Helvetica', Arial, sans-serif;
+            padding-top: 4px;
         }
-        
-        .footer-note {
-            margin-bottom: 4px;
-        }
-        
         .footer-site {
             font-weight: 700;
             color: #0A1931;
             text-transform: lowercase;
-            letter-spacing: 0.5px;
         }
 
+        /* ── Watermark ────────────────────────────── */
         .watermark {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) rotate(-30deg);
-            font-size: 100pt;
+            font-size: 80pt;
             font-weight: 900;
-            color: rgba(226, 232, 240, 0.15);
+            color: rgba(226, 232, 240, 0.12);
             z-index: -1;
             white-space: nowrap;
-            font-family: 'Helvetica', Arial, sans-serif;
             text-transform: uppercase;
-            pointer-events: none;
         }
 
-        .barcode-container {
-            margin-top: 8px;
-        }
-        .barcode-img {
-            height: 28px;
-            width: auto;
-        }
-        .qr-section {
-            text-align: right;
-        }
+        /* ── Barcode & QR ─────────────────────────── */
+        .barcode-container { margin-top: 3px; }
+        .barcode-img { height: 22px; width: auto; }
+        .qr-section { text-align: right; }
         .qr-img {
-            width: 85px;
-            height: 85px;
+            width: 68px;
+            height: 68px;
             border: 1px solid #E2E8F0;
-            padding: 4px;
-            border-radius: 8px;
+            padding: 3px;
             background: white;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
-
         .verification-text {
-            font-size: 7pt;
+            font-size: 6pt;
             color: #64748B;
-            margin-top: 4px;
+            margin-top: 2px;
             text-transform: uppercase;
             font-weight: 700;
-            letter-spacing: 0.5px;
         }
-
     </style>
 </head>
 <body>
     <div class="watermark">{{ $companyName }}</div>
 
-    <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 20px; border-bottom: 2.5px solid #0A1931; padding-bottom: 12px;">
+    {{-- ── HEADER ── --}}
+    <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 8px; border-bottom: 2px solid #0A1931; padding-bottom: 8px;">
         <tr>
-            <td width="20%" valign="middle" align="left">
+            <td width="18%" valign="middle" align="left">
                 @if($logoBase64)
-                    <img src="{{ $logoBase64 }}" style="max-width: 80px; max-height: 80px;" alt="Primary Logo">
+                    <img src="{{ $logoBase64 }}" style="max-width: 65px; max-height: 65px;" alt="Primary Logo">
                 @endif
             </td>
-            <td width="60%" valign="middle" align="center">
-                <h1 class="company-name">{{ $companyName }}</h1>
+            <td width="64%" valign="middle" align="center">
+                <div class="company-name">{{ $companyName }}</div>
                 <div class="company-tagline">{{ $companyTagline }}</div>
-                <div class="affiliation-partner">AN AFFILIATION PARTNER OF {{ $globalName }}</div>
+                <div class="affiliation-partner">An Affiliation Partner of {{ $globalName }}</div>
             </td>
-            <td width="20%" valign="middle" align="right">
+            <td width="18%" valign="middle" align="right">
                 @if($logoBase64_2)
-                    <img src="{{ $logoBase64_2 }}" style="max-width: 80px; max-height: 80px;" alt="Secondary Logo">
+                    <img src="{{ $logoBase64_2 }}" style="max-width: 65px; max-height: 65px;" alt="Secondary Logo">
                 @endif
             </td>
         </tr>
     </table>
 
+    {{-- ── LETTER NUMBER + DATE + QR ── --}}
     <table class="metadata-table" cellspacing="0" cellpadding="0">
         <tr>
-            <td width="60%">
+            <td width="65%" valign="top">
+                <span class="meta-label">Date:</span> <strong>{{ ($user->approved_at ?? null) ? $user->approved_at->format('d F, Y') : date('d F, Y') }}</strong><br>
                 <span class="meta-label">Letter No:</span> <strong>{{ $letterNumber }}</strong>
                 @if($barcodeBase64)
                     <div class="barcode-container">
@@ -281,10 +260,9 @@
                     </div>
                 @endif
             </td>
-            <td width="40%" align="right" valign="top">
-                <span class="meta-label">Date:</span> <strong>{{ ($user->approved_at ?? null) ? $user->approved_at->format('d F, Y') : date('d F, Y') }}</strong>
+            <td width="35%" align="right" valign="top">
                 @if($qrBase64)
-                    <div class="qr-section" style="margin-top: 10px;">
+                    <div class="qr-section">
                         <img src="{{ $qrBase64 }}" class="qr-img">
                         <div class="verification-text">Scan to Verify</div>
                     </div>
@@ -293,7 +271,7 @@
         </tr>
     </table>
 
-
+    {{-- ── ADDRESS ── --}}
     <div class="salutation">
         To,<br>
         <strong>{{ $user->name ?? 'N/A' }}</strong><br>
@@ -301,10 +279,10 @@
         Contact: {{ $user->mobile ?? 'N/A' }}
     </div>
 
-    <div class="subject">
-        Subject: Letter of Appointment as {{ $designation }}
-    </div>
+    {{-- ── SUBJECT ── --}}
+    <div class="subject">Subject: Letter of Appointment as {{ $designation }}</div>
 
+    {{-- ── BODY ── --}}
     <div class="content">
         Dear {{ explode(' ', $user->name ?? 'User')[0] }},<br><br>
         Following your successful application and subsequent evaluation, we are pleased to appoint you as <strong>{{ $designation }}</strong> at <strong>{{ $companyName }}</strong>.
@@ -314,8 +292,9 @@
         {!! $body !!}
     </div>
 
+    {{-- ── TERMS ── --}}
     <div class="terms-box">
-        <div class="terms-title">Standard Terms & Conditions</div>
+        <div class="terms-title">Standard Terms &amp; Conditions</div>
         <ul class="terms-list">
             @foreach($terms as $term)
                 <li>{{ $term }}</li>
@@ -323,28 +302,30 @@
         </ul>
     </div>
 
+    {{-- ── CLOSING ── --}}
     <div class="content">
         We welcome you to the <strong>{{ $companyName }}</strong> family and are confident that your contribution will be instrumental in our mission. We look forward to a mutually beneficial association.
     </div>
 
-
+    {{-- ── SIGNATURE ── --}}
     <div class="signature-section">
         <div class="sig-container">
-            <div style="position: relative; padding: 10px 0;">
+            <div style="position: relative; padding: 6px 0;">
                 @if($sealBase64)
-                    <img src="{{ $sealBase64 }}" class="seal-image" style="width: 100px; height: 100px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); opacity: 0.3; z-index: 5;">
+                    <img src="{{ $sealBase64 }}" class="seal-image" style="width: 80px; height: 80px; position: absolute; left: 50%; top: 50%; opacity: 0.2; z-index: 5;">
                 @endif
                 @if($sigBase64)
-                    <img src="{{ $sigBase64 }}" class="sig-image" style="width: 140px; height: auto; position: relative; z-index: 10;">
+                    <img src="{{ $sigBase64 }}" class="sig-image" style="width: 120px; height: auto; position: relative; z-index: 10;">
                 @endif
             </div>
-            <div class="sig-name" style="margin-top: 5px; border-top: 1px solid #E2E8F0; padding-top: 5px;">{{ $authorizedSignatory }}</div>
+            <div class="sig-name" style="margin-top: 3px; border-top: 1px solid #E2E8F0; padding-top: 3px;">{{ $authorizedSignatory }}</div>
             <div class="sig-title">{{ $signatoryTitle }}</div>
         </div>
     </div>
 
+    {{-- ── FOOTER ── --}}
     <div class="footer">
-        <div class="footer-note">{{ $settings['letter_footer_note'] ?? 'This is a computer-generated document and carries a digital signature for authenticity.' }}</div>
+        <div>{{ $settings['letter_footer_note'] ?? 'This is a computer-generated document and carries a digital signature for authenticity.' }}</div>
         <div class="footer-site">Website: {{ $companyWebsite ?? 'suryamitra.in' }}</div>
     </div>
 </body>
