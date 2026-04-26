@@ -46,6 +46,13 @@ export const AdminAbsorptionsPage: React.FC = () => {
 
     if (isLoading) return <LoadingSpinner />;
 
+    const getUserRoleLabel = (user: any) => {
+        if (!user) return 'Beneficiary';
+        if (user.role === 'admin' || user.role === 'super_admin') return 'Admin';
+        if (user.role === 'super_agent') return 'Super Agent';
+        return 'Beneficiary';
+    };
+
     return (
         <div className="p-6">
             <SEOHead title="Absorbed Points Management | Admin" />
@@ -105,12 +112,18 @@ export const AdminAbsorptionsPage: React.FC = () => {
                                         <h3 className="font-bold text-slate-900 leading-tight mb-1">{p.offer?.title}</h3>
                                         <div className="space-y-1">
                                             <p className="text-xs font-bold text-slate-500">
-                                                Super Agent: <span className="text-indigo-600 font-black">{p.super_agent?.name || 'Unassigned (Global Pool)'}</span>
+                                                {getUserRoleLabel(p.super_agent)}: <span className="text-indigo-600 font-black">{p.super_agent?.name || 'Unassigned (Global Pool)'}</span>
                                             </p>
                                             <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                                                 <span>From: {p.source_agent?.name}</span>
                                                 <span className="w-1 h-1 rounded-full bg-slate-200" />
                                                 <span className="text-slate-800">{p.absorbed_points} Pts</span>
+                                                {p.lead && (
+                                                    <>
+                                                        <span className="w-1 h-1 rounded-full bg-slate-200" />
+                                                        <span className="text-indigo-500 font-black">Lead: {p.lead.customer_name}</span>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -149,9 +162,18 @@ export const AdminAbsorptionsPage: React.FC = () => {
                                     </h2>
                                     <div className="grid grid-cols-2 gap-4">
                                         <DetailItem label="Source Agent" value={selectedPoint.source_agent?.name} />
-                                        <DetailItem label="Target BDM" value={selectedPoint.super_agent?.name || 'System (Global Pool)'} />
+                                        <DetailItem label={getUserRoleLabel(selectedPoint.super_agent)} value={selectedPoint.super_agent?.name || 'System (Global Pool)'} />
                                         <DetailItem label="Points" value={selectedPoint.absorbed_points.toString()} />
-                                        <DetailItem label="Reason" value={selectedPoint.absorption_reason.replace(/_/g, ' ')} />
+                                        <div className="flex flex-col">
+                                            <p className="text-[10px] text-white/50 font-black uppercase tracking-widest leading-none mb-1.5">Reason</p>
+                                            <span className={clsx(
+                                                "text-xs font-bold px-2 py-1 rounded-lg w-fit",
+                                                selectedPoint.absorption_reason === 'enumerator_absorption' ? "bg-indigo-500 text-white" : "text-white"
+                                            )}>
+                                                {selectedPoint.absorption_reason.replace(/_/g, ' ')}
+                                            </span>
+                                        </div>
+                                        {selectedPoint.lead && <DetailItem label="Lead" value={`${selectedPoint.lead.customer_name} (${selectedPoint.lead.system_capacity})`} />}
                                     </div>
                                 </div>
 

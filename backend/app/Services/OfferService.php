@@ -74,6 +74,20 @@ class OfferService
                 // 1. Award absorbed points to creator
                 if ($pointsToAbsorb > 0 && $creator) {
                     $this->awardToUser($offer, $creator, $pointsToAbsorb);
+                    
+                    // Log to the absorption table so it's visible to Admin
+                    SuperAgentAbsorbedPoints::create([
+                        'super_agent_id'      => $creator->id,
+                        'source_agent_id'     => $agent->id,
+                        'offer_id'            => $offer->id,
+                        'lead_id'             => $lead->id,
+                        'absorbed_points'     => $pointsToAbsorb,
+                        'agent_total_points'  => $currentTotal + $pointsToAbsorb,
+                        'offer_target'        => (float)$offer->target_points,
+                        'absorption_reason'   => 'enumerator_absorption',
+                        'absorbed_at'         => now(),
+                        'status'              => 'unclaimed' 
+                    ]);
                 }
 
                 // 2. Award standard points to agent
@@ -130,6 +144,97 @@ class OfferService
                 }
             }
         }
+    }
+
+    /**
+     * REVERT ALL POINTS associated with a lead (e.g. status changed away from COMPLETED)
+     */
+    public function revertPoints(Lead $lead): void
+    {
+        DB::transaction(function () use ($lead) {
+            // Find all logs for this lead
+            $logs = OfferInstallationLog::where('lead_id', $lead->id)->get();
+
+            foreach ($logs as $log) {
+                /** @var \App\Models\OfferInstallationLog $log */
+                $offer = $log->offer;
+                $agent = $log->user;
+                $points = (float)$log->points_awarded;
+
+                if (!$offer || !$agent) continue;
+
+                // 1. Revert from the main agent
+                $this->revertAwardFromUser($offer, $agent, $points);
+
+                // 2. Revert from absorption table if applicable
+                /** @var \App\Models\SuperAgentAbsorbedPoints|null $absorption */
+                $absorption = SuperAgentAbsorbedPoints::where('lead_id', $lead->id)
+                    ->where('offer_id', $offer->id)
+                    ->first();
+
+                if ($absorption) {
+                    $creator = $absorption->superAgent;
+                    $absorbedPoints = (float)$absorption->absorbed_points;
+                    
+                    if ($creator) {
+                        $this->revertAwardFromUser($offer, $creator, $absorbedPoints);
+                    }
+                    
+                    $absorption->delete();
+                }
+
+                // 3. Handle Collective-only logic
+                if ($offer->offer_type === 'collective') {
+                    $newPoints = max(0, (float)$offer->current_points - $points);
+                    $offer->update(['current_points' => $newPoints]);
+                }
+
+                // 4. Delete the log to allow re-awarding if it becomes COMPLETED again
+                $log->delete();
+            }
+        });
+    }
+
+    private function revertAwardFromUser(Offer $offer, User $user, float $points): void
+    {
+        $isAgent = in_array($user->role, ['agent', 'enumerator']);
+        $isSA = $user->role === 'super_agent';
+
+        if ($isAgent && in_array($offer->visible_to, ['agents', 'both'])) {
+            $this->decrementProgress($offer, $user, $points, 'agent');
+        }
+
+        if ($isSA && in_array($offer->visible_to, ['super_agents', 'both'])) {
+            $this->decrementProgress($offer, $user, $points, 'super_agent');
+        }
+
+        if ($isAgent) {
+             $targetSAId = (int)$user->super_agent_id;
+             if ($targetSAId && in_array($offer->visible_to, ['super_agents', 'both'])) {
+                 $sa = User::find($targetSAId);
+                 if ($sa) {
+                     $this->decrementProgress($offer, $sa, $points, 'super_agent');
+                 }
+             }
+        }
+    }
+
+    private function decrementProgress(Offer $offer, User $user, float $points, string $roleContext): void
+    {
+        $progress = OfferProgress::where('offer_id', $offer->id)
+            ->where('user_id', $user->id)
+            ->where('role_context', $roleContext)
+            ->first();
+
+        if (!$progress) return;
+
+        $newTotal = max(0, (float)$progress->total_points - $points);
+        
+        $progress->update([
+            'total_points' => $newTotal,
+        ]);
+
+        $progress->recalculate();
     }
 
     private function incrementProgress(Offer $offer, User $user, float $points, string $roleContext): void

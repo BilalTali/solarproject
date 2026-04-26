@@ -534,9 +534,11 @@ class LeadService
             $oldStatus = $lead->status;
             $changer = User::find($changedById);
 
-            // REVOKE UNPAID COMMISSIONS if old status was completed
+            // REVOKE UNPAID COMMISSIONS & REVERT POINTS if old status was completed
             if ($oldStatus === 'COMPLETED' && $newStatus !== 'COMPLETED') {
                 $this->commissionService->revokeUnpaidCommissions($lead, $changer);
+                // Revert offer points as well (Removes logs and deductions from totals)
+                $this->offerService->revertPoints($lead);
             }
 
             $this->logStatusChange($lead, $changedById, $oldStatus, $newStatus, $notes, $geotag, $changer?->role);
@@ -573,38 +575,30 @@ class LeadService
                 $this->notifyEnumeratorStatusChanged($lead, $oldStatus, $newStatus, $changer);
             }
 
-            // TRIGGER OFFERS: if status just became 'REGISTERED' (installation confirmed) or beyond.
-            if (in_array($newStatus, ['REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'COMPLETED', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'])) {
-                $affectedAgent = null;
-
-                // Priority 1: If submitted by an enumerator, points go to their creator/parent, AND to the enumerator themselves
+            // TRIGGER OFFERS: reflect points ONLY when status becomes 'COMPLETED'
+            if ($newStatus === 'COMPLETED') {
+                // Priority 1: If submitted by an enumerator, points go to their creator/parent via ABSORPTION logic
                 if ($lead->submitted_by_enumerator_id) {
                     $enumerator = User::find($lead->submitted_by_enumerator_id);
                     if ($enumerator) {
                         $this->offerService->processPoints($lead, $enumerator);
-                        if ($enumerator->parent_id) {
-                            $affectedAgent = User::find($enumerator->parent_id);
-                        }
                     }
-                }
-
-                // Priority 2: Standard fallback chain
-                if (!$affectedAgent) {
+                } else {
+                    // Priority 2: Standard fallback chain for Agents/Super Agents
+                    $affectedAgent = null;
                     if ($lead->assigned_agent_id) {
                         $affectedAgent = User::find($lead->assigned_agent_id);
                     } elseif ($lead->submitted_by_agent_id) {
                         $affectedAgent = User::find($lead->submitted_by_agent_id);
                     } elseif ($lead->assigned_super_agent_id) {
-                        // Fallback for direct SA leads
                         $affectedAgent = User::find($lead->assigned_super_agent_id);
                     } elseif ($lead->created_by_super_agent_id) {
-                        // Fallback for direct SA leads
                         $affectedAgent = User::find($lead->created_by_super_agent_id);
                     }
-                }
 
-                if ($affectedAgent) {
-                    $this->offerService->processPoints($lead, $affectedAgent);
+                    if ($affectedAgent) {
+                        $this->offerService->processPoints($lead, $affectedAgent);
+                    }
                 }
             }
         });

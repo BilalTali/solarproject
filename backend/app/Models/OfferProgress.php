@@ -101,12 +101,16 @@ class OfferProgress extends Model
             return;
         }
 
-        $unredeemed = $this->total_points - $this->redeemed_points;
+        $unredeemedRaw = (float)$this->total_points - (float)$this->redeemed_points;
+        
+        // Handle the enumerator 10-point "entry fee" absorption logic
+        $role = $this->user?->role ?? $this->role_context;
+        $unredeemed = ($role === 'enumerator') ? max(0, $unredeemedRaw - 10.0) : $unredeemedRaw;
 
         $this->update([
             'unredeemed_points' => $unredeemed,
-            'can_redeem' => $unredeemed >= $target,
-            'pending_redemption_count' => (int) floor($unredeemed / $target),
+            'can_redeem' => $target > 0 && $unredeemed >= $target,
+            'pending_redemption_count' => $target > 0 ? (int) floor($unredeemed / $target) : 0,
         ]);
     }
 

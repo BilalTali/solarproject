@@ -84,7 +84,7 @@ export interface SuperAgentAbsorbedPoint {
     absorbed_points: number;
     agent_total_points: number;
     offer_target: number;
-    absorption_reason: 'agent_fell_short' | 'grace_period_expired';
+    absorption_reason: 'agent_fell_short' | 'grace_period_expired' | 'enumerator_absorption';
     absorbed_at: string;
     status: 'unclaimed' | 'claimed' | 'delivered';
     claimed_by: number | null;
@@ -92,6 +92,7 @@ export interface SuperAgentAbsorbedPoint {
     delivered_at: string | null;
     approved_by: number | null;
     admin_notes: string | null;
+    lead_id?: number;
 
     // Relations
     offer: {
@@ -106,6 +107,12 @@ export interface SuperAgentAbsorbedPoint {
     };
     source_agent: User;
     super_agent?: User;
+    lead?: {
+        id: number;
+        customer_name: string;
+        ulid: string;
+        system_capacity: string;
+    };
 }
 
 export interface OfferParticipant {

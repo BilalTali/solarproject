@@ -232,7 +232,7 @@ class AdminOfferController extends Controller
 
     public function absorbedPoints(): JsonResponse
     {
-        $points = \App\Models\SuperAgentAbsorbedPoints::query()->with(['superAgent', 'sourceAgent', 'offer'])
+        $points = \App\Models\SuperAgentAbsorbedPoints::query()->with(['superAgent', 'sourceAgent', 'offer', 'lead'])
             ->orderByDesc('absorbed_at')
             ->get();
 
