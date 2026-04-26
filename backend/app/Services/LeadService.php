@@ -238,6 +238,10 @@ class LeadService
                 $this->notifyAdminNewAgentLead($lead, $agent);
             }
 
+            if ($lead->submitted_by_enumerator_id) {
+                $this->notifyEnumeratorLeadVerified($lead, $agent);
+            }
+
             return $lead->fresh();
         });
     }
@@ -291,6 +295,10 @@ class LeadService
                 'revert_count_at_time' => $newRevertCount,
             ]);
 
+            if ($lead->submitted_by_enumerator_id) {
+                $this->notifyEnumeratorLeadReverted($lead, $agent, $reason);
+            }
+
             return $lead->fresh();
         });
     }
@@ -330,6 +338,10 @@ class LeadService
             $this->logStatusChange($lead, $superAgent->id, $lead->status, $lead->status,
                 'Lead verified by Super Agent — sent to Admin for processing');
             $this->notifyAdminLeadVerified($lead, $superAgent);
+
+            if ($lead->submitted_by_agent_id || $lead->assigned_agent_id) {
+                $this->notifyAgentLeadVerified($lead, $superAgent);
+            }
 
             return $lead->fresh();
         });
@@ -554,6 +566,10 @@ class LeadService
                 if ($changer->isSuperAgent() && $lead->assigned_agent_id) {
                     $this->notifyAgentStatusChanged($lead, $oldStatus, $newStatus, $changer);
                 }
+            }
+
+            if ($lead->submitted_by_enumerator_id) {
+                $this->notifyEnumeratorStatusChanged($lead, $oldStatus, $newStatus, $changer);
             }
 
             // TRIGGER OFFERS: if status just became 'REGISTERED' (installation confirmed) or beyond.
@@ -792,7 +808,7 @@ class LeadService
         }
     }
 
-    private function notifySuperAgentStatusChanged(Lead $lead, string $from, string $to, User $changer): void
+    public function notifySuperAgentStatusChanged(Lead $lead, string $from, string $to, User $changer): void
     {
         if (! $lead->assigned_super_agent_id) {
             return;
@@ -803,7 +819,13 @@ class LeadService
                 $sa->id, 'lead_status_changed',
                 'Lead Status Updated',
                 "Lead {$lead->ulid} status → {$to}",
-                ['lead_ulid' => $lead->ulid, 'from' => $from, 'to' => $to]
+                [
+                    'lead_ulid' => $lead->ulid, 
+                    'from' => $from, 
+                    'to' => $to,
+                    'title' => 'Lead Status Updated',
+                    'message' => "Lead {$lead->ulid} status → {$to}"
+                ]
             );
         }
     }
@@ -815,7 +837,11 @@ class LeadService
             $agent->id, 'lead_assigned_to_agent',
             'New Lead Assigned to You',
             "{$byLabel} assigned lead {$lead->ulid} to you",
-            ['lead_ulid' => $lead->ulid]
+            [
+                'lead_ulid' => $lead->ulid,
+                'title' => 'New Lead Assigned to You',
+                'message' => "{$byLabel} assigned lead {$lead->ulid} to you"
+            ]
         );
     }
 
@@ -829,7 +855,13 @@ class LeadService
             $agentId, 'lead_reverted',
             '↩ Lead Returned for Correction',
             "Lead {$lead->ulid} returned by your Super Agent. Reason: {$reason}",
-            ['lead_ulid' => $lead->ulid, 'reason' => $reason, 'revert_count' => $count]
+            [
+                'lead_ulid' => $lead->ulid, 
+                'reason' => $reason, 
+                'revert_count' => $count,
+                'title' => '↩ Lead Returned for Correction',
+                'message' => "Lead {$lead->ulid} returned by your Super Agent. Reason: {$reason}"
+            ]
         );
     }
 
@@ -867,7 +899,7 @@ class LeadService
         );
     }
 
-    private function notifyAgentStatusChanged(Lead $lead, string $from, string $to, User $changer): void
+    public function notifyAgentStatusChanged(Lead $lead, string $from, string $to, User $changer): void
     {
         $agentId = $lead->assigned_agent_id ?? $lead->submitted_by_agent_id;
         if (! $agentId) {
@@ -878,7 +910,13 @@ class LeadService
             $agentId, 'lead_status_changed',
             'Lead Status Updated',
             "Lead {$lead->ulid} status → {$to} (updated by {$byLabel})",
-            ['lead_ulid' => $lead->ulid, 'from' => $from, 'to' => $to]
+            [
+                'lead_ulid' => $lead->ulid, 
+                'from' => $from, 
+                'to' => $to,
+                'title' => 'Lead Status Updated',
+                'message' => "Lead {$lead->ulid} status → {$to} (updated by {$byLabel})"
+            ]
         );
     }
 
@@ -933,5 +971,63 @@ class LeadService
                 ]
             );
         }
+    }
+
+    public function notifyEnumeratorStatusChanged(Lead $lead, string $from, string $to, User $changer): void
+    {
+        if (!$lead->submitted_by_enumerator_id) {
+            return;
+        }
+        $byLabel = $changer->isAdmin() ? 'Admin' : ($changer->isSuperAgent() ? 'Manager' : 'Staff');
+        $this->notificationService->send(
+            $lead->submitted_by_enumerator_id,
+            'lead_status_changed',
+            'Lead Status Update',
+            "Your lead ({$lead->beneficiary_name}) status → {$to} (updated by {$byLabel})",
+            ['lead_ulid' => $lead->ulid, 'from' => $from, 'to' => $to, 'title' => 'Lead Status Update', 'message' => "Your lead ({$lead->beneficiary_name}) status → {$to} (updated by {$byLabel})"]
+        );
+    }
+
+    public function notifyEnumeratorLeadVerified(Lead $lead, User $agent): void
+    {
+        if (!$lead->submitted_by_enumerator_id) {
+            return;
+        }
+        $this->notificationService->send(
+            $lead->submitted_by_enumerator_id,
+            'lead_verified',
+            '✅ Lead Verified',
+            "Your lead ({$lead->beneficiary_name}) has been verified by Agent {$agent->name}.",
+            ['lead_ulid' => $lead->ulid, 'title' => '✅ Lead Verified', 'message' => "Your lead ({$lead->beneficiary_name}) has been verified by Agent {$agent->name}."]
+        );
+    }
+
+    public function notifyEnumeratorLeadReverted(Lead $lead, User $agent, string $reason): void
+    {
+        if (!$lead->submitted_by_enumerator_id) {
+            return;
+        }
+        $this->notificationService->send(
+            $lead->submitted_by_enumerator_id,
+            'lead_reverted',
+            '↩ Lead Correction Needed',
+            "Your lead ({$lead->beneficiary_name}) requires correction. Reason: {$reason}",
+            ['lead_ulid' => $lead->ulid, 'reason' => $reason, 'title' => '↩ Lead Correction Needed', 'message' => "Your lead ({$lead->beneficiary_name}) requires correction. Reason: {$reason}"]
+        );
+    }
+
+    public function notifyAgentLeadVerified(Lead $lead, User $sa): void
+    {
+        $agentId = $lead->submitted_by_agent_id ?? $lead->assigned_agent_id;
+        if (!$agentId) {
+            return;
+        }
+        $this->notificationService->send(
+            $agentId,
+            'lead_verified',
+            '✅ Lead Verified by Manager',
+            "Lead {$lead->ulid} ({$lead->beneficiary_name}) verified by {$sa->name}.",
+            ['lead_ulid' => $lead->ulid, 'title' => '✅ Lead Verified by Manager', 'message' => "Lead {$lead->ulid} ({$lead->beneficiary_name}) verified by {$sa->name}."]
+        );
     }
 }

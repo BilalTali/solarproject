@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Illuminate\Validation\ValidationException $e, \Illuminate\Http\Request $request) {
             if ($request->is('api/*')) {
+                \Illuminate\Support\Facades\Log::error('Validation Failed', ['url' => $request->url(), 'errors' => $e->errors()]);
                 return response()->json([
                     'success' => false,
                     'message' => $e->getMessage(),

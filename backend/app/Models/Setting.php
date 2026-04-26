@@ -40,6 +40,7 @@ class Setting extends Model
         'company_logo',
         'company_logo_2',
         'company_signature',
+        'official_signature',
         'company_seal',
         'hero_video'
     ];

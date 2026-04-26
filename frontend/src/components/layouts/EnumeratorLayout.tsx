@@ -1,16 +1,26 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Menu, DollarSign } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import EnumeratorSidebar from '@/components/enumerator/EnumeratorSidebar';
 import { useSettings } from '@/hooks/useSettings';
 import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/services/auth.api';
+import { enumeratorApi } from '@/services/enumerator.api';
 
 export default function EnumeratorLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { companyName, logo } = useSettings();
     const location = useLocation();
     const { setUser } = useAuthStore();
+
+    const { data: notificationsRes } = useQuery({
+        queryKey: ['enumerator-notifications'],
+        queryFn: () => enumeratorApi.getNotifications(),
+        refetchInterval: 1000 * 60,
+    });
+
+    const unreadCount = notificationsRes?.unread_count ?? 0;
 
     // Proactively fetch user profile if session exists but user state is missing or stale
     useEffect(() => {
@@ -60,10 +70,13 @@ export default function EnumeratorLayout() {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setSidebarOpen(true)}
-                            className="lg:hidden p-2 text-white/80 hover:bg-white/10 rounded-xl transition-colors"
+                            className="lg:hidden p-2 text-white/80 hover:bg-white/10 rounded-xl transition-colors relative"
                             aria-label="Open sidebar"
                         >
                             <Menu className="w-5 h-5" />
+                            {unreadCount > 0 && (
+                                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-dark animate-pulse" />
+                            )}
                         </button>
                         <div className="flex items-center gap-2">
                             {logo && (

@@ -107,8 +107,8 @@ $api->as('api.v1.')->group(function () {
     // ==============================
     // AUTHENTICATION
     // ==============================
-    Route::post('/auth/send-otp', [AuthController::class, 'sendOtp'])->middleware('throttle:6,1');
-    Route::post('/auth/login-otp', [AuthController::class, 'loginOtp'])->middleware('throttle:6,1');
+    Route::post('/auth/send-otp', [AuthController::class, 'sendOtp'])->middleware('throttle:15,1');
+    Route::post('/auth/login-otp', [AuthController::class, 'loginOtp'])->middleware('throttle:15,1');
     Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
     Route::post('/auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
 
@@ -133,6 +133,22 @@ $api->as('api.v1.')->group(function () {
         Route::get('/fix-storage', function () {
             \Illuminate\Support\Facades\Artisan::call('storage:link');
             return response()->json(['message' => 'Storage symlink created', 'output' => \Illuminate\Support\Facades\Artisan::output()]);
+        });
+
+        // Temporary route to clear app cache (rate limits, config, views) without SSH
+        Route::get('/clear-cache', function () {
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+            $cacheOut = \Illuminate\Support\Facades\Artisan::output();
+            \Illuminate\Support\Facades\Artisan::call('config:clear');
+            $configOut = \Illuminate\Support\Facades\Artisan::output();
+            \Illuminate\Support\Facades\Artisan::call('route:clear');
+            $routeOut = \Illuminate\Support\Facades\Artisan::output();
+            return response()->json([
+                'message' => 'Cache cleared successfully',
+                'cache'   => trim($cacheOut),
+                'config'  => trim($configOut),
+                'routes'  => trim($routeOut),
+            ]);
         });
 
         // Lead Documents

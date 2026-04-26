@@ -127,8 +127,18 @@ class TechnicalDashboardController extends Controller
 
             DB::commit();
 
-            // ── B5: Notify admin that tech team changed status ─────────
+            // ── B5: Notify parties that tech team changed status ─────────
             $this->leadService->notifyAdminTechnicalStatusChanged($lead, $user, $oldStatus, $newStatus);
+
+            if ($lead->assigned_super_agent_id) {
+                $this->leadService->notifySuperAgentStatusChanged($lead, $oldStatus, $newStatus, $user);
+            }
+            if ($lead->assigned_agent_id || $lead->submitted_by_agent_id) {
+                $this->leadService->notifyAgentStatusChanged($lead, $oldStatus, $newStatus, $user);
+            }
+            if ($lead->submitted_by_enumerator_id) {
+                $this->leadService->notifyEnumeratorStatusChanged($lead, $oldStatus, $newStatus, $user);
+            }
 
             return response()->json([
                 'message' => 'Visit recorded and status updated successfully.',

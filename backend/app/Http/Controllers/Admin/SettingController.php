@@ -54,6 +54,7 @@ class SettingController extends Controller
         'company_bank_account_name', 'company_bank_account_number',
         'company_bank_ifsc', 'company_bank_branch',
         'billing_items_json', 'billing_makes_json',
+        'official_signature',
     ];
 
     /**
@@ -74,6 +75,7 @@ class SettingController extends Controller
         'company_address',
         'company_website',
         'company_signature',
+        'official_signature',
         'company_seal',
         'authorized_signatory',
         'authorized_signatory_title',
@@ -194,7 +196,7 @@ class SettingController extends Controller
     public function uploadFile(Request $request)
     {
         $request->validate([
-            'key' => 'required|string|in:company_favicon,company_logo,company_logo_2,company_signature,company_seal,hero_video',
+            'key' => 'required|string|in:company_favicon,company_logo,company_logo_2,company_signature,official_signature,company_seal,hero_video',
             'file' => 'required|file|max:102400', // 100MB max
         ]);
 
@@ -222,7 +224,7 @@ class SettingController extends Controller
 
         // Store new file
         $folder = match ($key) {
-            'company_favicon', 'company_logo', 'company_logo_2', 'company_signature', 'company_seal' => 'branding',
+            'company_favicon', 'company_logo', 'company_logo_2', 'company_signature', 'official_signature', 'company_seal' => 'branding',
             'hero_video' => 'homepage',
             default => 'uploads',
         };
@@ -234,7 +236,7 @@ class SettingController extends Controller
             [
                 'value' => $path,
                 'group' => match ($key) {
-                    'company_favicon', 'company_logo', 'company_logo_2', 'company_signature', 'company_seal' => 'branding',
+                    'company_favicon', 'company_logo', 'company_logo_2', 'company_signature', 'official_signature', 'company_seal' => 'branding',
                     'hero_video' => 'homepage',
                     default => 'general',
                 },

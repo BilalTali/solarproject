@@ -224,7 +224,7 @@ const AdminSettingsPage: React.FC = () => {
         });
 
         const settingsToSave = keys
-            .filter(k => localSettings[k] !== undefined && !['company_logo', 'company_logo_2', 'company_signature', 'company_seal', 'hero_video'].includes(k))
+            .filter(k => localSettings[k] !== undefined && !['company_logo', 'company_logo_2', 'company_signature', 'official_signature', 'company_seal', 'hero_video'].includes(k))
             .map(k => ({ key: k, value: localSettings[k] }));
 
         if (customData) {
@@ -379,15 +379,19 @@ const AdminSettingsPage: React.FC = () => {
                                                 <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Appears on the front of your ID cards</p>
                                             </div>
                                             <div className="space-y-1">
-                                                {FU('company_signature', 'Digital Signature', 'image/*')}
-                                                <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Appears on ID cards & letters</p>
+                                                {FU('company_signature', 'Signatory Signature (ID & Letters)', 'image/*')}
+                                                <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Appears on ID cards & appointment letters</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                {FU('official_signature', 'Official Signature (Bills & Receipts)', 'image/*', user?.role !== 'super_admin')}
+                                                <p className="text-[9px] text-amber-500 font-black uppercase tracking-widest">Master signature for financial documents</p>
                                             </div>
                                             <div className="space-y-1">
                                                 {FU('company_seal', 'Official Seal', 'image/*')}
                                                 <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Appears on official letters</p>
                                             </div>
                                         </div>
-                                        <SectionSave keys={['company_slogan', 'authorized_signatory', 'authorized_signatory_title', 'icard_clearance', 'company_logo', 'company_logo_2', 'company_signature', 'company_seal']} label="Save Branding" />
+                                        <SectionSave keys={['company_slogan', 'authorized_signatory', 'authorized_signatory_title', 'icard_clearance', 'company_logo', 'company_logo_2', 'company_signature', 'official_signature', 'company_seal']} label="Save Branding" />
                                     </div>
                                 );
                             case 'icard':

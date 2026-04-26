@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Sun, LayoutDashboard, List, PlusCircle, DollarSign, User, LogOut, BadgeCheck, Bell, FileText, Wallet } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { authApi } from '@/services/auth.api';
+import { enumeratorApi } from '@/services/enumerator.api';
 import { useAuthStore } from '@/store/authStore';
 import { useSettings } from '@/hooks/useSettings';
 
@@ -22,6 +23,14 @@ export default function EnumeratorSidebar({ onClose }: { onClose?: () => void })
     const navigate = useNavigate();
     const { user, clearAuth } = useAuthStore();
     const { companyName, logo } = useSettings();
+
+    const { data: notificationsRes } = useQuery({
+        queryKey: ['enumerator-notifications'],
+        queryFn: () => enumeratorApi.getNotifications(),
+        refetchInterval: 1000 * 60, // check every minute
+    });
+
+    const unreadCount = notificationsRes?.unread_count ?? 0;
 
     const logoutMutation = useMutation({
         mutationFn: authApi.logout,
@@ -91,7 +100,12 @@ export default function EnumeratorSidebar({ onClose }: { onClose?: () => void })
                             aria-current={isActive ? 'page' : undefined}
                         >
                             <span className="shrink-0 transition-transform duration-300 group-hover:scale-110">{item.icon}</span>
-                            <span>{item.label}</span>
+                            <span className="flex-1">{item.label}</span>
+                            {item.to === '/enumerator/notifications' && unreadCount > 0 && (
+                                <span className="w-5 h-5 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold animate-pulse shadow-lg ring-2 ring-emerald-600 group-active:scale-90 transition-transform">
+                                    {unreadCount}
+                                </span>
+                            )}
                         </Link>
                     );
                 })}

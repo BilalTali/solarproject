@@ -51,7 +51,14 @@ export default function EnumeratorNotificationsPage() {
                 ) : (
                     <div className="divide-y divide-slate-100">
                         {notifications.map((n: any) => (
-                            <div key={n.id} className={`p-5 hover:bg-slate-50 transition-colors flex gap-4 ${!n.read_at ? 'bg-emerald-50/30' : ''}`}>
+                            <div 
+                                key={n.id} 
+                                className={`p-5 transition-all flex gap-4 border-l-4 ${
+                                    !n.read_at 
+                                        ? 'bg-emerald-50/50 border-emerald-500 shadow-[inset_0_0_12px_rgba(16,185,129,0.05)]' 
+                                        : 'bg-white border-transparent hover:bg-slate-50'
+                                }`}
+                            >
                                 <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${!n.read_at ? 'bg-emerald-100 text-emerald-600 shadow-sm' : 'bg-slate-100 text-slate-400'}`}>
                                     <Bell size={20} />
                                 </div>

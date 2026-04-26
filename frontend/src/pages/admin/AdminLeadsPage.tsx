@@ -147,7 +147,16 @@ export default function AdminLeadsPage() {
             setNewStatus(''); setStatusNote(''); setReceiptFile(null);
             setIsStatusModalOpen(false);
         },
-        onError: () => toast.error('Failed to update status.'),
+        onError: (error: any) => {
+            const msg = error.response?.data?.message || 'Failed to update status.';
+            const errors = error.response?.data?.errors;
+            if (errors) {
+                const firstError = Object.values(errors)[0] as string[];
+                toast.error(firstError[0] || msg);
+            } else {
+                toast.error(msg);
+            }
+        },
     });
 
     const assignMut = useMutation({
@@ -202,7 +211,11 @@ export default function AdminLeadsPage() {
 
 
         if (lead.billing_items && lead.billing_items.length > 0) {
-            setBillingItemsList(lead.billing_items.map((it: any) => ({ ...it, rate: String(it.rate) })));
+            setBillingItemsList(lead.billing_items.map((it: any) => ({ 
+                description: it.description ?? '',
+                make: it.make ?? '',
+                rate: it.rate != null ? String(it.rate) : ''
+            })));
         } else {
             // Support legacy: if they have old data but no new array
             if (lead.quotation_base_amount) {
@@ -790,7 +803,7 @@ export default function AdminLeadsPage() {
                                                             <div key={idx} className="grid grid-cols-12 gap-2 p-2 bg-white border border-slate-100 rounded-lg shadow-sm">
                                                                 <div className="col-span-5 space-y-1">
                                                                     <select
-                                                                        value={item.description}
+                                                                        value={item.description ?? ''}
                                                                         onChange={e => {
                                                                             const newList = [...billingItemsList];
                                                                             newList[idx].description = e.target.value;
@@ -806,7 +819,7 @@ export default function AdminLeadsPage() {
                                                                 </div>
                                                                 <div className="col-span-3 space-y-1">
                                                                     <select
-                                                                        value={item.make}
+                                                                        value={item.make ?? ''}
                                                                         onChange={e => {
                                                                             const newList = [...billingItemsList];
                                                                             newList[idx].make = e.target.value;
@@ -823,7 +836,7 @@ export default function AdminLeadsPage() {
                                                                 <div className="col-span-3 space-y-1">
                                                                     <input
                                                                         type="number"
-                                                                        value={item.rate}
+                                                                        value={item.rate ?? ''}
                                                                         onChange={e => {
                                                                             const newList = [...billingItemsList];
                                                                             newList[idx].rate = e.target.value;
@@ -936,7 +949,7 @@ export default function AdminLeadsPage() {
                                                     </span>
                                                     <span className="text-slate-400 text-xs">→</span>
                                                     <select
-                                                        value={newStatus}
+                                                        value={newStatus ?? ''}
                                                         onChange={e => setNewStatus(e.target.value)}
                                                         className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"
                                                     >

@@ -107,16 +107,16 @@ export default function AdminDashboardPage() {
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
                 {/* Growth Trends */}
-                <div className="xl:col-span-2 card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <div className="xl:col-span-2 card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-w-0">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="font-display font-black text-xl text-slate-800 tracking-tight">Weekly Growth Trends</h2>
                         <div className="flex gap-2">
                              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold"><span className="w-2 h-2 rounded-full bg-primary" /> Leads</div>
                         </div>
                     </div>
-                    <div className="h-[280px]">
+                    <div className="h-[280px] min-w-0">
                         {trendData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height={280}>
                                 <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
@@ -140,11 +140,11 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* District Distribution */}
-                <div className="card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <div className="card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-w-0">
                     <h2 className="font-display font-black text-xl text-slate-800 tracking-tight mb-6">Top Districts</h2>
-                    <div className="h-[280px]">
+                    <div className="h-[280px] min-w-0">
                         {districtData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height={280}>
                                 <BarChart data={districtData} layout="vertical" margin={{ top: 0, right: 20, left: 40, bottom: 0 }}>
                                     <XAxis type="number" hide />
                                     <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fontWeight: 800, fill: '#1E293B' }} axisLine={false} tickLine={false} width={80} />
@@ -169,11 +169,11 @@ export default function AdminDashboardPage() {
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
                 {/* Status distribution */}
-                <div className="card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <div className="card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-w-0">
                  <h2 className="font-display font-black text-xl text-slate-800 tracking-tight mb-6">Pipeline Funnel</h2>
-                    <div className="h-[240px]">
+                    <div className="h-[240px] min-w-0">
                         {pipelineData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height={240}>
                                 <BarChart data={pipelineData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                                     <XAxis dataKey="status" tick={{ fontSize: 9, fontWeight: 700, fill: '#64748B' }} axisLine={false} tickLine={false} />
                                     <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />

@@ -17,6 +17,7 @@ class EnumeratorNotificationController extends Controller
         return response()->json([
             'success' => true,
             'data' => $notifications,
+            'unread_count' => $request->user()->notifications()->whereNull('read_at')->count(),
         ]);
     }
 

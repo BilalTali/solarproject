@@ -59,12 +59,12 @@ class LeadBillService
     private function buildViewData(Lead $lead): array
     {
         // Force Global/SuperAdmin settings for company branding
-        $directFetch = function($key) {
+        $directFetch = function ($key) {
             return Setting::query()->where('key', $key)->whereNull('user_id')->first()?->value;
         };
 
         $companyLogoPath = $directFetch('company_logo');
-        $companySignaturePath = $directFetch('company_signature');
+        $companySignaturePath = $directFetch('official_signature') ?: $directFetch('company_signature');
 
         $logoBase64 = $this->getBase64Image($companyLogoPath);
         $sigBase64 = $this->getBase64Image($companySignaturePath);
@@ -83,16 +83,16 @@ class LeadBillService
 
         // Extract system details
         $kw = filter_var($lead->system_capacity, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION) ?: '5';
-        
+
         $quotationSerial = $lead->quotation_serial ?? '119';
         $quotationDate = $lead->bill_date ? $lead->bill_date->format('d/m/Y') : date('d/m/Y');
-        
+
         $receiptSerial = $lead->receipt_serial ?? '299';
-        
+
         $baseAmount = $lead->quotation_base_amount ?? 294500;
         $gstAmount = $lead->quotation_gst_amount ?? 15500;
         $totalAmount = $lead->quotation_total_amount ?? 310000;
-        
+
         $receiptAmount = $lead->receipt_amount ?? 31000;
 
         $gstPercentage = $lead->billing_gst_percentage ?? 5;
@@ -112,8 +112,9 @@ class LeadBillService
         $address = collect([$lead->beneficiary_address, $lead->beneficiary_district, $lead->beneficiary_state])
             ->filter()
             ->implode(' ');
-            
-        if(empty($address)) $address = "No Address Provided";
+
+        if (empty($address))
+            $address = "No Address Provided";
 
         return compact(
             'lead',
@@ -145,7 +146,8 @@ class LeadBillService
 
     private function getBase64Image(?string $path): ?string
     {
-        if (!$path) return null;
+        if (!$path)
+            return null;
 
         if (str_starts_with($path, 'http')) {
             $storageUrl = asset('storage/');
@@ -159,20 +161,21 @@ class LeadBillService
                         $mimeType = $finfo->buffer($content);
                         return 'data:' . $mimeType . ';base64,' . base64_encode($content);
                     }
-                } catch (\Throwable $e) {}
+                } catch (\Throwable $e) {
+                }
             }
         }
 
         $fullPath = public_path($path);
         if (file_exists($fullPath) && !is_dir($fullPath)) {
             $type = pathinfo($fullPath, PATHINFO_EXTENSION);
-            return 'data:image/'.$type.';base64,'.base64_encode(file_get_contents($fullPath));
+            return 'data:image/' . $type . ';base64,' . base64_encode(file_get_contents($fullPath));
         }
 
         if (Storage::disk('public')->exists($path)) {
             $content = Storage::disk('public')->get($path);
             $type = pathinfo($path, PATHINFO_EXTENSION);
-            return 'data:image/'.$type.';base64,'.base64_encode($content);
+            return 'data:image/' . $type . ';base64,' . base64_encode($content);
         }
 
         return null;

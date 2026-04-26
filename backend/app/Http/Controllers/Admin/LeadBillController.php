@@ -15,6 +15,7 @@ class LeadBillController extends Controller
     public function downloadQuotation(Request $request, string $ulid): Response
     {
         $lead = clone $this->getAuthorizedLead($ulid);
+        $this->ensureLeadIsEligibleForDocuments($lead);
         
         return $this->leadBillService->generateQuotation($lead);
     }
@@ -22,6 +23,7 @@ class LeadBillController extends Controller
     public function downloadReceipt(Request $request, string $ulid): Response
     {
         $lead = clone $this->getAuthorizedLead($ulid);
+        $this->ensureLeadIsEligibleForDocuments($lead);
         
         return $this->leadBillService->generateReceipt($lead);
     }
@@ -64,5 +66,14 @@ class LeadBillController extends Controller
         }
 
         abort(403, 'Unauthorized action.');
+    }
+
+    private function ensureLeadIsEligibleForDocuments(Lead $lead): void
+    {
+        $eligibleStatuses = ['COMPLETED', 'REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'];
+        
+        if (!in_array($lead->status, $eligibleStatuses)) {
+            abort(403, 'Document is only available after the lead is registered.');
+        }
     }
 }

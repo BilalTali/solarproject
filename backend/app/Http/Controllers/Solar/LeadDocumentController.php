@@ -28,24 +28,30 @@ class LeadDocumentController extends Controller
             ];
         });
 
-        $virtualDocuments = collect([
-            [
-                'id' => 'virtual-quotation',
-                'document_type' => 'Pro Forma Quotation',
-                'original_filename' => 'Quotation-'.$lead->quotation_serial.'.pdf',
-                'created_at' => $lead->bill_date ?? $lead->created_at,
-                'download_url' => url('/api/v1/leads/'.$ulid.'/pdf/quotation'),
-                'is_virtual' => true
-            ],
-            [
-                'id' => 'virtual-receipt',
-                'document_type' => 'Payment Receipt',
-                'original_filename' => 'Receipt-'.$lead->receipt_serial.'.pdf',
-                'created_at' => $lead->bill_date ?? $lead->created_at,
-                'download_url' => url('/api/v1/leads/'.$ulid.'/pdf/receipt'),
-                'is_virtual' => true
-            ]
-        ]);
+        $eligibleStatuses = ['COMPLETED', 'REGISTERED', 'SITE_SURVEY', 'AT_BANK', 'PROJECT_COMMISSIONING', 'SUBSIDY_REQUEST', 'SUBSIDY_APPLIED', 'SUBSIDY_DISBURSED'];
+        
+        $virtualDocuments = collect();
+        
+        if (in_array($lead->status, $eligibleStatuses)) {
+            $virtualDocuments = collect([
+                [
+                    'id' => 'virtual-quotation',
+                    'document_type' => 'Pro Forma Quotation',
+                    'original_filename' => 'Quotation-'.$lead->quotation_serial.'.pdf',
+                    'created_at' => $lead->bill_date ?? $lead->created_at,
+                    'download_url' => url('/api/v1/leads/'.$ulid.'/pdf/quotation'),
+                    'is_virtual' => true
+                ],
+                [
+                    'id' => 'virtual-receipt',
+                    'document_type' => 'Payment Receipt',
+                    'original_filename' => 'Receipt-'.$lead->receipt_serial.'.pdf',
+                    'created_at' => $lead->bill_date ?? $lead->created_at,
+                    'download_url' => url('/api/v1/leads/'.$ulid.'/pdf/receipt'),
+                    'is_virtual' => true
+                ]
+            ]);
+        }
 
         return response()->json([
             'success' => true,

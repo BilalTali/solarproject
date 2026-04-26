@@ -102,9 +102,7 @@ export const leadsApi = {
     updateLeadStatus: async (ulid: string, data: FormData) => {
         // Handle PUT workaround for multipart/form-data in Laravel
         if (!data.has('_method')) data.append('_method', 'PUT');
-        const res = await api.post<ApiResponse<Lead>>(`/admin/leads/${ulid}/status`, data, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        const res = await api.post<ApiResponse<Lead>>(`/admin/leads/${ulid}/status`, data);
         return res.data;
     },
     getAvailableStatuses: async (ulid: string) => {
