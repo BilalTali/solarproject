@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Users, Shield, FileText, Monitor, LogOut, ShieldAlert,
-    HelpCircle, MessageSquare, IndianRupee, Settings, Globe, Gift, Award, Inbox
+    HelpCircle, MessageSquare, IndianRupee, Settings, Globe, Gift, Award, Inbox, Zap
 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -18,6 +18,7 @@ const SUPER_ADMIN_NAV = [
     { icon: <Users className="w-5 h-5" />, label: 'Monitor Enumerators', to: '/super-admin/monitor/enumerators' },
     { icon: <FileText className="w-5 h-5" />, label: 'Monitor Leads', to: '/super-admin/monitor/leads' },
     { icon: <Settings className="w-5 h-5" />, label: 'CRM Data Management', to: '/super-admin/crm-options' },
+    { icon: <Zap className="w-5 h-5" />, label: 'Incentive Point Mapping', to: '/super-admin/points-config' },
     { icon: <hr className="border-white/10 my-2" />, label: '', to: '', divider: true },
     { icon: <Gift className="w-5 h-5" />, label: 'Incentive Offers', to: '/super-admin/offers' },
     { icon: <Award className="w-5 h-5" />, label: 'Prize Redemptions', to: '/super-admin/redemptions' },
@@ -99,7 +100,7 @@ export default function SuperAdminSidebar({ onClose }: { onClose?: () => void })
                     const isActive = location.pathname === item.to || location.pathname.startsWith(item.to + '/');
                     return (
                         <Link
-                            key={item.to}
+                            key={`${item.to}-${item.label}`}
                             to={item.to}
                             onClick={onClose}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${

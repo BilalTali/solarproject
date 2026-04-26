@@ -33,102 +33,52 @@ class OfferService
         /** @var \App\Models\Offer $offer */
         foreach ($activeOffers as $offer) {
             // Idempotency guard — never double-count the same lead for the same offer
-            if (OfferInstallationLog::where('offer_id', $offer->id)
-                                    ->where('lead_id', $lead->id)
-                                    ->exists()) {
+            $alreadyLogged = OfferInstallationLog::where('offer_id', $offer->id)
+                ->where('lead_id', $lead->id)
+                ->exists();
+
+            if ($alreadyLogged) {
                 continue;
             }
 
             DB::transaction(function () use ($offer, $agent, $lead, $points) {
+                // Determine absorption for enumerators
+                $pointsToAbsorb = 0;
+                $pointsForAgent = $points;
+                $creator = null;
+
+                if ($agent->role === 'enumerator') {
+                    $progress = OfferProgress::where('user_id', $agent->id)
+                        ->where('offer_id', $offer->id)
+                        ->first();
+                    
+                    $currentTotal = (float)($progress?->total_points ?? 0);
+                    $threshold = 10.0;
+
+                    if ($currentTotal < $threshold) {
+                        $pointsToAbsorb = min($points, $threshold - $currentTotal);
+                        $pointsForAgent = $points - $pointsToAbsorb;
+                        $creator = $agent->parent ?: $agent->createdBySuperAgent ?: $agent->parentAgent;
+                    }
+                }
+
                 // Log the point allocation
                 OfferInstallationLog::create([
-
                     'offer_id'       => $offer->id,
                     'lead_id'        => $lead->id,
                     'user_id'        => $agent->id,
+                    'points_awarded' => $points,
                     'installed_at'   => now(),
                 ]);
 
-                // ── Award points to BDE ──────────────────────────────────────────
-                // Check if offer is visible to agents
-                $agentVisible = in_array($offer->visible_to, ['agents', 'both']);
-                if ($agentVisible) {
-                    $progress = OfferProgress::firstOrCreate(
-                        ['user_id' => $agent->id, 'offer_id' => $offer->id],
-                        [
-                            'role_context'            => 'agent',
-                            'total_points'            => 0,
-                            'redeemed_points'         => 0,
-                            'redemption_count'        => 0,
-                            'pending_redemption_count'=> 0,
-                        ]
-                    );
-
-                    $newTotal   = (float)$progress->total_points + $points;
-                    $effectiveTotal = $agent->role === 'enumerator' ? max(0, $newTotal - 10) : $newTotal;
-                    $unredeemed = $effectiveTotal - (float)$progress->redeemed_points;
-                    $target     = (float)$offer->target_points;
-                    $claimableNow  = $target > 0 ? (int)floor($unredeemed / $target) : 0;
-                    $claimableBefore = $progress->pending_redemption_count;
-
-                    $progress->update([
-                        'total_points'            => $newTotal,
-                        'unredeemed_points'       => $unredeemed,
-                        'pending_redemption_count'=> $claimableNow,
-                        'can_redeem'              => $unredeemed >= $target,
-                        'last_installation_at'    => now(),
-                    ]);
-
-                    if (!$progress->first_installation_at) {
-                        $progress->update(['first_installation_at' => now()]);
-                    }
-
-                    // Notify agent if they just crossed a redemption threshold
-                    if ($claimableNow > $claimableBefore) {
-                        app(NotificationService::class)->notifyOfferRedeemable($offer, $agent, $claimableNow);
-                    }
+                // 1. Award absorbed points to creator
+                if ($pointsToAbsorb > 0 && $creator) {
+                    $this->awardToUser($offer, $creator, $pointsToAbsorb);
                 }
 
-                // ── Award points to BDM (if offer visible to super agents) ───────
-                $targetSAId = (int) $agent->super_agent_id;
-
-                // SPECIAL CASE: If the "agent" themselves is a Super Agent (e.g. they created an enumerator)
-                // they should also receive the SA-level points for this installation.
-                if (!$targetSAId && $agent->isSuperAgent()) {
-                    $targetSAId = (int) $agent->id;
-                }
-
-                if ($targetSAId) {
-                    // Award points to Super Agent immediately if visible to them
-                    $saVisible = in_array($offer->visible_to, ['super_agents', 'both']);
-                    if ($saVisible) {
-                        $saProgress = OfferProgress::firstOrCreate(
-                            ['user_id' => $targetSAId, 'offer_id' => $offer->id],
-                            [
-                                'role_context'            => 'super_agent',
-                                'total_points'            => 0,
-                                'redeemed_points'         => 0,
-                                'redemption_count'        => 0,
-                                'pending_redemption_count'=> 0,
-                            ]
-                        );
-                        $saNew = (float)$saProgress->total_points + $points;
-                        $saTarget = (float)$offer->target_points;
-                        $saUnredeemed = $saNew - (float)$saProgress->redeemed_points;
-                        $saClaimable  = $saTarget > 0 ? (int)floor($saUnredeemed / $saTarget) : 0;
-                        
-                        $saProgress->update([
-                            'total_points'            => $saNew,
-                            'unredeemed_points'       => $saUnredeemed,
-                            'pending_redemption_count'=> $saClaimable,
-                            'can_redeem'              => $saUnredeemed >= $saTarget,
-                            'last_installation_at'    => now(),
-                        ]);
-
-                        if (!$saProgress->first_installation_at) {
-                            $saProgress->update(['first_installation_at' => now()]);
-                        }
-                    }
+                // 2. Award standard points to agent
+                if ($pointsForAgent > 0) {
+                    $this->awardToUser($offer, $agent, $pointsForAgent);
                 }
 
                 // ── Handle Collective Offers ───────────────────────────────────
@@ -142,10 +92,84 @@ class OfferService
                             'collective_redeemed_at' => now(),
                             'status' => 'ended'
                         ]);
-                        app(NotificationService::class)->notifyCollectiveOfferCompleted($offer);
+                        // We use the helper directly here
+                        $ns = app(\App\Services\NotificationService::class);
+                        $ns->notifyCollectiveOfferCompleted($offer);
                     }
                 }
             });
+        }
+    }
+
+    /**
+     * Award points to a specific user for an offer, handling context and overrides.
+     */
+    private function awardToUser(Offer $offer, User $user, float $points): void
+    {
+        // 1. Direct Award (Agent/SA depending on their primary role)
+        $isAgent = in_array($user->role, ['agent', 'enumerator']);
+        $isSA = $user->role === 'super_agent';
+
+        // Award as BDE (Agent)
+        if ($isAgent && in_array($offer->visible_to, ['agents', 'both'])) {
+            $this->incrementProgress($offer, $user, $points, 'agent');
+        }
+
+        // Award as BDM (Super Agent)
+        if ($isSA && in_array($offer->visible_to, ['super_agents', 'both'])) {
+            $this->incrementProgress($offer, $user, $points, 'super_agent');
+        }
+
+        // 2. Hierarchy Overrides (If user is an agent, their SA gets the override points)
+        if ($isAgent) {
+            $targetSAId = (int)$user->super_agent_id;
+            if ($targetSAId && in_array($offer->visible_to, ['super_agents', 'both'])) {
+                $sa = User::find($targetSAId);
+                if ($sa) {
+                    $this->incrementProgress($offer, $sa, $points, 'super_agent');
+                }
+            }
+        }
+    }
+
+    private function incrementProgress(Offer $offer, User $user, float $points, string $roleContext): void
+    {
+        $progress = OfferProgress::firstOrCreate(
+            ['user_id' => $user->id, 'offer_id' => $offer->id],
+            [
+                'role_context'            => $roleContext,
+                'total_points'            => 0,
+                'redeemed_points'         => 0,
+                'redemption_count'        => 0,
+                'pending_redemption_count'=> 0,
+            ]
+        );
+
+        $newTotal = (float)$progress->total_points + $points;
+        
+        // Final Threshold check for enumerators (legacy safety)
+        $effectiveTotal = $user->role === 'enumerator' ? max(0, $newTotal - 10.0) : $newTotal;
+        
+        $unredeemed = $effectiveTotal - (float)$progress->redeemed_points;
+        $target = (float)$offer->target_points;
+        $claimableNow = $target > 0 ? (int)floor($unredeemed / $target) : 0;
+        $claimableBefore = $progress->pending_redemption_count;
+
+        $progress->update([
+            'total_points'            => $newTotal,
+            'unredeemed_points'       => $unredeemed,
+            'pending_redemption_count'=> $claimableNow,
+            'can_redeem'              => $target > 0 && $unredeemed >= $target,
+            'last_installation_at'    => now(),
+        ]);
+
+        if (!$progress->first_installation_at) {
+            $progress->update(['first_installation_at' => now()]);
+        }
+
+        // Notify user if they just crossed a redemption threshold
+        if ($claimableNow > $claimableBefore) {
+            app(NotificationService::class)->notifyOfferRedeemable($offer, $user, $claimableNow);
         }
     }
 

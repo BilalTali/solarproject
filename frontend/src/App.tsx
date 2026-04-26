@@ -120,6 +120,7 @@ const SuperAdminProfilePage = lazy(() => import('@/pages/super-admin/SuperAdminP
 const SuperAdminFAQPage = lazy(() => import('@/pages/super-admin/SuperAdminFAQPage'));
 const SuperAdminChatbotPage = lazy(() => import('@/pages/super-admin/SuperAdminChatbotPage'));
 const SuperAdminCrmOptionsPage = lazy(() => import('@/pages/super-admin/SuperAdminCrmOptionsPage'));
+const SuperAdminCapacityPointsPage = lazy(() => import('@/pages/super-admin/SuperAdminCapacityPointsPage'));
 
 
 /** Redirect admin to dashboard; operators straight to leads */
@@ -327,6 +328,7 @@ export default function App() {
             <Route path="monitor/enumerators" element={<SuperAdminMonitorEnumeratorsPage />} />
             <Route path="monitor/leads" element={<SuperAdminMonitorLeadsPage />} />
             <Route path="crm-options" element={<SuperAdminCrmOptionsPage />} />
+            <Route path="points-config" element={<SuperAdminCapacityPointsPage />} />
             <Route path="offers" element={<AdminOffersPage />} />
             <Route path="redemptions" element={<AdminRedemptionsPage />} />
             <Route path="absorptions" element={<AdminAbsorptionsPage />} />

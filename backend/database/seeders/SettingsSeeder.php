@@ -136,7 +136,7 @@ class SettingsSeeder extends Seeder
             ['key' => 'label_whatsapp_text', 'value' => 'Chat with Solar Expert', 'group' => 'homepage'],
 
             // ── Offers & Points ────────────────────────────────────────────────
-            ['key' => 'capacity_points_json', 'value' => '{"3kw":1,"3.3kw":1.1,"4kw":1.5,"5kw":2,"5.5kw":2.2,"6kw":2.5,"7kw":3,"8kw":3.5,"9kw":4,"10kw":5,"above_10kw":6,"above_3kw":1.5}', 'group' => 'offer'],
+            ['key' => 'capacity_points_json', 'value' => '{"1kw":0,"2kw":0,"3kw":1,"3.3kw":1.1,"4kw":1.5,"5kw":2,"5.5kw":2.2,"6kw":2.5,"7kw":3,"8kw":3.5,"9kw":4,"10kw":5,"above_10kw":6,"above_3kw":1.5}', 'group' => 'offer'],
             ['key' => 'offer_grace_period_days', 'value' => '7', 'group' => 'offer'],
 
             // ── Company Bank Details (for Billing / Invoices) ─────────────────
