@@ -90,7 +90,7 @@ const AdminReportsPage: React.FC = () => {
                             <h3 className="font-bold text-slate-800 text-lg">Growth & Installation Trend</h3>
                         </div>
                     </div>
-                    <div className="h-[300px] w-full">
+                    <div className="min-h-[300px] w-full">
                         {trendLoading ? (
                             <div className="h-full flex items-center justify-center text-slate-400">Loading trend data...</div>
                         ) : (
@@ -127,7 +127,7 @@ const AdminReportsPage: React.FC = () => {
                         <PieIcon className="text-orange-500" size={20} />
                         <h3 className="font-bold text-slate-800 text-lg">Sales Pipeline</h3>
                     </div>
-                    <div className="relative h-[300px] w-full flex items-center justify-center">
+                    <div className="relative min-h-[300px] w-full flex items-center justify-center">
                         {pipelineLoading ? (
                             <div className="text-slate-400">Loading funnel...</div>
                         ) : (
@@ -188,7 +188,7 @@ const AdminReportsPage: React.FC = () => {
                         <MapPin className="text-orange-500" size={20} />
                         <h3 className="font-bold text-slate-800 text-lg">Top States</h3>
                     </div>
-                    <div className="h-[300px]">
+                    <div className="min-h-[300px]">
                         {geoLoading ? (
                             <div className="h-full flex items-center justify-center text-slate-400">Loading geo data...</div>
                         ) : (
