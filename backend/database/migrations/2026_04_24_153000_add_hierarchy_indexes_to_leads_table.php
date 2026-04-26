@@ -18,7 +18,6 @@ return new class extends Migration
             $table->index('owner_type');
             $table->index('verification_status');
             $table->index('source');
-            $table->index('status');
             $table->index('assigned_admin_id');
             $table->index('wa_handler_admin_id');
             $table->index('created_by_super_agent_id');
@@ -39,7 +38,6 @@ return new class extends Migration
             $table->dropIndex(['owner_type']);
             $table->dropIndex(['verification_status']);
             $table->dropIndex(['source']);
-            $table->dropIndex(['status']);
             $table->dropIndex(['assigned_admin_id']);
             $table->dropIndex(['wa_handler_admin_id']);
             $table->dropIndex(['created_by_super_agent_id']);
