@@ -90,11 +90,11 @@ const AdminReportsPage: React.FC = () => {
                             <h3 className="font-bold text-slate-800 text-lg">Growth & Installation Trend</h3>
                         </div>
                     </div>
-                    <div className="min-h-[300px] w-full">
+                    <div className="h-[300px] w-full">
                         {trendLoading ? (
                             <div className="h-full flex items-center justify-center text-slate-400">Loading trend data...</div>
                         ) : (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height={300}>
                                 <AreaChart data={trendData?.data || []}>
                                     <defs>
                                         <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
@@ -127,7 +127,7 @@ const AdminReportsPage: React.FC = () => {
                         <PieIcon className="text-orange-500" size={20} />
                         <h3 className="font-bold text-slate-800 text-lg">Sales Pipeline</h3>
                     </div>
-                    <div className="relative min-h-[300px] w-full flex items-center justify-center">
+                    <div className="relative h-[300px] w-full flex items-center justify-center">
                         {pipelineLoading ? (
                             <div className="text-slate-400">Loading funnel...</div>
                         ) : (
@@ -136,7 +136,7 @@ const AdminReportsPage: React.FC = () => {
                                     <span className="text-3xl font-black text-slate-800">{pipelineData?.data.total || 0}</span>
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Leads</span>
                                 </div>
-                                <ResponsiveContainer width="100%" height="100%">
+                                <ResponsiveContainer width="100%" height={300}>
                                     <PieChart>
                                         <Pie
                                             data={pipelineChartData}
@@ -188,11 +188,11 @@ const AdminReportsPage: React.FC = () => {
                         <MapPin className="text-orange-500" size={20} />
                         <h3 className="font-bold text-slate-800 text-lg">Top States</h3>
                     </div>
-                    <div className="min-h-[300px]">
+                    <div className="h-[300px]">
                         {geoLoading ? (
                             <div className="h-full flex items-center justify-center text-slate-400">Loading geo data...</div>
                         ) : (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height={300}>
                                 <BarChart data={geoData?.data.by_state || []} layout="vertical">
                                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
                                     <XAxis type="number" hide />
