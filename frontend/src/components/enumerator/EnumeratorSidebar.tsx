@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sun, LayoutDashboard, List, PlusCircle, DollarSign, User, LogOut, BadgeCheck, Bell, FileText, Wallet, Gift } from 'lucide-react';
+import { Sun, LayoutDashboard, List, PlusCircle, DollarSign, User, LogOut, BadgeCheck, Bell, FileText, Wallet } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { authApi } from '@/services/auth.api';
