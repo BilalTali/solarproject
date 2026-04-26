@@ -11,19 +11,30 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('leads', function (Blueprint $table) {
-            $table->index('assigned_super_agent_id');
-            $table->index('submitted_by_agent_id');
-            $table->index('submitted_by_enumerator_id');
-            $table->index('owner_type');
-            $table->index('verification_status');
-            $table->index('source');
-            $table->index('assigned_admin_id');
-            $table->index('wa_handler_admin_id');
-            $table->index('created_by_super_agent_id');
-            $table->index('assigned_agent_id');
-            $table->index('beneficiary_state');
-        });
+        $indexes = [
+            'assigned_super_agent_id',
+            'submitted_by_agent_id',
+            'submitted_by_enumerator_id',
+            'owner_type',
+            'verification_status',
+            'source',
+            'assigned_admin_id',
+            'wa_handler_admin_id',
+            'created_by_super_agent_id',
+            'assigned_agent_id',
+            'beneficiary_state'
+        ];
+
+        foreach ($indexes as $column) {
+            $indexName = 'leads_' . $column . '_index';
+            $exists = count(\Illuminate\Support\Facades\DB::select("SHOW INDEX FROM `leads` WHERE Key_name = ?", [$indexName])) > 0;
+            
+            if (!$exists) {
+                Schema::table('leads', function (Blueprint $table) use ($column) {
+                    $table->index($column);
+                });
+            }
+        }
     }
 
     /**
@@ -31,18 +42,29 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('leads', function (Blueprint $table) {
-            $table->dropIndex(['assigned_super_agent_id']);
-            $table->dropIndex(['submitted_by_agent_id']);
-            $table->dropIndex(['submitted_by_enumerator_id']);
-            $table->dropIndex(['owner_type']);
-            $table->dropIndex(['verification_status']);
-            $table->dropIndex(['source']);
-            $table->dropIndex(['assigned_admin_id']);
-            $table->dropIndex(['wa_handler_admin_id']);
-            $table->dropIndex(['created_by_super_agent_id']);
-            $table->dropIndex(['assigned_agent_id']);
-            $table->dropIndex(['beneficiary_state']);
-        });
+        $indexes = [
+            'assigned_super_agent_id',
+            'submitted_by_agent_id',
+            'submitted_by_enumerator_id',
+            'owner_type',
+            'verification_status',
+            'source',
+            'assigned_admin_id',
+            'wa_handler_admin_id',
+            'created_by_super_agent_id',
+            'assigned_agent_id',
+            'beneficiary_state'
+        ];
+
+        foreach ($indexes as $column) {
+            $indexName = 'leads_' . $column . '_index';
+            $exists = count(\Illuminate\Support\Facades\DB::select("SHOW INDEX FROM `leads` WHERE Key_name = ?", [$indexName])) > 0;
+            
+            if ($exists) {
+                Schema::table('leads', function (Blueprint $table) use ($column) {
+                    $table->dropIndex([$column]);
+                });
+            }
+        }
     }
 };
