@@ -97,7 +97,6 @@ const EnumeratorNotificationsPage = lazy(() => import('@/pages/enumerator/Enumer
 const EnumeratorLoginPage = lazy(() => import('@/pages/enumerator/EnumeratorLoginPage'));
 const EnumeratorRegisterPage = lazy(() => import('@/pages/enumerator/EnumeratorRegisterPage'));
 const EnumeratorWithdrawalsPage = lazy(() => import('@/pages/enumerator/EnumeratorWithdrawalsPage').then(module => ({ default: module.EnumeratorWithdrawalsPage })));
-const EnumeratorOffersPage = lazy(() => import('./pages/enumerator/EnumeratorOffersPage'));
 
 // Field Technical Team Pages
 import TechnicalLayout from '@/components/layouts/TechnicalLayout';
@@ -292,7 +291,6 @@ export default function App() {
             <Route path="documents" element={<DocumentsPage />} />
             <Route path="profile" element={<EnumeratorProfilePage />} />
             <Route path="withdrawals" element={<EnumeratorWithdrawalsPage />} />
-            <Route path="offers" element={<EnumeratorOffersPage />} />
             <Route index element={<Navigate to="/enumerator/dashboard" replace />} />
           </Route>
 

@@ -12,7 +12,6 @@ const NAV = [
     { icon: <PlusCircle className="w-5 h-5" />, label: 'Submit Lead', to: '/enumerator/leads/new' },
     { icon: <DollarSign className="w-5 h-5" />, label: 'My Earnings', to: '/enumerator/commissions' },
     { icon: <Wallet className="w-5 h-5" />, label: 'Withdraw Cash', to: '/enumerator/withdrawals' },
-    { icon: <Gift className="w-5 h-5" />, label: 'Incentive Offers', to: '/enumerator/offers' },
     { icon: <Bell className="w-5 h-5" />, label: 'Notifications', to: '/enumerator/notifications' },
     { icon: <FileText className="w-5 h-5" />, label: 'Resource Library', to: '/enumerator/documents' },
     { icon: <User className="w-5 h-5" />, label: 'Profile', to: '/enumerator/profile' },
