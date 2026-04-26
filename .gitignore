@@ -33,16 +33,20 @@ lerna-debug.log*
 temp_*
 
 # ==========================================
-# Environment Variables
+# Environment Variables — NEVER commit these
 # ==========================================
 .env
 .env.*
+.env.local
+.env.*.local
 !.env.example
 
 # ==========================================
 # Dependencies
 # ==========================================
 node_modules/
+.pnp
+.pnp.js
 vendor/
 auth.json
 
