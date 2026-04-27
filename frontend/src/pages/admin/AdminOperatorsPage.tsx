@@ -95,11 +95,12 @@ export default function AdminOperatorsPage() {
                                     {field.charAt(0).toUpperCase() + field.slice(1)}
                                 </label>
                                 <input
-                                    type={field === 'password' ? 'password' : 'text'}
+                                    type={field === 'password' ? 'password' : field === 'mobile' ? 'tel' : 'text'}
                                     value={form[field]}
                                     onChange={e => setForm(prev => ({ ...prev, [field]: e.target.value }))}
+                                    {...(field === 'mobile' ? { pattern: "^[6-9]\\d{9}$", maxLength: 10 } : {})}
                                     className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                                    placeholder={field === 'password' ? 'Min 8 characters' : ''}
+                                    placeholder={field === 'password' ? 'Min 8 characters' : field === 'mobile' ? '10-digit mobile number' : ''}
                                 />
                             </div>
                         ))}
