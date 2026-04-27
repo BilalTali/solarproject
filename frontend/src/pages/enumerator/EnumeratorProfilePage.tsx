@@ -12,6 +12,7 @@ import { enumeratorApi } from '@/services/enumerator.api';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
+import { compressImage } from '@/utils/imageUtils';
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm';
 import DownloadJoiningLetterButton from '@/components/shared/DownloadJoiningLetterButton';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
@@ -181,11 +182,26 @@ const EnumeratorProfilePage: React.FC = () => {
                                             <Camera size={32} className="text-white" />
                                             <input
                                                 type="file"
-                                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                                                 accept="image/*"
-                                                onChange={(e) => {
+                                                capture="user"
+                                                onChange={async (e) => {
                                                     const file = e.target.files?.[0];
-                                                    if (file) uploadPhotoMutation.mutate(file);
+                                                    if (!file) return;
+                                                    if (file.size > 5 * 1024 * 1024) {
+                                                        toast.error('Profile photo must be under 5MB.');
+                                                        return;
+                                                    }
+                                                    const toastId = toast.loading('Optimizing photo...');
+                                                    try {
+                                                        const compressed = await compressImage(file);
+                                                        uploadPhotoMutation.mutate(compressed, {
+                                                            onSettled: () => toast.dismiss(toastId)
+                                                        });
+                                                    } catch (error) {
+                                                        toast.dismiss(toastId);
+                                                        toast.error('Failed to compress image');
+                                                    }
                                                 }}
                                             />
                                         </div>

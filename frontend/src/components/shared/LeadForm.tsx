@@ -59,10 +59,11 @@ const DEFAULT_OPTIONS = {
 // ─── Sub Component ─────────────────────────────────────────────────────────────
 
 function FileUploadBox({
-    label, accept, icon: Icon, value, onChange
+    label, accept, icon: Icon, value, onChange, capture
 }: {
     label: string; accept?: string; icon: React.ElementType;
     value: FileUploadState; onChange: (v: FileUploadState) => void;
+    capture?: 'user' | 'environment';
 }) {
     const ref = useRef<HTMLInputElement>(null);
     const [isCompressing, setIsCompressing] = useState(false);
@@ -70,6 +71,11 @@ function FileUploadBox({
     const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
         let file = e.target.files?.[0] ?? null;
         if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error(`File size for ${label} must be under 5MB.`);
+            return;
+        }
 
         // Compression for images
         if (file.type.startsWith('image/') && file.type !== 'image/gif') {
@@ -114,14 +120,22 @@ function FileUploadBox({
                 onKeyDown={onKeyDown}
                 aria-label={`Upload ${label}`}
                 onClick={() => !value.file && !isCompressing && ref.current?.click()}
-                className={`relative border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer min-h-[100px] flex flex-col items-center justify-center gap-2
+                className={`relative overflow-hidden border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer min-h-[100px] flex flex-col items-center justify-center gap-2
                     ${value.file
                         ? 'border-green-400 bg-green-50'
                         : isCompressing
                             ? 'border-blue-300 bg-blue-50 cursor-wait'
                             : 'border-slate-200 bg-slate-50 hover:border-orange-400 hover:bg-orange-50'}`}
             >
-                <input ref={ref} type="file" accept={accept} className="hidden" onChange={handleFile} aria-hidden="true" />
+                <input 
+                    ref={ref} 
+                    type="file" 
+                    accept={accept} 
+                    capture={capture as any}
+                    className={`absolute inset-0 w-full h-full opacity-0 z-10 ${(value.file || isCompressing) ? 'pointer-events-none' : 'cursor-pointer'}`}
+                    onChange={handleFile} 
+                    aria-hidden="true" 
+                />
                 {isCompressing ? (
                     <>
                         <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -577,8 +591,8 @@ export default function LeadForm({ role, onSuccess }: LeadFormProps) {
                                     <span className="absolute top-0 right-0 text-danger font-bold text-xs mt-1 mr-1">*</span>
                                 </div>
                                 <FileUploadBox label="PAN Card" accept=".jpg,.jpeg,.png,.pdf" icon={FileText} value={pan} onChange={setPan} />
-                                <FileUploadBox label="Beneficiary Photo" accept=".jpg,.jpeg,.png" icon={User} value={photo} onChange={setPhoto} />
-                                <FileUploadBox label="Solar Roof Photo" accept=".jpg,.jpeg,.png" icon={Zap} value={solarRoofPhoto} onChange={setSolarRoofPhoto} />
+                                <FileUploadBox label="Beneficiary Photo" accept=".jpg,.jpeg,.png" icon={User} value={photo} onChange={setPhoto} capture="user" />
+                                <FileUploadBox label="Solar Roof Photo" accept=".jpg,.jpeg,.png" icon={Zap} value={solarRoofPhoto} onChange={setSolarRoofPhoto} capture="environment" />
                                 <FileUploadBox label="Bank Passbook" accept=".jpg,.jpeg,.png,.pdf" icon={IndianRupee} value={bankPassbook} onChange={setBankPassbook} />
                             </div>
                         </div>

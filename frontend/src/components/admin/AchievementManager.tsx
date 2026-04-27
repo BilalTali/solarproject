@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, Trophy, Check, ChevronDown, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { achievementsApi, type AdminAchievement } from '@/services/achievements.api';
+import { compressImage } from '@/utils/imageUtils';
 
 export const AchievementManager: React.FC = () => {
     const queryClient = useQueryClient();
@@ -116,15 +117,37 @@ export const AchievementManager: React.FC = () => {
                     />
                 </div>
                 <div className="flex flex-col md:flex-row items-center gap-6 pt-2">
-                    <div className="flex-1 w-full space-y-1">
+                    <div className="flex-1 w-full space-y-1 relative">
                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Identity Image</label>
-                        <input 
-                            ref={achImageRef} 
-                            type="file" 
-                            accept="image/*" 
-                            className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" 
-                            onChange={e => setAchImage(e.target.files?.[0] || null)} 
-                        />
+                        <div className="relative border border-slate-200 rounded-full px-4 py-2 bg-indigo-50 hover:bg-indigo-100 transition-colors cursor-pointer overflow-hidden">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-700 flex items-center justify-center gap-2">
+                                <Plus size={12} /> {achImage ? achImage.name : 'Choose file...'}
+                            </span>
+                            <input 
+                                ref={achImageRef} 
+                                type="file" 
+                                accept="image/*" 
+                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
+                                onChange={async e => {
+                                    const file = e.target.files?.[0] || null;
+                                    if (!file) return;
+                                    if (file.size > 5 * 1024 * 1024) {
+                                        toast.error('Image must be under 5MB.');
+                                        return;
+                                    }
+                                    const toastId = toast.loading('Optimizing image...');
+                                    try {
+                                        const compressed = await compressImage(file);
+                                        setAchImage(compressed);
+                                        toast.dismiss(toastId);
+                                    } catch (err) {
+                                        toast.dismiss(toastId);
+                                        toast.error('Failed to process image');
+                                        setAchImage(file);
+                                    }
+                                }} 
+                            />
+                        </div>
                     </div>
                     <div className="flex gap-3">
                         {editingAch && (

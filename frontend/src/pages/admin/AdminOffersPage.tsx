@@ -12,6 +12,7 @@ import { toast } from 'react-hot-toast';
 import SEOHead from '@/components/shared/SEOHead';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { useAuthStore } from '@/store/authStore';
+import { compressImage } from '@/utils/imageUtils';
 
 interface Participant {
     user_id: number;
@@ -120,10 +121,6 @@ export const AdminOffersPage: React.FC = () => {
         fd.append('is_featured', rawForm.get('is_featured') === 'on' ? '1' : '0');
         fd.append('display_order', rawForm.get('display_order') as string || '0');
         if (prizeImageFile) {
-            if (prizeImageFile.size > 10 * 1024 * 1024) {
-                toast.error("Image too large! Maximum limit is 10MB.");
-                return;
-            }
             fd.append('prize_image', prizeImageFile);
         }
 
@@ -447,9 +444,8 @@ export const AdminOffersPage: React.FC = () => {
                                 <div className="md:col-span-2">
                                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Prize Image <span className="normal-case text-slate-400">(optional)</span></label>
                                     <div
-                                        onClick={() => !prizeImageFile && prizeImageRef.current?.click()}
                                         className={`relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer min-h-[120px]
-                                            flex flex-col items-center justify-center gap-2 transition-all
+                                            flex flex-col items-center justify-center gap-2 transition-all overflow-hidden
                                             ${prizeImagePreview
                                                 ? 'border-indigo-300 bg-indigo-50'
                                                 : 'border-slate-200 bg-slate-50 hover:border-indigo-400 hover:bg-indigo-50/50'}`}
@@ -458,12 +454,23 @@ export const AdminOffersPage: React.FC = () => {
                                             ref={prizeImageRef}
                                             type="file"
                                             accept="image/*"
-                                            className="hidden"
-                                            onChange={(e) => {
+                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                                            onChange={async (e) => {
                                                 const file = e.target.files?.[0] ?? null;
-                                                if (file) {
-                                                    setPrizeImageFile(file);
-                                                    setPrizeImagePreview(URL.createObjectURL(file));
+                                                if (!file) return;
+                                                if (file.size > 5 * 1024 * 1024) {
+                                                    toast.error('Image too large! Maximum limit is 5MB.');
+                                                    return;
+                                                }
+                                                const toastId = toast.loading('Optimizing image...');
+                                                try {
+                                                    const compressed = await compressImage(file);
+                                                    setPrizeImageFile(compressed);
+                                                    setPrizeImagePreview(URL.createObjectURL(compressed));
+                                                    toast.dismiss(toastId);
+                                                } catch (err) {
+                                                    toast.dismiss(toastId);
+                                                    toast.error('Failed to compress image');
                                                 }
                                             }}
                                         />
@@ -472,8 +479,8 @@ export const AdminOffersPage: React.FC = () => {
                                                 <img src={prizeImagePreview} alt="Prize" className="max-h-20 max-w-full rounded-lg object-contain" />
                                                 <button
                                                     type="button"
-                                                    onClick={(e) => { e.stopPropagation(); setPrizeImageFile(null); setPrizeImagePreview(null); if (prizeImageRef.current) prizeImageRef.current.value = ''; }}
-                                                    className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-100 flex items-center justify-center text-red-500 hover:bg-red-200"
+                                                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); setPrizeImageFile(null); setPrizeImagePreview(null); if (prizeImageRef.current) prizeImageRef.current.value = ''; }}
+                                                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-100 flex items-center justify-center text-red-500 hover:bg-red-200 z-20"
                                                 >
                                                     <X size={10} />
                                                 </button>

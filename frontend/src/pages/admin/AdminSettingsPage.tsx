@@ -17,6 +17,7 @@ import ChangePasswordForm from '@/components/shared/ChangePasswordForm';
 import MobileInput from '@/components/shared/MobileInput';
 import { useSettings } from '@/hooks/useSettings';
 import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
+import { compressImage } from '@/utils/imageUtils';
 import SuperAdminCrmOptionsPage from '@/pages/super-admin/SuperAdminCrmOptionsPage';
 
 type TabId = 'company' | 'branding' | 'achievements' | 'feedback' | 'portal' | 'icard' | 'profile' | 'letter' | 'incentive' | 'crm_options';
@@ -90,12 +91,29 @@ function FileUploadField({ settingKey, label, accept, currentUrl, pendingFile, o
                     )}
                 </div>
             )}
-            <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed transition-colors text-sm ${disabled ? 'bg-slate-50 border-slate-100 cursor-not-allowed text-slate-400' : 'border-slate-200 hover:border-accent/50 cursor-pointer text-slate-600'}`}>
+            <label className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed transition-colors text-sm overflow-hidden ${disabled ? 'bg-slate-50 border-slate-100 cursor-not-allowed text-slate-400' : 'border-slate-200 hover:border-accent/50 cursor-pointer text-slate-600'}`}>
                 <Upload className="w-4 h-4" /> {currentUrl || pendingFile ? 'Replace file' : 'Upload file'}
                 {!disabled && (
-                    <input type="file" className="hidden" accept={accept} onChange={e => {
+                    <input type="file" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" accept={accept} onChange={async e => {
                         const file = e.target.files?.[0];
-                        if (file) onSelect(settingKey, file);
+                        if (!file) return;
+                        if (file.size > 5 * 1024 * 1024) {
+                            toast.error('File must be under 5MB.');
+                            return;
+                        }
+                        if (file.type.startsWith('image/')) {
+                            const toastId = toast.loading('Optimizing image...');
+                            try {
+                                const compressed = await compressImage(file);
+                                toast.dismiss(toastId);
+                                onSelect(settingKey, compressed);
+                            } catch (err) {
+                                toast.dismiss(toastId);
+                                toast.error('Failed to process image');
+                            }
+                        } else {
+                            onSelect(settingKey, file);
+                        }
                     }} />
                 )}
             </label>
@@ -448,9 +466,23 @@ const AdminSettingsPage: React.FC = () => {
                                                         )}
                                                         <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                                                             <Camera size={20} className="text-white" />
-                                                            <input type="file" className="hidden" accept="image/*" onChange={e => {
+                                                            <input type="file" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" accept="image/*" capture="user" onChange={async e => {
                                                                 const file = e.target.files?.[0];
-                                                                if (file) uploadPhotoMutation.mutate(file);
+                                                                if (!file) return;
+                                                                if (file.size > 5 * 1024 * 1024) {
+                                                                    toast.error('Profile photo must be under 5MB.');
+                                                                    return;
+                                                                }
+                                                                const toastId = toast.loading('Optimizing photo...');
+                                                                try {
+                                                                    const compressed = await compressImage(file);
+                                                                    uploadPhotoMutation.mutate(compressed, {
+                                                                        onSettled: () => toast.dismiss(toastId)
+                                                                    });
+                                                                } catch (error) {
+                                                                    toast.dismiss(toastId);
+                                                                    toast.error('Failed to compress image');
+                                                                }
                                                             }} />
                                                         </label>
                                                     </div>

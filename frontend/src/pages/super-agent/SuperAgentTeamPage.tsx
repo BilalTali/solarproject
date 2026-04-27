@@ -10,6 +10,7 @@ import type { User } from '@/types';
 import toast from 'react-hot-toast';
 import { INDIAN_STATES, STATE_DISTRICTS } from '@/constants/locationData';
 import MobileInput from '@/components/shared/MobileInput';
+import { compressImage } from '@/utils/imageUtils';
 
 export default function SuperAgentTeamPage() {
     const [search, setSearch] = useState('');
@@ -372,7 +373,7 @@ export default function SuperAgentTeamPage() {
                             <div className="mb-8">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1 block mb-3">Required Documents</label>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                    <DocUpload label="Profile Photo" required value={profilePhoto} onChange={setProfilePhoto} icon={ImageIcon} accept=".jpg,.jpeg,.png" />
+                                    <DocUpload label="Profile Photo" required value={profilePhoto} onChange={setProfilePhoto} icon={ImageIcon} accept=".jpg,.jpeg,.png" capture="user" />
                                     <DocUpload label="Aadhaar Doc" required value={aadhaarDoc} onChange={setAadhaarDoc} icon={CreditCard} accept=".jpg,.jpeg,.png,.pdf" />
                                     <DocUpload label="PAN Card" value={panDoc} onChange={setPanDoc} icon={Hash} accept=".jpg,.jpeg,.png,.pdf" />
                                     <DocUpload label="Education Cert" value={educationCert} onChange={setEducationCert} icon={FileText} accept=".jpg,.jpeg,.png,.pdf" />
@@ -415,17 +416,36 @@ export default function SuperAgentTeamPage() {
 // ====== Sub-components ======
 
 function DocUpload({
-    label, required, accept, value, onChange, icon: Icon,
+    label, required, accept, value, onChange, icon: Icon, capture
 }: {
     label: string; required?: boolean; accept?: string;
     value: any; onChange: (v: any) => void;
-    icon: any;
+    icon: any; capture?: 'user' | 'environment';
 }) {
     const ref = useRef<HTMLInputElement>(null);
+    const [isCompressing, setIsCompressing] = useState(false);
 
-    const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0] ?? null;
+    const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        let file = e.target.files?.[0] ?? null;
         if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error(`File size for ${label} must be under 5MB.`);
+            return;
+        }
+
+        if (file.type.startsWith('image/') && file.type !== 'image/gif') {
+            setIsCompressing(true);
+            try {
+                file = await compressImage(file);
+            } catch (err) {
+                console.error('Compression failed', err);
+                toast.error('Image processing failed. Using original.');
+            } finally {
+                setIsCompressing(false);
+            }
+        }
+
         const preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
         onChange({ file, name: file.name, preview });
     };
@@ -441,15 +461,29 @@ function DocUpload({
                 {label} {required && <span className="text-danger">*</span>}
             </label>
             <div
-                onClick={() => !value.file && ref.current?.click()}
-                className={`relative border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer min-h-[100px]
+                onClick={() => !value.file && !isCompressing && ref.current?.click()}
+                className={`relative overflow-hidden border-2 border-dashed rounded-2xl p-4 text-center min-h-[100px]
                     flex flex-col items-center justify-center gap-2 transition-all
                     ${value.file
                         ? 'border-green-300 bg-green-50'
-                        : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-slate-100'}`}
+                        : isCompressing
+                            ? 'border-sky-300 bg-sky-50 cursor-wait'
+                            : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-slate-100 cursor-pointer'}`}
             >
-                <input ref={ref} type="file" accept={accept} className="hidden" onChange={handleFile} />
-                {value.file ? (
+                <input 
+                    ref={ref} 
+                    type="file" 
+                    accept={accept} 
+                    capture={capture as any}
+                    className={`absolute inset-0 w-full h-full opacity-0 z-10 ${(value.file || isCompressing) ? 'pointer-events-none' : 'cursor-pointer'}`}
+                    onChange={handleFile} 
+                />
+                {isCompressing ? (
+                    <>
+                        <div className="w-5 h-5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+                        <p className="text-[10px] font-bold text-sky-600 uppercase">Optimizing...</p>
+                    </>
+                ) : value.file ? (
                     <>
                         {value.preview
                             ? <img src={value.preview} alt="preview" className="max-h-12 rounded-lg object-contain shadow-sm" />

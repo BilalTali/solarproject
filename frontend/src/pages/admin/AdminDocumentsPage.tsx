@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { documentsApi, type AdminDocument } from '@/services/documents.api';
+import { compressImage } from '@/utils/imageUtils';
 
 const AdminDocumentsPage: React.FC = () => {
     const queryClient = useQueryClient();
@@ -135,19 +136,57 @@ const AdminDocumentsPage: React.FC = () => {
                         <div className="grid grid-cols-1 gap-4">
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">File *</label>
-                                <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-slate-200 hover:border-accent/50 cursor-pointer transition-colors text-sm text-slate-500">
+                                <label className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-slate-200 hover:border-accent/50 cursor-pointer transition-colors text-sm text-slate-500 overflow-hidden">
                                     <Upload className="w-4 h-4 shrink-0" />
-                                    <span className="truncate">{docFile ? docFile.name : 'Choose file...'}</span>
-                                    <input type="file" className="hidden" onChange={e => setDocFile(e.target.files?.[0] || null)} />
+                                    <span className="truncate flex-1 text-center">{docFile ? docFile.name : 'Choose file...'}</span>
+                                    <input type="file" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" onChange={async e => {
+                                        const file = e.target.files?.[0] || null;
+                                        if (!file) return;
+                                        if (file.size > 5 * 1024 * 1024) {
+                                            toast.error('File must be under 5MB.');
+                                            return;
+                                        }
+                                        if (file.type.startsWith('image/')) {
+                                            const toastId = toast.loading('Optimizing image...');
+                                            try {
+                                                const compressed = await compressImage(file);
+                                                setDocFile(compressed);
+                                                toast.dismiss(toastId);
+                                            } catch (err) {
+                                                toast.dismiss(toastId);
+                                                toast.error('Failed to process image');
+                                                setDocFile(file);
+                                            }
+                                        } else {
+                                            setDocFile(file);
+                                        }
+                                    }} />
                                 </label>
                             </div>
 
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Thumbnail (Optional)</label>
-                                <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-slate-200 hover:border-accent/50 cursor-pointer transition-colors text-sm text-slate-500">
+                                <label className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-slate-200 hover:border-accent/50 cursor-pointer transition-colors text-sm text-slate-500 overflow-hidden">
                                     <ImageIcon className="w-4 h-4 shrink-0" />
-                                    <span className="truncate">{docThumb ? docThumb.name : 'Choose image...'}</span>
-                                    <input type="file" accept="image/*" className="hidden" onChange={e => setDocThumb(e.target.files?.[0] || null)} />
+                                    <span className="truncate flex-1 text-center">{docThumb ? docThumb.name : 'Choose image...'}</span>
+                                    <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" onChange={async e => {
+                                        const file = e.target.files?.[0] || null;
+                                        if (!file) return;
+                                        if (file.size > 5 * 1024 * 1024) {
+                                            toast.error('Image must be under 5MB.');
+                                            return;
+                                        }
+                                        const toastId = toast.loading('Optimizing image...');
+                                        try {
+                                            const compressed = await compressImage(file);
+                                            setDocThumb(compressed);
+                                            toast.dismiss(toastId);
+                                        } catch (err) {
+                                            toast.dismiss(toastId);
+                                            toast.error('Failed to process image');
+                                            setDocThumb(file);
+                                        }
+                                    }} />
                                 </label>
                             </div>
                         </div>

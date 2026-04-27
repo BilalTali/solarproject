@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { mediaApi, type AdminMedia } from '@/services/media.api';
+import { compressImage } from '@/utils/imageUtils';
 
 const AdminMediaPage: React.FC = () => {
     const queryClient = useQueryClient();
@@ -135,14 +136,31 @@ const AdminMediaPage: React.FC = () => {
                         <div className="space-y-1.5">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Image/Photo</label>
                             <div className="relative group">
-                                <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-4 hover:border-accent/50 cursor-pointer transition-all bg-slate-50/50">
+                                <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-4 hover:border-accent/50 cursor-pointer transition-all bg-slate-50/50 relative overflow-hidden">
                                     <ImageIcon className="w-8 h-8 text-slate-300 mb-2" />
                                     <span className="text-xs font-medium text-slate-500">{mediaImage ? mediaImage.name : 'Click to upload image'}</span>
                                     <input
                                         type="file"
                                         accept="image/*"
-                                        className="hidden"
-                                        onChange={e => setMediaImage(e.target.files?.[0] || null)}
+                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                                        onChange={async e => {
+                                            const file = e.target.files?.[0] || null;
+                                            if (!file) return;
+                                            if (file.size > 5 * 1024 * 1024) {
+                                                toast.error('Image must be under 5MB.');
+                                                return;
+                                            }
+                                            const toastId = toast.loading('Optimizing image...');
+                                            try {
+                                                const compressed = await compressImage(file);
+                                                setMediaImage(compressed);
+                                                toast.dismiss(toastId);
+                                            } catch (err) {
+                                                toast.dismiss(toastId);
+                                                toast.error('Failed to process image');
+                                                setMediaImage(file);
+                                            }
+                                        }}
                                     />
                                 </label>
                             </div>

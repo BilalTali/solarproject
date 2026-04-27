@@ -14,6 +14,7 @@ import { STATE_DISTRICTS, INDIAN_STATES } from '@/constants/locationData';
 import SEOHead from '@/components/shared/SEOHead';
 import MobileInput from '@/components/shared/MobileInput';
 import { useSettings } from '@/hooks/useSettings';
+import { compressImage } from '@/utils/imageUtils';
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
@@ -52,17 +53,36 @@ interface FileState {
 const emptyFile = (): FileState => ({ file: null, name: '', preview: null });
 
 function DocUpload({
-    label, required, accept, value, onChange, icon: Icon,
+    label, required, accept, value, onChange, icon: Icon, capture
 }: {
     label: string; required?: boolean; accept?: string;
     value: FileState; onChange: (v: FileState) => void;
-    icon: React.ElementType;
+    icon: React.ElementType; capture?: 'user' | 'environment';
 }) {
     const ref = useRef<HTMLInputElement>(null);
+    const [isCompressing, setIsCompressing] = useState(false);
 
-    const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0] ?? null;
+    const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        let file = e.target.files?.[0] ?? null;
         if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error(`File size for ${label} must be under 5MB.`);
+            return;
+        }
+
+        if (file.type.startsWith('image/') && file.type !== 'image/gif') {
+            setIsCompressing(true);
+            try {
+                file = await compressImage(file);
+            } catch (err) {
+                console.error('Compression failed', err);
+                toast.error('Image processing failed. Using original.');
+            } finally {
+                setIsCompressing(false);
+            }
+        }
+
         const preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
         onChange({ file, name: file.name, preview });
     };
@@ -78,15 +98,29 @@ function DocUpload({
                 {label} {required && <span className="text-danger"> *</span>}
             </label>
             <div
-                onClick={() => !value.file && ref.current?.click()}
-                className={`relative border-2 border-dashed rounded-xl p-3 text-center cursor-pointer min-h-[90px]
-                    flex flex-col items-center justify-center gap-1.5 transition-all
+                onClick={() => !value.file && !isCompressing && ref.current?.click()}
+                className={`relative overflow-hidden border-2 border-dashed rounded-xl p-3 text-center transition-all min-h-[90px]
+                    flex flex-col items-center justify-center gap-1.5
                     ${value.file
                         ? 'border-success bg-success/5'
-                        : 'border-gray-200 bg-neutral-50 hover:border-primary/40 hover:bg-primary/5'}`}
+                        : isCompressing
+                            ? 'border-sky-300 bg-sky-50 cursor-wait'
+                            : 'border-gray-200 bg-neutral-50 hover:border-primary/40 hover:bg-primary/5 cursor-pointer'}`}
             >
-                <input ref={ref} type="file" accept={accept} className="hidden" onChange={handleFile} />
-                {value.file ? (
+                <input 
+                    ref={ref} 
+                    type="file" 
+                    accept={accept} 
+                    capture={capture as any}
+                    className={`absolute inset-0 w-full h-full opacity-0 z-10 ${(value.file || isCompressing) ? 'pointer-events-none' : 'cursor-pointer'}`}
+                    onChange={handleFile} 
+                />
+                {isCompressing ? (
+                    <>
+                        <div className="w-5 h-5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+                        <p className="text-xs font-semibold text-sky-600">Optimizing...</p>
+                    </>
+                ) : value.file ? (
                     <>
                         {value.preview
                             ? <img src={value.preview} alt="preview" className="max-h-12 rounded object-contain" />
@@ -458,7 +492,7 @@ export default function AgentRegisterPage() {
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="relative">
-                                        <DocUpload label="Profile Photo" required accept=".jpg,.jpeg,.png" icon={ImageIcon} value={profilePhoto} onChange={setProfilePhoto} />
+                                        <DocUpload label="Profile Photo" required accept=".jpg,.jpeg,.png" icon={ImageIcon} value={profilePhoto} onChange={setProfilePhoto} capture="user" />
                                     </div>
                                     <div className="relative">
                                         <DocUpload label="Aadhaar Card Scan" required accept=".jpg,.jpeg,.png,.pdf" icon={CreditCard} value={aadhaarDoc} onChange={setAadhaarDoc} />

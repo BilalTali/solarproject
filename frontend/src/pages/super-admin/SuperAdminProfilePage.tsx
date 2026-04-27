@@ -13,6 +13,7 @@ import { FeedbackManager } from '@/components/admin/FeedbackManager';
 import api from '@/services/axios';
 import toast from 'react-hot-toast';
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm';
+import { compressImage } from '@/utils/imageUtils';
 import { SettingJsonEditor } from '@/components/admin/SettingJsonEditor';
 import SuperAdminCrmOptionsPage from '@/pages/super-admin/SuperAdminCrmOptionsPage';
 
@@ -614,7 +615,27 @@ const FileUploadBlock = ({ label, currentPath, pendingFile, onSelect, accept = "
                     ) : (
                         <Upload className="text-slate-300" size={30} />
                     )}
-                    <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept={accept} onChange={e => e.target.files?.[0] && onSelect(e.target.files[0])} />
+                    <input type="file" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" accept={accept} onChange={async e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 5 * 1024 * 1024) {
+                            toast.error('File must be under 5MB.');
+                            return;
+                        }
+                        if (file.type.startsWith('image/')) {
+                            const toastId = toast.loading('Optimizing image...');
+                            try {
+                                const compressed = await compressImage(file);
+                                toast.dismiss(toastId);
+                                onSelect(compressed);
+                            } catch (err) {
+                                toast.dismiss(toastId);
+                                toast.error('Failed to process image');
+                            }
+                        } else {
+                            onSelect(file);
+                        }
+                    }} />
                 </div>
                 {pendingFile && <div className="absolute top-2 right-2 bg-indigo-600 text-white text-[8px] px-2 py-1 rounded-full font-black uppercase">Unsaved</div>}
             </div>
