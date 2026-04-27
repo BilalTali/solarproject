@@ -695,10 +695,12 @@ interface ProfileFieldProps {
     type?: 'text' | 'date' | 'select' | 'textarea' | 'number' | 'tel';
     options?: string[];
     disabled?: boolean;
+    pattern?: string;
+    maxLength?: number;
 }
 
 const ProfileField: React.FC<ProfileFieldProps> = ({
-    label, value, icon, editing, formValue, onChange, placeholder, type = 'text', options = [], disabled = false
+    label, value, icon, editing, formValue, onChange, placeholder, type = 'text', options = [], disabled = false, pattern, maxLength
 }) => {
     if (editing && !disabled) {
         return (
