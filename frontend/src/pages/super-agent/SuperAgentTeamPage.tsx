@@ -317,7 +317,7 @@ export default function SuperAgentTeamPage() {
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">PAN Card Number</label>
-                                        <input value={formData.pan_number} onChange={e => setFormData({ ...formData, pan_number: e.target.value.toUpperCase() })} type="text" maxLength={10} placeholder="ABCDE1234F" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3 text-slate-800 font-bold focus:border-slate-300 outline-none transition-all placeholder:text-slate-300 placeholder:font-medium text-sm" />
+                                        <input value={formData.pan_number} onChange={e => setFormData({ ...formData, pan_number: e.target.value.toUpperCase() })} type="text" pattern="[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}" maxLength={10} placeholder="ABCDE1234F" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3 text-slate-800 font-bold focus:border-slate-300 outline-none transition-all placeholder:text-slate-300 placeholder:font-medium text-sm" />
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Voter ID</label>
@@ -329,11 +329,11 @@ export default function SuperAgentTeamPage() {
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Account Number</label>
-                                        <input value={formData.bank_account_number} onChange={e => setFormData({ ...formData, bank_account_number: e.target.value })} type="text" placeholder="000000000000" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3 text-slate-800 font-bold focus:border-slate-300 outline-none transition-all placeholder:text-slate-300 placeholder:font-medium text-sm" />
+                                        <input value={formData.bank_account_number} onChange={e => setFormData({ ...formData, bank_account_number: e.target.value })} type="text" pattern="\d{9,18}" maxLength={18} placeholder="000000000000" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3 text-slate-800 font-bold focus:border-slate-300 outline-none transition-all placeholder:text-slate-300 placeholder:font-medium text-sm" />
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">IFSC Code</label>
-                                        <input value={formData.bank_ifsc} onChange={e => setFormData({ ...formData, bank_ifsc: e.target.value.toUpperCase() })} type="text" placeholder="SBIN0001234" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3 text-slate-800 font-bold focus:border-slate-300 outline-none transition-all placeholder:text-slate-300 placeholder:font-medium text-sm" />
+                                        <input value={formData.bank_ifsc} onChange={e => setFormData({ ...formData, bank_ifsc: e.target.value.toUpperCase() })} type="text" pattern="[a-zA-Z]{4}0[a-zA-Z0-9]{6}" maxLength={11} placeholder="SBIN0001234" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3 text-slate-800 font-bold focus:border-slate-300 outline-none transition-all placeholder:text-slate-300 placeholder:font-medium text-sm" />
                                     </div>
                                 </div>
                             </div>

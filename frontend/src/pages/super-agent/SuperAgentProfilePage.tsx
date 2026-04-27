@@ -490,6 +490,8 @@ export function SuperAgentProfilePage() {
                                             onChange={v => setEditForm(p => ({ ...p, aadhaar_number: v }))} 
                                             icon={<Shield size={14} />} 
                                             placeholder="12-digit number"
+                                            pattern="\d{12}"
+                                            maxLength={12}
                                         />
                                         <EditField 
                                             label="PAN Card Number" 
@@ -498,6 +500,8 @@ export function SuperAgentProfilePage() {
                                             onChange={v => setEditForm(p => ({ ...p, pan_number: v }))} 
                                             icon={<Shield size={14} />} 
                                             placeholder="ABCDE1234F"
+                                            pattern="[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}"
+                                            maxLength={10}
                                         />
                                         <EditField 
                                             label="Voter ID" 
@@ -520,6 +524,8 @@ export function SuperAgentProfilePage() {
                                             editing={editing} 
                                             onChange={v => setEditForm(p => ({ ...p, bank_account_number: v }))} 
                                             icon={<CreditCard size={14} />} 
+                                            pattern="\d{9,18}"
+                                            maxLength={18}
                                         />
                                         <EditField 
                                             label="Bank IFSC" 
@@ -527,6 +533,8 @@ export function SuperAgentProfilePage() {
                                             editing={editing} 
                                             onChange={v => setEditForm(p => ({ ...p, bank_ifsc: v }))} 
                                             icon={<Building2 size={14} />} 
+                                            pattern="[a-zA-Z]{4}0[a-zA-Z0-9]{6}"
+                                            maxLength={11}
                                         />
                                         <EditField 
                                             label="Bank Branch" 
@@ -603,7 +611,7 @@ const DisplayField = ({ label, value, icon }: { label: string, value?: any, icon
     </div>
 );
 
-const EditField = ({ label, value, editing, onChange, icon, placeholder, type = "text" }: { label: string, value: any, editing: boolean, onChange: (v: string) => void, icon: React.ReactNode, placeholder?: string, type?: string }) => (
+const EditField = ({ label, value, editing, onChange, icon, placeholder, type = "text", pattern, maxLength }: { label: string, value: any, editing: boolean, onChange: (v: string) => void, icon: React.ReactNode, placeholder?: string, type?: string, pattern?: string, maxLength?: number }) => (
     <div className="space-y-2">
         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
         {editing ? (
@@ -612,6 +620,8 @@ const EditField = ({ label, value, editing, onChange, icon, placeholder, type = 
                 value={value || ''} 
                 onChange={e => onChange(e.target.value)} 
                 placeholder={placeholder}
+                pattern={pattern}
+                maxLength={maxLength}
                 className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-slate-800 font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all" 
             />
         ) : (

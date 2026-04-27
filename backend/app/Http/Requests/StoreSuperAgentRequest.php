@@ -15,10 +15,10 @@ class StoreSuperAgentRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'mobile' => ['required', 'string', 'size:10', 'unique:users,mobile'],
+            'mobile' => ['required', 'string', 'size:10', 'regex:/^[6-9]\d{9}$/', 'unique:users,mobile'],
             'email' => ['nullable', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
-            'whatsapp_number' => ['nullable', 'string', 'size:10'],
+            'whatsapp_number' => ['nullable', 'string', 'size:10', 'regex:/^[6-9]\d{9}$/'],
             'district' => ['required', 'string', 'max:100'],
             'state' => ['required', 'string', 'max:100'],
             'area' => ['nullable', 'string', 'max:255'],

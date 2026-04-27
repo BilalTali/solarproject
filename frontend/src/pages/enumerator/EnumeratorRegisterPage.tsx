@@ -435,6 +435,7 @@ export default function EnumeratorRegisterPage() {
                                                 className={`input pl-9 ${errors.aadhaar_number ? 'input-error' : ''}`}
                                                 placeholder="12-digit Aadhaar number"
                                                 maxLength={12}
+                                                pattern="\d{12}"
                                                 {...register('aadhaar_number')}
                                             />
                                         </div>

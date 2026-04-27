@@ -98,7 +98,7 @@ class AdminAgentController extends Controller
             'name' => 'sometimes|string|max:255',
             'district' => 'sometimes|string|max:255',
             'state' => 'sometimes|string|max:255',
-            'whatsapp_number' => 'sometimes|string|size:10',
+            'whatsapp_number' => 'sometimes|string|size:10|regex:/^[6-9]\d{9}$/',
         ]);
 
         $agent->update($data);

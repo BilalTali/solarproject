@@ -63,7 +63,7 @@ class SharedProfileController extends Controller
 
         $validated = \Illuminate\Support\Facades\Validator::make($data, [
             'email' => ['sometimes', 'nullable', 'email', 'unique:users,email,'.$user->id],
-            'whatsapp_number' => ['nullable', 'string', 'max:20'],
+            'whatsapp_number' => ['nullable', 'string', 'size:10', 'regex:/^[6-9]\d{9}$/'],
             'father_name' => ['nullable', 'string', 'max:255'],
             'dob' => ['nullable', 'date'],
             'blood_group' => ['nullable', 'string', 'max:10'],
@@ -79,7 +79,7 @@ class SharedProfileController extends Controller
             'area' => ['nullable', 'string', 'max:255'],
             'voter_id' => ['nullable', 'string', 'max:50'],
             'bank_name' => ['nullable', 'string', 'max:255'],
-            'bank_ifsc' => ['nullable', 'string', 'max:20'],
+            'bank_ifsc' => ['nullable', 'string', 'size:11', 'regex:/^[A-Z]{4}0[A-Z0-9]{6}$/i'],
             'bank_branch' => ['nullable', 'string', 'max:255'],
             'upi_id' => ['nullable', 'string', 'max:100'],
             'occupation' => ['nullable', 'string', 'max:255'],
@@ -89,9 +89,9 @@ class SharedProfileController extends Controller
             'reference_name' => ['nullable', 'string', 'max:255'],
             'reference_mobile' => ['nullable', 'string', 'max:20'],
             'territory' => ['nullable', 'string', 'max:255'],
-            'pan_number' => ['nullable', 'string', 'max:20'],
-            'aadhaar_number' => ['nullable', 'string', 'size:12'],
-            'bank_account_number' => ['nullable', 'string', 'max:30'],
+            'pan_number' => ['nullable', 'string', 'size:10', 'regex:/^[A-Z]{5}\d{4}[A-Z]$/i'],
+            'aadhaar_number' => ['nullable', 'string', 'size:12', 'regex:/^\d{12}$/'],
+            'bank_account_number' => ['nullable', 'string', 'regex:/^\d{9,18}$/'],
             // Special cases for admins
             'name' => ['sometimes', 'string', 'max:255'],
         ])->validate();

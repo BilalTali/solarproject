@@ -555,6 +555,8 @@ const EnumeratorProfilePage: React.FC = () => {
                                             formValue={editForm.aadhaar_number}
                                             onChange={v => setEditForm({ ...editForm, aadhaar_number: v })}
                                             placeholder="12 digit Aadhaar"
+                                            pattern="\d{12}" 
+                                            maxLength={12}
                                         />
                                         <ProfileField
                                             label="PAN Card"
@@ -564,6 +566,8 @@ const EnumeratorProfilePage: React.FC = () => {
                                             formValue={editForm.pan_number}
                                             onChange={v => setEditForm({ ...editForm, pan_number: v })}
                                             placeholder="PAN Number"
+                                            pattern="[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}" 
+                                            maxLength={10}
                                         />
                                         <ProfileField
                                             label="Voter ID"
@@ -588,6 +592,8 @@ const EnumeratorProfilePage: React.FC = () => {
                                             editing={editing}
                                             formValue={editForm.bank_account_number}
                                             onChange={v => setEditForm({ ...editForm, bank_account_number: v })}
+                                            pattern="\d{9,18}"
+                                            maxLength={18}
                                         />
                                         <ProfileField
                                             label="Bank IFSC"
@@ -596,6 +602,8 @@ const EnumeratorProfilePage: React.FC = () => {
                                             editing={editing}
                                             formValue={editForm.bank_ifsc}
                                             onChange={v => setEditForm({ ...editForm, bank_ifsc: v })}
+                                            pattern="[a-zA-Z]{4}0[a-zA-Z0-9]{6}"
+                                            maxLength={11}
                                         />
                                         <ProfileField
                                             label="Bank Branch"
@@ -684,10 +692,12 @@ interface ProfileFieldProps {
     type?: 'text' | 'date' | 'select' | 'textarea' | 'number' | 'tel';
     options?: string[];
     disabled?: boolean;
+    pattern?: string;
+    maxLength?: number;
 }
 
 const ProfileField: React.FC<ProfileFieldProps> = ({
-    label, value, icon, editing, formValue, onChange, placeholder, type = 'text', options = [], disabled = false
+    label, value, icon, editing, formValue, onChange, placeholder, type = 'text', options = [], disabled = false, pattern, maxLength
 }) => {
     if (editing && !disabled) {
         return (
@@ -727,6 +737,8 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
                         value={formValue || ''}
                         onChange={e => onChange?.(e.target.value)}
                         placeholder={placeholder}
+                        pattern={pattern}
+                        maxLength={maxLength}
                         className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-slate-800 font-bold focus:border-emerald-500 outline-none transition-all"
                     />
                 )}
