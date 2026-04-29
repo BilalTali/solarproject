@@ -42,7 +42,7 @@ export default function AgentSidebar({ onClose }: { onClose?: () => void }) {
         staleTime: 30000,
         refetchInterval: 60000,
     });
-    const unreadCount = notifData?.data?.data?.filter((n: any) => !n.read_at).length || 0;
+    const unreadCount = notifData?.data?.unread_count ?? 0;
 
     return (
         <aside className="w-64 h-full flex flex-col bg-slate-50 border-r border-slate-200 shadow-xl" aria-label="Agent Sidebar">

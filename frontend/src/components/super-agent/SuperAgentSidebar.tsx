@@ -5,6 +5,8 @@ import {
     Power, PlusCircle, List, ChevronDown, Gift
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { useQuery } from '@tanstack/react-query';
+import { superAgentApi } from '@/services/superAgent.api';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import { useSettings } from '@/hooks/useSettings';
 
@@ -20,6 +22,14 @@ export default function SuperAgentSidebar({ onClose }: SuperAgentSidebarProps) {
 
     const isLeadActive = location.pathname.startsWith('/super-agent/leads');
     const [leadsOpen, setLeadsOpen] = useState(isLeadActive);
+
+    const { data: notifData } = useQuery({
+        queryKey: ['super-agent-notifications-count'],
+        queryFn: () => superAgentApi.getNotifications(),
+        staleTime: 30000,
+        refetchInterval: 60000,
+    });
+    const unreadCount = notifData?.data?.unread_count ?? 0;
 
     const handleLogout = () => {
         clearAuth();
@@ -125,7 +135,13 @@ export default function SuperAgentSidebar({ onClose }: SuperAgentSidebarProps) {
                 </NavLink>
 
                 <NavLink to="/super-agent/notifications" onClick={onClose} className={navLinkClass}>
-                    <Bell size={18} aria-hidden="true" /> Notifications
+                    <Bell size={18} aria-hidden="true" />
+                    <span className="flex-1 text-left">Notifications</span>
+                    {unreadCount > 0 && (
+                        <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                            {unreadCount}
+                        </span>
+                    )}
                 </NavLink>
 
                 <NavLink to="/super-agent/profile" onClick={onClose} className={navLinkClass}>

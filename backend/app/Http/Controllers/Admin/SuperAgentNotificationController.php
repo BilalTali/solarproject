@@ -14,7 +14,11 @@ class SuperAgentNotificationController extends Controller
         $notifications = Notification::query()->where(fn ($q) => $q->where('user_id', $request->user()->id))
             ->latest()->paginate(20);
 
-        return response()->json(['success' => true, 'data' => $notifications]);
+        return response()->json([
+            'success' => true,
+            'data' => $notifications,
+            'unread_count' => $request->user()->notifications()->whereNull('read_at')->count(),
+        ]);
     }
 
     public function markRead(Request $request, int $id): JsonResponse

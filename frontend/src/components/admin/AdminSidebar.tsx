@@ -1,11 +1,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     Sun, LayoutDashboard, List, Users, DollarSign, BarChart3,
-    Settings, LogOut, Shield, Star, Award, FileText, Wallet, Gift, Inbox, Database
+    Settings, LogOut, Shield, Star, Award, FileText, Wallet, Gift, Inbox, Database, Bell
 } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { authApi } from '@/services/auth.api';
+import { adminNotificationsApi } from '@/services/adminNotifications.api';
 import { useAuthStore } from '@/store/authStore';
 import { DownloadIdCardButton } from '@/components/shared/DownloadIdCardButton';
 import { useAdminSettings } from '@/hooks/useAdminSettings';
@@ -22,6 +23,7 @@ const ADMIN_NAV = [
     { icon: <Settings className="w-5 h-5" />, label: 'Field Technical Team', to: '/admin/technical-team' },
     { icon: <Award className="w-5 h-5" />, label: 'Reward Winners', to: '/admin/media' },
     { icon: <Database className="w-5 h-5" />, label: 'Master Points Overview', to: '/admin/points-master' },
+    { icon: <Bell className="w-5 h-5" />, label: 'Notifications', to: '/admin/notifications' },
     { icon: <Gift className="w-5 h-5" />, label: 'Incentive Offers', to: '/admin/offers' },
     { icon: <Gift className="w-5 h-5" />, label: 'Offer Approvals', to: '/admin/redemptions' },
     { icon: <Inbox className="w-5 h-5" />, label: 'Absorbed Points', to: '/admin/absorptions' },
@@ -42,6 +44,15 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
     const { companyName, logo } = useAdminSettings();
 
     const isOperator = user?.role === 'operator';
+    
+    const { data: notifData } = useQuery({
+        queryKey: ['admin-notifications-count'],
+        queryFn: () => adminNotificationsApi.getNotifications(),
+        staleTime: 30000,
+        refetchInterval: 60000,
+        enabled: !isOperator,
+    });
+    const unreadCount = notifData?.data?.unread_count ?? 0;
     
     // Dynamic navigation based on role
     const NAV = isOperator ? OPERATOR_NAV : ADMIN_NAV;
@@ -101,7 +112,12 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
                             aria-current={isActive ? 'page' : undefined}
                         >
                             <span aria-hidden="true">{item.icon}</span>
-                            <span className="text-sm">{item.label}</span>
+                            <span className="text-sm flex-1">{item.label}</span>
+                            {item.to === '/admin/notifications' && unreadCount > 0 && (
+                                <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                                    {unreadCount}
+                                </span>
+                            )}
                         </Link>
                     );
                 })}

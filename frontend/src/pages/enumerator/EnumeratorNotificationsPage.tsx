@@ -19,7 +19,7 @@ export default function EnumeratorNotificationsPage() {
         },
     });
 
-    const notifications = data?.data?.data ?? [];
+    const notifications = data?.data?.data?.data ?? data?.data?.data ?? [];
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
@@ -65,7 +65,7 @@ export default function EnumeratorNotificationsPage() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between gap-4">
                                         <h4 className={`font-bold text-sm leading-snug ${!n.read_at ? 'text-slate-900' : 'text-slate-600'}`}>
-                                            {n.data?.title ?? 'Notification'}
+                                            {n.title ?? n.data?.title ?? 'Notification'}
                                         </h4>
                                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap pt-1 flex items-center gap-1">
                                             <Clock size={10} />
@@ -73,7 +73,7 @@ export default function EnumeratorNotificationsPage() {
                                         </span>
                                     </div>
                                     <p className="text-sm text-slate-500 mt-1 leading-relaxed">
-                                        {n.data?.message ?? n.type}
+                                        {n.message ?? n.data?.message ?? n.type}
                                     </p>
                                     {!n.read_at && (
                                         <button

@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\AdminSuperAgentController as AdminSuperAgentContr
 // Super Admin
 use App\Http\Controllers\Admin\AdminManagementController;
 use App\Http\Controllers\Admin\MonitoringController;
+use App\Http\Controllers\Admin\AdminNotificationController;
 // Admin
 use App\Http\Controllers\Admin\AgentDashboardController as AgentDashboardController;
 use App\Http\Controllers\Admin\AgentLeadController as AgentLeadController;
@@ -410,6 +411,11 @@ $api->as('api.v1.')->group(function () {
             Route::post('/offers/absorbed-points/{absorbedPoint}/approve', [AdminOfferController::class, 'approveAbsorption']);
             Route::post('/offers/{offer}/trigger-expiry', [AdminOfferController::class, 'triggerExpiry']);
             Route::apiResource('offers', AdminOfferController::class);
+
+            // Notifications
+            Route::get('/notifications', [AdminNotificationController::class, 'index']);
+            Route::put('/notifications/{id}/read', [AdminNotificationController::class, 'markAsRead']);
+            Route::put('/notifications/mark-all-read', [AdminNotificationController::class, 'markAllRead']);
 
             // Settings — routes moved outside this prefix('admin') group to fix double-prefix bug
             // PUT /admin/settings is now defined above alongside the GET
