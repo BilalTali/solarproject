@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Users, Shield, FileText, Monitor, LogOut, ShieldAlert,
-    HelpCircle, MessageSquare, IndianRupee, Settings, Globe, Gift, Award, Inbox, Zap, Database
+    HelpCircle, MessageSquare, IndianRupee, Settings, Globe, Gift, Award, Inbox, Zap
 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -20,7 +20,6 @@ const SUPER_ADMIN_NAV = [
     { icon: <Settings className="w-5 h-5" />, label: 'CRM Data Management', to: '/super-admin/crm-options' },
     { icon: <Zap className="w-5 h-5" />, label: 'Incentive Point Mapping', to: '/super-admin/points-config' },
     { icon: <hr className="border-white/10 my-2" />, label: '', to: '', divider: true },
-    { icon: <Database className="w-5 h-5" />, label: 'Master Points Overview', to: '/admin/points-master' },
     { icon: <Gift className="w-5 h-5" />, label: 'Incentive Offers', to: '/super-admin/offers' },
     { icon: <Award className="w-5 h-5" />, label: 'Prize Redemptions', to: '/super-admin/redemptions' },
     { icon: <Inbox className="w-5 h-5" />, label: 'Absorbed Points', to: '/super-admin/absorptions' },
