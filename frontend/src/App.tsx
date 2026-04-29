@@ -85,6 +85,7 @@ const AdminAbsorptionsPage = lazy(() => import('@/pages/admin/AdminAbsorptionsPa
 const AdminWithdrawalsPage = lazy(() => import('@/pages/admin/AdminWithdrawalsPage').then(module => ({ default: module.AdminWithdrawalsPage })));
 const AdminOperatorsPage = lazy(() => import('@/pages/admin/AdminOperatorsPage'));
 const AdminTechnicalTeamPage = lazy(() => import('@/pages/admin/AdminTechnicalTeamPage'));
+const AdminMasterPointsPage = lazy(() => import('@/pages/admin/AdminMasterPointsPage'));
 
 // Enumerator Pages
 import EnumeratorLayout from '@/components/layouts/EnumeratorLayout';
@@ -261,6 +262,7 @@ export default function App() {
             <Route path="redemptions" element={<AdminRedemptionsPage />} />
             <Route path="offers" element={<AdminOffersPage />} />
             <Route path="absorptions" element={<AdminAbsorptionsPage />} />
+            <Route path="points-master" element={<AdminMasterPointsPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
             <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
             <Route path="operators" element={<AdminOperatorsPage />} />

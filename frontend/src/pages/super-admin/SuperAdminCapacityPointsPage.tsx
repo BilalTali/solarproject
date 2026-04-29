@@ -171,6 +171,12 @@ export default function SuperAdminCapacityPointsPage() {
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Key:</span>
                                                         <code className="bg-slate-100 px-2 py-0.5 rounded-lg text-indigo-600 font-mono text-[10px] font-black">{opt.value}</code>
+                                                        {localMapping[opt.value] === 0 && (
+                                                            <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-amber-200 shadow-sm ml-2">Intentionally 0 Points</span>
+                                                        )}
+                                                        {localMapping[opt.value] === undefined && (
+                                                            <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-red-200 shadow-sm ml-2" title="Will default to 0 points">Missing Config</span>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

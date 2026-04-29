@@ -40,19 +40,6 @@ const DEFAULT_OPTIONS = {
         { value: '100_200', label: '100 – 200 sq ft' },
         { value: '200_300', label: '200 – 300 sq ft' },
         { value: '300_plus', label: '300+ sq ft' },
-    ],
-    system_capacity: [
-        { value: '3kw', label: '3 kW' },
-        { value: '3.3kw', label: '3.3 kW' },
-        { value: '4kw', label: '4 kW' },
-        { value: '5kw', label: '5 kW' },
-        { value: '5.5kw', label: '5.5 kW' },
-        { value: '6kw', label: '6 kW' },
-        { value: '7kw', label: '7 kW' },
-        { value: '8kw', label: '8 kW' },
-        { value: '9kw', label: '9 kW' },
-        { value: '10kw', label: '10 kW' },
-        { value: 'above_10kw', label: 'Above 10 kW' },
     ]
 };
 

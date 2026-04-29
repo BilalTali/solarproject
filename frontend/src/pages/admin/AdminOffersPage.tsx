@@ -13,6 +13,7 @@ import SEOHead from '@/components/shared/SEOHead';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { useAuthStore } from '@/store/authStore';
 import { compressImage } from '@/utils/imageUtils';
+import { AdminMyIncentives } from '@/components/admin/AdminMyIncentives';
 
 interface Participant {
     user_id: number;
@@ -29,6 +30,7 @@ export const AdminOffersPage: React.FC = () => {
     const { role } = useAuthStore();
     const isSuperAdmin = role === 'super_admin';
     const queryClient = useQueryClient();
+    const [activeTab, setActiveTab] = useState<'manage' | 'personal'>('manage');
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
@@ -160,9 +162,29 @@ export const AdminOffersPage: React.FC = () => {
                 )}
             </div>
 
-            {/* Filters & Search */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 flex items-center">
-                <div className="relative flex-grow max-w-md">
+            {/* Tabs */}
+            <div className="flex bg-slate-100/50 p-1 rounded-xl mb-6 max-w-sm">
+                <button
+                    onClick={() => setActiveTab('manage')}
+                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'manage' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    Manage Offers
+                </button>
+                <button
+                    onClick={() => setActiveTab('personal')}
+                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'personal' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    My Incentives
+                </button>
+            </div>
+
+            {activeTab === 'personal' ? (
+                <AdminMyIncentives />
+            ) : (
+                <>
+                    {/* Filters & Search */}
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 flex items-center">
+                        <div className="relative flex-grow max-w-md">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input
                         type="text"
@@ -378,6 +400,8 @@ export const AdminOffersPage: React.FC = () => {
                     </div>
                 )}
             </div>
+            </>
+            )}
 
             {/* Participants Modal */}
             {selectedOfferId && (

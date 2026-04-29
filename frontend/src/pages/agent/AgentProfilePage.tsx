@@ -115,7 +115,7 @@ export default function AgentProfilePage() {
     });
 
     const updateProfileMutation = useMutation({
-        mutationFn: agentsApi.updateProfile,
+        mutationFn: agentsApi.updateMyProfile,
         onSuccess: (res) => {
             if (res.success) {
                 setUser(res.data);

@@ -56,4 +56,43 @@ class AgentOfferController extends Controller
 
         return response()->json(['success' => true, 'data' => $redemptions]);
     }
+
+    /**
+     * View absorbed points (from Enumerators)
+     */
+    public function absorbedPoints(Request $request): JsonResponse
+    {
+        $points = \App\Models\SuperAgentAbsorbedPoints::with(['sourceAgent', 'offer', 'lead', 'claimedBy', 'approvedBy'])
+            ->where('super_agent_id', $request->user()->id)
+            ->where('absorption_reason', 'enumerator_absorption')
+            ->orderByDesc('absorbed_at')
+            ->get();
+
+        return response()->json(['success' => true, 'data' => $points]);
+    }
+
+    /**
+     * Claim absorbed points
+     */
+    public function claimAbsorbedPoints(Request $request, int $id): JsonResponse
+    {
+        $record = \App\Models\SuperAgentAbsorbedPoints::where('super_agent_id', $request->user()->id)
+            ->findOrFail($id);
+
+        if ($record->status !== 'unclaimed') {
+            return response()->json(['success' => false, 'message' => 'Status is not unclaimed.'], 400);
+        }
+
+        $record->update([
+            'status' => 'claimed',
+            'claimed_at' => now(),
+            'claimed_by' => $request->user()->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Claim submitted to Admin successfully!',
+            'data' => $record
+        ]);
+    }
 }

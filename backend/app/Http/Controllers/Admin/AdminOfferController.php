@@ -174,6 +174,43 @@ class AdminOfferController extends Controller
     /**
      * NEW v3 METHODS
      */
+    public function myOffers(Request $request): JsonResponse
+    {
+        $offers = collect($this->offerService->getOffersForUser($request->user()))
+            ->filter(fn($o) => in_array($o['visible_to'], ['both', 'super_agents']))
+            ->values();
+
+        return response()->json(['success' => true, 'data' => $offers]);
+    }
+
+    public function myRedemptions(Request $request): JsonResponse
+    {
+        $redemptions = OfferRedemption::query()->where('user_id', $request->user()->id)
+            ->with('offer')
+            ->orderByDesc('claimed_at')
+            ->get();
+
+        return response()->json(['success' => true, 'data' => $redemptions]);
+    }
+
+    public function redeem(Request $request, int $id): JsonResponse
+    {
+        try {
+            $redemption = $this->offerService->redeemOffer($id, $request->user());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Redemption claim submitted successfully!',
+                'data' => $redemption,
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
     public function leaderboard(): JsonResponse
     {
         $users = \App\Models\User::query()
@@ -196,6 +233,32 @@ class AdminOfferController extends Controller
         })->filter(fn($u) => $u['total_points'] > 0)->sortByDesc('total_points')->values();
 
         return response()->json(['success' => true, 'data' => $leaderboard]);
+    }
+
+    public function masterOverview(): JsonResponse
+    {
+        $users = \App\Models\User::query()
+            ->whereIn('role', ['admin', 'super_admin', 'super_agent', 'agent', 'enumerator'])
+            ->get();
+
+        $overview = $users->map(function ($u) {
+            $total = \App\Models\OfferProgress::where('user_id', $u->id)->sum('total_points');
+            $redeemed = \App\Models\OfferProgress::where('user_id', $u->id)->sum('redeemed_points');
+            $absorbed = \App\Models\SuperAgentAbsorbedPoints::where('super_agent_id', $u->id)->sum('absorbed_points');
+            
+            return [
+                'user_id' => $u->id,
+                'name' => $u->name,
+                'role' => $u->role,
+                'identifier' => $u->agent_id ?? $u->super_agent_code ?? $u->enumerator_id ?? 'ADMIN',
+                'points_earned' => max(0, (float)$total - (float)$absorbed),
+                'absorbed_points' => (float)$absorbed,
+                'total_available' => max(0, (float)$total - (float)$redeemed),
+                'redeemed_points' => (float)$redeemed,
+            ];
+        })->filter(fn($u) => $u['points_earned'] > 0 || $u['absorbed_points'] > 0 || in_array($u['role'], ['admin', 'super_admin']))->values();
+
+        return response()->json(['success' => true, 'data' => $overview]);
     }
 
     public function agentOffers(int $id): JsonResponse

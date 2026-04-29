@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     Sun, LayoutDashboard, List, Users, DollarSign, BarChart3,
-    Settings, LogOut, Shield, Star, Award, FileText, Wallet, Gift, Inbox
+    Settings, LogOut, Shield, Star, Award, FileText, Wallet, Gift, Inbox, Database
 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -21,6 +21,7 @@ const ADMIN_NAV = [
     { icon: <Shield className="w-5 h-5" />, label: 'Operators', to: '/admin/operators' },
     { icon: <Settings className="w-5 h-5" />, label: 'Field Technical Team', to: '/admin/technical-team' },
     { icon: <Award className="w-5 h-5" />, label: 'Reward Winners', to: '/admin/media' },
+    { icon: <Database className="w-5 h-5" />, label: 'Master Points Overview', to: '/admin/points-master' },
     { icon: <Gift className="w-5 h-5" />, label: 'Incentive Offers', to: '/admin/offers' },
     { icon: <Gift className="w-5 h-5" />, label: 'Offer Approvals', to: '/admin/redemptions' },
     { icon: <Inbox className="w-5 h-5" />, label: 'Absorbed Points', to: '/admin/absorptions' },

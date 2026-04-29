@@ -314,6 +314,16 @@ export default function SuperAdminCrmOptionsPage() {
                     <p>These options are cached for performance. Any changes here will immediately invalidate the background cache, and within 1 hour, the public website form will reflect the new values. <span className="font-bold underline">System Value</span> should be unique per category and should ideally be in lowercase slug format.</p>
                 </div>
             </div>
+
+            {selectedCategory === 'system_capacity' && (
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-start gap-3 mt-4">
+                    <AlertCircle className="text-amber-500 mt-0.5 shrink-0" size={18} />
+                    <div className="text-sm text-amber-800">
+                        <p className="font-bold mb-1">Important: Capacity Points Configuration</p>
+                        <p>Adding a new capacity here only makes it appear in the Lead form dropdown. <strong>It will earn 0 points by default.</strong> To assign points to this new capacity, you must also configure it in the <span className="font-bold">Points Config</span> page.</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

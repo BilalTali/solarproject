@@ -60,6 +60,22 @@ export const offersApi = {
             const { data } = await axios.post<ApiResponse<any>>(`/admin/offers/${id}/trigger-expiry`);
             return data;
         },
+        masterOverview: async () => {
+            const { data } = await axios.get<ApiResponse<any[]>>('/admin/points/master-overview');
+            return data;
+        },
+        getMyOffers: async () => {
+            const { data } = await axios.get<ApiResponse<UserOfferProgress[]>>('/admin/my-offers');
+            return data;
+        },
+        getMyRedemptions: async () => {
+            const { data } = await axios.get<ApiResponse<OfferRedemption[]>>('/admin/my-redemptions');
+            return data;
+        },
+        redeem: async (id: number) => {
+            const { data } = await axios.post<ApiResponse<OfferRedemption>>(`/admin/offers/${id}/redeem`);
+            return data;
+        },
         getLeaderboard: async () => {
             const { data } = await axios.get<ApiResponse<any[]>>('/admin/offers/all-points-leaderboard');
             return data;
@@ -84,6 +100,14 @@ export const offersApi = {
         },
         getMyRedemptions: async () => {
             const { data } = await axios.get<ApiResponse<OfferRedemption[]>>('/agent/offers/redemptions');
+            return data;
+        },
+        getAbsorbedPoints: async () => {
+            const { data } = await axios.get<ApiResponse<SuperAgentAbsorbedPoint[]>>('/agent/offers/absorbed-points');
+            return data;
+        },
+        claimAbsorbed: async (id: number) => {
+            const { data } = await axios.post<ApiResponse<void>>(`/agent/offers/absorbed-points/${id}/claim`);
             return data;
         }
     },

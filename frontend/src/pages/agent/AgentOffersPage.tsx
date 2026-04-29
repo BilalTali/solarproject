@@ -4,10 +4,10 @@ import { offersApi } from '@/services/offers.api';
 import { OfferCard } from '@/components/shared/OfferCard';
 import SEOHead from '@/components/shared/SEOHead';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { Gift, Award, TrendingUp, History, Info } from 'lucide-react';
+import { Gift, Award, TrendingUp, History, Info, Inbox } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
-import { UserOfferProgress, OfferRedemption } from '@/types';
+import { UserOfferProgress, OfferRedemption, SuperAgentAbsorbedPoint } from '@/types';
 
 export const AgentOffersPage: React.FC = () => {
     const queryClient = useQueryClient();
@@ -20,6 +20,11 @@ export const AgentOffersPage: React.FC = () => {
     const { data: redemptionsResp } = useQuery({
         queryKey: ['agent-redemptions'],
         queryFn: () => offersApi.agent.getMyRedemptions()
+    });
+
+    const { data: absorbedPointsResp } = useQuery({
+        queryKey: ['agent-absorbed-points'],
+        queryFn: () => offersApi.agent.getAbsorbedPoints()
     });
 
     const redeemMutation = useMutation({
@@ -37,10 +42,22 @@ export const AgentOffersPage: React.FC = () => {
         }
     });
 
+    const claimAbsorbedMutation = useMutation({
+        mutationFn: (id: number) => offersApi.agent.claimAbsorbed(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['agent-absorbed-points'] });
+            toast.success('Claim submitted to Admin for your absorbed points!');
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || 'Failed to claim absorbed points');
+        }
+    });
+
     if (isLoading) return <LoadingSpinner />;
 
     const offers = (offersResp?.data as UserOfferProgress[]) || [];
     const redemptions = (redemptionsResp?.data as OfferRedemption[]) || [];
+    const absorbedPoints = (absorbedPointsResp?.data as SuperAgentAbsorbedPoint[]) || [];
 
     return (
         <div className="p-6">
@@ -168,6 +185,59 @@ export const AgentOffersPage: React.FC = () => {
                             </li>
                         </ul>
                     </div>
+
+                    {/* Absorbed Points Section */}
+                    {absorbedPoints.length > 0 && (
+                        <div className="mt-8">
+                            <div className="flex items-center gap-2 mb-6">
+                                <Inbox size={22} className="text-indigo-600" />
+                                <h2 className="text-xl font-black text-slate-900 tracking-tight">Absorbed from Team</h2>
+                            </div>
+
+                            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-4 space-y-4">
+                                {absorbedPoints.map((point: any) => (
+                                    <div key={point.id} className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 flex flex-col gap-3">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex flex-col items-center justify-center text-white shadow-sm shrink-0">
+                                                    <span className="text-sm font-black leading-none">{point.absorbed_points}</span>
+                                                    <span className="text-[8px] font-bold uppercase tracking-tighter opacity-80">Pts</span>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-black text-slate-900 leading-tight">
+                                                        {point.offer?.title}
+                                                    </p>
+                                                    <p className="text-[10px] font-bold text-slate-500">
+                                                        From: {point.source_agent?.name}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-between items-center mt-2">
+                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                                {format(new Date(point.absorbed_at), 'dd MMM yyyy')}
+                                            </p>
+                                            
+                                            {point.status === 'unclaimed' ? (
+                                                <button
+                                                    onClick={() => claimAbsorbedMutation.mutate(point.id)}
+                                                    disabled={claimAbsorbedMutation.isPending && claimAbsorbedMutation.variables === point.id}
+                                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-lg transition-colors flex justify-center items-center"
+                                                >
+                                                    {claimAbsorbedMutation.isPending && claimAbsorbedMutation.variables === point.id ? 'Claiming...' : 'Claim Points'}
+                                                </button>
+                                            ) : (
+                                                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 tracking-wider">
+                                                    {point.status}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -167,6 +167,12 @@ $api->as('api.v1.')->group(function () {
             Route::put('/admin/settings', [AdminSettingController::class, 'updateBulk']);
             Route::post('/admin/settings/upload', [AdminSettingController::class, 'uploadFile']);
             Route::put('/admin/profile', [AdminSettingController::class, 'updateProfile']);
+
+            // Admin self-participation in offers
+            Route::get('/admin/my-offers', [AdminOfferController::class, 'myOffers']);
+            Route::get('/admin/my-redemptions', [AdminOfferController::class, 'myRedemptions']);
+            Route::post('/admin/offers/{id}/redeem', [AdminOfferController::class, 'redeem']);
+            Route::get('/admin/points/master-overview', [AdminOfferController::class, 'masterOverview']);
         });
 
         // ==========================================
@@ -241,6 +247,8 @@ $api->as('api.v1.')->group(function () {
             Route::get('/offers', [AgentOfferController::class, 'index']);
             Route::post('/offers/{id}/redeem', [AgentOfferController::class, 'redeem']);
             Route::get('/offers/redemptions', [AgentOfferController::class, 'redemptions']);
+            Route::get('/offers/absorbed-points', [AgentOfferController::class, 'absorbedPoints']);
+            Route::post('/offers/absorbed-points/{id}/claim', [AgentOfferController::class, 'claimAbsorbedPoints']);
 
             Route::put('/profile', [SharedProfileController::class, 'update']);
 

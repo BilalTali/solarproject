@@ -123,6 +123,7 @@ class OfferService
         // 1. Direct Award (Agent/SA depending on their primary role)
         $isAgent = in_array($user->role, ['agent', 'enumerator']);
         $isSA = $user->role === 'super_agent';
+        $isAdmin = in_array($user->role, ['admin', 'super_admin']);
 
         // Award as BDE (Agent)
         if ($isAgent && in_array($offer->visible_to, ['agents', 'both'])) {
@@ -132,6 +133,11 @@ class OfferService
         // Award as BDM (Super Agent)
         if ($isSA && in_array($offer->visible_to, ['super_agents', 'both'])) {
             $this->incrementProgress($offer, $user, $points, 'super_agent');
+        }
+
+        // Award as Admin
+        if ($isAdmin) {
+            $this->incrementProgress($offer, $user, $points, 'admin');
         }
 
         // 2. Hierarchy Overrides (If user is an agent, their SA gets the override points)
@@ -199,6 +205,7 @@ class OfferService
     {
         $isAgent = in_array($user->role, ['agent', 'enumerator']);
         $isSA = $user->role === 'super_agent';
+        $isAdmin = in_array($user->role, ['admin', 'super_admin']);
 
         if ($isAgent && in_array($offer->visible_to, ['agents', 'both'])) {
             $this->decrementProgress($offer, $user, $points, 'agent');
@@ -206,6 +213,10 @@ class OfferService
 
         if ($isSA && in_array($offer->visible_to, ['super_agents', 'both'])) {
             $this->decrementProgress($offer, $user, $points, 'super_agent');
+        }
+
+        if ($isAdmin) {
+            $this->decrementProgress($offer, $user, $points, 'admin');
         }
 
         if ($isAgent) {
@@ -446,6 +457,28 @@ class OfferService
     }
 
     /**
+     * Reverse the synchronization of a redemption from an agent to their Super Agent
+     * This restores the points to the SA's "potential" balance when an agent's redemption is cancelled.
+     */
+    private function reverseSyncRedemptionToSuperAgent(Offer $offer, User $agent, float $points): void
+    {
+        $saProgress = OfferProgress::where('user_id', $agent->super_agent_id)
+            ->where('offer_id', $offer->id)
+            ->lockForUpdate()
+            ->first();
+
+        if ($saProgress) {
+            $newRedeemed = max(0, (float)$saProgress->redeemed_points - $points);
+
+            $saProgress->update([
+                'redeemed_points' => $newRedeemed,
+            ]);
+            
+            $saProgress->recalculate();
+        }
+    }
+
+    /**
      * Process expiry for a single offer.
      * Called by the OfferExpiryJob after (offer_to + grace_period_days) passes.
      * Absorbs partial points to super agents, zeroes expired progress for UI.
@@ -556,8 +589,24 @@ class OfferService
             return;
         }
 
+        $receiverId = null;
+        if ($agent->role === 'super_agent') {
+            $receiverId = $agent->parent_id;
+        } else {
+            $receiverId = $agent->super_agent_id ?: $agent->parent_id;
+        }
+
+        if (!$receiverId) {
+             $admin = User::whereIn('role', ['admin', 'super_admin'])->first();
+             $receiverId = $admin?->id;
+        }
+
+        if (!$receiverId) {
+             return;
+        }
+
         SuperAgentAbsorbedPoints::create([
-            'super_agent_id' => $agent->super_agent_id, // May be null for orphan agents
+            'super_agent_id' => $receiverId,
             'source_agent_id' => $agent->id,
             'offer_id' => $offer->id,
             'absorbed_points' => $points,
@@ -663,6 +712,11 @@ class OfferService
                 'notes' => $notes ?? "Cancelled by admin: " . $admin->name,
                 // We don't set approved_by/approved_at for cancellation
             ]);
+
+            // Reverse the sync for Super Agent if this was an Agent's redemption
+            if ($user->role === 'agent' && $user->super_agent_id) {
+                $this->reverseSyncRedemptionToSuperAgent($offer, $user, $pointsToRevert);
+            }
 
             // Notify user
             // app(NotificationService::class)->notifyAgentRedemptionCancelled($offer, $user, $redemption);

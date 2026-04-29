@@ -7,12 +7,14 @@ interface OfferCardProps {
     offer: UserOfferProgress;
     onRedeem?: (id: number) => void;
     isRedeeming?: boolean;
+    showEnumeratorTooltip?: boolean;
 }
 
 export const OfferCard: React.FC<OfferCardProps> = ({
     offer,
     onRedeem,
     isRedeeming = false,
+    showEnumeratorTooltip = false,
 }) => {
     const isCollective = offer.offer_type === 'collective';
     const isEnded = !!offer.offer_ended_zeroed_at;
@@ -103,6 +105,15 @@ export const OfferCard: React.FC<OfferCardProps> = ({
 
                 {/* Integrated Progress Visualizer */}
                 <div className="mt-auto space-y-5">
+                    {showEnumeratorTooltip && (
+                        <div className="bg-amber-50 rounded-xl px-3 py-2 border border-amber-100 flex items-start gap-2">
+                            <Info size={14} className="text-amber-500 mt-0.5 shrink-0" />
+                            <p className="text-[10px] text-amber-800 font-medium leading-tight">
+                                <strong>Reminder:</strong> Your first 10 system points go towards your onboarding fee. Only points earned <span className="underline">after</span> the fee is paid will fill this bar.
+                            </p>
+                        </div>
+                    )}
+                    
                     <div className="flex flex-col gap-2">
                         <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none px-1">
                             {isCollective ? "NETWORK TOTAL" : "MILESTONE TRACKER"}

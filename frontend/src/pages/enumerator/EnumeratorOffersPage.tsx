@@ -89,6 +89,7 @@ export const EnumeratorOffersPage: React.FC = () => {
                                     offer={offer}
                                     onRedeem={redeemMutation.mutate as any}
                                     isRedeeming={redeemMutation.isPending}
+                                    showEnumeratorTooltip={true}
                                 />
                             ))}
                         </div>
